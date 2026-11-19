@@ -89,7 +89,9 @@ fun rememberRandomPose(key: Any? = null): Pose = remember(key) { Pose.entries.ra
 
 const val BODY_WIDTH = 100f
 const val BODY_HEIGHT = 196f
-const val BACK_OFFSET = 108f
+const val BACK_OFFSET = 122f
+/** Rand links/rechts um jede Figur (Arme in Posen ragen über 0..100 hinaus). */
+const val BODY_PAD = 11f
 
 /*
  * Muskulöses Meerschweinchen (passend zum App-Icon): Meerschweinchen-Kopf mit Hängeohren,
@@ -103,9 +105,9 @@ val BODY_SHAPES: List<BodyShape> = listOf(
     BodyShape(null, BodyView.BOTH, "M13 70 Q8 78 9 90 L10 100 Q7 110 8 122 L15 124 Q17 112 19 102 Q23 92 23 82 Q22 74 18 70 Z", pose = Pose.RELAXED), // Arm
     BodyShape(null, BodyView.BOTH, "M7 120 Q4 129 9 133 Q15 135 16 124 Z", fill = BodyFill.PINK, pose = Pose.RELAXED),            // Pfote
     // Doppelbizeps: Oberarm waagerecht nach außen, Unterarm senkrecht nach oben, Faust neben dem Kopf
-    BodyShape(null, BodyView.BOTH, "M23 60 Q13 56 5 61 Q0 66 3 73 Q12 78 23 76 Z", pose = Pose.DOUBLE_BICEPS),   // Oberarm
-    BodyShape(null, BodyView.BOTH, "M2 71 Q0 58 3 45 L11 44 Q13 57 10 72 Z", pose = Pose.DOUBLE_BICEPS),        // Unterarm
-    BodyShape(null, BodyView.BOTH, "M2 47 Q1 38 7 36 Q13 37 12 47 Z", fill = BodyFill.PINK, pose = Pose.DOUBLE_BICEPS), // Faust
+    BodyShape(null, BodyView.BOTH, "M24 59 Q14 51 1 56 Q-7 60 -7 68 Q2 77 24 77 Z", pose = Pose.DOUBLE_BICEPS),   // Oberarm
+    BodyShape(null, BodyView.BOTH, "M-8 68 Q-9 50 -6 30 L4.5 29 Q6 48 4 66 Z", pose = Pose.DOUBLE_BICEPS),        // Unterarm
+    BodyShape(null, BodyView.BOTH, "M-7 32 Q-8 20 -1 18 Q6 19 5.5 31 Z", fill = BodyFill.PINK, pose = Pose.DOUBLE_BICEPS), // Faust
     // Lat-Spread: Ellbogen nach außen, Fäuste in die Taille gestemmt
     BodyShape(null, BodyView.BOTH, "M13 69 Q5 78 3 90 L10 96 Q14 86 23 80 Z", pose = Pose.LAT_SPREAD),           // Oberarm
     BodyShape(null, BodyView.BOTH, "M3 87 Q7 99 22 109 L28 104 Q16 94 11 87 Z", pose = Pose.LAT_SPREAD),         // Unterarm
@@ -131,10 +133,10 @@ val BODY_SHAPES: List<BodyShape> = listOf(
     BodyShape("traps", BodyView.FRONT, "M43 49 Q36 54 28 57 L38 59 Q42 56 45 53 Z"),
     BodyShape("delts", BodyView.FRONT, "M25 58 Q14 60 11.5 68 Q11 75 15 79 Q19 76 22 70 Q25 64 30 60 Z"),
     BodyShape("chest", BodyView.FRONT, "M49 60 L36 60 Q28 62 24 70 Q24 79 31 83 Q40 86 49 82 Z"),
-    BodyShape("biceps", BodyView.FRONT, "M21 80 Q15 82 13 90 Q13 96 15 99 Q19 98 21 92 Q23 86 21 80 Z", pose = Pose.RELAXED),
-    BodyShape("forearms", BodyView.FRONT, "M10 103 Q8 110 9 118 L13 121 Q15 112 18 104 Q14 101 10 103 Z", pose = Pose.RELAXED),
-    BodyShape("biceps", BodyView.FRONT, "M21 63 Q17 52 8 59 Q8 65 15 66 Q19 66 21 63 Z", pose = Pose.DOUBLE_BICEPS),
-    BodyShape("forearms", BodyView.FRONT, "M3 67 Q2 57 4 49 L9 48 Q10 57 8 67 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("biceps", BodyView.FRONT, "M21 79.5 Q13.5 80.5 11 88 Q10.5 95 13 100 Q17.5 100.5 20 94 Q22.5 87 21 79.5 Z", pose = Pose.RELAXED),
+    BodyShape("forearms", BodyView.FRONT, "M10 103 Q8 110 8.5 119 L13.5 121.5 Q15.5 112 18.5 103.5 Q14 101.5 10 103 Z", pose = Pose.RELAXED),
+    BodyShape("biceps", BodyView.FRONT, "M22 66 Q19 52 6 54 Q-2 57 -1 65 Q10 70 22 66 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("forearms", BodyView.FRONT, "M-6.5 62 Q-7.5 48 -5 34 L3 33.5 Q4 48 2.5 62 Z", pose = Pose.DOUBLE_BICEPS),
     BodyShape("biceps", BodyView.FRONT, "M14 72 Q7 80 5.5 88 Q9.5 89 13 81 Q16 76 20 74 Z", pose = Pose.LAT_SPREAD),
     BodyShape("forearms", BodyView.FRONT, "M7 91 Q12 99 21 105 L24 102 Q16 96 11 90 Z", pose = Pose.LAT_SPREAD),
     BodyShape("abs", BodyView.FRONT, "M49 87 L43 88 Q42 93 43 97 L49 97 Z"),                       // Sixpack oben
@@ -152,11 +154,11 @@ val BODY_SHAPES: List<BodyShape> = listOf(
     BodyShape("delts", BodyView.BACK, "M25 58 Q14 60 11.5 68 Q11 75 15 79 Q19 76 22 70 Q25 64 30 60 Z"),
     BodyShape("lats", BodyView.BACK, "M43 72 Q35 64 26 66 Q23 76 25 86 Q29 98 37 108 Q42 102 45 92 Z"),
     BodyShape("lowerback", BodyView.BACK, "M49 94 L46 96 Q43 106 43.5 116 Q46 122 49 123 Z"),
-    BodyShape("obliques", BodyView.BACK, "M27 92 Q26 102 30 110 L33 108 Q30 100 30 92 Z"),
-    BodyShape("triceps", BodyView.BACK, "M22 79 Q16 81 13 88 Q12 95 15 99 L19 98 Q22 90 22 79 Z", pose = Pose.RELAXED),
-    BodyShape("forearms", BodyView.BACK, "M10 103 Q8 110 9 118 L13 121 Q15 112 18 104 Q14 101 10 103 Z", pose = Pose.RELAXED),
-    BodyShape("triceps", BodyView.BACK, "M21 69 Q12 72 5 69 Q6 75 13 76 Q19 76 21 72 Z", pose = Pose.DOUBLE_BICEPS),
-    BodyShape("forearms", BodyView.BACK, "M3 67 Q2 57 4 49 L9 48 Q10 57 8 67 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("obliques", BodyView.BACK, "M29 100 Q28.5 110 32 118 L38 116 Q34 109 33.5 104 Q31 101 29 100 Z"),
+    BodyShape("triceps", BodyView.BACK, "M22 79.5 Q14.5 80.5 11.5 88 Q10.5 95 12.5 100 L19 99.5 Q22.5 91 22 79.5 Z", pose = Pose.RELAXED),
+    BodyShape("forearms", BodyView.BACK, "M10 103 Q8 110 8.5 119 L13.5 121.5 Q15.5 112 18.5 103.5 Q14 101.5 10 103 Z", pose = Pose.RELAXED),
+    BodyShape("triceps", BodyView.BACK, "M22.5 67 Q10 70 -5 66 Q-4 74 6 75.5 Q16 76.5 22.5 73 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("forearms", BodyView.BACK, "M-6.5 62 Q-7.5 48 -5 34 L3 33.5 Q4 48 2.5 62 Z", pose = Pose.DOUBLE_BICEPS),
     BodyShape("triceps", BodyView.BACK, "M15 73 Q8 81 6 89 L10 91 Q13 84 19 77 Z", pose = Pose.LAT_SPREAD),
     BodyShape("forearms", BodyView.BACK, "M7 91 Q12 99 21 105 L24 102 Q16 96 11 90 Z", pose = Pose.LAT_SPREAD),
     BodyShape("glutes", BodyView.BACK, "M49 122 Q40 120 33 125 Q29 132 32 140 Q40 146 49 143 Z"),
@@ -225,7 +227,7 @@ fun BodyFigure(
     val outline = if (dark) Color(0xFF8F7A69) else Color(0xFF7A5A43)
     val pink = if (dark) Color(0xFFB98585) else Color(0xFFF2B8B5)
     val neutral = if (dark) Color(0xFF7A7068) else Color(0xFFCFC7BE)
-    val totalWidth = if (view == BodyView.BOTH) BACK_OFFSET + BODY_WIDTH else BODY_WIDTH
+    val totalWidth = (if (view == BodyView.BOTH) BACK_OFFSET + BODY_WIDTH else BODY_WIDTH) + 2 * BODY_PAD
     // Bei einer einzelnen Seite: nur deren Pfade, die Rückansicht an x = 0 verschoben
     val shift = if (view == BodyView.BACK) -BACK_OFFSET else 0f
     val paths = when (view) {
@@ -241,7 +243,7 @@ fun BodyFigure(
                 .aspectRatio(totalWidth / BODY_HEIGHT)
         ) {
             val s = size.width / totalWidth
-            scale(s, s, pivot = Offset.Zero) { translate(left = shift) {
+            scale(s, s, pivot = Offset.Zero) { translate(left = shift + BODY_PAD) {
                 // 1. Außenkontur: alle Körperteile dick umranden; die Füllungen danach überdecken
                 //    die Linien im Inneren, übrig bleibt nur der Umriss.
                 for (b in paths) if (b.shape.id == null) drawPath(b.path, outline, style = Stroke(width = 2.4f))

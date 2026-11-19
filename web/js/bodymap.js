@@ -62,8 +62,8 @@ function svg(colorOf, view = 'BOTH', pose = currentPose) {
       : s.fill === 'FUR' || s.fill === 'PATCH' ? ` stroke="${color(s)}" stroke-width="0.8"` : '';
     parts.push(`<path transform="${t}" d="${s.d}" fill="${color(s)}"${stroke}/>`);
   }
-  const w = view === "BOTH" ? BODY.backOffset + BODY.width : BODY.width;
-  return `<svg viewBox="0 0 ${w} ${BODY.height}" role="img" aria-label="${tr('Körperdiagramm', 'Body diagram')}">${parts.join('')}</svg>`;
+  const w = (view === "BOTH" ? BODY.backOffset + BODY.width : BODY.width) + 2 * BODY.pad;
+  return `<svg viewBox="${-BODY.pad} 0 ${w} ${BODY.height}" role="img" aria-label="${tr('Körperdiagramm', 'Body diagram')}">${parts.join('')}</svg>`;
 }
 
 /** Figur (vorne + hinten) mit „Vorne/Hinten“-Beschriftung. */

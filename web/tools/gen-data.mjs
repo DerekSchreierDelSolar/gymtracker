@@ -155,7 +155,7 @@ for (const [b, e] of Object.entries(wiki)) {
 writeFileSync(join(root, 'web/js/body-data.js'),
   `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus BodyMap.kt – nicht von Hand ändern!\n` +
   `export const MUSCLES = ${JSON.stringify(muscles)};\n` +
-  `export const BODY = { width: ${bodyConst('BODY_WIDTH')}, height: ${bodyConst('BODY_HEIGHT')}, backOffset: ${bodyConst('BACK_OFFSET')} };\n` +
+  `export const BODY = { width: ${bodyConst('BODY_WIDTH')}, height: ${bodyConst('BODY_HEIGHT')}, backOffset: ${bodyConst('BACK_OFFSET')}, pad: ${bodyConst('BODY_PAD')} };\n` +
   `export const POSES = ${JSON.stringify(poses)};
 ` +
   `export const BODY_SHAPES = [\n${bodyShapes.map(s => '  ' + JSON.stringify(s)).join(',\n')}\n];\n`);
