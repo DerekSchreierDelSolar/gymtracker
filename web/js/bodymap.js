@@ -19,8 +19,11 @@ const COLORS = {
 };
 
 /** Alle Pfad-Varianten einer Form: [transform, d] – gespiegelt an x = 50 und/oder in die Rückansicht verschoben. */
-function placements(s) {
-  const offsets = s.view === 'FRONT' ? [0] : s.view === 'BACK' ? [BODY.backOffset] : [0, BODY.backOffset];
+function placements(s, view = 'BOTH') {
+  let offsets = s.view === 'FRONT' ? [0] : s.view === 'BACK' ? [BODY.backOffset] : [0, BODY.backOffset];
+  // Nur eine Seite: deren Pfade, die Rückansicht an x = 0 verschoben
+  if (view === 'FRONT') offsets = offsets.filter(dx => dx === 0);
+  if (view === 'BACK') offsets = offsets.filter(dx => dx === BODY.backOffset).map(() => 0);
   const out = [];
   for (const dx of offsets) {
     out.push(`translate(${dx} 0)`);
@@ -29,25 +32,25 @@ function placements(s) {
   return out;
 }
 
-/** SVG-Text der Figur. colorOf(Muskel-ID) = Farbe oder null (neutral grau). */
-function svg(colorOf) {
+/** SVG-Text der Figur. colorOf(Muskel-ID) = Farbe oder null (neutral grau); view = BOTH/FRONT/BACK. */
+function svg(colorOf, view = 'BOTH') {
   const c = COLORS[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'];
   const color = s => s.fill === 'MUSCLE'
     ? (colorOf(s.id) ?? c.neutral)
     : s.fill === 'DARK' ? '#2B211B' : s.fill === 'LIGHT' ? '#FFFFFF' : c[s.fill];
   const parts = [];
   // 1. Außenkontur: alle Körperteile dick umranden; die Füllungen danach überdecken die Linien innen
-  for (const s of BODY_SHAPES) if (!s.id) for (const t of placements(s)) {
+  for (const s of BODY_SHAPES) if (!s.id) for (const t of placements(s, view)) {
     parts.push(`<path transform="${t}" d="${s.d}" fill="none" stroke="${c.outline}" stroke-width="2.4" stroke-linejoin="round"/>`);
   }
   // 2. Flächen (Muskeln mit dünner Fuge in Fellfarbe)
-  for (const s of BODY_SHAPES) for (const t of placements(s)) {
+  for (const s of BODY_SHAPES) for (const t of placements(s, view)) {
     // Muskeln: dünne Fuge in Fellfarbe; Fell: gleichfarbiger Rand schließt die Naht an der Spiegelachse
     const stroke = s.fill === 'MUSCLE' ? ` stroke="${c.FUR}" stroke-width="0.7"`
       : s.fill === 'FUR' || s.fill === 'PATCH' ? ` stroke="${color(s)}" stroke-width="0.8"` : '';
     parts.push(`<path transform="${t}" d="${s.d}" fill="${color(s)}"${stroke}/>`);
   }
-  const w = BODY.backOffset + BODY.width;
+  const w = view === "BOTH" ? BODY.backOffset + BODY.width : BODY.width;
   return `<svg viewBox="0 0 ${w} ${BODY.height}" role="img" aria-label="${tr('Körperdiagramm', 'Body diagram')}">${parts.join('')}</svg>`;
 }
 
@@ -184,4 +187,28 @@ export function heatCard({ title, score, showSets, empty, header = null }) {
           plural(entries.length, tr('Muskel', 'muscle'), tr('Muskeln', 'muscles')) + tr(' (Hilfsmuskel zählt ½)', ' (secondary counts ½)')) : null,
         missing.length ? h('p', { class: 'muted small' }, tr('Nicht trainiert: ', 'Not trained: ') + missing.map(muscleLabel).join(', ')) : null]
       : h('p', { class: 'muted' }, empty));
+}
+
+// ---------- Muskel-Karten pro Seite (Reiter „Info“ der Übungsdetails, wie MuscleSideCard) ----------
+
+/** Muskeln, die auf einer Seite der Figur zu sehen sind. */
+export const musclesOnSide = view =>
+  Object.keys(MUSCLES).filter(id => BODY_SHAPES.some(s => s.id === id && (s.view === view || s.view === 'BOTH')));
+
+/** Karte: Titel oben, links die Figur einer Seite, rechts Haupt- und Hilfsmuskeln dieser Seite. */
+export function muscleSideCard(view, primary, secondary) {
+  const ids = musclesOnSide(view);
+  const main = ids.filter(id => primary.includes(id));
+  const help = ids.filter(id => secondary.includes(id) && !primary.includes(id));
+  const group = (title, list, color) => list.length ? h('div', { class: 'side-group' },
+    h('small', null, h('i', { style: `background:${color}` }), title),
+    list.map(id => h('div', null, muscleLabel(id)))) : null;
+  return h('div', { class: 'card pad-m glass side-card' },
+    h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back')),
+    h('div', { class: 'side-body' },
+      h('div', { class: 'side-figure', html: svg(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null), view) }),
+      h('div', { class: 'side-list' },
+        !main.length && !help.length ? h('p', { class: 'muted' }, tr('Auf dieser Seite arbeiten keine Muskeln mit.', 'No muscles involved on this side.')) : null,
+        group(tr('Hauptmuskeln', 'Primary'), main, PRIMARY_COLOR),
+        group(tr('Hilfsmuskeln', 'Secondary'), help, SECONDARY_COLOR))));
 }

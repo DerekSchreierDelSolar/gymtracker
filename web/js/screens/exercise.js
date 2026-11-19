@@ -1,7 +1,7 @@
 // Übungs-Bausteine und Übungsdetail – entspricht ExerciseDetail.kt, Progression.kt (UI) und ExerciseTile.
 
 import { wikiFor, wikiContent } from '../wiki.js';
-import { muscleMap, musclesOf, muscleEditDialog } from '../bodymap.js';
+import { musclesOf, muscleEditDialog, muscleSideCard } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
@@ -109,16 +109,33 @@ export function setInput(name, onAdded = () => {}) {
         id: idBase + '-r', label: cardio ? tr('Minuten', 'Minutes') : timed ? tr('Sekunden', 'Seconds') : tr('Wdh.', 'Reps'),
         value: st.reps, inputmode: 'numeric', oninput: v => { st.reps = v; }, onenter: add,
       }),
-      h('button', { class: 'btn', onclick: add }, cardio ? tr('Eintragen', 'Log') : tr('Satz +', 'Set +'))));
+      h('button', { class: 'btn plus', onclick: add, 'aria-label': cardio ? tr('Eintragen', 'Log') : tr('Satz hinzufügen', 'Add set') }, '+')));
 }
 
 // ---------- Satz-Zeile + Bearbeiten ----------
 
+/** Satz-Zeile; ganze Zeile antippen = bearbeiten (kein Stift-Symbol). */
 export function setRow(set, number, cardio) {
-  return h('div', { class: 'set-row' },
+  return h('div', { class: 'set-row tap', role: 'button', onclick: () => editSetDialog(set, cardio) },
     h('span', { class: 'grow' }, `${number}. ${fmtSet(set, cardio)}`),
-    h('small', { class: 'muted' }, fmtTime(set.time)),
-    iconBtn('edit', () => editSetDialog(set, cardio), { label: tr('Bearbeiten', 'Edit') }));
+    h('small', { class: 'muted' }, fmtTime(set.time)));
+}
+
+/** Motivierende Zeile mit dem Rekord (wie RecordLine in ExerciseDetail.kt). */
+function recordLine(history, cardio, timed) {
+  const today = dayKey(Date.now());
+  const byTime = cardio || timed;
+  const best = history.length ? history.reduce((a, b) =>
+    (byTime ? b.reps > a.reps : b.weight > a.weight || (b.weight === a.weight && b.reps > a.reps)) ? b : a) : null;
+  const before = history.filter(s => dayKey(s.time) !== today);
+  const beatsOld = best && dayKey(best.time) === today && before.length &&
+    !before.some(s => byTime ? s.reps >= best.reps : s.weight > best.weight || (s.weight === best.weight && s.reps >= best.reps));
+  const [emoji, text] = !best
+    ? ['💪', tr('Erstes Mal – heute setzt du deinen ersten Rekord!', 'First time – today you set your first record!')]
+    : beatsOld
+      ? ['🔥', tr('Neuer Rekord heute: ', 'New record today: ') + fmtSet(best, cardio) + tr(' – stark!', ' – great job!')]
+      : ['🏆', tr('Rekord: ', 'Record: ') + fmtSet(best, cardio) + ` (${fmtDate(best.time)})` + tr(' – schaffst du heute mehr?', ' – can you beat it today?')];
+  return h('div', { class: 'card glass record-line' }, h('span', null, emoji), h('span', null, text));
 }
 
 export function editSetDialog(set, cardio) {
@@ -158,9 +175,8 @@ export function exerciseDetailScreen(name) {
   const timed = isTimed(name);
   const history = store.setsFor(name);
 
-  // Reiter: Training (Eingabe + Verlauf), Fortschritt, Muskeln, Info (nur mit Wiki-Eintrag)
-  const tabs = [tr('Training', 'Training'), tr('Fortschritt', 'Progress'), tr('Muskeln', 'Muscles')];
-  if (wikiFor(name)) tabs.push(tr('Info', 'Info'));
+  // Reiter: Training (Eingabe + Verlauf), Fortschritt, Info (Muskeln + Wiki)
+  const tabs = [tr('Training', 'Training'), tr('Fortschritt', 'Progress'), tr('Info', 'Info')];
   const tab = Math.min(tabOf[name] ?? 0, tabs.length - 1);
 
   // Nach Tag gruppiert, neuester zuerst
@@ -182,23 +198,32 @@ export function exerciseDetailScreen(name) {
   let content;
   if (tab === 0) {
     content = [
+      recordLine(history, cardio, timed),
       progressionHint(name),
       setInput(name),
-      days.size ? h('h2', { class: 'section' }, tr('Verlauf', 'History')) : null,
-      [...days.entries()].map(([day, list]) => h('div', { class: 'card pad-s' },
+      days.size ? h('div', null, h('h2', { class: 'section' }, tr('Verlauf', 'History')),
+        muted(tr('Satz antippen zum Bearbeiten', 'Tap a set to edit'), 'small')) : null,
+      [...days.entries()].map(([day, list]) => h('div', { class: 'card pad-s glass' },
         h('b', null, `${day} · ` + (cardio
           ? plural(list.length, tr('Einheit', 'session'), tr('Einheiten', 'sessions')) + ` · ${sumReps(list)} ` + tr('Min gesamt', 'min total')
           : timed
             ? plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ' · ' + tr('gesamt ', 'total ') + fmtSeconds(sumReps(list))
             : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtW(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
-        list.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)))),
+        // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
+        list.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse())),
     ];
   } else if (tab === 1) content = exerciseProgress(history, cardio, timed);
-  else if (tab === 2) content = muscleCard(name);
   else {
-    const url = exerciseImageUrl(name);
-    content = h('div', { class: 'wiki-inline' }, url ? h('img', { class: 'ex-hero', src: url, alt: exName(name) }) : null,
-      wikiContent(name, { header: false, muscles: false }));
+    // Info: Muskeln (Vorder-/Rückseite) + Wiki
+    const m = musclesOf(name);
+    const custom = catalogGroup(name) == null;
+    content = [
+      m ? [muscleSideCard('FRONT', m.primary, m.secondary), muscleSideCard('BACK', m.primary, m.secondary)]
+        : muted(tr('Noch keine Muskeln festgelegt.', 'No muscles set yet.')),
+      custom ? h('button', { class: 'btn text', onclick: () => muscleEditDialog(name) },
+        m ? tr('Muskeln bearbeiten', 'Edit muscles') : tr('Muskeln festlegen', 'Set muscles')) : null,
+      wikiFor(name) ? h('div', { class: 'wiki-inline' }, wikiContent(name, { header: false, muscles: false })) : null,
+    ];
   }
 
   return screen({
@@ -243,7 +268,7 @@ function exerciseProgress(history, cardio, timed) {
   const best = strength ? history.reduce((a, b) => (b.weight > a.weight ? b : a)) : null;
 
   return [
-    h('div', { class: 'card pad-m progress-head' },
+    h('div', { class: 'card pad-m progress-head glass' },
       h('div', null, h('small', { class: 'muted' }, tr('Rekord', 'Record')), h('b', null, `🏆 ${fmtW(record)} ${unit}`)),
       h('div', { class: 'right' }, h('small', { class: 'muted' }, tr('seit dem ersten Training', 'since first session')),
         h('b', { style: gain > 0 ? `color:${completionColor(1)}` : null }, `${gain > 0 ? '+' : ''}${fmtW(gain)} ${unit}${gain > 0 ? ' ↑' : ''}`))),
@@ -254,19 +279,14 @@ function exerciseProgress(history, cardio, timed) {
     ] : null,
     h('div', { class: 'chips' }, Object.entries(BUCKETS).map(([k, l]) => chip(tr(...l), progBucket === k, () => { progBucket = k; rerender(); }))),
     values.length >= 2 ? [
-      progressChart(values, title, unit),
+      glassify(progressChart(values, title, unit)),
       h('div', { class: 'chart-dates muted' }, h('span', null, fmtShortDate(groups[0][0].time)), h('span', null, fmtShortDate(groups.at(-1)[0].time))),
     ] : muted(tr('Ab zwei Einträgen in dieser Einteilung erscheint hier ein Diagramm.', 'A chart appears once there are two entries for this grouping.')),
   ];
 }
 
-/** Karte mit Körperdiagramm; bei eigenen Übungen mit „Muskeln festlegen/bearbeiten“. */
-function muscleCard(name) {
-  const m = musclesOf(name);
-  const custom = catalogGroup(name) == null;
-  if (!m && !custom) return null;
-  return h('div', { class: 'card pad-m muscle-card' },
-    m ? muscleMap(m.primary, m.secondary) : muted(tr('Noch keine Muskeln festgelegt.', 'No muscles set yet.')),
-    custom ? h('button', { class: 'btn text', onclick: () => muscleEditDialog(name) },
-      m ? tr('Muskeln bearbeiten', 'Edit muscles') : tr('Muskeln festlegen', 'Set muscles')) : null);
+/** Karte (oder deren erstes Kind) leicht durchsichtig machen. */
+function glassify(el) {
+  (el.classList?.contains('card') ? el : el.querySelector?.('.card'))?.classList.add('glass');
+  return el;
 }

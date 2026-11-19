@@ -427,3 +427,19 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%);
 }
+
+/* ---------- Übungsdetails: durchsichtige Karten, Seiten-Karten, Rekordzeile ---------- */
+.glass { background: color-mix(in srgb, var(--card) 82%, transparent); }
+.side-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+.side-body { display: flex; align-items: center; gap: 16px; }
+.side-figure { flex: 0 0 42%; }
+.side-figure svg { display: block; width: 100%; height: auto; }
+.side-list { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.side-group small { display: flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 600; font-size: 14px; }
+.side-group i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.side-group div { padding-left: 16px; font-size: 17px; }
+.record-line { display: flex; align-items: center; gap: 12px; padding: 12px 16px; font-weight: 600; }
+.record-line span:first-child { font-size: 26px; }
+.btn.plus { width: 56px; height: 56px; border-radius: 50%; padding: 0; font-size: 30px; line-height: 1; flex: none; }
+.set-row.tap { cursor: pointer; border-radius: 8px; padding: 10px 4px; }
+.set-row.tap:active { background: var(--container-high); }

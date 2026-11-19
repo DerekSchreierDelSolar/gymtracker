@@ -467,51 +467,50 @@ fun musclesOnSide(view: BodyView): List<String> =
     MUSCLES.keys.filter { id -> BODY_SHAPES.any { it.id == id && (it.view == view || it.view == BodyView.BOTH) } }
 
 /**
- * Karte für eine Seite (Vorder- oder Rückseite): Figur links, rechts die beteiligten Muskeln
- * dieser Seite mit Rolle (Haupt/Hilfs) und die übrigen als „nicht beteiligt“.
+ * Karte für eine Seite (Vorder- oder Rückseite): Titel oben, darunter links die Figur,
+ * rechts die beteiligten Muskeln dieser Seite – gruppiert nach Haupt- und Hilfsmuskeln.
  */
 @Composable
 fun MuscleSideCard(view: BodyView, primary: List<String>, secondary: List<String>, colors: CardColors = CardDefaults.cardColors()) {
     val ids = musclesOnSide(view)
-    val involved = ids.filter { it in primary } + ids.filter { it in secondary && it !in primary }
+    val main = ids.filter { it in primary }
+    val help = ids.filter { it in secondary && it !in primary }
     Card(Modifier.fillMaxWidth(), colors = colors) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            BodyFigure(
-                { id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null },
-                Modifier.weight(0.42f), view = view, widthFraction = 1f
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                if (view == BodyView.FRONT) tr("Vorderseite", "Front") else tr("Rückseite", "Back"),
+                style = MaterialTheme.typography.titleMedium
             )
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(0.58f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    if (view == BodyView.FRONT) tr("Vorderseite", "Front") else tr("Rückseite", "Back"),
-                    style = MaterialTheme.typography.titleMedium
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BodyFigure(
+                    { id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null },
+                    Modifier.weight(0.42f), view = view, widthFraction = 1f
                 )
-                if (involved.isEmpty()) Text(
-                    tr("Auf dieser Seite arbeiten keine Muskeln mit.", "No muscles involved on this side."),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                involved.forEach { id ->
-                    val main = id in primary
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        LegendDot(if (main) PRIMARY_COLOR else SECONDARY_COLOR)
-                        Column {
-                            Text(muscleLabel(id), style = MaterialTheme.typography.bodyLarge)
-                            Text(
-                                if (main) tr("Hauptmuskel", "Primary") else tr("Hilfsmuskel", "Secondary"),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(0.58f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (main.isEmpty() && help.isEmpty()) Text(
+                        tr("Auf dieser Seite arbeiten keine Muskeln mit.", "No muscles involved on this side."),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    MuscleGroupList(tr("Hauptmuskeln", "Primary"), main, PRIMARY_COLOR)
+                    MuscleGroupList(tr("Hilfsmuskeln", "Secondary"), help, SECONDARY_COLOR)
                 }
-                val rest = ids - involved.toSet()
-                if (rest.isNotEmpty() && involved.isNotEmpty()) Text(
-                    tr("Nicht beteiligt: ", "Not involved: ") + rest.joinToString(", ") { muscleLabel(it) },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
+    }
+}
+
+/** Überschrift („Hauptmuskeln“) mit Farbpunkt, darunter die Muskeln. */
+@Composable
+private fun MuscleGroupList(title: String, ids: List<String>, color: Color) {
+    if (ids.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            LegendDot(color)
+            Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        ids.forEach { Text(muscleLabel(it), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp)) }
     }
 }
