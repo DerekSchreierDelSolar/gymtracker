@@ -36,6 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -134,35 +140,12 @@ fun TrainingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text(workout.name)
-                        // Ohne Ziele (alles optional) nur die Satzzahl, sonst Ziel-Fortschritt
-                        Text(
-                            "⏱ ${fmtDuration(now - start)} · " +
-                                if (goalTotal == 0) plural(totalSets, tr("Satz", "set"), tr("Sätze", "sets"))
-                                else "$goalDone/$goalTotal " + tr("Ziel-Sätze", "target sets") + " · $goalPercent %",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
+                title = { Text(workout.name) },
                 actions = { TextButton(onClick = { confirmEnd = true }) { Text(tr("Beenden", "Finish")) } }
             )
         },
         bottomBar = {
             Column {
-                // Pausen-Timer über den Buttons, solange eine Pause läuft
-                val end = restEnd
-                if (end != null && end > now) {
-                    RestTimerBar(
-                        remainingMs = end - now,
-                        totalMs = restTotal,
-                        onMinus = { adjustRest(-15_000) },
-                        onPlus = { adjustRest(15_000) },
-                        onSkip = { restEnd = null }
-                    )
-                }
                 BottomAppBar {
                     Row(
                         Modifier
@@ -195,7 +178,12 @@ fun TrainingScreen(
                 .fillMaxSize()
         ) {
             // Fester Kopf: Fortschritt + Sprungleiste zu allen Übungen (✓ = Ziel erreicht)
-            Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
+            TrainingRings(
+                now = now, start = start, restEnd = restEnd, restTotal = restTotal,
+                goalDone = goalDone, goalTotal = goalTotal, totalSets = totalSets,
+                onSkipRest = { restEnd = null }, onAdjustRest = { adjustRest(it) }
+            )
+            Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
                 Text(
                     tr("Übung ${index + 1} von $n", "Exercise ${index + 1} of $n"),
                     style = MaterialTheme.typography.labelLarge
@@ -311,6 +299,9 @@ fun TrainingExercisePage(
                 WikiButton(name)
             }
         }
+
+        // Motivierende Zeile mit dem Rekord (wie in den Übungsdetails)
+        item { RecordLine(store.setsFor(name), cardio, timed) }
 
         // Nach jedem eingetragenen Satz startet die Pause
         item { SetInput(store, name, onAdded = onAdded) }
@@ -505,3 +496,120 @@ fun vibrate(context: Context) {
 }
 
 
+
+// ---------- Zwei Ringe im Trainingskopf: Timer + Ziel-Sätze ----------
+
+/**
+ * Ring mit Farbverlauf (dicker Bogen, runde Enden, dezente Spur), großer Text in der Mitte.
+ * progress 0..1 = gefüllter Anteil ab 12 Uhr im Uhrzeigersinn.
+ */
+@Composable
+fun StatRing(
+    progress: Float,
+    colors: List<Color>,
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
+    val track = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+    val animated by animateFloatAsState(progress.coerceIn(0f, 1f), label = "ring")
+    Box(
+        modifier
+            .aspectRatio(1f)
+            .clip(CircleShape)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(Modifier.fillMaxSize().padding(6.dp)) {
+            val stroke = size.minDimension * 0.11f
+            val inset = stroke / 2
+            val arcSize = Size(size.width - stroke, size.height - stroke)
+            drawArc(track, 0f, 360f, false, Offset(inset, inset), arcSize, style = Stroke(stroke))
+            if (animated > 0f) {
+                // Farbverlauf entlang des Bogens (sweepGradient beginnt bei 3 Uhr → um −90° drehen)
+                rotate(-90f) {
+                    drawArc(
+                        Brush.sweepGradient(colors + colors.first()),
+                        0f, 360f * animated, false, Offset(inset, inset), arcSize,
+                        style = Stroke(stroke, cap = StrokeCap.Round)
+                    )
+                }
+            }
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/**
+ * Kopf des Trainings: links Timer (Pause: Countdown, der Ring leert sich; sonst Trainingsdauer),
+ * rechts Ziel-Sätze (Ring füllt sich, bei 100 % grün).
+ */
+@Composable
+fun TrainingRings(
+    now: Long,
+    start: Long,
+    restEnd: Long?,
+    restTotal: Long,
+    goalDone: Int,
+    goalTotal: Int,
+    totalSets: Int,
+    onSkipRest: () -> Unit,
+    onAdjustRest: (Long) -> Unit
+) {
+    val resting = restEnd != null && restEnd > now
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.Top
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (resting) {
+                val left = restEnd!! - now
+                StatRing(
+                    progress = left.toFloat() / restTotal.coerceAtLeast(1),
+                    colors = listOf(Color(0xFFFFB347), Color(0xFFE8703A)),
+                    value = fmtDuration(left + 999),
+                    label = tr("Pause", "Rest"),
+                    modifier = Modifier.size(132.dp),
+                    onClick = onSkipRest
+                )
+                // Ring antippen = Pause überspringen; ±15 s darunter
+                Row(Modifier.height(40.dp), verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = { onAdjustRest(-15_000) }) { Text("−15 s") }
+                    TextButton(onClick = { onAdjustRest(15_000) }) { Text("+15 s") }
+                }
+            } else {
+                // Trainingsdauer: der Ring läuft jede Minute einmal voll
+                val elapsed = now - start
+                StatRing(
+                    progress = (elapsed % 60_000) / 60_000f,
+                    colors = listOf(Color(0xFF8B85FF), MaterialTheme.colorScheme.primary),
+                    value = fmtDuration(elapsed),
+                    label = tr("Training", "Workout"),
+                    modifier = Modifier.size(132.dp)
+                )
+                // gleiche Höhe wie die ±15-s-Zeile in der Pause, damit nichts springt
+                Spacer(Modifier.height(40.dp))
+            }
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val p = goalCompletion(goalDone, goalTotal, totalSets)
+            val done = p >= 0.999f
+            StatRing(
+                progress = p,
+                colors = if (done) listOf(Color(0xFF7BD389), Color(0xFF2E9E4F)) else listOf(Color(0xFF8B85FF), Color(0xFFE24B8A)),
+                value = if (goalTotal == 0) "$totalSets" else "$goalDone/$goalTotal",
+                label = when {
+                    goalTotal == 0 -> plural(totalSets, tr("Satz", "set"), tr("Sätze", "sets")).substringAfter(' ')
+                    done -> tr("Ziel erreicht ✓", "Goal reached ✓")
+                    else -> tr("Ziel-Sätze", "Target sets")
+                },
+                modifier = Modifier.size(132.dp)
+            )
+        }
+    }
+}

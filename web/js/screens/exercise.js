@@ -122,7 +122,7 @@ export function setRow(set, number, cardio) {
 }
 
 /** Motivierende Zeile mit dem Rekord (wie RecordLine in ExerciseDetail.kt). */
-function recordLine(history, cardio, timed) {
+export function recordLine(history, cardio, timed) {
   const today = dayKey(Date.now());
   const byTime = cardio || timed;
   const best = history.length ? history.reduce((a, b) =>

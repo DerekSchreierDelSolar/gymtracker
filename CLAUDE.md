@@ -50,7 +50,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `HomeScreen.kt` | Startseite: TopBar, ⋮-Menü (Export/Import/Einstellungen), NavigationBar, **HorizontalPager mit 5 Tabs**, `SettingsDialog`, `ExerciseGrid`, `TileGrid`, `ExerciseTile` |
 | `DashboardTab.kt` | Tab 0 „Start“: Wochenziel, Serie, Schnellstart, Muskel-Heatmap, Diagramme (Zeitraum-Umschalter), Rekorde |
 | `WorkoutScreens.kt` | Tab 2 Liste, `NewWorkoutDialog` (+Vorlagen), `WorkoutScreen` (Drag & Drop), `WorkoutPickerScreen` (Ziel-Sätze) |
-| `TrainingScreen.kt` | Trainingsmodus (Pager pro Übung, Name + Eingabe + heutige Sätze + Verlauf früherer Tage per `HistoryDayCard`), Pausen-Timer-Ring, Vibration |
+| `TrainingScreen.kt` | Trainingsmodus (Pager pro Übung, Name + Eingabe + heutige Sätze + Verlauf früherer Tage per `HistoryDayCard`), Kopf mit `TrainingRings` (links Timer: Trainingsdauer bzw. Pausen-Countdown, antippen = Pause überspringen; rechts Ziel-Sätze), `StatRing` (Farbverlauf), `RecordLine` je Übung, Vibration |
 | `SummaryScreen.kt` | Übersicht nach dem Training, `ComparisonLine`, `StatBox` |
 | `CalendarTab.kt` | Tab 3: Monatskalender mit Abschluss-Ringen, `dayKey()`, `CompletionRing` |
 | `BodyTab.kt` | Tab 4: Körpergewicht, Wochen-kcal, `startOfWeek()` |
