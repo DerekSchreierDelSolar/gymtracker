@@ -285,7 +285,10 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
     val img = hasExerciseImage(exercise)
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     ExerciseBackdrop(exercise)
-    Scaffold(containerColor = if (img) Color.Transparent else MaterialTheme.colorScheme.background, topBar = {
+    Scaffold(
+        containerColor = if (img) Color.Transparent else MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        topBar = {
         Column {
             TopAppBar(
                 colors = if (img) TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent, scrolledContainerColor = Color.Transparent)
@@ -532,7 +535,11 @@ fun ExerciseProgress(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
 /** Leicht durchsichtige Karten (Übungsdetails mit Hintergrundbild) – überall gleich. */
 @Composable
 fun glassCardColors(): CardColors =
-    CardDefaults.cardColors(containerColor = CardDefaults.cardColors().containerColor.copy(alpha = 0.82f))
+    CardDefaults.cardColors(
+        containerColor = CardDefaults.cardColors().containerColor.copy(alpha = 0.82f),
+        // Schriftfarbe ausdrücklich setzen: bei durchsichtigem Hintergrund kann Compose sie nicht ableiten (sonst Schwarz)
+        contentColor = MaterialTheme.colorScheme.onSurface
+    )
 
 /**
  * Motivierende Zeile mit dem Rekord (oben im Reiter „Training“):

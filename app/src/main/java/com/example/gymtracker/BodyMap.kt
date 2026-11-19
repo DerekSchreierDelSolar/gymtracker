@@ -191,11 +191,12 @@ fun BodyFigure(
 ) {
     // Hell/dunkel am tatsächlichen Hintergrund ablesen (App-Einstellung kann vom System abweichen)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val fur = if (dark) Color(0xFF5C4D41) else Color(0xFFF3E6D6)
-    val patch = if (dark) Color(0xFF3B2F27) else Color(0xFF9C6B45)
-    val outline = if (dark) Color(0xFF8F7A69) else Color(0xFF7A5A43)
-    val pink = if (dark) Color(0xFFB98585) else Color(0xFFF2B8B5)
-    val neutral = if (dark) Color(0xFF7A7068) else Color(0xFFCFC7BE)
+    // Im dunklen Design bleibt das Fell hell (leicht gedämpft) – dunkles Fell verschluckt Gesicht und Augen
+    val fur = if (dark) Color(0xFFE2D3C1) else Color(0xFFF3E6D6)
+    val patch = if (dark) Color(0xFF946642) else Color(0xFF9C6B45)
+    val outline = if (dark) Color(0xFFB39579) else Color(0xFF7A5A43)
+    val pink = if (dark) Color(0xFFE8AEAB) else Color(0xFFF2B8B5)
+    val neutral = if (dark) Color(0xFFBDB3A8) else Color(0xFFCFC7BE)
     val totalWidth = (if (view == BodyView.BOTH) BACK_OFFSET + BODY_WIDTH else BODY_WIDTH) + 2 * BODY_PAD
     // Bei einer einzelnen Seite: nur deren Pfade, die Rückansicht an x = 0 verschoben
     val shift = if (view == BodyView.BACK) -BACK_OFFSET else 0f

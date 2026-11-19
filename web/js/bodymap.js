@@ -15,7 +15,8 @@ export const muscleLabel = id => (MUSCLES[id] ? (isEnglish() ? MUSCLES[id].en : 
 
 const COLORS = {
   light: { FUR: '#F3E6D6', PATCH: '#9C6B45', PINK: '#F2B8B5', outline: '#7A5A43', neutral: '#CFC7BE' },
-  dark: { FUR: '#5C4D41', PATCH: '#3B2F27', PINK: '#B98585', outline: '#8F7A69', neutral: '#7A7068' },
+  // Im dunklen Design bleibt das Fell hell (leicht gedämpft) – wie BodyFigure in BodyMap.kt
+  dark: { FUR: '#E2D3C1', PATCH: '#946642', PINK: '#E8AEAB', outline: '#B39579', neutral: '#BDB3A8' },
 };
 
 /** Alle Pfad-Varianten einer Form: [transform, d] – gespiegelt an x = 50 und/oder in die Rückansicht verschoben. */
