@@ -14,7 +14,7 @@ import {
 } from '../ui.js';
 import { nav, update, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
-import { setInput, setRow, progressionHint } from './exercise.js';
+import { setInput, setRow, historyDayCard } from './exercise.js';
 
 // ---------- Ton, Vibration, Bildschirm an ----------
 
@@ -161,7 +161,7 @@ export function trainingScreen(w, onFinish) {
       : `${goalDone}/${goalTotal} ` + tr('Ziel-Sätze', 'target sets') + ` · ${goalPercent} %`)),
     actions: [h('button', { class: 'btn text', onclick: endDialog }, tr('Beenden', 'Finish'))],
     top: h('div', { class: 'training-head' },
-      h('b', null, tr(`Übung ${index + 1} von ${n}  ·  ‹ wischen ›`, `Exercise ${index + 1} of ${n}  ·  ‹ swipe ›`)),
+      h('b', null, tr(`Übung ${index + 1} von ${n}`, `Exercise ${index + 1} of ${n}`)),
       h('div', { class: 'progress' }, h('span', { style: `width:${((index + 1) / n) * 100}%` })),
       h('div', { class: 'hscroll' }, w.exercises.map((e, i) => {
         const count = countOf(e), goal = store.targetFor(w, e);
@@ -186,16 +186,18 @@ function exercisePage(w, start, name) {
   const cardio = isCardio(group);
   const today = store.setsBetween(name, start, Infinity);
   const target = store.targetFor(w, name);
-  const previous = store.setsFor(name).filter(s => s.time < start);
-  const lastDay = previous.length ? fmtDate(previous[0].time) : null;
-  const lastSets = previous.filter(s => fmtDate(s.time) === lastDay).sort((a, b) => a.time - b.time);
+  const timed = isTimed(name);
+  // Frühere Trainings dieser Übung (vor diesem Training), nach Tag gruppiert, neuester zuerst
+  const previousDays = new Map();
+  for (const s of store.setsFor(name)) if (s.time < start) {
+    const d = fmtDate(s.time);
+    if (!previousDays.has(d)) previousDays.set(d, []);
+    previousDays.get(d).push(s);
+  }
   const reached = target > 0 && today.length >= target;
 
   return [
-    h('div', { class: 'training-title' }, h('span', { html: exerciseIconHtml(name, group, 56) }), h('h2', { class: 'grow' }, exName(name)), wikiButton(name)),
-    muted(lastDay == null ? tr('Erstes Mal – viel Erfolg!', 'First time – good luck!')
-      : tr('Letztes Mal', 'Last time') + ` (${lastDay}): ` + lastSets.map(s => fmtSet(s, cardio)).join(', ')),
-    progressionHint(name, start),
+    h('div', { class: 'training-title' }, h('h2', { class: 'grow' }, exName(name)), wikiButton(name)),
     setInput(name, startRest),
     h('div', { class: 'rest-chips' }, h('b', null, tr('Pause:', 'Rest:')),
       h('div', { class: 'hscroll' }, [0, 60, 90, 120, 180].map(sec =>
@@ -205,6 +207,11 @@ function exercisePage(w, start, name) {
         : reached ? tr(`Heute: ${today.length} von ${target}  ✓ Ziel erreicht`, `Today: ${today.length} of ${target}  ✓ target reached`)
           : tr(`Heute: ${today.length} von ${target}`, `Today: ${today.length} of ${target}`)),
     today.map((s, i) => setRow(s, i + 1, cardio)),
+    // Verlauf: frühere Trainings dieser Übung
+    previousDays.size
+      ? [h('h2', { class: 'section' }, tr('Verlauf', 'History')),
+        [...previousDays.entries()].map(([day, list]) => historyDayCard(day, list, cardio, timed))]
+      : muted(tr('Erstes Mal – viel Erfolg!', 'First time – good luck!')),
   ];
 }
 

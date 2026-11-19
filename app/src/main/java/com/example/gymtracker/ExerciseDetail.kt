@@ -341,27 +341,7 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                         }
                     }
                     days.forEach { (day, daySets) ->
-                        item(key = day) {
-                            Card(Modifier.fillMaxWidth(), colors = glassCardColors()) {
-                                Column(Modifier.padding(12.dp)) {
-                                    Text(
-                                        if (cardio)
-                                            "$day · " + plural(daySets.size, tr("Einheit", "session"), tr("Einheiten", "sessions")) +
-                                                " · ${daySets.sumOf { it.reps }} " + tr("Min gesamt", "min total")
-                                        else if (timed)
-                                            "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                                " · " + tr("gesamt ", "total ") + fmtSeconds(daySets.sumOf { it.reps })
-                                        else
-                                            "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                                " · ${fmtW(daySets.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
-                                    // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
-                                    val chrono = daySets.sortedBy { it.time }
-                                    chrono.withIndex().reversed().forEach { (i, s) -> SetRow(store, s, i + 1, cardio) }
-                                }
-                            }
-                        }
+                        item(key = day) { HistoryDayCard(store, day, daySets, cardio, timed) }
                     }
                 }
 
@@ -566,6 +546,32 @@ fun RecordLine(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
             Text(emoji, style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.width(12.dp))
             Text(text, style = MaterialTheme.typography.titleSmall)
+        }
+    }
+}
+
+/**
+ * Karte eines Trainingstags im Verlauf (Übungsdetails und Trainingsmodus):
+ * Kopfzeile mit Sätzen/Volumen, darunter die Sätze – neuester oben, Zeile antippen = bearbeiten.
+ */
+@Composable
+fun HistoryDayCard(store: GymStore, day: String, daySets: List<GymSet>, cardio: Boolean, timed: Boolean) {
+    Card(Modifier.fillMaxWidth(), colors = glassCardColors()) {
+        Column(Modifier.padding(12.dp)) {
+            Text(
+                if (cardio)
+                    "$day · " + plural(daySets.size, tr("Einheit", "session"), tr("Einheiten", "sessions")) +
+                        " · ${daySets.sumOf { it.reps }} " + tr("Min gesamt", "min total")
+                else if (timed)
+                    "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
+                        " · " + tr("gesamt ", "total ") + fmtSeconds(daySets.sumOf { it.reps })
+                else
+                    "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
+                        " · ${fmtW(daySets.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
+                style = MaterialTheme.typography.titleSmall
+            )
+            // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
+            daySets.sortedBy { it.time }.withIndex().reversed().forEach { (i, s) -> SetRow(store, s, i + 1, cardio) }
         }
     }
 }

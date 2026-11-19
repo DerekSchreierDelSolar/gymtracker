@@ -197,7 +197,7 @@ fun TrainingScreen(
             // Fester Kopf: Fortschritt + Sprungleiste zu allen Übungen (✓ = Ziel erreicht)
             Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
                 Text(
-                    tr("Übung ${index + 1} von $n  ·  ‹ wischen ›", "Exercise ${index + 1} of $n  ·  ‹ swipe ›"),
+                    tr("Übung ${index + 1} von $n", "Exercise ${index + 1} of $n"),
                     style = MaterialTheme.typography.labelLarge
                 )
                 Spacer(Modifier.height(6.dp))
@@ -293,12 +293,9 @@ fun TrainingExercisePage(
     val cardio = group.isCardio
     val today = store.setsBetween(name, start, Long.MAX_VALUE)
     val target = store.targetFor(workout, name)
-    var appliedWeight by remember { mutableStateOf<Double?>(null) }
-
-    // Letztes Training dieser Übung (alle Sätze vom letzten Tag vor diesem Training)
-    val previous = store.setsFor(name).filter { it.time < start }
-    val lastDay = previous.firstOrNull()?.let { fmtDate(it.time) }
-    val lastSets = previous.filter { fmtDate(it.time) == lastDay }.sortedBy { it.time }
+    val timed = isTimed(name)
+    // Frühere Trainings dieser Übung (vor diesem Training), nach Tag gruppiert, neuester zuerst
+    val previousDays = store.setsFor(name).filter { it.time < start }.groupBy { fmtDate(it.time) }
 
     // Übungsbild als durchsichtiger Hintergrund der Seite (wechselt beim Wischen mit)
     Box(Modifier.fillMaxSize()) {
@@ -310,28 +307,13 @@ fun TrainingExercisePage(
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ExerciseIcon(name, group, Modifier.size(56.dp))
-                Spacer(Modifier.width(12.dp))
                 Text(exName(name), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
                 WikiButton(name)
             }
         }
 
-        item {
-            Text(
-                if (lastDay == null) tr("Erstes Mal – viel Erfolg!", "First time – good luck!")
-                else tr("Letztes Mal", "Last time") + " ($lastDay): " +
-                    lastSets.joinToString(", ") { fmtSet(it, cardio) },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        // Vorschlag fürs heutige Gewicht (bezogen auf Trainings vor diesem)
-        item { ProgressionHint(store, name, before = start, onApply = { appliedWeight = it }) }
-
         // Nach jedem eingetragenen Satz startet die Pause
-        item { SetInput(store, name, onAdded = onAdded, weightOverride = appliedWeight) }
+        item { SetInput(store, name, onAdded = onAdded) }
 
         // Standard-Pausenlänge wählen (wird gespeichert)
         item {
@@ -375,6 +357,21 @@ fun TrainingExercisePage(
         }
         today.forEachIndexed { i, s ->
             item(key = s.id) { SetRow(store, s, i + 1, cardio) }
+        }
+
+        // Verlauf: frühere Trainings dieser Übung
+        if (previousDays.isEmpty()) item {
+            Text(
+                tr("Erstes Mal – viel Erfolg!", "First time – good luck!"),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        } else item {
+            Text(tr("Verlauf", "History"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+        }
+        previousDays.forEach { (day, daySets) ->
+            item(key = "hist_$day") { HistoryDayCard(store, day, daySets, cardio, timed) }
         }
     }
     }

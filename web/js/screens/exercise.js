@@ -203,14 +203,7 @@ export function exerciseDetailScreen(name) {
       setInput(name),
       days.size ? h('div', null, h('h2', { class: 'section' }, tr('Verlauf', 'History')),
         muted(tr('Satz antippen zum Bearbeiten', 'Tap a set to edit'), 'small')) : null,
-      [...days.entries()].map(([day, list]) => h('div', { class: 'card pad-s glass' },
-        h('b', null, `${day} · ` + (cardio
-          ? plural(list.length, tr('Einheit', 'session'), tr('Einheiten', 'sessions')) + ` · ${sumReps(list)} ` + tr('Min gesamt', 'min total')
-          : timed
-            ? plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ' · ' + tr('gesamt ', 'total ') + fmtSeconds(sumReps(list))
-            : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtW(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
-        // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
-        list.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse())),
+      [...days.entries()].map(([day, list]) => historyDayCard(day, list, cardio, timed)),
     ];
   } else if (tab === 1) content = exerciseProgress(history, cardio, timed);
   else {
@@ -289,4 +282,20 @@ function exerciseProgress(history, cardio, timed) {
 function glassify(el) {
   (el.classList?.contains('card') ? el : el.querySelector?.('.card'))?.classList.add('glass');
   return el;
+}
+
+/**
+ * Karte eines Trainingstags im Verlauf (Übungsdetails und Trainingsmodus) – wie HistoryDayCard in ExerciseDetail.kt:
+ * Kopfzeile mit Sätzen/Volumen, darunter die Sätze (neuester oben, antippen = bearbeiten).
+ */
+export function historyDayCard(day, list, cardio, timed) {
+  const sumReps = l => l.reduce((a, s) => a + s.reps, 0);
+  return h('div', { class: 'card pad-s glass' },
+    h('b', null, `${day} · ` + (cardio
+      ? plural(list.length, tr('Einheit', 'session'), tr('Einheiten', 'sessions')) + ` · ${sumReps(list)} ` + tr('Min gesamt', 'min total')
+      : timed
+        ? plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ' · ' + tr('gesamt ', 'total ') + fmtSeconds(sumReps(list))
+        : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtW(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
+    // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
+    list.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse());
 }
