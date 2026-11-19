@@ -461,3 +461,20 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .stat-ring.final { animation: ring-pulse .5s ease-in-out infinite alternate; }
 @keyframes ring-pulse { to { transform: scale(1.05); } }
 .ring-adjust { display: flex; gap: 4px; height: 36px; }
+
+/* ---------- Trainingsseite: großes Bild + drei Kreise ---------- */
+.training-hero { position: relative; display: flex; justify-content: center; }
+.training-hero img { width: 62%; aspect-ratio: 1; object-fit: cover; border-radius: 24px; display: block; }
+.training-hero .hero-info { position: absolute; top: 0; right: 0; }
+.training-name { font-size: 24px; font-weight: 600; }
+.circle-row { display: flex; justify-content: space-evenly; align-items: flex-start; }
+.circle-stat { width: 110px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.circle-stat .circle { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.circle-stat .circle.tap { cursor: pointer; }
+.circle-stat svg { position: absolute; inset: 0; }
+.circle-stat .c-track { opacity: .18; }
+.circle-stat .c-arc { transition: stroke-dasharray .4s ease; }
+.circle-stat b { position: relative; font-size: 19px; font-weight: 600; }
+.circle-stat b.big { font-size: 23px; }
+.circle-stat small { font-size: 13px; color: var(--muted); }
+.circle-stat.final .circle { animation: ring-pulse .5s ease-in-out infinite alternate; }

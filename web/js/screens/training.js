@@ -5,7 +5,7 @@ import { heatCard, muscleScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
-  goalCompletion, completionColor,
+  goalCompletion, completionColor, dayKey, fmtSeconds,
 } from '../core.js';
 import { sessionStats } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
@@ -69,78 +69,74 @@ function adjustRest(delta) {
   else update({ restEnd: end, restTotal: Math.max(nav.restTotal + delta, end - Date.now()) });
 }
 
-// ---------- Zwei Ringe im Trainingskopf: Timer + Ziel-Sätze (wie TrainingRings in TrainingScreen.kt) ----------
+// ---------- Drei Kreise pro Übung: Wiederholungen · Pause · Sätze (wie CircleStat in TrainingScreen.kt) ----------
 
-let ringId = 0;
-/** Ring mit Farbverlauf als SVG; setRing(el, progress, value, label, colors) aktualisiert ihn ohne Neuaufbau. */
-function statRing(onClick) {
-  const size = 132, sw = 14, r = (size - sw) / 2 - 6, c = 2 * Math.PI * r, id = 'rg' + (ringId++);
-  const el = h('div', { class: ['stat-ring', onClick && 'tap'], style: `width:${size}px;height:${size}px`, onclick: onClick },
-    h('span', { html: `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop class="s1" offset="0"/><stop class="s2" offset="1"/></linearGradient></defs>
-      <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" class="ring-track" stroke-width="${sw}"/>
-      <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" class="ring-arc" stroke="url(#${id})" stroke-width="${sw}"
-        stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})" stroke-dasharray="0 ${c}"/></svg>` }),
-    h('div', { class: 'stat-ring-text' }, h('b'), h('small')));
-  el._c = c;
+/** Schlanker Kreis (SVG) mit Wert in der Mitte, Beschriftung darunter. set(progress, value, label, color) aktualisiert ihn. */
+function circleStat(big, onClick) {
+  const size = big ? 104 : 88, sw = 5, r = (size - sw) / 2 - 4, c = 2 * Math.PI * r;
+  const el = h('div', { class: 'circle-stat' },
+    h('div', { class: ['circle', onClick && 'tap'], style: `width:${size}px;height:${size}px`, onclick: onClick },
+      h('span', { html: `<svg width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" class="c-track" stroke-width="${sw}"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" class="c-arc" stroke-width="${sw}" stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>` }),
+      h('b', { class: big ? 'big' : null })),
+    h('small'));
+  el.set = (progress, value, label, color) => {
+    const p = Math.min(1, Math.max(0, progress));
+    const arc = el.querySelector('.c-arc');
+    arc.setAttribute('stroke', color);
+    arc.setAttribute('stroke-dasharray', `${c * p} ${c}`);
+    arc.style.opacity = p > 0 ? 1 : 0;
+    el.querySelector('.c-track').setAttribute('stroke', color);
+    el.querySelector('b').textContent = value;
+    el.querySelector('small').textContent = label;
+  };
   return el;
 }
-function setRing(el, progress, value, label, [from, to]) {
-  const p = Math.min(1, Math.max(0, progress));
-  const arc = el.querySelector('.ring-arc');
-  arc.setAttribute('stroke-dasharray', p > 0 ? `${el._c * p} ${el._c}` : `0 ${el._c}`);
-  arc.style.opacity = p > 0 ? 1 : 0;
-  el.querySelector('.s1').setAttribute('stop-color', from);
-  el.querySelector('.s2').setAttribute('stop-color', to);
-  el.querySelector('b').textContent = value;
-  el.querySelector('small').textContent = label;
+
+/** Wiederholungs-Ziel (wie repsGoal in TrainingScreen.kt): [Wert, Beschriftung] oder null. */
+function repsGoal(name, before) {
+  const prev = store.setsFor(name).filter(s => s.time < before);
+  if (!prev.length) return null;
+  const lastDay = dayKey(prev[0].time);
+  const last = prev.filter(s => dayKey(s.time) === lastDay);
+  if (isCardio(store.groupOf(name))) return [String(last.reduce((a, s) => a + s.reps, 0)), tr('Minuten zuletzt', 'Minutes last time')];
+  if (isTimed(name)) return [fmtSeconds(Math.max(...last.map(s => s.reps)) + 10), tr('Zeit-Ziel', 'Time goal')];
+  const top = Math.max(...last.map(s => s.weight));
+  const atTop = last.filter(s => s.weight === top);
+  const heavier = top > 0 && atTop.length >= 2 && Math.min(...atTop.map(s => s.reps)) >= 8;
+  return [String(heavier ? 8 : Math.max(...atTop.map(s => s.reps)) + 1), tr('Wiederholungen', 'Reps')];
 }
 
+const REST_OPTIONS = [0, 60, 90, 120, 180];
 let lastTickSecond = null;
-/**
- * Links: Timer (Pause = Countdown, der Ring leert sich; antippen = überspringen; sonst Trainingsdauer).
- * Rechts: Ziel-Sätze (Ring füllt sich, bei 100 % grün).
- */
-function trainingRings(start, goalDone, goalTotal, totalSets) {
-  const timer = statRing(() => { if (nav.restEnd != null) update({ restEnd: null }); });
-  const adjust = h('div', { class: 'ring-adjust' },
-    h('button', { class: 'btn text small', onclick: () => adjustRest(-15000) }, '−15 s'),
-    h('button', { class: 'btn text small', onclick: () => adjustRest(15000) }, '+15 s'));
+/** Mittlerer Kreis: eingestellte Pause (antippen = ändern) bzw. Countdown nach einem Satz (antippen = überspringen). */
+function restCircle() {
+  const el = circleStat(true, () => {
+    if (nav.restEnd != null && nav.restEnd > Date.now()) update({ restEnd: null });
+    else store.setRest(REST_OPTIONS[(REST_OPTIONS.indexOf(store.restSeconds) + 1) % REST_OPTIONS.length]);
+  });
   const refresh = () => {
     const now = Date.now();
-    const resting = nav.restEnd != null && nav.restEnd > now;
-    if (nav.restEnd != null && !resting) { // Pause vorbei
+    if (nav.restEnd != null && nav.restEnd <= now) { // Pause vorbei
       alarm();
       lastTickSecond = null;
       update({ restEnd: null });
       return;
     }
-    if (resting) {
+    if (nav.restEnd != null) {
       const remaining = nav.restEnd - now;
       const secLeft = Math.ceil(remaining / 1000);
       if (secLeft <= 3 && secLeft !== lastTickSecond) { lastTickSecond = secLeft; tick(); }
-      timer.classList.toggle('final', remaining <= 3000);
-      setRing(timer, remaining / nav.restTotal, fmtDuration(remaining + 999), tr('Pause', 'Rest'), ['#FFB347', '#E8703A']);
+      el.classList.toggle('final', remaining <= 3000);
+      el.set(remaining / nav.restTotal, fmtDuration(remaining + 999), tr('Pause · tippen = weiter', 'Rest · tap to skip'), '#E8703A');
     } else {
-      timer.classList.remove('final');
-      const elapsed = now - start;
-      setRing(timer, (elapsed % 60000) / 60000, fmtDuration(elapsed), tr('Training', 'Workout'), ['#8B85FF', '#4F46E5']);
+      el.classList.remove('final');
+      const sec = store.restSeconds;
+      el.set(sec > 0 ? 1 : 0, sec > 0 ? fmtDuration(sec * 1000) : tr('Aus', 'Off'), tr('Pause', 'Rest'), 'var(--primary)');
     }
-    adjust.style.visibility = resting ? 'visible' : 'hidden';
   };
   refresh();
   onTick(refresh);
-
-  const goal = statRing(null);
-  const p = goalCompletion(goalDone, goalTotal, totalSets);
-  const done = p >= 0.999;
-  setRing(goal, p, goalTotal === 0 ? String(totalSets) : `${goalDone}/${goalTotal}`,
-    goalTotal === 0 ? (totalSets === 1 ? tr('Satz', 'set') : tr('Sätze', 'sets')) : done ? tr('Ziel erreicht ✓', 'Goal reached ✓') : tr('Ziel-Sätze', 'Target sets'),
-    done ? ['#7BD389', '#2E9E4F'] : ['#8B85FF', '#E24B8A']);
-
-  return h('div', { class: 'training-rings' },
-    h('div', { class: 'ring-col' }, timer, adjust),
-    h('div', { class: 'ring-col' }, goal));
+  return el;
 }
 
 // ---------- Trainingsmodus ----------
@@ -172,22 +168,20 @@ export function trainingScreen(w, onFinish) {
   const index = Math.min(Math.max(0, nav.trainingIndex), Math.max(0, n - 1));
   const setIndex = i => { if (i >= 0 && i < n) update({ trainingIndex: i }); };
   const countOf = e => store.setsBetween(e, start, Infinity).length;
-  const totalSets = w.exercises.reduce((a, e) => a + countOf(e), 0);
-  const goalTotal = w.exercises.reduce((a, e) => a + store.targetFor(w, e), 0);
-  const goalDone = w.exercises.reduce((a, e) => a + Math.min(countOf(e), store.targetFor(w, e)), 0);
   const endDialog = () => confirmEndTraining(w, onFinish);
 
   const name = w.exercises[index];
+  const clock = h('span');
+  const updateClock = () => { clock.textContent = '⏱ ' + fmtDuration(Date.now() - start); };
+  updateClock();
+  onTick(updateClock);
   const page = h('div', { class: 'stack pad training-page' }, exercisePage(w, start, name));
   onSwipe(page, () => setIndex(index + 1), () => setIndex(index - 1));
 
   return screen({
-    title: w.name, key: 'training-' + index, backdrop: exerciseImageUrl(name),
+    title: `${index + 1}/${n} · ${w.name}`, subtitle: clock, key: 'training-' + index,
     actions: [h('button', { class: 'btn text', onclick: endDialog }, tr('Beenden', 'Finish'))],
     top: h('div', { class: 'training-head' },
-      trainingRings(start, goalDone, goalTotal, totalSets),
-      h('b', null, tr(`Übung ${index + 1} von ${n}`, `Exercise ${index + 1} of ${n}`)),
-      h('div', { class: 'progress' }, h('span', { style: `width:${((index + 1) / n) * 100}%` })),
       h('div', { class: 'hscroll' }, w.exercises.map((e, i) => {
         const count = countOf(e), goal = store.targetFor(w, e);
         const done = goal === 0 ? count > 0 : count >= goal;
@@ -219,19 +213,25 @@ function exercisePage(w, start, name) {
     previousDays.get(d).push(s);
   }
   const reached = target > 0 && today.length >= target;
+  const url = exerciseImageUrl(name);
+  const goal = repsGoal(name, start);
+  const reps = circleStat(false, null);
+  reps.set(1, goal?.[0] ?? '–', goal?.[1] ?? tr('Wiederholungen', 'Reps'), 'var(--primary)');
+  const sets = circleStat(false, null);
+  sets.set(target > 0 ? today.length / target : today.length ? 1 : 0, target > 0 ? `${today.length}/${target}` : String(today.length),
+    reached ? tr('Ziel erreicht ✓', 'Goal reached ✓') : tr('Sätze erledigt', 'Sets done'), reached ? completionColor(1) : '#E88A93');
 
   return [
-    h('div', { class: 'training-title' }, h('h2', { class: 'grow' }, exName(name)), wikiButton(name)),
+    // Großes Übungsbild (Foto oder Piktogramm), rechts oben ⓘ fürs Wiki
+    h('div', { class: 'training-hero' },
+      url ? h('img', { src: url, alt: exName(name) }) : h('span', { html: exerciseIconHtml(name, group, 200) }),
+      h('div', { class: 'hero-info' }, wikiButton(name))),
+    h('h2', { class: 'training-name' }, exName(name)),
     recordLine(store.setsFor(name), cardio, timed),
+    h('div', { class: 'circle-row' }, reps, restCircle(), sets),
     setInput(name, startRest),
-    h('div', { class: 'rest-chips' }, h('b', null, tr('Pause:', 'Rest:')),
-      h('div', { class: 'hscroll' }, [0, 60, 90, 120, 180].map(sec =>
-        chip(sec === 0 ? tr('Aus', 'Off') : sec % 60 === 0 ? `${sec / 60} min` : `${sec} s`, store.restSeconds === sec, () => store.setRest(sec))))),
-    h('b', { style: reached ? `color:${completionColor(1)}` : null },
-      target === 0 ? tr('Heute: ', 'Today: ') + today.length
-        : reached ? tr(`Heute: ${today.length} von ${target}  ✓ Ziel erreicht`, `Today: ${today.length} of ${target}  ✓ target reached`)
-          : tr(`Heute: ${today.length} von ${target}`, `Today: ${today.length} of ${target}`)),
-    today.map((s, i) => setRow(s, i + 1, cardio)),
+    today.length ? [h('h2', { class: 'section' }, tr('Heute', 'Today')),
+      today.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse()] : null,
     // Verlauf: frühere Trainings dieser Übung
     previousDays.size
       ? [h('h2', { class: 'section' }, tr('Verlauf', 'History')),
