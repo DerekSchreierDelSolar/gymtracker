@@ -14,6 +14,7 @@ export const nav = {
   catalog: false,
   wiki: false,           // Übungs-Wiki geöffnet
   wikiQuery: '',
+  statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
   trainingStart: null,   // laufendes Training (Startzeit)

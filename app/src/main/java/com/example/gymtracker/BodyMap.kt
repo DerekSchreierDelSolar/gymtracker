@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
@@ -165,6 +166,18 @@ val SECONDARY_COLOR = Color(0xFFEF9F27)
  */
 @Composable
 fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier = Modifier, showLegend: Boolean = true) {
+    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        BodyFigure({ id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null })
+        if (showLegend) MuscleLegend(primary, secondary, Modifier.padding(top = 8.dp))
+    }
+}
+
+/**
+ * Die Meerschweinchen-Figur (vorne + hinten) mit „Vorne/Hinten“-Beschriftung.
+ * colorOf(Muskel-ID) = Farbe des Muskels oder null für neutral grau.
+ */
+@Composable
+fun BodyFigure(colorOf: (String) -> Color?, modifier: Modifier = Modifier) {
     // Hell/dunkel am tatsächlichen Hintergrund ablesen (App-Einstellung kann vom System abweichen)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val fur = if (dark) Color(0xFF5C4D41) else Color(0xFFF3E6D6)
@@ -193,11 +206,7 @@ fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier
                         BodyFill.PINK -> pink
                         BodyFill.DARK -> Color(0xFF2B211B)
                         BodyFill.LIGHT -> Color.White
-                        BodyFill.MUSCLE -> when (b.shape.id) {
-                            in primary -> PRIMARY_COLOR
-                            in secondary -> SECONDARY_COLOR
-                            else -> neutral
-                        }
+                        BodyFill.MUSCLE -> b.shape.id?.let(colorOf) ?: neutral
                     }
                     drawPath(b.path, color)
                     // Fell: gleichfarbiger Rand schließt die Naht zwischen den gespiegelten Hälften
@@ -211,7 +220,6 @@ fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier
             Text(tr("Vorne", "Front"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(tr("Hinten", "Back"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        if (showLegend) MuscleLegend(primary, secondary, Modifier.padding(top = 8.dp))
     }
 }
 
@@ -303,4 +311,106 @@ fun MuscleEditDialog(store: GymStore, name: String, onDismiss: () -> Unit) {
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(tr("Abbrechen", "Cancel")) } }
     )
+}
+
+// ---------- Heatmap: wie stark wurde jeder Muskel in einem Zeitraum trainiert? ----------
+
+/** Farbstufen der Heatmap: (untere Grenze in %, Farbe, Beschriftung). */
+val HEAT_LEVELS = listOf(
+    Triple(0.01f, Color(0xFFF2C94C), "1–19 %"),
+    Triple(0.20f, SECONDARY_COLOR, "20–49 %"),
+    Triple(0.50f, Color(0xFFE8703A), "50–79 %"),
+    Triple(0.80f, PRIMARY_COLOR, "80–100 %")
+)
+
+fun heatColor(p: Float): Color? = HEAT_LEVELS.lastOrNull { p >= it.first }?.second
+
+/**
+ * Belastung je Muskel, relativ zum am stärksten trainierten (= 1.0).
+ * Jeder Satz zählt 1 für die Hauptmuskeln und 0,5 für die Hilfsmuskeln.
+ * Übungen ohne bekannte Muskeln werden übersprungen.
+ */
+fun muscleLoad(sets: List<GymSet>): Map<String, Float> {
+    val score = HashMap<String, Float>()
+    val cache = HashMap<String, MuscleSet?>()
+    for (s in sets) {
+        val m = cache.getOrPut(s.exercise) { musclesOf(s.exercise) } ?: continue
+        m.primary.forEach { score[it] = (score[it] ?: 0f) + 1f }
+        m.secondary.forEach { score[it] = (score[it] ?: 0f) + 0.5f }
+    }
+    val max = score.values.maxOrNull() ?: return emptyMap()
+    return score.mapValues { it.value / max }
+}
+
+/** Zeiträume der Heatmap/Muskelgruppen-Statistik auf der Startseite. */
+enum class StatPeriod(private val de: String, private val en: String) {
+    LAST("Letztes Training", "Last workout"),
+    WEEK("7 Tage", "7 days"),
+    MONTH("30 Tage", "30 days"),
+    ALL("Alle", "All");
+
+    val label: String get() = tr(de, en)
+
+    /** Sätze in diesem Zeitraum. „Letztes Training“ = alle Sätze des letzten Trainingstags. */
+    fun filter(sets: List<GymSet>): List<GymSet> {
+        val now = System.currentTimeMillis()
+        val day = 24L * 3600 * 1000
+        return when (this) {
+            LAST -> sets.maxByOrNull { it.time }?.let { last -> sets.filter { dayKey(it.time) == dayKey(last.time) } }.orEmpty()
+            WEEK -> sets.filter { it.time >= now - 7 * day }
+            MONTH -> sets.filter { it.time >= now - 30 * day }
+            ALL -> sets
+        }
+    }
+}
+
+/** Karte „Trainierte Muskeln“: Heatmap + Farblegende + Muskeln mit Prozent. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun MuscleHeatCard(store: GymStore, period: StatPeriod, onPeriod: (StatPeriod) -> Unit) {
+    val load = muscleLoad(period.filter(store.sets))
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(tr("Trainierte Muskeln", "Trained muscles"), style = MaterialTheme.typography.titleMedium)
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                StatPeriod.entries.forEach { p ->
+                    FilterChip(selected = p == period, onClick = { onPeriod(p) }, label = { Text(p.label) })
+                }
+            }
+            BodyFigure({ id -> load[id]?.let(::heatColor) })
+            // Farblegende
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                HEAT_LEVELS.forEach { (_, c, label) ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        LegendDot(c)
+                        Text(label, style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+            if (load.isEmpty()) {
+                Text(
+                    tr("Keine Trainings in diesem Zeitraum.", "No workouts in this period."),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                // Muskeln mit Prozent, stärkste zuerst
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    load.entries.sortedByDescending { it.value }.forEach { (id, p) ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            heatColor(p)?.let { LegendDot(it) }
+                            Text("${muscleLabel(id)} ${Math.round(p * 100)} %", style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+                // Nie trainierte Muskeln als Hinweis
+                val missing = MUSCLES.keys.filter { it !in load }
+                if (missing.isNotEmpty()) Text(
+                    tr("Nicht trainiert: ", "Not trained: ") + missing.joinToString(", ") { muscleLabel(it) },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
 }

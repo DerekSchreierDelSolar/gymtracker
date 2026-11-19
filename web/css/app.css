@@ -397,3 +397,10 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .muscle-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .muscle-card { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .chip-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 2px; vertical-align: middle; }
+.heat-card { display: flex; flex-direction: column; gap: 10px; }
+.heat-card h3 { font-size: 17px; font-weight: 600; }
+.hscroll-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.heat-legend { display: flex; justify-content: space-between; font-size: 12px; }
+.heat-list { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.heat-legend span, .heat-list span { display: inline-flex; align-items: center; gap: 6px; }
+.heat-legend i, .heat-list i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }

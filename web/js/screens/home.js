@@ -14,6 +14,7 @@ import {
 import { nav, go, update, rerender, openDialog, closeDialog, onSwipe } from '../nav.js';
 import { screen, fab } from '../layout.js';
 import { exerciseTile } from './exercise.js';
+import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -147,9 +148,9 @@ function dashboardTab(onStartWorkout) {
   const next = (lastSession && store.workout(lastSession.workoutId)) || store.workouts[0];
 
   const volumes = weeklyVolumes(store, 8);
-  const since = Date.now() - 30 * 24 * 3600 * 1000;
+  // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
   const perGroup = new Map();
-  for (const s of store.sets) if (s.time >= since) {
+  for (const s of periodFilter(nav.statPeriod, store.sets)) {
     const g = store.groupOf(s.exercise);
     perGroup.set(g, (perGroup.get(g) ?? 0) + 1);
   }
@@ -200,11 +201,13 @@ function dashboardTab(onStartWorkout) {
       statBox(tr('Volumen', 'Volume'), `${fmtW(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
       statBox('🔥 kcal', weekKcal > 0 ? `~${weekKcal}` : '–')),
 
+    store.sets.length ? muscleHeatCard(store.sets, nav.statPeriod, p => update({ statPeriod: p })) : null,
+
     volumes.some(v => v[1] > 0) ? chartCard(tr('Volumen pro Woche', 'Weekly volume'),
       tr('Letzte 8 Wochen · aktuelle Woche hervorgehoben', 'Last 8 weeks · current week highlighted'),
       historyBars(volumes.map(v => v[1]), volumes.map(v => fmtShortDate(v[0])), v => `${fmtW(v)} kg`)) : null,
 
-    groupItems.length ? chartCard(tr('Sätze pro Muskelgruppe', 'Sets per muscle group'), tr('Letzte 30 Tage', 'Last 30 days'),
+    groupItems.length ? chartCard(tr('Sätze pro Muskelgruppe', 'Sets per muscle group'), periodLabel(nav.statPeriod),
       horizontalBars(groupItems, v => String(v))) : null,
 
     records.length ? [h('h2', { class: 'section' }, tr('Neueste Rekorde', 'Latest records')),

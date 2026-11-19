@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -77,6 +78,8 @@ fun DashboardTab(
     val streak = weekStreak(store)
     val goal = store.weeklyGoal
     var editGoal by remember { mutableStateOf(false) }
+    // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
+    var period by rememberSaveable { mutableStateOf(StatPeriod.WEEK) }
 
     // „Weiter mit“: Workout des letzten Trainings, sonst das erste Workout
     val lastSession = store.sessions.maxByOrNull { it.start }
@@ -178,6 +181,9 @@ fun DashboardTab(
             }
         }
 
+        // Muskel-Heatmap (Meerschweinchen)
+        if (store.sets.isNotEmpty()) item { MuscleHeatCard(store, period, onPeriod = { period = it }) }
+
         // Diagramm: Volumen pro Woche (8 Wochen)
         val volumes = weeklyVolumes(store, 8)
         if (volumes.any { it.second > 0 }) {
@@ -188,15 +194,14 @@ fun DashboardTab(
             }
         }
 
-        // Diagramm: Sätze pro Muskelgruppe (30 Tage)
-        val since = System.currentTimeMillis() - 30L * 24 * 3600 * 1000
-        val perGroup = store.sets.filter { it.time >= since }
+        // Diagramm: Sätze pro Muskelgruppe (gleicher Zeitraum wie die Heatmap)
+        val perGroup = period.filter(store.sets)
             .groupBy { store.groupOf(it.exercise) }
             .map { (g, l) -> g.label to l.size.toDouble() }
             .sortedByDescending { it.second }
         if (perGroup.isNotEmpty()) {
             item {
-                ChartCard(tr("Sätze pro Muskelgruppe", "Sets per muscle group"), tr("Letzte 30 Tage", "Last 30 days")) {
+                ChartCard(tr("Sätze pro Muskelgruppe", "Sets per muscle group"), period.label) {
                     HorizontalBars(perGroup) { it.toInt().toString() }
                 }
             }

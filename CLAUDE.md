@@ -47,7 +47,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `Stats.kt` | `ExerciseResult`, `SessionStats`, `sessionStats()`, `estimateKcal()`, `allSessions()` |
 | `Filter.kt` | `ExerciseFilter` (Kategorie/Gerät/Suche), `FilterUiState`, `FilterActions`, `FilterBar` |
 | `HomeScreen.kt` | Startseite: TopBar, ⋮-Menü (Export/Import/Einstellungen), NavigationBar, **HorizontalPager mit 5 Tabs**, `SettingsDialog`, `ExerciseGrid`, `TileGrid`, `ExerciseTile` |
-| `DashboardTab.kt` | Tab 0 „Start“: Wochenziel, Serie, Schnellstart, Diagramme, Rekorde |
+| `DashboardTab.kt` | Tab 0 „Start“: Wochenziel, Serie, Schnellstart, Muskel-Heatmap, Diagramme (Zeitraum-Umschalter), Rekorde |
 | `WorkoutScreens.kt` | Tab 2 Liste, `NewWorkoutDialog` (+Vorlagen), `WorkoutScreen` (Drag & Drop), `WorkoutPickerScreen` (Ziel-Sätze) |
 | `TrainingScreen.kt` | Trainingsmodus (Pager pro Übung), Pausen-Timer-Ring, Vibration |
 | `SummaryScreen.kt` | Übersicht nach dem Training, `ComparisonLine`, `StatBox` |
@@ -57,7 +57,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `CatalogScreen.kt` | Katalog + `CustomExerciseDialog` |
 | `Progression.kt` | 💡 Gewichts-Vorschlag (doppelte Progression) |
 | `Wiki.kt` | Übungs-Wiki: lädt `assets/wiki/*.json` (`Wiki.load`), `wikiFor(name)`, `WikiButton` (ⓘ), `WikiSheet` (Bottom Sheet), `WikiScreen` (Übersicht + Suche) |
-| `BodyMap.kt` | Körperdiagramm (Meerschweinchen, vorne + hinten): `MUSCLES` (Muskel-IDs + Namen), `BODY_SHAPES` (SVG-Pfade, linke Hälfte + Spiegelung), `MuscleMap(primary, secondary)`. Muskeln: `musclesOf(name)` = Wiki-JSON (`primary`/`secondary`, alle Grundübungen) bzw. bei eigenen Übungen `CustomMeta.muscles` (gespeichert als `customMuscles`); `MusclePicker`/`MuscleEditDialog` |
+| `BodyMap.kt` | Körperdiagramm (Meerschweinchen, vorne + hinten): `MUSCLES` (Muskel-IDs + Namen), `BODY_SHAPES` (SVG-Pfade, linke Hälfte + Spiegelung), `MuscleMap(primary, secondary)`. Muskeln: `musclesOf(name)` = Wiki-JSON (`primary`/`secondary`, alle Grundübungen) bzw. bei eigenen Übungen `CustomMeta.muscles` (gespeichert als `customMuscles`); `MusclePicker`/`MuscleEditDialog`. Heatmap: `muscleLoad(sets)` (Hauptmuskel 1, Hilfsmuskel 0,5 pro Satz, relativ zum Maximum), `HEAT_LEVELS`, `StatPeriod`, `MuscleHeatCard` (Startseite) |
 | `Icons.kt` | `AppIcon`/`Ico` (Linien-Icons für Buttons/Navigation) |
 | `Pictograms.kt` | Übungs-Piktogramme: `Motion` (~47 Bewegungen), `MOTION_OF` (Katalog-Name → Bewegung), `ExerciseIcon(name, group)`, `MuscleIcon(group)`, `drawMotion()` |
 | `Components.kt` | `GroupHeader`, `ChartCard`, `HorizontalBars`, `HistoryBars`, `LineChart`, `ProgressChart` |

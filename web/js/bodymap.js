@@ -2,7 +2,7 @@
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
 import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
-import { tr, isEnglish, CustomMeta } from './core.js';
+import { tr, isEnglish, CustomMeta, dayKey } from './core.js';
 import { h, chip, dialog } from './ui.js';
 import { wikiFor } from './wiki.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
@@ -29,11 +29,11 @@ function placements(s) {
   return out;
 }
 
-/** SVG-Text des Diagramms. primary = rot, secondary = orange, Rest grau. */
-function svg(primary, secondary) {
+/** SVG-Text der Figur. colorOf(Muskel-ID) = Farbe oder null (neutral grau). */
+function svg(colorOf) {
   const c = COLORS[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'];
   const color = s => s.fill === 'MUSCLE'
-    ? (primary.includes(s.id) ? PRIMARY_COLOR : secondary.includes(s.id) ? SECONDARY_COLOR : c.neutral)
+    ? (colorOf(s.id) ?? c.neutral)
     : s.fill === 'DARK' ? '#2B211B' : s.fill === 'LIGHT' ? '#FFFFFF' : c[s.fill];
   const parts = [];
   // 1. Außenkontur: alle Körperteile dick umranden; die Füllungen danach überdecken die Linien innen
@@ -51,11 +51,16 @@ function svg(primary, secondary) {
   return `<svg viewBox="0 0 ${w} ${BODY.height}" role="img" aria-label="${tr('Körperdiagramm', 'Body diagram')}">${parts.join('')}</svg>`;
 }
 
+/** Figur (vorne + hinten) mit „Vorne/Hinten“-Beschriftung. */
+export const bodyFigure = colorOf => [
+  h('div', { class: 'muscle-figure', html: svg(colorOf) }),
+  h('div', { class: 'muscle-views muted' }, h('span', null, tr('Vorne', 'Front')), h('span', null, tr('Hinten', 'Back'))),
+];
+
 /** Körperdiagramm mit Beschriftung „Vorne/Hinten“ und Legende „Haupt: … · Hilfs: …“. */
 export function muscleMap(primary, secondary = [], { legend = true } = {}) {
   return h('div', { class: 'muscle-map' },
-    h('div', { class: 'muscle-figure', html: svg(primary, secondary) }),
-    h('div', { class: 'muscle-views muted' }, h('span', null, tr('Vorne', 'Front')), h('span', null, tr('Hinten', 'Back'))),
+    bodyFigure(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null)),
     legend ? h('div', { class: 'muscle-legend' },
       primary.length ? h('span', null, h('i', { style: `background:${PRIMARY_COLOR}` }), tr('Haupt: ', 'Primary: ') + primary.map(muscleLabel).join(', ')) : null,
       secondary.length ? h('span', null, h('i', { style: `background:${SECONDARY_COLOR}` }), tr('Hilfs: ', 'Secondary: ') + secondary.map(muscleLabel).join(', ')) : null) : null);
@@ -97,4 +102,63 @@ export function muscleEditDialog(name) {
     { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
     { label: tr('Speichern', 'Save'), onClick: () => { closeDialog(); store.setCustomMuscles(name, st); } },
   ], closeDialog));
+}
+
+// ---------- Heatmap: wie stark wurde jeder Muskel in einem Zeitraum trainiert? ----------
+
+/** Farbstufen: [untere Grenze, Farbe, Beschriftung] – wie HEAT_LEVELS in BodyMap.kt. */
+export const HEAT_LEVELS = [
+  [0.01, '#F2C94C', '1–19 %'],
+  [0.20, SECONDARY_COLOR, '20–49 %'],
+  [0.50, '#E8703A', '50–79 %'],
+  [0.80, PRIMARY_COLOR, '80–100 %'],
+];
+export const heatColor = p => HEAT_LEVELS.filter(l => p >= l[0]).pop()?.[1] ?? null;
+
+/** Belastung je Muskel relativ zum stärksten (= 1). Satz: Hauptmuskeln 1, Hilfsmuskeln 0,5. */
+export function muscleLoad(sets) {
+  const score = {}, cache = new Map();
+  for (const s of sets) {
+    if (!cache.has(s.exercise)) cache.set(s.exercise, musclesOf(s.exercise));
+    const m = cache.get(s.exercise);
+    if (!m) continue;
+    for (const id of m.primary) score[id] = (score[id] ?? 0) + 1;
+    for (const id of m.secondary) score[id] = (score[id] ?? 0) + 0.5;
+  }
+  const max = Math.max(0, ...Object.values(score));
+  return max ? Object.fromEntries(Object.entries(score).map(([k, v]) => [k, v / max])) : {};
+}
+
+/** Zeiträume (wie StatPeriod in BodyMap.kt). */
+export const STAT_PERIODS = ['LAST', 'WEEK', 'MONTH', 'ALL'];
+export const periodLabel = p => ({
+  LAST: tr('Letztes Training', 'Last workout'), WEEK: tr('7 Tage', '7 days'), MONTH: tr('30 Tage', '30 days'), ALL: tr('Alle', 'All'),
+})[p];
+export function periodFilter(p, sets) {
+  const day = 24 * 3600 * 1000, now = Date.now();
+  if (p === 'LAST') {
+    if (!sets.length) return [];
+    const last = dayKey(Math.max(...sets.map(s => s.time)));
+    return sets.filter(s => dayKey(s.time) === last);
+  }
+  if (p === 'WEEK') return sets.filter(s => s.time >= now - 7 * day);
+  if (p === 'MONTH') return sets.filter(s => s.time >= now - 30 * day);
+  return sets;
+}
+
+/** Karte „Trainierte Muskeln“ für die Startseite. */
+export function muscleHeatCard(sets, period, onPeriod) {
+  const load = muscleLoad(periodFilter(period, sets));
+  const entries = Object.entries(load).sort((a, b) => b[1] - a[1]);
+  const missing = Object.keys(MUSCLES).filter(id => !(id in load));
+  const dot = c => h('i', { style: `background:${c}` });
+  return h('div', { class: 'card pad-m heat-card' },
+    h('h3', null, tr('Trainierte Muskeln', 'Trained muscles')),
+    h('div', { class: 'chips hscroll-chips' }, STAT_PERIODS.map(p => chip(periodLabel(p), p === period, () => onPeriod(p)))),
+    h('div', { class: 'muscle-map' }, bodyFigure(id => (load[id] ? heatColor(load[id]) : null))),
+    h('div', { class: 'heat-legend' }, HEAT_LEVELS.map(([, c, label]) => h('span', null, dot(c), label))),
+    entries.length
+      ? [h('div', { class: 'heat-list' }, entries.map(([id, p]) => h('span', null, dot(heatColor(p)), `${muscleLabel(id)} ${Math.round(p * 100)} %`))),
+        missing.length ? h('p', { class: 'muted small' }, tr('Nicht trainiert: ', 'Not trained: ') + missing.map(muscleLabel).join(', ')) : null]
+      : h('p', { class: 'muted' }, tr('Keine Trainings in diesem Zeitraum.', 'No workouts in this period.')));
 }
