@@ -213,7 +213,6 @@ function exercisePage(w, start, name) {
     previousDays.get(d).push(s);
   }
   const reached = target > 0 && today.length >= target;
-  const url = exerciseImageUrl(name);
   const goal = repsGoal(name, start);
   const reps = circleStat(false, null);
   reps.set(1, goal?.[0] ?? '–', goal?.[1] ?? tr('Wiederholungen', 'Reps'), 'var(--primary)');
@@ -222,11 +221,8 @@ function exercisePage(w, start, name) {
     reached ? tr('Ziel erreicht ✓', 'Goal reached ✓') : tr('Sätze erledigt', 'Sets done'), reached ? completionColor(1) : '#E88A93');
 
   return [
-    // Großes Übungsbild (Foto oder Piktogramm), rechts oben ⓘ fürs Wiki
-    h('div', { class: 'training-hero' },
-      url ? h('img', { src: url, alt: exName(name) }) : h('span', { html: exerciseIconHtml(name, group, 200) }),
-      h('div', { class: 'hero-info' }, wikiButton(name))),
-    h('h2', { class: 'training-name' }, exName(name)),
+    // Übungsname, rechts ⓘ fürs Wiki
+    h('div', { class: 'training-title' }, h('h2', { class: 'grow training-name' }, exName(name)), wikiButton(name)),
     recordLine(store.setsFor(name), cardio, timed),
     h('div', { class: 'circle-row' }, reps, restCircle(), sets),
     setInput(name, startRest),

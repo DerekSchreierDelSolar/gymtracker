@@ -293,20 +293,12 @@ fun TrainingExercisePage(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Großes Übungsbild (Foto oder Piktogramm), rechts daneben ⓘ fürs Wiki
+        // Übungsname, rechts ⓘ fürs Wiki
         item {
-            Box(Modifier.fillMaxWidth()) {
-                Box(Modifier.align(Alignment.Center).fillMaxWidth(0.62f).aspectRatio(1f)) {
-                    if (!ExerciseImage(name, Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)))) {
-                        MotionIcon(motionOf(name, group), group.color, Modifier.fillMaxSize().padding(12.dp))
-                    }
-                }
-                Box(Modifier.align(Alignment.TopEnd)) { WikiButton(name) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(exName(name), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                WikiButton(name)
             }
-        }
-
-        item {
-            Text(exName(name), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         }
 
         // Motivierende Zeile mit dem Rekord (wie in den Übungsdetails)
