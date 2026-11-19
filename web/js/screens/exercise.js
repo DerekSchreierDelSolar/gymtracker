@@ -1,7 +1,7 @@
 // Übungs-Bausteine und Übungsdetail – entspricht ExerciseDetail.kt, Progression.kt (UI) und ExerciseTile.
 
 import { wikiFor, wikiContent } from '../wiki.js';
-import { musclesOf, muscleEditDialog, muscleSideCard, muscleStats } from '../bodymap.js';
+import { musclesOf, muscleEditDialog, muscleSideCard } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
@@ -216,10 +216,9 @@ export function exerciseDetailScreen(name) {
   else {
     // Info: Muskeln (Vorder-/Rückseite) + Wiki
     const m = musclesOf(name);
-    const stats = muscleStats(store.sets);
     const custom = catalogGroup(name) == null;
     content = [
-      m ? [muscleSideCard('FRONT', m.primary, m.secondary, stats), muscleSideCard('BACK', m.primary, m.secondary, stats)]
+      m ? [muscleSideCard('FRONT', m.primary, m.secondary), muscleSideCard('BACK', m.primary, m.secondary, true)]
         : muted(tr('Noch keine Muskeln festgelegt.', 'No muscles set yet.')),
       custom ? h('button', { class: 'btn text', onclick: () => muscleEditDialog(name) },
         m ? tr('Muskeln bearbeiten', 'Edit muscles') : tr('Muskeln festlegen', 'Set muscles')) : null,

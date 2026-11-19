@@ -207,53 +207,21 @@ export function heatCard({ title, score, showSets, empty, header = null }) {
 export const musclesOnSide = view =>
   Object.keys(MUSCLES).filter(id => BODY_SHAPES.some(s => s.id === id && (s.view === view || s.view === 'BOTH')));
 
-/** Pro Muskel: wann zuletzt trainiert und Sätze in den letzten 7 Tagen (Hilfsmuskel = ½) – wie muscleStats. */
-export function muscleStats(sets) {
-  const now = Date.now();
-  const week = muscleScore(sets.filter(s => s.time >= now - 7 * 24 * 3600 * 1000));
-  const last = {}, cache = new Map();
-  for (const s of sets) {
-    if (!cache.has(s.exercise)) cache.set(s.exercise, musclesOf(s.exercise));
-    const m = cache.get(s.exercise);
-    if (!m) continue;
-    for (const id of [...m.primary, ...m.secondary]) if (s.time > (last[id] ?? 0)) last[id] = s.time;
-  }
-  return Object.fromEntries(Object.keys(MUSCLES).map(id => [id, { lastTime: last[id] ?? null, weekSets: week[id] ?? 0 }]));
-}
-
-/** „heute“, „gestern“, „vor 3 Tagen“, „noch nie“. */
-export function fmtAgo(t) {
-  if (t == null) return tr('noch nie', 'never');
-  const days = dayKey(Date.now()) - dayKey(t);
-  return days === 0 ? tr('heute', 'today') : days === 1 ? tr('gestern', 'yesterday') : tr(`vor ${days} Tagen`, `${days} days ago`);
-}
-
 /**
- * Karte: Titel + Pose oben, links die Figur einer Seite, rechts Haupt- und Hilfsmuskeln dieser Seite
- * mit „zuletzt …“ (unter 48 h: „erholt sich“) und Sätzen in 7 Tagen.
+ * Karte: Titel + Pose oben, das Meerschweinchen einer Seite mittig und groß.
+ * showList = unten die Muskeln der ganzen Übung (für die letzte Karte) – wie MuscleSideCard.
  */
-export function muscleSideCard(view, primary, secondary, stats) {
-  const ids = musclesOnSide(view);
-  const main = ids.filter(id => primary.includes(id));
-  const help = ids.filter(id => secondary.includes(id) && !primary.includes(id));
-  const row = id => {
-    const st = stats[id];
-    const recovering = st.lastTime != null && Date.now() - st.lastTime < 48 * 3600 * 1000;
-    return h('div', { class: 'side-muscle' },
-      h('div', null, muscleLabel(id)),
-      h('small', { class: recovering ? 'recovering' : 'muted' }, tr('zuletzt ', 'last ') + fmtAgo(st.lastTime) + (recovering ? tr(' · erholt sich', ' · recovering') : '')),
-      h('small', { class: 'muted' }, `${fmtSets(st.weekSets)} ${st.weekSets === 1 ? tr('Satz', 'set') : tr('Sätze', 'sets')}` + tr(' in 7 Tagen', ' in 7 days')));
-  };
+export function muscleSideCard(view, primary, secondary, showList = false) {
+  const help = secondary.filter(id => !primary.includes(id));
   const group = (title, list, color) => list.length ? h('div', { class: 'side-group' },
-    h('small', null, h('i', { style: `background:${color}` }), title), list.map(row)) : null;
+    h('small', null, h('i', { style: `background:${color}` }), title),
+    h('div', { class: 'side-names' }, list.map(muscleLabel).join(', '))) : null;
   return h('div', { class: 'card pad-m glass side-card' },
     h('div', { class: 'side-head' },
       h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back')),
       h('small', { class: 'muted' }, '💪 ' + poseLabel())),
-    h('div', { class: 'side-body' },
-      h('div', { class: 'side-figure', html: svg(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null), view) }),
-      h('div', { class: 'side-list' },
-        !main.length && !help.length ? h('p', { class: 'muted' }, tr('Auf dieser Seite arbeiten keine Muskeln mit.', 'No muscles involved on this side.')) : null,
-        group(tr('Hauptmuskeln', 'Primary'), main, PRIMARY_COLOR),
-        group(tr('Hilfsmuskeln', 'Secondary'), help, SECONDARY_COLOR))));
+    h('div', { class: 'side-figure', html: svg(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null), view) }),
+    showList ? h('div', { class: 'side-list' },
+      group(tr('Hauptmuskeln', 'Primary'), primary, PRIMARY_COLOR),
+      group(tr('Hilfsmuskeln', 'Secondary'), help, SECONDARY_COLOR)) : null);
 }

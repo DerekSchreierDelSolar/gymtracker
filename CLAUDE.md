@@ -53,7 +53,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `SummaryScreen.kt` | Übersicht nach dem Training, `ComparisonLine`, `StatBox` |
 | `CalendarTab.kt` | Tab 3: Monatskalender mit Abschluss-Ringen, `dayKey()`, `CompletionRing` |
 | `BodyTab.kt` | Tab 4: Körpergewicht, Wochen-kcal, `startOfWeek()` |
-| `ExerciseDetail.kt` | `SetInput` (inkl. Stoppuhr), `SetRow`/`EditSetDialog`, `ExerciseDetailScreen` mit Reitern Training (`RecordLine`, Verlauf neueste zuerst, Satz antippen = bearbeiten)/Fortschritt/Info (`MuscleSideCard` Vorder-/Rückseite mit `muscleStats` (zuletzt trainiert, Sätze in 7 Tagen) + Wiki), `glassCardColors()`, `ExerciseProgress` (Rekord, Zuwachs, Kennzahl + Tage/Wochen/Monate) |
+| `ExerciseDetail.kt` | `SetInput` (inkl. Stoppuhr), `SetRow`/`EditSetDialog`, `ExerciseDetailScreen` mit Reitern Training (`RecordLine`, Verlauf neueste zuerst, Satz antippen = bearbeiten)/Fortschritt/Info (`MuscleSideCard` Vorder-/Rückseite, Figur mittig groß, Muskelliste nur in der letzten Karte + Wiki), `glassCardColors()`, `ExerciseProgress` (Rekord, Zuwachs, Kennzahl + Tage/Wochen/Monate) |
 | `CatalogScreen.kt` | Katalog + `CustomExerciseDialog` |
 | `Progression.kt` | 💡 Gewichts-Vorschlag (doppelte Progression) |
 | `Wiki.kt` | Übungs-Wiki: lädt `assets/wiki/*.json` (`Wiki.load`), `wikiFor(name)`, `WikiButton` (ⓘ), `WikiSheet` (Bottom Sheet), `WikiScreen` (Übersicht + Suche) |

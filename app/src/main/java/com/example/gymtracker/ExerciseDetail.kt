@@ -278,7 +278,6 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
     val tabs = listOf(tr("Training", "Training"), tr("Fortschritt", "Progress"), tr("Info", "Info"))
     var tab by rememberSaveable(exercise) { mutableIntStateOf(0) }
     val pose = rememberRandomPose(exercise)
-    val stats = muscleStats(store.sets)
 
     // Nach Tag gruppiert, neuester Tag zuerst
     val days = history.groupBy { fmtDate(it.time) }
@@ -373,8 +372,8 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                     val custom = catalogGroup(exercise) == null
                     if (muscles != null) {
                         // Gleiche Pose auf beiden Karten; bei jedem Öffnen der Übung eine neue
-                        item { MuscleSideCard(BodyView.FRONT, muscles.primary, muscles.secondary, pose, stats, glassCardColors()) }
-                        item { MuscleSideCard(BodyView.BACK, muscles.primary, muscles.secondary, pose, stats, glassCardColors()) }
+                        item { MuscleSideCard(BodyView.FRONT, muscles.primary, muscles.secondary, pose, colors = glassCardColors()) }
+                        item { MuscleSideCard(BodyView.BACK, muscles.primary, muscles.secondary, pose, showList = true, colors = glassCardColors()) }
                     } else item {
                         Text(tr("Noch keine Muskeln festgelegt.", "No muscles set yet."), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

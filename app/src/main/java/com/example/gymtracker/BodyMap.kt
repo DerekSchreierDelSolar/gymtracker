@@ -504,36 +504,9 @@ fun MuscleHeatCard(
 fun musclesOnSide(view: BodyView): List<String> =
     MUSCLES.keys.filter { id -> BODY_SHAPES.any { it.id == id && (it.view == view || it.view == BodyView.BOTH) } }
 
-/** Pro Muskel: wann zuletzt trainiert und wie viele Sätze in den letzten 7 Tagen (Hilfsmuskel = ½). */
-data class MuscleStat(val lastTime: Long?, val weekSets: Float)
-
-fun muscleStats(sets: List<GymSet>): Map<String, MuscleStat> {
-    val now = System.currentTimeMillis()
-    val week = muscleScore(sets.filter { it.time >= now - 7L * 24 * 3600 * 1000 })
-    val last = HashMap<String, Long>()
-    val cache = HashMap<String, MuscleSet?>()
-    for (s in sets) {
-        val m = cache.getOrPut(s.exercise) { musclesOf(s.exercise) } ?: continue
-        for (id in m.primary + m.secondary) if (s.time > (last[id] ?: 0L)) last[id] = s.time
-    }
-    return MUSCLES.keys.associateWith { MuscleStat(last[it], week[it] ?: 0f) }
-}
-
-/** „heute“, „gestern“, „vor 3 Tagen“, „noch nie“. */
-fun fmtAgo(t: Long?): String {
-    if (t == null) return tr("noch nie", "never")
-    val days = dayKey(System.currentTimeMillis()) - dayKey(t)
-    return when (days) {
-        0 -> tr("heute", "today")
-        1 -> tr("gestern", "yesterday")
-        else -> tr("vor $days Tagen", "$days days ago")
-    }
-}
-
 /**
- * Karte für eine Seite (Vorder- oder Rückseite): Titel + Pose oben, darunter links die Figur,
- * rechts die beteiligten Muskeln dieser Seite – gruppiert nach Haupt- und Hilfsmuskeln,
- * je Muskel: zuletzt trainiert (mit Erholungshinweis) und Sätze in den letzten 7 Tagen.
+ * Karte für eine Seite (Vorder- oder Rückseite): Titel + Pose oben, darunter das Meerschweinchen
+ * mittig und groß. showList = unten die Muskeln der ganzen Übung (Haupt-/Hilfsmuskeln), für die letzte Karte.
  */
 @Composable
 fun MuscleSideCard(
@@ -541,15 +514,12 @@ fun MuscleSideCard(
     primary: List<String>,
     secondary: List<String>,
     pose: Pose,
-    stats: Map<String, MuscleStat>,
+    showList: Boolean = false,
     colors: CardColors = CardDefaults.cardColors()
 ) {
-    val ids = musclesOnSide(view)
-    val main = ids.filter { it in primary }
-    val help = ids.filter { it in secondary && it !in primary }
     Card(Modifier.fillMaxWidth(), colors = colors) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     if (view == BodyView.FRONT) tr("Vorderseite", "Front") else tr("Rückseite", "Back"),
                     style = MaterialTheme.typography.titleMedium,
@@ -558,56 +528,30 @@ fun MuscleSideCard(
                 Text("💪 " + pose.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                BodyFigure(
-                    { id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null },
-                    Modifier.weight(0.42f), view = view, widthFraction = 1f, pose = pose
-                )
-                Spacer(Modifier.width(16.dp))
-                Column(Modifier.weight(0.58f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (main.isEmpty() && help.isEmpty()) Text(
-                        tr("Auf dieser Seite arbeiten keine Muskeln mit.", "No muscles involved on this side."),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    MuscleGroupList(tr("Hauptmuskeln", "Primary"), main, PRIMARY_COLOR, stats)
-                    MuscleGroupList(tr("Hilfsmuskeln", "Secondary"), help, SECONDARY_COLOR, stats)
+            BodyFigure(
+                { id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null },
+                view = view, widthFraction = 0.62f, pose = pose
+            )
+            if (showList) {
+                Spacer(Modifier.height(16.dp))
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MuscleGroupList(tr("Hauptmuskeln", "Primary"), primary, PRIMARY_COLOR)
+                    MuscleGroupList(tr("Hilfsmuskeln", "Secondary"), secondary.filter { it !in primary }, SECONDARY_COLOR)
                 }
             }
         }
     }
 }
 
-/** Überschrift („Hauptmuskeln“) mit Farbpunkt, darunter die Muskeln mit Kennzahlen. */
+/** Überschrift („Hauptmuskeln“) mit Farbpunkt, darunter die Muskeln. */
 @Composable
-private fun MuscleGroupList(title: String, ids: List<String>, color: Color, stats: Map<String, MuscleStat>) {
+private fun MuscleGroupList(title: String, ids: List<String>, color: Color) {
     if (ids.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             LegendDot(color)
             Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        ids.forEach { id ->
-            val st = stats[id]
-            // Erholung: unter 48 Stunden seit dem letzten Training = „erholt sich“
-            val recovering = st?.lastTime != null && System.currentTimeMillis() - st.lastTime < 48L * 3600 * 1000
-            Column(Modifier.padding(start = 16.dp)) {
-                Text(muscleLabel(id), style = MaterialTheme.typography.bodyLarge)
-                if (st != null) {
-                    Text(
-                        tr("zuletzt ", "last ") + fmtAgo(st.lastTime) +
-                            if (recovering) tr(" · erholt sich", " · recovering") else "",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (recovering) SECONDARY_COLOR else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        fmtSets(st.weekSets) + " " + tr(if (st.weekSets == 1f) "Satz" else "Sätze", if (st.weekSets == 1f) "set" else "sets") +
-                            tr(" in 7 Tagen", " in 7 days"),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
+        Text(ids.joinToString(", ") { muscleLabel(it) }, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp))
     }
 }
