@@ -17,9 +17,12 @@ import androidx.compose.ui.graphics.Color
 // ---------- Activity ----------
 
 class MainActivity : ComponentActivity() {
+    private lateinit var store: GymStore
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val store = GymStore(applicationContext)
+        store = GymStore(applicationContext)
+        AutoBackup.load(applicationContext)
         Wiki.load(applicationContext)
         ExerciseImages.load(applicationContext)
         setContent {
@@ -45,6 +48,12 @@ class MainActivity : ComponentActivity() {
                 GymApp(store)
             }
         }
+    }
+
+    /** App geht in den Hintergrund (auch beim Wechsel zu einer anderen App): ggf. automatisch sichern. */
+    override fun onStop() {
+        super.onStop()
+        AutoBackup.runIfDue(applicationContext, store)
     }
 }
 

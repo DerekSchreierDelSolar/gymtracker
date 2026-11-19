@@ -40,6 +40,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 |---|---|
 | `MainActivity.kt` | Activity, Theme/Systemleisten, **`GymApp` = Navigation** (welcher Screen oben liegt) |
 | `GymStore.kt` | Gesamter Zustand + Laden/Speichern (atomar via .tmp), Import/Export, alle Mutationen |
+| `AutoBackup.kt` | Automatisches Backup: Ordner per SAF (`OpenDocumentTree`, Berechtigung persistent), beim Verlassen der App (`onStop`) höchstens 1×/Tag `gymtracker-auto-JJJJ-MM-TT.json`, die 7 neuesten bleiben; Einstellungen in SharedPreferences (gerätegebunden, nicht im Export); `AutoBackupSettings` im Einstellungen-Dialog |
 | `Model.kt` | `GymSet`, `MuscleGroup`, `Equipment`, `Workout`, `TrainingSession`, `CustomMeta`, `TEMPLATES`, `fmtSet`, `oneRepMax`, `isTimed` |
 | `Catalog.kt` | `CATALOG` (177 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
 | `I18n.kt` | `appLanguage`, `tr()`, `appLocale()` |
@@ -125,7 +126,7 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
 ## Ideen-Backlog (vom Nutzer noch nicht umgesetzt)
 Ernährungstagebuch, Körpermaße, Fortschrittsfotos, Satz-Typen (Aufwärmen/Drop), Notizen,
 Supersätze, Trainingsplan mit Wochentagen + Erinnerung, Pausen-Timer als Benachrichtigung
-(Foreground Service), automatisches Backup, Homescreen-Widget.
+(Foreground Service), Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android.)
 - **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
   Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
   Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
