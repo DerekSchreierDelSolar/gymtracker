@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
@@ -138,7 +139,9 @@ fun SetInput(
                 watchStart = null
                 onAdded()
             }
-        }) { Text(if (cardio) tr("Eintragen", "Log") else tr("Satz +", "Set +")) }
+        }, modifier = Modifier.size(56.dp), contentPadding = PaddingValues(0.dp)) {
+            Text("+", style = MaterialTheme.typography.headlineMedium)
+        }
     }
 }
 
@@ -151,14 +154,21 @@ fun SetInput(
 @Composable
 fun SetRow(store: GymStore, set: GymSet, number: Int, cardio: Boolean) {
     var editing by remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    // Ganze Zeile antippen = bearbeiten (kein Stift-Symbol)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { editing = true }
+            .padding(vertical = 10.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text("$number. ${fmtSet(set, cardio)}", modifier = Modifier.weight(1f))
         Text(
             SimpleDateFormat("HH:mm", appLocale()).format(Date(set.time)),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        IconAction(Ico.EDIT, onClick = { editing = true }, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     if (editing) {
         EditSetDialog(
@@ -264,13 +274,8 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
     // Vom Nutzer übernommener Gewichts-Vorschlag (füllt das kg-Feld)
     var appliedWeight by remember { mutableStateOf<Double?>(null) }
 
-    // Reiter: Training (Eingabe + Verlauf), Fortschritt, Muskeln, Info (nur mit Wiki-Eintrag)
-    val tabs = listOfNotNull(
-        tr("Training", "Training"),
-        tr("Fortschritt", "Progress"),
-        tr("Muskeln", "Muscles"),
-        if (wikiFor(exercise) != null) tr("Info", "Info") else null
-    )
+    // Reiter: Training (Eingabe + Verlauf), Fortschritt, Info (Muskeln + Wiki)
+    val tabs = listOf(tr("Training", "Training"), tr("Fortschritt", "Progress"), tr("Info", "Info"))
     var tab by rememberSaveable(exercise) { mutableIntStateOf(0) }
 
     // Nach Tag gruppiert, neuester Tag zuerst
@@ -317,16 +322,24 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             when (tab) {
-                // ----- Training: Vorschlag, Eingabe, Verlauf pro Tag -----
+                // ----- Training: Rekord-Zeile, Vorschlag, Eingabe, Verlauf pro Tag -----
                 0 -> {
+                    item { RecordLine(history, cardio, timed) }
                     item { ProgressionHint(store, exercise, onApply = { appliedWeight = it }) }
                     item { SetInput(store, exercise, weightOverride = appliedWeight) }
                     if (days.isNotEmpty()) item {
-                        Text(tr("Verlauf", "History"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+                        Column(Modifier.padding(top = 8.dp)) {
+                            Text(tr("Verlauf", "History"), style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                tr("Satz antippen zum Bearbeiten", "Tap a set to edit"),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                     days.forEach { (day, daySets) ->
                         item(key = day) {
-                            Card(Modifier.fillMaxWidth()) {
+                            Card(Modifier.fillMaxWidth(), colors = glassCardColors()) {
                                 Column(Modifier.padding(12.dp)) {
                                     Text(
                                         if (cardio)
@@ -340,7 +353,9 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                                                 " · ${fmtW(daySets.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
                                         style = MaterialTheme.typography.titleSmall
                                     )
-                                    daySets.sortedBy { it.time }.forEachIndexed { i, s -> SetRow(store, s, i + 1, cardio) }
+                                    // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
+                                    val chrono = daySets.sortedBy { it.time }
+                                    chrono.withIndex().reversed().forEach { (i, s) -> SetRow(store, s, i + 1, cardio) }
                                 }
                             }
                         }
@@ -350,29 +365,25 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                 // ----- Fortschritt: Rekord, Zuwachs, Diagramm -----
                 1 -> item { ExerciseProgress(history, cardio, timed) }
 
-                // ----- Muskeln: Körperdiagramm (eigene Übungen: selbst festlegen) -----
-                2 -> item {
+                // ----- Info: Muskeln (Vorder-/Rückseite) + Wiki (Ausführung, Hinweise) -----
+                else -> {
                     val muscles = musclesOf(exercise)
                     val custom = catalogGroup(exercise) == null
-                    Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            if (muscles != null) MuscleMap(muscles.primary, muscles.secondary)
-                            else Text(
-                                tr("Noch keine Muskeln festgelegt.", "No muscles set yet."),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            if (custom) TextButton(onClick = { editMuscles = true }) {
-                                Text(if (muscles != null) tr("Muskeln bearbeiten", "Edit muscles") else tr("Muskeln festlegen", "Set muscles"))
-                            }
+                    if (muscles != null) {
+                        item { MuscleSideCard(BodyView.FRONT, muscles.primary, muscles.secondary, glassCardColors()) }
+                        item { MuscleSideCard(BodyView.BACK, muscles.primary, muscles.secondary, glassCardColors()) }
+                    } else item {
+                        Text(tr("Noch keine Muskeln festgelegt.", "No muscles set yet."), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (custom) item {
+                        TextButton(onClick = { editMuscles = true }) {
+                            Text(if (muscles != null) tr("Muskeln bearbeiten", "Edit muscles") else tr("Muskeln festlegen", "Set muscles"))
                         }
                     }
-                }
-
-                // ----- Info: Wiki (Ausführung, Hinweise) -----
-                else -> item {
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        ExerciseImage(exercise, Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp)))
-                        WikiContent(exercise, showHeader = false, showMuscles = false)
+                    if (wikiFor(exercise) != null) item {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            WikiContent(exercise, showHeader = false, showMuscles = false)
+                        }
                     }
                 }
             }
@@ -458,7 +469,7 @@ fun ExerciseProgress(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
     val gain = record - perDay.first()
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Card(Modifier.fillMaxWidth()) {
+        Card(Modifier.fillMaxWidth(), colors = glassCardColors()) {
             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(tr("Rekord", "Record"), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -503,7 +514,7 @@ fun ExerciseProgress(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
                 ProgressBucket.WEEK -> tr("pro Woche", "per week")
                 ProgressBucket.MONTH -> tr("pro Monat", "per month")
             }
-            ProgressChart(values, title = title, unit = if (metric == ProgressMetric.VOLUME && strength) "kg" else unit)
+            ProgressChart(values, title = title, unit = if (metric == ProgressMetric.VOLUME && strength) "kg" else unit, colors = glassCardColors())
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(fmtShortDate(groups.first().first().time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(fmtShortDate(groups.last().first().time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -514,6 +525,40 @@ fun ExerciseProgress(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+/** Leicht durchsichtige Karten (Übungsdetails mit Hintergrundbild) – überall gleich. */
+@Composable
+fun glassCardColors(): CardColors =
+    CardDefaults.cardColors(containerColor = CardDefaults.cardColors().containerColor.copy(alpha = 0.82f))
+
+/**
+ * Motivierende Zeile mit dem Rekord (oben im Reiter „Training“):
+ * erstes Mal / neuer Rekord heute / bisheriger Rekord mit Ansporn.
+ * Kraft: schwerster Satz (bei Gleichstand mehr Wdh.); Cardio und Zeitübungen: längste Einheit.
+ */
+@Composable
+fun RecordLine(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
+    val today = dayKey(System.currentTimeMillis())
+    val best = if (cardio || timed) history.maxByOrNull { it.reps }
+    else history.maxWithOrNull(compareBy<GymSet>({ it.weight }, { it.reps }))
+    val before = history.filter { dayKey(it.time) != today }
+    val beatsOld = best != null && dayKey(best.time) == today && before.isNotEmpty() &&
+        before.none { if (cardio || timed) it.reps >= best.reps else it.weight > best.weight || (it.weight == best.weight && it.reps >= best.reps) }
+
+    val (emoji, text) = when {
+        best == null -> "💪" to tr("Erstes Mal – heute setzt du deinen ersten Rekord!", "First time – today you set your first record!")
+        beatsOld -> "🔥" to tr("Neuer Rekord heute: ", "New record today: ") + fmtSet(best, cardio) + tr(" – stark!", " – great job!")
+        else -> "🏆" to tr("Rekord: ", "Record: ") + fmtSet(best, cardio) + " (${fmtDate(best.time)})" +
+            tr(" – schaffst du heute mehr?", " – can you beat it today?")
+    }
+    Card(Modifier.fillMaxWidth(), colors = glassCardColors()) {
+        Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(emoji, style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.width(12.dp))
+            Text(text, style = MaterialTheme.typography.titleSmall)
         }
     }
 }

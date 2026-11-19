@@ -43,8 +43,8 @@ fun GroupHeader(group: MuscleGroup) {
 
 /** Überschrift + Inhalt in einer Karte – einheitlicher Rahmen für alle Diagramme. */
 @Composable
-fun ChartCard(title: String, subtitle: String? = null, content: @Composable () -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
+fun ChartCard(title: String, subtitle: String? = null, colors: CardColors = CardDefaults.cardColors(), content: @Composable () -> Unit) {
+    Card(Modifier.fillMaxWidth(), colors = colors) {
         Column(Modifier.padding(16.dp)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             if (subtitle != null) {
@@ -177,8 +177,8 @@ fun fmtShortDate(t: Long): String =
 // ---------- Diagramm ----------
 
 @Composable
-fun ProgressChart(values: List<Double>, title: String, unit: String) {
-    ChartCard(title, subtitle = "${fmtW(values.min())} – ${fmtW(values.max())} $unit") {
+fun ProgressChart(values: List<Double>, title: String, unit: String, colors: CardColors = CardDefaults.cardColors()) {
+    ChartCard(title, subtitle = "${fmtW(values.min())} – ${fmtW(values.max())} $unit", colors = colors) {
         LineChart(values, unit)
     }
 }

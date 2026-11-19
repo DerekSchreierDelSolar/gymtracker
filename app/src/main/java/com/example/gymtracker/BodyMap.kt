@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
@@ -134,7 +135,7 @@ val BODY_SHAPES: List<BodyShape> = listOf(
 )
 
 /** Fertige Compose-Pfade (einmal berechnet), in Gesamtkoordinaten. */
-private class BodyPath(val shape: BodyShape, val path: Path)
+private class BodyPath(val shape: BodyShape, val path: Path, /** 0 = Vorderansicht, BACK_OFFSET = Rückansicht */ val dx: Float)
 
 private val bodyPaths: List<BodyPath> by lazy {
     val mirror = Matrix().apply {
@@ -151,7 +152,7 @@ private val bodyPaths: List<BodyPath> by lazy {
                 BodyView.BOTH -> listOf(0f, BACK_OFFSET)
             }
             for (dx in offsets) for (p in variants) {
-                add(BodyPath(s, Path().apply { addPath(p, Offset(dx, 0f)) }))
+                add(BodyPath(s, Path().apply { addPath(p, Offset(dx, 0f)) }, dx))
             }
         }
     }
@@ -175,9 +176,10 @@ fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier
 /**
  * Die Meerschweinchen-Figur (vorne + hinten) mit „Vorne/Hinten“-Beschriftung.
  * colorOf(Muskel-ID) = Farbe des Muskels oder null für neutral grau.
+ * view = nur eine Seite (FRONT/BACK) zeichnen, ohne Beschriftung; widthFraction = Breite im Container.
  */
 @Composable
-fun BodyFigure(colorOf: (String) -> Color?, modifier: Modifier = Modifier) {
+fun BodyFigure(colorOf: (String) -> Color?, modifier: Modifier = Modifier, view: BodyView = BodyView.BOTH, widthFraction: Float = 0.72f) {
     // Hell/dunkel am tatsächlichen Hintergrund ablesen (App-Einstellung kann vom System abweichen)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val fur = if (dark) Color(0xFF5C4D41) else Color(0xFFF3E6D6)
@@ -185,21 +187,28 @@ fun BodyFigure(colorOf: (String) -> Color?, modifier: Modifier = Modifier) {
     val outline = if (dark) Color(0xFF8F7A69) else Color(0xFF7A5A43)
     val pink = if (dark) Color(0xFFB98585) else Color(0xFFF2B8B5)
     val neutral = if (dark) Color(0xFF7A7068) else Color(0xFFCFC7BE)
-    val totalWidth = BACK_OFFSET + BODY_WIDTH
+    val totalWidth = if (view == BodyView.BOTH) BACK_OFFSET + BODY_WIDTH else BODY_WIDTH
+    // Bei einer einzelnen Seite: nur deren Pfade, die Rückansicht an x = 0 verschoben
+    val shift = if (view == BodyView.BACK) -BACK_OFFSET else 0f
+    val paths = when (view) {
+        BodyView.BOTH -> bodyPaths
+        BodyView.FRONT -> bodyPaths.filter { it.dx == 0f }
+        BodyView.BACK -> bodyPaths.filter { it.dx == BACK_OFFSET }
+    }
 
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Canvas(
             Modifier
-                .fillMaxWidth(0.72f)
+                .fillMaxWidth(widthFraction)
                 .aspectRatio(totalWidth / BODY_HEIGHT)
         ) {
             val s = size.width / totalWidth
-            scale(s, s, pivot = Offset.Zero) {
+            scale(s, s, pivot = Offset.Zero) { translate(left = shift) {
                 // 1. Außenkontur: alle Körperteile dick umranden; die Füllungen danach überdecken
                 //    die Linien im Inneren, übrig bleibt nur der Umriss.
-                for (b in bodyPaths) if (b.shape.id == null) drawPath(b.path, outline, style = Stroke(width = 2.4f))
+                for (b in paths) if (b.shape.id == null) drawPath(b.path, outline, style = Stroke(width = 2.4f))
                 // 2. Flächen
-                for (b in bodyPaths) {
+                for (b in paths) {
                     val color = when (b.shape.fill) {
                         BodyFill.FUR -> fur
                         BodyFill.PATCH -> patch
@@ -214,9 +223,9 @@ fun BodyFigure(colorOf: (String) -> Color?, modifier: Modifier = Modifier) {
                     // dünne Fuge zwischen benachbarten Muskeln
                     if (b.shape.fill == BodyFill.MUSCLE) drawPath(b.path, fur, style = Stroke(width = 0.7f))
                 }
-            }
+            } }
         }
-        Row(Modifier.fillMaxWidth(0.72f).padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceAround) {
+        if (view == BodyView.BOTH) Row(Modifier.fillMaxWidth(0.72f).padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceAround) {
             Text(tr("Vorne", "Front"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(tr("Hinten", "Back"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -443,6 +452,62 @@ fun MuscleHeatCard(
                 val missing = MUSCLES.keys.filter { it !in load }
                 if (missing.isNotEmpty()) Text(
                     tr("Nicht trainiert: ", "Not trained: ") + missing.joinToString(", ") { muscleLabel(it) },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+// ---------- Muskel-Karten pro Seite (Reiter „Info“ der Übungsdetails) ----------
+
+/** Muskeln, die auf einer Seite der Figur zu sehen sind (aus BODY_SHAPES abgeleitet). */
+fun musclesOnSide(view: BodyView): List<String> =
+    MUSCLES.keys.filter { id -> BODY_SHAPES.any { it.id == id && (it.view == view || it.view == BodyView.BOTH) } }
+
+/**
+ * Karte für eine Seite (Vorder- oder Rückseite): Figur links, rechts die beteiligten Muskeln
+ * dieser Seite mit Rolle (Haupt/Hilfs) und die übrigen als „nicht beteiligt“.
+ */
+@Composable
+fun MuscleSideCard(view: BodyView, primary: List<String>, secondary: List<String>, colors: CardColors = CardDefaults.cardColors()) {
+    val ids = musclesOnSide(view)
+    val involved = ids.filter { it in primary } + ids.filter { it in secondary && it !in primary }
+    Card(Modifier.fillMaxWidth(), colors = colors) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            BodyFigure(
+                { id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null },
+                Modifier.weight(0.42f), view = view, widthFraction = 1f
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(0.58f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    if (view == BodyView.FRONT) tr("Vorderseite", "Front") else tr("Rückseite", "Back"),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                if (involved.isEmpty()) Text(
+                    tr("Auf dieser Seite arbeiten keine Muskeln mit.", "No muscles involved on this side."),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                involved.forEach { id ->
+                    val main = id in primary
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        LegendDot(if (main) PRIMARY_COLOR else SECONDARY_COLOR)
+                        Column {
+                            Text(muscleLabel(id), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                if (main) tr("Hauptmuskel", "Primary") else tr("Hilfsmuskel", "Secondary"),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                val rest = ids - involved.toSet()
+                if (rest.isNotEmpty() && involved.isNotEmpty()) Text(
+                    tr("Nicht beteiligt: ", "Not involved: ") + rest.joinToString(", ") { muscleLabel(it) },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
