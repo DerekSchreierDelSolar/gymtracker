@@ -363,3 +363,25 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
   opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 40;
 }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Übungs-Wiki: Blatt von unten (wie ModalBottomSheet) ---------- */
+
+.sheet-backdrop { align-items: flex-end; padding: 0; }
+.sheet {
+  background: var(--card); width: 100%; max-width: 640px; max-height: 88dvh; border-radius: 28px 28px 0 0;
+  display: flex; flex-direction: column; animation: sheet-up .22s ease-out;
+}
+.sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--muted); opacity: .5; margin: 12px auto 8px; flex: none; box-sizing: content-box; padding: 8px 40px; background-clip: content-box; cursor: pointer; }
+.sheet-body { overflow-y: auto; padding: 4px 20px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 6px; }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+.wiki-head { display: flex; align-items: center; gap: 12px; }
+.wiki-head h2 { font-size: 22px; font-weight: 600; }
+.sheet h3 { font-size: 17px; font-weight: 600; margin-top: 14px; }
+.wiki-list { margin: 0; padding-left: 28px; display: flex; flex-direction: column; gap: 8px; line-height: 1.4; }
+.wiki-list li::marker { color: var(--primary); font-weight: 600; }
+.wiki-list.warn { list-style: none; padding-left: 0; }
+.wiki-list.warn li { display: flex; gap: 10px; }
+.wiki-list.warn li::before { content: '⚠'; color: var(--error); flex: none; width: 18px; }
+.wiki-note p { margin-top: 2px; line-height: 1.4; }
+.wiki-disclaimer { margin-top: 14px; }
+.wiki-search { margin: 0 0 4px; }

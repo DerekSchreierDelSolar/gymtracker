@@ -1,5 +1,6 @@
 // Trainingsmodus und Trainingsübersicht – entspricht TrainingScreen.kt und SummaryScreen.kt.
 
+import { wikiButton } from '../wiki.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
@@ -190,7 +191,7 @@ function exercisePage(w, start, name) {
   const reached = target > 0 && today.length >= target;
 
   return [
-    h('div', { class: 'training-title' }, h('span', { html: exerciseIconHtml(name, group, 56) }), h('h2', null, exName(name))),
+    h('div', { class: 'training-title' }, h('span', { html: exerciseIconHtml(name, group, 56) }), h('h2', { class: 'grow' }, exName(name)), wikiButton(name)),
     muted(lastDay == null ? tr('Erstes Mal – viel Erfolg!', 'First time – good luck!')
       : tr('Letztes Mal', 'Last time') + ` (${lastDay}): ` + lastSets.map(s => fmtSet(s, cardio)).join(', ')),
     progressionHint(name, start),

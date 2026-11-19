@@ -1,5 +1,6 @@
 // Workouts, Übungsauswahl, Katalog – entspricht WorkoutScreens.kt und CatalogScreen.kt.
 
+import { wikiButton } from '../wiki.js';
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import {
@@ -232,9 +233,10 @@ export function catalogScreen() {
       ] : null,
       byGroup.map(([g, list]) => [groupHeader(g), list.map(c => {
         const added = store.hasExercise(c.name);
-        return h('button', { class: 'cat-row', disabled: added, onclick: () => store.addExercise(c.name, c.group) },
+        return h('div', { class: 'cat-row', role: 'button', onclick: added ? null : () => store.addExercise(c.name, c.group) },
           h('span', { html: exerciseIconHtml(c.name, g, 40) }),
           h('div', { class: 'grow' }, h('span', null, exName(c.name)), h('small', { class: 'muted' }, equipmentLabel(c.equipment))),
+          wikiButton(c.name),
           h('span', { class: ['add-mark', added && 'accent'] }, added ? '✓' : '+'));
       })])),
   });

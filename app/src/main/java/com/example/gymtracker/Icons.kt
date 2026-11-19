@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 // ---------- App-Icons (selbst gezeichnet, ohne Icon-Bibliothek) ----------
 
-enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME }
+enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME, INFO, BOOK }
 
 /**
  * Einfache Linien-Icons im 24×24-Raster (wie Material Symbols „outlined“).
@@ -85,6 +85,14 @@ fun AppIcon(icon: Ico, modifier: Modifier = Modifier.size(24.dp), tint: Color = 
                 l(3f, 11f, 12f, 3.5f, 21f, 11f)
                 l(5.5f, 9.5f, 5.5f, 20f, 18.5f, 20f, 18.5f, 9.5f)
                 l(10f, 20f, 10f, 14f, 14f, 14f, 14f, 20f)
+            }
+            Ico.INFO -> { // ⓘ: Kreis, Punkt, Strich
+                ring(12f, 12f, 9f); dot(12f, 7.8f, 1.4f); l(12f, 11f, 12f, 16.5f)
+            }
+            Ico.BOOK -> { // aufgeschlagenes Buch
+                l(12f, 6.5f, 12f, 19.5f)
+                l(12f, 6.5f, 8f, 5f, 3f, 5f, 3f, 18f, 8f, 18f, 12f, 19.5f)
+                l(12f, 6.5f, 16f, 5f, 21f, 5f, 21f, 18f, 16f, 18f, 12f, 19.5f)
             }
             Ico.BODY -> { // Person: Kopf + Schultern (oberer Halbkreis)
                 ring(12f, 7.5f, 3.5f)

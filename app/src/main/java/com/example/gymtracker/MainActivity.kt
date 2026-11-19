@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val store = GymStore(applicationContext)
+        Wiki.load(applicationContext)
         setContent {
             // Gewähltes Design; "system" folgt der Einstellung des Handys
             val dark = when (store.themeMode) {
@@ -53,6 +54,7 @@ fun GymApp(store: GymStore) {
     // Dadurch führt „Zurück“ aus einer Übung wieder ins Workout, aus dem sie geöffnet wurde.
     var current by rememberSaveable { mutableStateOf<String?>(null) }
     var showCatalog by rememberSaveable { mutableStateOf(false) }
+    var showWiki by rememberSaveable { mutableStateOf(false) }
     var workoutId by rememberSaveable { mutableStateOf<Long?>(null) }
     var pickForWorkout by rememberSaveable { mutableStateOf(false) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -115,12 +117,17 @@ fun GymApp(store: GymStore) {
             BackHandler { showCatalog = false }
             CatalogScreen(store, catalogFilter, onFilter = { catalogFilter = it }, onBack = { showCatalog = false })
         }
+        showWiki -> {
+            BackHandler { showWiki = false }
+            WikiScreen(onBack = { showWiki = false })
+        }
         else -> HomeScreen(
             store,
             tab = tab,
             onTab = { tab = it },
             onOpen = { current = it },
             onCatalog = { showCatalog = true },
+            onWiki = { showWiki = true },
             onOpenWorkout = { workoutId = it },
             onCreatedWorkout = { workoutId = it; pickForWorkout = true },
             calMonth = calMonth,

@@ -1,0 +1,132 @@
+{
+  "Swing": {
+    "muscles": ["Gesäß, Beinbeuger, Rücken, Ausdauer", "Glutes, hamstrings, back, conditioning"],
+    "how": [
+      ["Füße etwas breiter als hüftbreit, Kettlebell vor dir am Boden.", "Feet a bit wider than hips, kettlebell on the floor in front of you."],
+      ["Mit geradem Rücken greifen, die Kettlebell zwischen den Beinen nach hinten schwingen.", "Grab it with a flat back and hike it back between your legs."],
+      ["Hüfte explosiv nach vorne strecken – die Kettlebell schwingt bis etwa Brusthöhe.", "Snap your hips forward explosively – the bell swings to about chest height."],
+      ["Fallen lassen und direkt in den nächsten Schwung übergehen.", "Let it fall and flow straight into the next swing."]
+    ],
+    "tips": [
+      ["Es ist eine Hüftbewegung, keine Kniebeuge und kein Frontheben mit den Armen.", "It's a hip hinge, not a squat and not an arm raise."],
+      ["Rücken bleibt gerade, oben Gesäß und Bauch anspannen.", "Keep your back flat; squeeze glutes and abs at the top."],
+      ["Oben nicht nach hinten lehnen.", "Don't lean back at the top."]
+    ]
+  },
+  "Turkish Get-up": {
+    "muscles": ["Ganzer Körper, Schulterstabilität, Rumpf", "Full body, shoulder stability, core"],
+    "how": [
+      ["Auf dem Rücken liegen, Kettlebell mit gestrecktem Arm senkrecht nach oben.", "Lie on your back holding the kettlebell straight up with one arm."],
+      ["Über Ellbogen und Hand aufrichten, Hüfte anheben, Bein nach hinten durchfädeln und knien.", "Rise onto your elbow and hand, lift your hips, sweep your leg back into a kneel."],
+      ["Aufstehen – der Arm bleibt die ganze Zeit senkrecht.", "Stand up – the arm stays vertical the whole time."],
+      ["Die Schritte rückwärts wieder bis zum Liegen.", "Reverse the steps back down to lying."]
+    ],
+    "tips": [
+      ["Blick immer auf die Kettlebell.", "Keep your eyes on the kettlebell."],
+      ["Erst ohne oder mit sehr leichtem Gewicht lernen.", "Learn it first with no or very light weight."],
+      ["Langsam, jede Position sauber einnehmen.", "Go slowly and nail each position."]
+    ]
+  },
+  "Clean & Press": {
+    "muscles": ["Ganzer Körper, Schultern, Beine", "Full body, shoulders, legs"],
+    "how": [
+      ["Kettlebell zwischen den Beinen, mit Hüftstoß nach oben in die Halteposition an der Schulter bringen (Clean).", "From between your legs, use a hip drive to bring the bell into the rack at your shoulder (clean)."],
+      ["Aus der Halteposition über den Kopf drücken.", "Press it overhead from the rack."],
+      ["Zurück an die Schulter und wieder nach unten.", "Bring it back to the shoulder and down again."]
+    ],
+    "tips": [
+      ["Die Kettlebell rollt um das Handgelenk, statt darauf zu schlagen.", "The bell rolls around your wrist rather than slamming onto it."],
+      ["Beim Drücken kein Hohlkreuz.", "No arching when you press."]
+    ]
+  },
+  "Thruster": {
+    "muscles": ["Beine, Gesäß, Schultern, Ausdauer", "Legs, glutes, shoulders, conditioning"],
+    "how": [
+      ["Gewicht vorne auf Schulterhöhe, Füße schulterbreit.", "Weight in front at shoulder height, feet shoulder-width."],
+      ["In eine tiefe Kniebeuge gehen.", "Drop into a deep squat."],
+      ["Explosiv aufstehen und den Schwung nutzen, um das Gewicht über den Kopf zu drücken.", "Stand up explosively and use the momentum to press the weight overhead."],
+      ["Zurück auf die Schultern und direkt in die nächste Kniebeuge.", "Bring it back to your shoulders and go straight into the next squat."]
+    ],
+    "tips": [
+      ["Ellbogen hoch halten, damit das Gewicht nicht nach vorne kippt.", "Keep your elbows high so the weight doesn't tip forward."],
+      ["Sehr anstrengend – auf saubere Technik bei Ermüdung achten.", "Very taxing – watch your form as you tire."]
+    ]
+  },
+  "Umsetzen / Power Clean": {
+    "muscles": ["Ganzer Körper, Explosivkraft", "Full body, explosive power"],
+    "how": [
+      ["Start wie beim Kreuzheben, Stange nah am Schienbein.", "Start like a deadlift, bar close to your shins."],
+      ["Stange vom Boden heben und über den Knien explosiv Hüfte und Knie strecken (Sprung-Bewegung).", "Lift off the floor, then above the knees explode by extending hips and knees (jump motion)."],
+      ["Schultern hochziehen, unter die Stange tauchen und sie vorne auf den Schultern fangen.", "Shrug, pull yourself under the bar and catch it on the front of your shoulders."],
+      ["Aufrichten, dann kontrolliert ablegen.", "Stand up, then lower under control."]
+    ],
+    "tips": [
+      ["Technisch anspruchsvoll – am besten mit Trainer und leichter Stange lernen.", "Technically demanding – learn with a coach and a light bar."],
+      ["Die Kraft kommt aus Beinen und Hüfte, nicht aus den Armen.", "Power comes from your legs and hips, not your arms."],
+      ["Ellbogen beim Fangen schnell nach vorne drehen.", "Whip your elbows forward quickly for the catch."]
+    ]
+  },
+  "Reißen / Snatch": {
+    "muscles": ["Ganzer Körper, Explosivkraft, Beweglichkeit", "Full body, explosive power, mobility"],
+    "how": [
+      ["Breiter Griff, Start wie beim Kreuzheben.", "Wide grip, start like a deadlift."],
+      ["Explosiv strecken und die Stange in einer Bewegung über den Kopf bringen.", "Extend explosively and bring the bar overhead in one motion."],
+      ["Mit gestreckten Armen über dem Kopf fangen (oft in der Hocke), dann aufrichten.", "Catch it with locked arms overhead (often in a squat), then stand up."]
+    ],
+    "tips": [
+      ["Die technisch schwierigste Langhantelübung – unbedingt mit Anleitung lernen.", "The most technical barbell lift – learn it with coaching."],
+      ["Nur mit Stoßscheiben und auf geeignetem Boden trainieren.", "Only train with bumper plates on a suitable floor."],
+      ["Gewicht nach vorne fallen lassen, wenn es nicht klappt – nicht festhalten.", "If a lift fails, dump the bar forward – don't fight it."]
+    ]
+  },
+  "Farmer's Walk": {
+    "muscles": ["Griffkraft, Trapez, Rumpf, ganzer Körper", "Grip, traps, core, full body"],
+    "how": [
+      ["Schwere Gewichte in beide Hände nehmen (mit geradem Rücken aufheben).", "Pick up heavy weights in both hands (lift with a flat back)."],
+      ["Aufrecht stehen, Schultern hinten und unten.", "Stand tall, shoulders back and down."],
+      ["Mit kurzen, ruhigen Schritten gehen (Zeit wird gemessen).", "Walk with short, steady steps (timed)."]
+    ],
+    "tips": [
+      ["Nicht zur Seite lehnen oder die Schultern hängen lassen.", "Don't lean to one side or let your shoulders slump."],
+      ["Gewichte am Ende kontrolliert absetzen.", "Set the weights down under control at the end."]
+    ]
+  },
+  "Burpees": {
+    "muscles": ["Ganzer Körper, Ausdauer", "Full body, conditioning"],
+    "how": [
+      ["Aus dem Stand in die Hocke, Hände auf den Boden.", "From standing, squat down and put your hands on the floor."],
+      ["Füße nach hinten springen in den Liegestütz (optional ein Liegestütz).", "Jump your feet back into a plank (optionally do a push-up)."],
+      ["Füße wieder zu den Händen springen und hochspringen.", "Jump your feet back to your hands and jump up."]
+    ],
+    "tips": [
+      ["Im Liegestütz kein Hohlkreuz.", "No sagging hips in the plank."],
+      ["Weich landen.", "Land softly."],
+      ["Leichter: Schritte statt Sprünge.", "Easier: step instead of jumping."]
+    ]
+  },
+  "Box Jumps": {
+    "muscles": ["Beine, Gesäß, Explosivkraft", "Legs, glutes, explosive power"],
+    "how": [
+      ["Etwa eine Fußlänge vor der Box stehen.", "Stand about a foot's length from the box."],
+      ["Mit Armschwung abspringen und mit beiden Füßen gleichzeitig mittig auf der Box landen.", "Swing your arms, jump and land with both feet in the middle of the box."],
+      ["Oben aufrichten, dann heruntersteigen (nicht springen).", "Stand up tall on top, then step down (don't jump)."]
+    ],
+    "tips": [
+      ["Weich in leicht gebeugten Knien landen, Knie nicht nach innen.", "Land softly with bent knees; knees don't cave in."],
+      ["Lieber niedrige Box und sicher als zu hoch.", "Better a lower box safely than too high."],
+      ["Herunterspringen belastet Achillessehne und Knie.", "Jumping down stresses your Achilles and knees."]
+    ]
+  },
+  "Hampelmann": {
+    "muscles": ["Ausdauer, Waden, Schultern", "Conditioning, calves, shoulders"],
+    "how": [
+      ["Aufrecht stehen, Arme seitlich am Körper.", "Stand tall, arms at your sides."],
+      ["Springen und dabei Beine grätschen und Arme über den Kopf führen.", "Jump while spreading your legs and raising your arms overhead."],
+      ["Zurückspringen in die Ausgangsposition.", "Jump back to the start."]
+    ],
+    "tips": [
+      ["Auf den Fußballen leicht landen.", "Land lightly on the balls of your feet."],
+      ["Gut zum Aufwärmen.", "Great as a warm-up."]
+    ]
+  }
+}

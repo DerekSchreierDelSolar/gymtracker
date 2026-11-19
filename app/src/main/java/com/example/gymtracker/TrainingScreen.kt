@@ -309,7 +309,8 @@ fun TrainingExercisePage(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ExerciseIcon(name, group, Modifier.size(56.dp))
                 Spacer(Modifier.width(12.dp))
-                Text(exName(name), style = MaterialTheme.typography.headlineSmall)
+                Text(exName(name), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                WikiButton(name)
             }
         }
 

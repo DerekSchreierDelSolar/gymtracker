@@ -276,7 +276,10 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                 }
             },
             navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
-            actions = { IconAction(Ico.DELETE, onClick = { confirmDelete = true }) }
+            actions = {
+                WikiButton(exercise)
+                IconAction(Ico.DELETE, onClick = { confirmDelete = true })
+            }
         )
     }) { padding ->
         LazyColumn(

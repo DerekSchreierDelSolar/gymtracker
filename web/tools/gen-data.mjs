@@ -2,9 +2,10 @@
 // So gibt es Katalog, Vorlagen, MET-Werte, Umbenennungen und Piktogramme nur EINMAL (im Kotlin-Code).
 //
 // Aufruf (im Projektordner):   node web/tools/gen-data.mjs
-// Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt erneut ausführen.
+// Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt / assets/wiki/*.json erneut ausführen.
+// Erzeugt zusätzlich web/js/wiki-data.js (Übungs-Wiki).
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -108,3 +109,23 @@ ${js.join('\n')}
 writeFileSync(join(root, 'web/js/data.js'), out);
 console.log(`data.js: ${catalog.length} Übungen, ${templates.length} Vorlagen, ${Object.keys(renamed).length} Umbenennungen, ` +
   `${new Set(Object.values(motionOf)).size} Bewegungen`);
+
+// ----- Übungs-Wiki: JSON-Dateien aus den Android-Assets → web/js/wiki-data.js -----
+const wikiDir = join(root, 'app/src/main/assets/wiki');
+const wiki = {};
+for (const f of readdirSync(wikiDir).filter(f => f.endsWith('.json')).sort()) {
+  Object.assign(wiki, JSON.parse(readFileSync(join(wikiDir, f), 'utf8')));
+}
+const bases = new Set(catalog.map(c => c.base));
+const noWiki = [...bases].filter(b => !wiki[b]);
+if (noWiki.length) console.warn('Wiki fehlt für: ' + noWiki.join(', '));
+for (const [b, e] of Object.entries(wiki)) {
+  if (!bases.has(b)) throw new Error('Wiki: unbekannte Grundübung ' + b);
+  for (const v of Object.keys(e.variants ?? {})) {
+    if (!names.has(`${b} (${v})`)) throw new Error(`Wiki: unbekannte Variante ${b} (${v})`);
+  }
+}
+writeFileSync(join(root, 'web/js/wiki-data.js'),
+  `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus app/src/main/assets/wiki/*.json – nicht von Hand ändern!\n` +
+  `export const WIKI = ${JSON.stringify(wiki)};\n`);
+console.log(`wiki-data.js: ${Object.keys(wiki).length} Einträge`);

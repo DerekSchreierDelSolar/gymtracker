@@ -1,5 +1,6 @@
 // Übungs-Bausteine und Übungsdetail – entspricht ExerciseDetail.kt, Progression.kt (UI) und ExerciseTile.
 
+import { wikiButton } from '../wiki.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
@@ -195,7 +196,7 @@ export function exerciseDetailScreen(name) {
   return screen({
     title: exName(name), back: true, key: 'ex-' + name,
     titleIcon: exerciseIconHtml(name, group, 32),
-    actions: [iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') })],
+    actions: [wikiButton(name), iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') })],
     content: h('div', { class: 'stack pad' },
       chart,
       best ? h('div', null,

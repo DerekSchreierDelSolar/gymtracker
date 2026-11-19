@@ -1,0 +1,190 @@
+{
+  "Crunches": {
+    "muscles": ["Gerader Bauchmuskel", "Rectus abdominis"],
+    "how": [
+      ["Auf den Rücken legen, Knie angewinkelt, Hände an den Schläfen oder vor der Brust.", "Lie on your back, knees bent, hands at your temples or across your chest."],
+      ["Oberkörper einrollen, bis die Schulterblätter vom Boden abheben.", "Curl your upper body until your shoulder blades leave the floor."],
+      ["Langsam zurückrollen.", "Roll back down slowly."]
+    ],
+    "tips": [
+      ["Nicht am Kopf ziehen – Kinn etwa eine Faust von der Brust.", "Don't pull on your head – keep about a fist between chin and chest."],
+      ["Ausatmen beim Hochrollen.", "Exhale as you curl up."],
+      ["Kleine, kontrollierte Bewegung statt Schwung.", "Small, controlled movement instead of momentum."]
+    ],
+    "variants": {
+      "Kabelzug": ["Vor dem hohen Kabel knien, Seil an den Kopf, Oberkörper Richtung Knie einrollen – die Hüfte bleibt still.", "Kneel at a high cable, rope by your head, curl your torso toward your knees – your hips stay still."],
+      "Maschine": ["Polster/Griffe einstellen, dann Oberkörper einrollen statt mit den Armen ziehen.", "Adjust the pads/handles, then curl your torso instead of pulling with your arms."]
+    }
+  },
+  "Sit-ups": {
+    "muscles": ["Bauch, Hüftbeuger", "Abs, hip flexors"],
+    "how": [
+      ["Auf den Rücken legen, Knie angewinkelt, Füße am Boden (evtl. fixiert).", "Lie on your back, knees bent, feet on the floor (optionally anchored)."],
+      ["Oberkörper einrollen und ganz aufrichten.", "Curl up and sit all the way up."],
+      ["Langsam Wirbel für Wirbel zurückrollen.", "Roll back down slowly, vertebra by vertebra."]
+    ],
+    "tips": [
+      ["Nicht mit den Armen Schwung holen oder am Nacken ziehen.", "Don't swing with your arms or pull on your neck."],
+      ["Bei Rückenproblemen lieber Crunches oder Dead Bugs.", "If your back bothers you, choose crunches or dead bugs instead."]
+    ]
+  },
+  "Fahrrad-Crunches": {
+    "muscles": ["Schräge und gerade Bauchmuskeln", "Obliques, rectus abdominis"],
+    "how": [
+      ["Auf den Rücken legen, Hände an den Schläfen, Beine angehoben.", "Lie on your back, hands at your temples, legs lifted."],
+      ["Ellbogen zum gegenüberliegenden Knie drehen, das andere Bein strecken.", "Rotate your elbow toward the opposite knee while extending the other leg."],
+      ["Seite wechseln wie beim Radfahren.", "Switch sides as if pedaling."]
+    ],
+    "tips": [
+      ["Langsam drehen statt hektisch strampeln.", "Rotate slowly instead of pedaling frantically."],
+      ["Unterer Rücken bleibt am Boden.", "Keep your lower back on the floor."]
+    ]
+  },
+  "Unterarmstütz / Plank": {
+    "muscles": ["Gesamte Rumpfmuskulatur, Schultern", "Entire core, shoulders"],
+    "how": [
+      ["Unterarme unter den Schultern abstützen, Beine gestreckt auf den Zehen.", "Support yourself on your forearms under your shoulders, legs straight on your toes."],
+      ["Körper von Kopf bis Ferse eine gerade Linie.", "Body in a straight line from head to heels."],
+      ["Position halten (Zeit wird gemessen).", "Hold the position (timed)."]
+    ],
+    "tips": [
+      ["Hüfte weder durchhängen lassen noch hochstrecken.", "Don't let your hips sag or pike up."],
+      ["Bauch und Gesäß fest anspannen, ruhig weiteratmen.", "Brace abs and glutes, keep breathing."],
+      ["Lieber kürzer und sauber als lange mit Hohlkreuz.", "Better shorter and clean than long with a sagging back."]
+    ]
+  },
+  "Seitstütz": {
+    "muscles": ["Seitliche Bauchmuskeln, Gesäß, Schulter", "Obliques, glutes, shoulder"],
+    "how": [
+      ["Seitlich auf einen Unterarm stützen, Ellbogen unter der Schulter, Beine gestreckt übereinander.", "Prop yourself up on one forearm, elbow under your shoulder, legs straight and stacked."],
+      ["Hüfte anheben, bis der Körper eine gerade Linie bildet.", "Lift your hips until your body forms a straight line."],
+      ["Halten, dann Seite wechseln.", "Hold, then switch sides."]
+    ],
+    "tips": [
+      ["Hüfte nicht absinken lassen.", "Don't let your hips drop."],
+      ["Leichter: unteres Knie aufsetzen.", "Easier: put your lower knee down."]
+    ]
+  },
+  "Beinheben liegend": {
+    "muscles": ["Unterer Bauch, Hüftbeuger", "Lower abs, hip flexors"],
+    "how": [
+      ["Auf den Rücken legen, Hände neben dem Körper oder unter dem Gesäß.", "Lie on your back, hands at your sides or under your glutes."],
+      ["Gestreckte Beine bis etwa senkrecht anheben.", "Raise your straight legs to about vertical."],
+      ["Langsam absenken, ohne die Füße abzulegen.", "Lower slowly without touching the floor."]
+    ],
+    "tips": [
+      ["Unterer Rücken bleibt am Boden – sonst Beine leicht beugen.", "Keep your lower back on the floor – bend your knees slightly if needed."],
+      ["Nicht fallen lassen.", "Don't let your legs drop."]
+    ]
+  },
+  "Hängendes Beinheben": {
+    "muscles": ["Unterer Bauch, Hüftbeuger, Griffkraft", "Lower abs, hip flexors, grip"],
+    "how": [
+      ["An einer Klimmzugstange hängen, Körper ruhig.", "Hang from a pull-up bar, body still."],
+      ["Beine (gestreckt oder angewinkelt) nach oben heben und das Becken einrollen.", "Raise your legs (straight or bent) and curl your pelvis up."],
+      ["Langsam absenken, ohne zu schwingen.", "Lower slowly without swinging."]
+    ],
+    "tips": [
+      ["Schwung vermeiden – unten kurz stoppen.", "Avoid swinging – pause briefly at the bottom."],
+      ["Leichter: mit angewinkelten Knien.", "Easier: with bent knees."]
+    ]
+  },
+  "Knieheben an der Dip-Station": {
+    "muscles": ["Unterer Bauch, Hüftbeuger", "Lower abs, hip flexors"],
+    "how": [
+      ["Unterarme auf die Polster, Rücken an die Lehne, Beine hängen.", "Forearms on the pads, back against the backrest, legs hanging."],
+      ["Knie zur Brust ziehen und das Becken leicht einrollen.", "Pull your knees to your chest and curl your pelvis slightly."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Rücken bleibt an der Lehne.", "Keep your back against the pad."],
+      ["Schwerer: Beine gestreckt anheben.", "Harder: raise straight legs."]
+    ]
+  },
+  "Mountain Climbers": {
+    "muscles": ["Rumpf, Schultern, Hüftbeuger, Ausdauer", "Core, shoulders, hip flexors, conditioning"],
+    "how": [
+      ["In den hohen Liegestütz gehen, Hände unter den Schultern.", "Get into a high plank, hands under your shoulders."],
+      ["Abwechselnd die Knie schnell Richtung Brust ziehen.", "Drive your knees toward your chest alternately and quickly."],
+      ["Tempo halten, Oberkörper ruhig.", "Keep the pace, upper body steady."]
+    ],
+    "tips": [
+      ["Hüfte nicht hochstrecken.", "Don't pike your hips up."],
+      ["Schultern bleiben über den Händen.", "Shoulders stay over your hands."]
+    ]
+  },
+  "Dead Bug": {
+    "muscles": ["Tiefe Rumpfmuskulatur", "Deep core"],
+    "how": [
+      ["Auf den Rücken legen, Arme senkrecht nach oben, Knie 90° angehoben.", "Lie on your back, arms pointing up, knees lifted at 90°."],
+      ["Gleichzeitig einen Arm nach hinten und das gegenüberliegende Bein nach vorne strecken.", "Extend one arm back and the opposite leg forward at the same time."],
+      ["Zurück in die Mitte und Seite wechseln.", "Return to the middle and switch sides."]
+    ],
+    "tips": [
+      ["Unterer Rücken bleibt die ganze Zeit am Boden.", "Your lower back stays on the floor the whole time."],
+      ["Langsam und mit ruhigem Atem.", "Move slowly and breathe steadily."],
+      ["Sehr rückenfreundliche Bauchübung.", "A very back-friendly core exercise."]
+    ]
+  },
+  "V-Ups": {
+    "muscles": ["Gerader Bauchmuskel, Hüftbeuger", "Rectus abdominis, hip flexors"],
+    "how": [
+      ["Gestreckt auf dem Rücken liegen, Arme über dem Kopf.", "Lie flat on your back, arms overhead."],
+      ["Gleichzeitig Oberkörper und gestreckte Beine anheben, Hände Richtung Füße.", "Lift your torso and straight legs at the same time, reaching hands toward feet."],
+      ["Kontrolliert wieder ablegen.", "Lower back down under control."]
+    ],
+    "tips": [
+      ["Anspruchsvoll – nicht mit Schwung hochwerfen.", "Demanding – don't throw yourself up."],
+      ["Leichter: Knie anwinkeln (Tuck-ups).", "Easier: bend your knees (tuck-ups)."]
+    ]
+  },
+  "Ab-Roller": {
+    "muscles": ["Gesamter Rumpf, Latissimus, Schultern", "Entire core, lats, shoulders"],
+    "how": [
+      ["Auf den Knien, Rad unter den Schultern.", "Kneel with the wheel under your shoulders."],
+      ["Langsam nach vorne rollen, Körper bleibt gerade.", "Roll forward slowly, keeping your body straight."],
+      ["So weit, wie du den Rücken gerade halten kannst, dann mit dem Bauch zurückziehen.", "Go only as far as you can keep your back flat, then pull back with your abs."]
+    ],
+    "tips": [
+      ["Kein Hohlkreuz – das Becken leicht eingerollt halten.", "No sagging – keep your pelvis slightly tucked."],
+      ["Anfangs nur kurze Strecken rollen.", "Start with short rollouts."],
+      ["Weiche Unterlage für die Knie.", "Use a pad under your knees."]
+    ]
+  },
+  "Russian Twists": {
+    "muscles": ["Schräge Bauchmuskeln", "Obliques"],
+    "how": [
+      ["Sitzen, Oberkörper leicht zurückgelehnt, Knie angewinkelt (Füße am Boden oder angehoben).", "Sit with your torso leaning back slightly, knees bent (feet down or lifted)."],
+      ["Oberkörper abwechselnd nach links und rechts drehen.", "Rotate your torso left and right alternately."],
+      ["Die Hände bzw. das Gewicht neben der Hüfte antippen.", "Tap your hands or the weight beside your hip."]
+    ],
+    "tips": [
+      ["Rücken gerade, nicht rund.", "Keep your back straight, not rounded."],
+      ["Die Drehung kommt aus dem Oberkörper, nicht nur aus den Armen.", "The rotation comes from your torso, not just your arms."]
+    ]
+  },
+  "Holzhacker": {
+    "muscles": ["Schräge Bauchmuskeln, Rumpf, Schultern", "Obliques, core, shoulders"],
+    "how": [
+      ["Seitlich zum Kabel stehen (oben oder unten eingestellt), Griff mit beiden Händen.", "Stand sideways to the cable (high or low), holding the handle with both hands."],
+      ["Diagonal quer über den Körper ziehen und dabei den Oberkörper drehen.", "Pull diagonally across your body while rotating your torso."],
+      ["Kontrolliert zurück, dann Seite wechseln.", "Return under control, then switch sides."]
+    ],
+    "tips": [
+      ["Arme bleiben fast gestreckt – die Kraft kommt aus dem Rumpf.", "Arms stay nearly straight – the power comes from your core."],
+      ["Hinteren Fuß mitdrehen, um das Knie zu schonen.", "Pivot your back foot to protect your knee."]
+    ]
+  },
+  "Pallof Press": {
+    "muscles": ["Rumpf (Anti-Rotation)", "Core (anti-rotation)"],
+    "how": [
+      ["Seitlich zum Kabel/Band stehen, Griff mit beiden Händen vor der Brust.", "Stand sideways to the cable/band, holding the handle at your chest with both hands."],
+      ["Arme gerade nach vorne strecken, ohne dass der Körper sich zur Seite dreht.", "Press your arms straight out without letting your body rotate."],
+      ["Kurz halten, zurück zur Brust.", "Hold briefly, return to your chest."]
+    ],
+    "tips": [
+      ["Hüfte und Schultern zeigen die ganze Zeit nach vorne.", "Hips and shoulders face forward the whole time."],
+      ["Weiter weg stehen = schwerer.", "Standing further away = harder."]
+    ]
+  }
+}

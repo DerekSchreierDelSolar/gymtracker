@@ -36,6 +36,7 @@ export function homeScreen(onStartWorkout) {
     title: TABS()[tab][2], subtitle: 'GymTracker', large: true, key: 'tab-' + tab,
     actions: [
       tab === 1 && store.exercises.length ? filterActions('list') : null,
+      tab === 1 ? iconBtn('book', () => go({ wiki: true }), { label: tr('Übungs-Wiki', 'Exercise wiki') }) : null,
       h('div', { class: 'menu-anchor' },
         iconBtn('more', () => update({ menuOpen: !nav.menuOpen }), { label: 'Menü' }),
         nav.menuOpen ? menu() : null),
@@ -58,6 +59,7 @@ function menu() {
     h('div', { class: 'menu-backdrop', onclick: close }),
     h('div', { class: 'menu' },
       h('button', { onclick: () => { close(); settingsDialog(); } }, icon('settings', 20), tr('Einstellungen', 'Settings')),
+      h('button', { onclick: () => { close(); go({ wiki: true }); } }, icon('book', 20), tr('Übungs-Wiki', 'Exercise wiki')),
       h('hr'),
       h('button', { onclick: () => { close(); exportData(); } }, icon('download', 20), tr('Daten exportieren', 'Export data')),
       h('button', { onclick: () => { close(); importData(); } }, icon('upload', 20), tr('Daten importieren', 'Import data')),

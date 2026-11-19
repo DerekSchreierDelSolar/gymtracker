@@ -1,0 +1,190 @@
+{
+  "Bizepscurls": {
+    "muscles": ["Bizeps, Unterarm", "Biceps, forearms"],
+    "how": [
+      ["Aufrecht stehen, Gewicht in Untergriff, Ellbogen nah am Körper.", "Stand tall, underhand grip, elbows close to your sides."],
+      ["Gewicht durch Beugen im Ellbogen hochcurlen.", "Curl the weight up by bending at the elbows."],
+      ["Oben kurz anspannen, langsam bis zur Streckung absenken.", "Squeeze briefly at the top and lower slowly to full extension."]
+    ],
+    "tips": [
+      ["Ellbogen bleiben an Ort und Stelle – nicht nach vorne wandern lassen.", "Keep your elbows in place – don't let them drift forward."],
+      ["Kein Schwung aus Rücken oder Hüfte.", "No swinging from your back or hips."],
+      ["Unten Arme ganz strecken für volle Bewegung.", "Straighten your arms fully at the bottom."]
+    ],
+    "variants": {
+      "Kurzhantel": ["Hände beim Hochcurlen nach außen drehen (Supination) für mehr Bizeps.", "Rotate your palms up as you curl (supination) for more biceps."],
+      "SZ-Stange": ["Die gewinkelte Stange schont die Handgelenke.", "The angled bar is easier on your wrists."],
+      "Kabelzug": ["Konstante Spannung, auch unten in der Streckung.", "Constant tension, even at the bottom."],
+      "Maschine": ["Oberarme flach aufs Polster, Ellbogen auf Höhe der Drehachse.", "Upper arms flat on the pad, elbows in line with the pivot."],
+      "Widerstandsband": ["Auf das Band stellen; je weiter oben, desto mehr Widerstand.", "Stand on the band; resistance increases toward the top."]
+    }
+  },
+  "Hammercurls": {
+    "muscles": ["Oberarmmuskel (Brachialis), Bizeps, Unterarm", "Brachialis, biceps, forearms"],
+    "how": [
+      ["Gewicht mit neutralem Griff halten (Daumen zeigt nach vorne).", "Hold the weight with a neutral grip (thumbs pointing forward)."],
+      ["Hochcurlen, ohne das Handgelenk zu drehen.", "Curl up without rotating your wrist."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Ellbogen am Körper, kein Schwung.", "Elbows at your sides, no swinging."],
+      ["Gut für dickere Arme und stärkeren Griff.", "Great for thicker arms and a stronger grip."]
+    ],
+    "variants": {
+      "Kabelzug": ["Mit Seilgriff am unteren Kabel.", "Use a rope attachment on a low cable."]
+    }
+  },
+  "Konzentrationscurls": {
+    "muscles": ["Bizeps", "Biceps"],
+    "how": [
+      ["Sitzen, Ellbogen an der Innenseite des Oberschenkels abstützen.", "Sit and brace your elbow against the inside of your thigh."],
+      ["Hantel langsam hochcurlen.", "Curl the dumbbell up slowly."],
+      ["Oben fest anspannen, langsam absenken.", "Squeeze hard at the top and lower slowly."]
+    ],
+    "tips": [
+      ["Oberkörper bewegt sich nicht mit.", "Your torso doesn't move."],
+      ["Leichtes Gewicht, volle Streckung unten.", "Light weight, full stretch at the bottom."]
+    ]
+  },
+  "Schrägbank-Curls": {
+    "muscles": ["Bizeps (langer Kopf, Dehnung)", "Biceps (long head, stretch)"],
+    "how": [
+      ["Auf eine Schrägbank (ca. 45–60°) setzen, Arme hängen senkrecht nach unten.", "Sit on an incline bench (about 45–60°), arms hanging straight down."],
+      ["Hanteln hochcurlen, Oberarme bleiben senkrecht.", "Curl the dumbbells up, keeping your upper arms vertical."],
+      ["Langsam bis in die Dehnung absenken.", "Lower slowly into the stretch."]
+    ],
+    "tips": [
+      ["Schultern bleiben an der Lehne.", "Keep your shoulders against the bench."],
+      ["Weniger Gewicht als beim stehenden Curl.", "Use less weight than for standing curls."]
+    ]
+  },
+  "Scott-Curls": {
+    "muscles": ["Bizeps, Brachialis", "Biceps, brachialis"],
+    "how": [
+      ["Oberarme flach auf das schräge Polster legen, Achseln an der Oberkante.", "Lay your upper arms flat on the angled pad, armpits at the top edge."],
+      ["Gewicht hochcurlen.", "Curl the weight up."],
+      ["Langsam fast bis zur Streckung absenken.", "Lower slowly to almost full extension."]
+    ],
+    "tips": [
+      ["Unten nicht ruckartig durchstrecken – das belastet den Ellbogen.", "Don't snap straight at the bottom – it stresses the elbow."],
+      ["Kein Abheben vom Polster.", "Don't lift your arms off the pad."]
+    ]
+  },
+  "Reverse Curls": {
+    "muscles": ["Unterarm (Oberseite), Brachialis", "Forearms (top), brachialis"],
+    "how": [
+      ["Stange im Obergriff schulterbreit halten.", "Hold the bar with an overhand grip at shoulder width."],
+      ["Mit Ellbogen am Körper hochcurlen.", "Curl up with your elbows at your sides."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Handgelenke gerade halten.", "Keep your wrists straight."],
+      ["Deutlich weniger Gewicht als beim normalen Curl.", "Use much less weight than for regular curls."]
+    ]
+  },
+  "Unterarm-Curls": {
+    "muscles": ["Unterarm-Beuger, Griffkraft", "Forearm flexors, grip"],
+    "how": [
+      ["Unterarme auf Oberschenkel oder Bank legen, Handgelenke hängen über die Kante, Untergriff.", "Rest your forearms on your thighs or a bench, wrists over the edge, underhand grip."],
+      ["Gewicht nur aus dem Handgelenk hochrollen.", "Curl the weight up using only your wrists."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Kleine Bewegung, viele Wiederholungen (15–20).", "Small movement, high reps (15–20)."],
+      ["Unterarme bleiben liegen.", "Keep your forearms down."]
+    ]
+  },
+  "Trizepsdrücken": {
+    "muscles": ["Trizeps", "Triceps"],
+    "how": [
+      ["Vor dem hohen Kabel stehen, Stange oder Seil greifen, Ellbogen am Körper.", "Stand at a high cable, grab a bar or rope, elbows at your sides."],
+      ["Arme nach unten strecken, bis sie ganz gestreckt sind.", "Push down until your arms are fully straight."],
+      ["Langsam zurück, bis die Unterarme etwa waagerecht sind.", "Return slowly until your forearms are about parallel to the floor."]
+    ],
+    "tips": [
+      ["Ellbogen bleiben fest am Körper – nur die Unterarme bewegen sich.", "Elbows stay pinned to your sides – only your forearms move."],
+      ["Nicht mit dem Oberkörper nachdrücken.", "Don't lean over the weight to push it."],
+      ["Beim Seil unten die Enden auseinanderziehen.", "With a rope, spread the ends apart at the bottom."]
+    ],
+    "variants": {
+      "Maschine": ["Ellbogen auf das Polster und in Linie mit der Drehachse.", "Elbows on the pad and in line with the pivot."]
+    }
+  },
+  "Trizepsdrücken über Kopf": {
+    "muscles": ["Trizeps (v. a. langer Kopf)", "Triceps (especially the long head)"],
+    "how": [
+      ["Gewicht über den Kopf bringen, Oberarme neben dem Kopf.", "Bring the weight overhead with your upper arms beside your head."],
+      ["Gewicht hinter dem Kopf absenken, bis die Dehnung spürbar ist.", "Lower it behind your head until you feel a stretch."],
+      ["Arme wieder strecken.", "Extend your arms again."]
+    ],
+    "tips": [
+      ["Ellbogen zeigen nach vorne, nicht weit seitlich.", "Elbows point forward, not far out to the sides."],
+      ["Kein Hohlkreuz – Bauch anspannen.", "No arching – brace your abs."]
+    ],
+    "variants": {
+      "Kurzhantel": ["Eine Hantel mit beiden Händen an der oberen Scheibe fassen.", "Hold one dumbbell with both hands under the top plate."],
+      "Kabelzug": ["Mit dem Rücken zum Kabel, Seil über den Kopf, leicht vorgebeugt.", "Face away from the cable, rope overhead, lean slightly forward."]
+    }
+  },
+  "Trizeps-Kickbacks": {
+    "muscles": ["Trizeps", "Triceps"],
+    "how": [
+      ["Vorgebeugt, Oberarm waagerecht und nah am Körper.", "Bent over, upper arm parallel to the floor and close to your body."],
+      ["Unterarm nach hinten strecken, bis der Arm gerade ist.", "Extend your forearm back until your arm is straight."],
+      ["Langsam zurück.", "Return slowly."]
+    ],
+    "tips": [
+      ["Oberarm bleibt still.", "Keep your upper arm still."],
+      ["Leichtes Gewicht, oben kurz anspannen.", "Light weight, squeeze briefly at the top."]
+    ]
+  },
+  "French Press": {
+    "muscles": ["Trizeps", "Triceps"],
+    "how": [
+      ["Auf die Bank legen, Gewicht mit gestreckten Armen über der Brust.", "Lie on the bench with the weight above your chest, arms straight."],
+      ["Nur im Ellbogen beugen und das Gewicht zur Stirn bzw. knapp dahinter absenken.", "Bend only at the elbows, lowering the weight to your forehead or just behind it."],
+      ["Arme wieder strecken.", "Extend your arms again."]
+    ],
+    "tips": [
+      ["Ellbogen zeigen zur Decke und gehen nicht auseinander.", "Elbows point to the ceiling and don't flare out."],
+      ["Langsam absenken – das Gewicht ist nah am Kopf.", "Lower slowly – the weight is close to your head."]
+    ]
+  },
+  "Enges Bankdrücken": {
+    "muscles": ["Trizeps, Brust, vordere Schulter", "Triceps, chest, front delts"],
+    "how": [
+      ["Wie beim Bankdrücken liegen, Griff etwa schulterbreit.", "Set up like a bench press with a grip about shoulder-width."],
+      ["Stange zur unteren Brust absenken, Ellbogen nah am Körper.", "Lower the bar to your lower chest, elbows close to your body."],
+      ["Hochdrücken.", "Press up."]
+    ],
+    "tips": [
+      ["Nicht zu eng greifen – das belastet die Handgelenke.", "Don't grip too narrow – it strains the wrists."],
+      ["Mit Sicherung oder Partner trainieren.", "Use safeties or a spotter."]
+    ]
+  },
+  "Bankdips": {
+    "muscles": ["Trizeps, vordere Schulter", "Triceps, front delts"],
+    "how": [
+      ["Hände hinter dem Körper auf eine Bankkante, Beine nach vorne.", "Hands on the edge of a bench behind you, legs out in front."],
+      ["Gesäß vor der Bank nach unten absenken, bis die Oberarme etwa waagerecht sind.", "Lower your hips in front of the bench until your upper arms are about parallel."],
+      ["Wieder hochdrücken.", "Press back up."]
+    ],
+    "tips": [
+      ["Nicht zu tief – das belastet die Schulter vorne.", "Don't go too deep – it stresses the front of the shoulder."],
+      ["Rücken nah an der Bank.", "Keep your back close to the bench."],
+      ["Leichter: Knie anwinkeln. Schwerer: Füße erhöht.", "Easier: bend your knees. Harder: elevate your feet."]
+    ]
+  },
+  "Diamond-Liegestütze": {
+    "muscles": ["Trizeps, Brust", "Triceps, chest"],
+    "how": [
+      ["Hände unter der Brust so zusammen, dass Daumen und Zeigefinger ein Dreieck bilden.", "Hands together under your chest so your thumbs and index fingers form a triangle."],
+      ["Körper gerade, Brust zu den Händen absenken.", "Keep your body straight and lower your chest to your hands."],
+      ["Hochdrücken.", "Push back up."]
+    ],
+    "tips": [
+      ["Ellbogen nah am Körper.", "Elbows close to your body."],
+      ["Belastet die Handgelenke – bei Schmerzen Hände etwas weiter auseinander.", "It's demanding on the wrists – move your hands a bit apart if they hurt."]
+    ]
+  }
+}

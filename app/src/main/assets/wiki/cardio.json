@@ -1,0 +1,217 @@
+{
+  "Laufband": {
+    "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "how": [
+      ["Mit langsamem Gehen starten und 5 Minuten aufwärmen.", "Start walking slowly and warm up for 5 minutes."],
+      ["Tempo steigern, aufrecht laufen, Arme locker mitschwingen.", "Increase the pace, run tall, arms swinging loosely."],
+      ["Zum Schluss langsam auslaufen.", "Finish with an easy cool-down."]
+    ],
+    "tips": [
+      ["Nicht an den Haltegriffen festhalten.", "Don't hold on to the handrails."],
+      ["Notstopp-Clip an der Kleidung befestigen.", "Clip the emergency stop to your clothing."],
+      ["1 % Steigung entspricht etwa dem Laufen draußen.", "A 1% incline roughly matches running outdoors."]
+    ]
+  },
+  "Laufband Gehen mit Steigung": {
+    "muscles": ["Herz-Kreislauf, Gesäß, Waden", "Cardio, glutes, calves"],
+    "how": [
+      ["Steigung auf 8–15 % stellen, Tempo 4–6 km/h.", "Set the incline to 8–15% and the speed to 4–6 km/h."],
+      ["Aufrecht gehen, ganze Fußsohle aufsetzen.", "Walk tall, placing your whole foot."],
+      ["20–45 Minuten gleichmäßig gehen.", "Walk steadily for 20–45 minutes."]
+    ],
+    "tips": [
+      ["Nicht festhalten – das senkt den Effekt stark.", "Don't hold the rails – it greatly reduces the effect."],
+      ["Gelenkschonend und trotzdem intensiv.", "Easy on the joints yet still intense."]
+    ]
+  },
+  "Crosstrainer": {
+    "muscles": ["Herz-Kreislauf, Beine, Arme", "Cardio, legs, arms"],
+    "how": [
+      ["Aufrecht auf die Pedale stellen, Griffe locker halten.", "Stand upright on the pedals and hold the handles loosely."],
+      ["Gleichmäßig treten und mit den Armen mitschieben und -ziehen.", "Stride evenly, pushing and pulling with your arms."],
+      ["Widerstand so wählen, dass du dich noch unterhalten könntest (Grundlagenausdauer).", "Choose a resistance at which you could still talk (base endurance)."]
+    ],
+    "tips": [
+      ["Fersen nicht abheben.", "Keep your heels down."],
+      ["Sehr gelenkschonend.", "Very easy on the joints."]
+    ]
+  },
+  "Fahrradergometer": {
+    "muscles": ["Herz-Kreislauf, Oberschenkel", "Cardio, quads"],
+    "how": [
+      ["Sattelhöhe so einstellen, dass das Bein unten fast gestreckt ist.", "Set the saddle so your leg is almost straight at the bottom."],
+      ["Gleichmäßig treten, Trittfrequenz 70–90 pro Minute.", "Pedal evenly at 70–90 rpm."],
+      ["Widerstand nach Ziel wählen.", "Choose the resistance to match your goal."]
+    ],
+    "tips": [
+      ["Zu niedriger Sattel belastet die Knie.", "A saddle set too low strains the knees."],
+      ["Knie zeigen nach vorne, nicht nach außen.", "Knees point forward, not outward."]
+    ]
+  },
+  "Spinning": {
+    "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "how": [
+      ["Sattel auf Hüfthöhe, Lenker gleich hoch oder etwas höher.", "Saddle at hip height, handlebars level or slightly higher."],
+      ["Mit Widerstand treten, Phasen im Sitzen und Stehen abwechseln.", "Pedal against resistance, alternating seated and standing phases."],
+      ["Locker ausfahren.", "Finish with an easy spin."]
+    ],
+    "tips": [
+      ["Immer etwas Widerstand – ohne kann das Schwungrad die Beine mitreißen.", "Always keep some resistance – without it the flywheel can drag your legs."],
+      ["Ausreichend trinken.", "Stay hydrated."]
+    ]
+  },
+  "Air Bike": {
+    "muscles": ["Herz-Kreislauf, ganzer Körper", "Cardio, full body"],
+    "how": [
+      ["Sattel einstellen wie beim Fahrrad.", "Adjust the saddle like a regular bike."],
+      ["Gleichzeitig mit Beinen treten und mit den Armen drücken/ziehen.", "Pedal with your legs while pushing and pulling with your arms."],
+      ["Je schneller, desto mehr Widerstand – ideal für Intervalle.", "The faster you go, the more resistance – ideal for intervals."]
+    ],
+    "tips": [
+      ["Sehr intensiv – kurze Intervalle mit Pausen planen.", "Very intense – plan short intervals with rest."],
+      ["Gut aufwärmen.", "Warm up well."]
+    ]
+  },
+  "Rudergerät": {
+    "muscles": ["Herz-Kreislauf, Beine, Rücken, Arme", "Cardio, legs, back, arms"],
+    "how": [
+      ["Füße festschnallen, Griff mit gestreckten Armen, Knie angewinkelt.", "Strap in your feet, hold the handle with straight arms, knees bent."],
+      ["Reihenfolge beim Zug: Beine strecken – Oberkörper leicht zurück – Arme zum Bauch.", "Drive order: legs – lean back slightly – arms to your stomach."],
+      ["Zurück in umgekehrter Reihenfolge: Arme – Oberkörper – Knie beugen.", "Recover in reverse: arms – torso – bend your knees."]
+    ],
+    "tips": [
+      ["Die Kraft kommt zu etwa 60 % aus den Beinen.", "About 60% of the power comes from your legs."],
+      ["Rücken gerade, nicht rund nach vorne ziehen.", "Keep your back straight, don't round forward."],
+      ["Klappe/Widerstand mittel (3–5) reicht meist.", "A medium damper (3–5) is usually enough."]
+    ]
+  },
+  "Ski-Ergometer": {
+    "muscles": ["Herz-Kreislauf, Latissimus, Trizeps, Rumpf", "Cardio, lats, triceps, core"],
+    "how": [
+      ["Griffe über Kopf greifen, Füße hüftbreit.", "Grab the handles overhead, feet hip-width."],
+      ["Mit gestreckten Armen nach unten ziehen und dabei Hüfte und Knie beugen.", "Pull down with straight arms while hinging at your hips and bending your knees."],
+      ["Aufrichten und die Arme wieder nach oben führen.", "Stand back up and bring your arms back up."]
+    ],
+    "tips": [
+      ["Die Kraft kommt aus dem Rumpf, nicht nur aus den Armen.", "Power comes from your core, not just your arms."],
+      ["Rücken gerade.", "Keep your back straight."]
+    ]
+  },
+  "Stepper": {
+    "muscles": ["Herz-Kreislauf, Gesäß, Oberschenkel, Waden", "Cardio, glutes, quads, calves"],
+    "how": [
+      ["Aufrecht stehen, Griffe nur leicht berühren.", "Stand tall and only lightly touch the handles."],
+      ["Gleichmäßig steigen, ganze Fußsohle aufsetzen.", "Step evenly, placing your whole foot."],
+      ["Tempo so wählen, dass du nicht abstützen musst.", "Choose a pace where you don't need to lean on the rails."]
+    ],
+    "tips": [
+      ["Nicht auf die Griffe lehnen.", "Don't lean on the handles."],
+      ["Kurze Schritte belasten die Waden stärker als volle.", "Short steps load the calves more than full ones."]
+    ]
+  },
+  "Laufen (draußen)": {
+    "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "how": [
+      ["Mit lockerem Traben oder Gehen aufwärmen.", "Warm up with an easy jog or walk."],
+      ["Aufrecht laufen, kurze Schritte, Füße etwa unter dem Körper aufsetzen.", "Run tall with short strides, landing roughly under your body."],
+      ["Die meisten Läufe locker (Unterhaltungstempo).", "Keep most runs easy (conversation pace)."]
+    ],
+    "tips": [
+      ["Umfang langsam steigern (etwa +10 % pro Woche).", "Increase volume gradually (about +10% per week)."],
+      ["Passende Laufschuhe tragen.", "Wear suitable running shoes."]
+    ]
+  },
+  "Gehen": {
+    "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "how": [
+      ["Zügig gehen, Arme mitschwingen.", "Walk briskly, arms swinging."],
+      ["Aufrechte Haltung, Blick nach vorne.", "Upright posture, eyes forward."]
+    ],
+    "tips": [
+      ["Ideal für Regeneration und aktive Pausentage.", "Ideal for recovery and active rest days."],
+      ["Regelmäßigkeit zählt mehr als Tempo.", "Consistency matters more than speed."]
+    ]
+  },
+  "Wandern": {
+    "muscles": ["Herz-Kreislauf, Beine, Gesäß", "Cardio, legs, glutes"],
+    "how": [
+      ["Gleichmäßiges Tempo wählen, bergauf kürzere Schritte.", "Choose a steady pace with shorter steps uphill."],
+      ["Bergab Knie leicht gebeugt, kontrolliert gehen.", "Downhill, keep your knees soft and walk under control."]
+    ],
+    "tips": [
+      ["Gutes Schuhwerk und genug Wasser.", "Good footwear and enough water."],
+      ["Stöcke entlasten die Knie bergab.", "Poles take load off the knees downhill."]
+    ]
+  },
+  "Radfahren (draußen)": {
+    "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "how": [
+      ["Sattel so einstellen, dass das Bein unten fast gestreckt ist.", "Set the saddle so your leg is almost straight at the bottom."],
+      ["Gleichmäßig treten, lieber leichter Gang und höhere Trittfrequenz.", "Pedal smoothly; prefer an easier gear and higher cadence."]
+    ],
+    "tips": [
+      ["Helm tragen.", "Wear a helmet."],
+      ["Knie zeigen nach vorne.", "Knees point forward."]
+    ]
+  },
+  "Schwimmen": {
+    "muscles": ["Herz-Kreislauf, ganzer Körper", "Cardio, full body"],
+    "how": [
+      ["Mit ein paar lockeren Bahnen einschwimmen.", "Warm up with a few easy lengths."],
+      ["Gleichmäßig atmen, lange Züge.", "Breathe steadily and take long strokes."],
+      ["Intervalle oder Dauerschwimmen je nach Ziel.", "Intervals or continuous swimming depending on your goal."]
+    ],
+    "tips": [
+      ["Sehr gelenkschonend.", "Very easy on the joints."],
+      ["Brustschwimmen mit Kopf über Wasser belastet den Nacken – lieber Kopf ins Wasser.", "Breaststroke with your head above water strains the neck – put your face in the water."]
+    ]
+  },
+  "Seilspringen": {
+    "muscles": ["Herz-Kreislauf, Waden, Koordination", "Cardio, calves, coordination"],
+    "how": [
+      ["Seillänge: mit einem Fuß auf der Mitte reichen die Griffe etwa bis zu den Achseln.", "Rope length: standing on the middle, the handles reach about your armpits."],
+      ["Aus den Handgelenken drehen, Ellbogen nah am Körper.", "Turn the rope with your wrists, elbows close to your body."],
+      ["Niedrig auf den Fußballen springen.", "Jump low on the balls of your feet."]
+    ],
+    "tips": [
+      ["Weich landen, Fersen berühren den Boden kaum.", "Land softly; heels barely touch the floor."],
+      ["Anfangs kurze Intervalle – die Waden ermüden schnell.", "Start with short intervals – calves tire quickly."]
+    ]
+  },
+  "HIIT": {
+    "muscles": ["Herz-Kreislauf, ganzer Körper", "Cardio, full body"],
+    "how": [
+      ["Gut aufwärmen (5–10 Minuten).", "Warm up well (5–10 minutes)."],
+      ["Kurze, sehr intensive Belastungen (z. B. 20–40 s) mit Pausen abwechseln.", "Alternate short, very intense efforts (e.g. 20–40 s) with rest."],
+      ["Insgesamt 10–25 Minuten, dann ausklingen lassen.", "10–25 minutes in total, then cool down."]
+    ],
+    "tips": [
+      ["Nicht täglich – braucht Erholung.", "Not every day – it needs recovery."],
+      ["Bei Müdigkeit lieber Übungen mit wenig Technikanspruch wählen.", "When tired, pick exercises with low technical demands."]
+    ]
+  },
+  "Boxen (Sandsack)": {
+    "muscles": ["Herz-Kreislauf, Schultern, Rumpf", "Cardio, shoulders, core"],
+    "how": [
+      ["Boxbandagen und Handschuhe anziehen.", "Wrap your hands and put on gloves."],
+      ["In Grundstellung leicht auf den Fußballen, Deckung oben.", "Stand in your stance, light on the balls of your feet, guard up."],
+      ["In Runden (z. B. 3 Minuten) Schläge und Kombinationen ausführen.", "Throw punches and combinations in rounds (e.g. 3 minutes)."]
+    ],
+    "tips": [
+      ["Die Kraft kommt aus der Hüftdrehung, nicht nur aus dem Arm.", "Power comes from rotating your hips, not just your arm."],
+      ["Handgelenk beim Treffen gerade halten.", "Keep your wrist straight on impact."]
+    ]
+  },
+  "Battle Ropes": {
+    "muscles": ["Herz-Kreislauf, Schultern, Arme, Rumpf", "Cardio, shoulders, arms, core"],
+    "how": [
+      ["Leicht in die Hocke gehen, Seilenden fest greifen.", "Sit into a quarter squat and grip the rope ends firmly."],
+      ["Abwechselnd oder gleichzeitig Wellen schlagen.", "Make waves alternately or with both arms together."],
+      ["In Intervallen arbeiten (z. B. 30 s an, 30 s Pause).", "Work in intervals (e.g. 30 s on, 30 s off)."]
+    ],
+    "tips": [
+      ["Rücken gerade, Rumpf angespannt.", "Back straight, core braced."],
+      ["Die Bewegung kommt aus den Schultern, nicht nur aus den Unterarmen.", "The movement comes from your shoulders, not just your forearms."]
+    ]
+  }
+}

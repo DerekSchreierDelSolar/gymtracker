@@ -1,0 +1,139 @@
+{
+  "Schulterdrücken": {
+    "muscles": ["Vordere und seitliche Schulter, Trizeps, oberer Rücken", "Front and side delts, triceps, upper back"],
+    "how": [
+      ["Gewicht auf Schulterhöhe, Unterarme senkrecht, Bauch und Gesäß angespannt.", "Weight at shoulder height, forearms vertical, abs and glutes braced."],
+      ["Senkrecht über den Kopf drücken, bis die Arme fast gestreckt sind.", "Press straight overhead until your arms are nearly straight."],
+      ["Kontrolliert zurück auf Schulterhöhe.", "Lower under control back to shoulder height."]
+    ],
+    "tips": [
+      ["Nicht ins Hohlkreuz lehnen – Rippen unten halten.", "Don't lean back into an arch – keep your ribs down."],
+      ["Ellbogen leicht vor dem Körper, nicht ganz seitlich.", "Elbows slightly in front of your body, not straight out to the sides."]
+    ],
+    "variants": {
+      "Kurzhantel": ["Sitzend mit Lehne ist am stabilsten; oben die Hanteln nicht zusammenschlagen.", "Seated with back support is most stable; don't clank the dumbbells together at the top."],
+      "Langhantel / Military Press": ["Stehend: Kopf kurz nach hinten nehmen, damit die Stange vorbeikommt, dann den Kopf wieder 'durch die Arme' schieben.", "Standing: move your head back to let the bar pass, then push your head 'through' your arms at the top."],
+      "Maschine": ["Sitz so einstellen, dass die Griffe auf Schulterhöhe starten.", "Adjust the seat so the handles start at shoulder height."],
+      "Multipresse": ["Bank leicht vor die Stange stellen, damit sie vor dem Gesicht vorbeiläuft.", "Set the bench slightly in front of the bar so it travels past your face."]
+    }
+  },
+  "Arnold Press": {
+    "muscles": ["Vordere und seitliche Schulter, Trizeps", "Front and side delts, triceps"],
+    "how": [
+      ["Hanteln vor dem Gesicht, Handflächen zeigen zu dir.", "Dumbbells in front of your face, palms facing you."],
+      ["Beim Hochdrücken die Arme öffnen und die Hände nach außen drehen.", "As you press up, open your arms and rotate your palms to face forward."],
+      ["Beim Absenken die Drehung umkehren.", "Reverse the rotation on the way down."]
+    ],
+    "tips": [
+      ["Flüssige Bewegung, kein Schwung.", "Smooth movement, no momentum."],
+      ["Etwas leichteres Gewicht als beim normalen Schulterdrücken.", "Use a bit less weight than for a regular shoulder press."]
+    ]
+  },
+  "Seitheben": {
+    "muscles": ["Seitliche Schulter", "Side delts"],
+    "how": [
+      ["Aufrecht stehen, Gewicht seitlich am Körper, Ellbogen leicht gebeugt.", "Stand tall, weight at your sides, elbows slightly bent."],
+      ["Arme seitlich bis etwa Schulterhöhe anheben – Ellbogen führen.", "Raise your arms out to the side to about shoulder height – lead with the elbows."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Nicht über Schulterhöhe und nicht mit den Schultern hochziehen.", "Don't go above shoulder height or shrug your shoulders."],
+      ["Kein Schwung aus dem Oberkörper – leichtes Gewicht reicht.", "No swinging from the torso – light weight is enough."],
+      ["Arme leicht vor dem Körper (ca. 20–30°) sind schultergerechter.", "Arms slightly in front of your body (about 20–30°) are kinder to the shoulders."]
+    ],
+    "variants": {
+      "Kabelzug": ["Einarmig am unteren Kabel, Kabel vor oder hinter dem Körper – Spannung auch unten.", "One arm at a low cable, cable in front or behind you – tension even at the bottom."],
+      "Maschine": ["Ellbogen an die Polster, Schulter auf Höhe der Drehachse.", "Elbows against the pads, shoulder in line with the pivot."]
+    }
+  },
+  "Frontheben": {
+    "muscles": ["Vordere Schulter", "Front delts"],
+    "how": [
+      ["Aufrecht stehen, Gewicht vor den Oberschenkeln.", "Stand tall, weight in front of your thighs."],
+      ["Mit fast gestreckten Armen nach vorne bis Schulterhöhe heben.", "Raise it forward with nearly straight arms to shoulder height."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Nicht nach hinten lehnen oder schwingen.", "Don't lean back or swing."],
+      ["Die vordere Schulter arbeitet bei Drückübungen schon viel mit – wenig Sätze reichen.", "Front delts already work a lot in pressing – a few sets are enough."]
+    ]
+  },
+  "Reverse Flys": {
+    "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],
+    "how": [
+      ["Vorgebeugt (oder an der Maschine mit Brust am Polster), Arme leicht gebeugt.", "Bent over (or chest against the pad on the machine), arms slightly bent."],
+      ["Arme seitlich nach außen und hinten öffnen.", "Open your arms out and back."],
+      ["Langsam zurückführen.", "Return slowly."]
+    ],
+    "tips": [
+      ["Schulterblätter nicht zu stark zusammenziehen – Fokus auf die hintere Schulter.", "Don't squeeze your shoulder blades hard – focus on the rear delts."],
+      ["Leichtes Gewicht, kein Schwung.", "Light weight, no momentum."]
+    ],
+    "variants": {
+      "Maschine / Reverse Butterfly": ["Griffe auf Schulterhöhe einstellen, Brust am Polster.", "Set the handles at shoulder height, chest on the pad."],
+      "Kabelzug": ["Kabel überkreuzt greifen (links nach rechts) auf Schulterhöhe.", "Grab the cables crossed (left to right) at shoulder height."]
+    }
+  },
+  "Face Pulls": {
+    "muscles": ["Hintere Schulter, Rotatorenmanschette, oberer Rücken", "Rear delts, rotator cuff, upper back"],
+    "how": [
+      ["Seil am Kabel auf Kopf- oder Augenhöhe, mit Daumen nach hinten greifen.", "Rope on a cable at head or eye height, grip with thumbs pointing back."],
+      ["Seil Richtung Gesicht ziehen, dabei die Enden auseinanderziehen.", "Pull the rope toward your face, spreading the ends apart."],
+      ["Ellbogen hoch, am Ende die Hände nach hinten drehen, dann langsam zurück.", "Elbows high, rotate your hands back at the end, then return slowly."]
+    ],
+    "tips": [
+      ["Leichtes Gewicht – es geht um saubere Bewegung, nicht um Last.", "Use light weight – it's about clean movement, not load."],
+      ["Nicht nach hinten lehnen.", "Don't lean back."],
+      ["Gut für gesunde Schultern, wenn man viel drückt.", "Great for healthy shoulders if you do a lot of pressing."]
+    ]
+  },
+  "Band Pull-Aparts": {
+    "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],
+    "how": [
+      ["Band schulterbreit mit gestreckten Armen vor der Brust halten.", "Hold the band at shoulder width with straight arms in front of your chest."],
+      ["Band auseinanderziehen, bis es die Brust berührt.", "Pull the band apart until it touches your chest."],
+      ["Langsam zurück.", "Return slowly."]
+    ],
+    "tips": [
+      ["Schultern unten halten.", "Keep your shoulders down."],
+      ["Gut als Aufwärmübung vor Drückübungen.", "Great as a warm-up before pressing."]
+    ]
+  },
+  "Aufrechtes Rudern": {
+    "muscles": ["Seitliche Schulter, Trapez", "Side delts, traps"],
+    "how": [
+      ["Aufrecht stehen, Gewicht vor dem Körper, etwa schulterbreit greifen.", "Stand tall, weight in front of you, grip about shoulder-width."],
+      ["Mit den Ellbogen voran bis etwa Brusthöhe ziehen.", "Pull up leading with your elbows to about chest height."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Nicht höher als bis zur Brust – sonst kann es in der Schulter zwicken.", "Don't go higher than chest level – it can pinch the shoulder."],
+      ["Schulterbreiter Griff ist schonender als ein enger.", "A shoulder-width grip is gentler than a narrow one."],
+      ["Bei Schulterschmerzen lieber Seitheben machen.", "If your shoulders hurt, do lateral raises instead."]
+    ]
+  },
+  "Schulterheben": {
+    "muscles": ["Oberer Trapez (Nacken)", "Upper traps"],
+    "how": [
+      ["Aufrecht stehen, Gewicht an gestreckten Armen.", "Stand tall holding the weight at arm's length."],
+      ["Schultern gerade nach oben Richtung Ohren ziehen.", "Lift your shoulders straight up toward your ears."],
+      ["Oben kurz halten, langsam absenken.", "Hold briefly at the top, lower slowly."]
+    ],
+    "tips": [
+      ["Nicht mit den Schultern kreisen.", "Don't roll your shoulders."],
+      ["Arme bleiben gestreckt – nicht mit dem Bizeps ziehen.", "Keep your arms straight – don't pull with your biceps."]
+    ]
+  },
+  "Pike-Liegestütze": {
+    "muscles": ["Schultern, Trizeps", "Shoulders, triceps"],
+    "how": [
+      ["Aus dem Liegestütz die Hüfte hochschieben, sodass der Körper ein umgedrehtes V bildet.", "From a push-up position push your hips up so your body forms an upside-down V."],
+      ["Kopf zwischen den Händen Richtung Boden absenken.", "Lower your head toward the floor between your hands."],
+      ["Wieder hochdrücken.", "Press back up."]
+    ],
+    "tips": [
+      ["Ellbogen nicht seitlich wegklappen lassen.", "Don't let your elbows flare out sideways."],
+      ["Schwerer: Füße erhöht auf eine Bank.", "Harder: elevate your feet on a bench."]
+    ]
+  }
+}

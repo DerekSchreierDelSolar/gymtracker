@@ -56,9 +56,11 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `ExerciseDetail.kt` | `SetInput` (inkl. Stoppuhr), `SetRow`/`EditSetDialog`, `ExerciseDetailScreen` |
 | `CatalogScreen.kt` | Katalog + `CustomExerciseDialog` |
 | `Progression.kt` | 💡 Gewichts-Vorschlag (doppelte Progression) |
+| `Wiki.kt` | Übungs-Wiki: lädt `assets/wiki/*.json` (`Wiki.load`), `wikiFor(name)`, `WikiButton` (ⓘ), `WikiSheet` (Bottom Sheet), `WikiScreen` (Übersicht + Suche) |
 | `Icons.kt` | `AppIcon`/`Ico` (Linien-Icons für Buttons/Navigation) |
 | `Pictograms.kt` | Übungs-Piktogramme: `Motion` (~47 Bewegungen), `MOTION_OF` (Katalog-Name → Bewegung), `ExerciseIcon(name, group)`, `MuscleIcon(group)`, `drawMotion()` |
 | `Components.kt` | `GroupHeader`, `ChartCard`, `HorizontalBars`, `HistoryBars`, `LineChart`, `ProgressChart` |
+| `assets/wiki/*.json` | Wiki-Inhalte pro Muskelgruppe, Schlüssel = Grundübung (`base`): `muscles`, `how`, `tips` (je `[de, en]`), optional `variants` (Schlüssel = Klammertext des Katalog-Namens) |
 | `res/mipmap-*/` | App-Icon (Meerschweinchen): `ic_launcher_foreground.png` (108 dp, Adaptive Icon) + Legacy-`ic_launcher(_round).png` (48 dp), erzeugt per PowerShell/System.Drawing aus dem Original-PNG |
 | `ui/theme/` | Farben (Indigo), Typografie, Formen; `GymTrackerTheme(dynamicColor = false)` |
 
@@ -83,6 +85,8 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 - **Neue Katalog-Übung** = Zeile in `CATALOG` (Catalog.kt) **und** Eintrag in `MOTION_OF` (Pictograms.kt),
   bei Cardio zusätzlich MET in `CARDIO_MET`, bei Zeitübung in `TIMED_CATALOG`.
   Prüfen, dass `MOTION_OF` alle Katalog-Namen abdeckt (Vergleich per grep/comm).
+  Neue Grundübung zusätzlich in `assets/wiki/<gruppe>.json` beschreiben (`gen-data.mjs` warnt, wenn ein Eintrag fehlt,
+  und bricht bei unbekannten Grundübungen/Varianten ab).
 - Symbole: wo der Übungsname bekannt ist `ExerciseIcon(name, group)`, sonst `MuscleIcon(group)`.
   Piktogramme zeichnen in 0..1-Koordinaten, Seitenansicht blickt nach links; alles innerhalb
   des Kreises halten (Abstand zur Mitte < 0,48). Zum Prüfen temporär ein Raster aller
@@ -95,7 +99,8 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
   (`gym_data`); laufendes Training zusätzlich in `gym_training` (iOS beendet Web-Apps im Hintergrund).
 - `web/js/data.js` wird **erzeugt**: `node web/tools/gen-data.mjs` liest CATALOG, CARDIO_MET,
   RENAMED_EXERCISES, TIMED_CATALOG, TEMPLATES, MOTION_OF und den `drawMotion`-Code aus den Kotlin-Dateien.
-  **Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt erneut ausführen.**
+  Erzeugt außerdem `web/js/wiki-data.js` aus `app/src/main/assets/wiki/*.json` (Logik in `web/js/wiki.js`).
+  **Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt / Wiki-JSON erneut ausführen.**
 - Dateien spiegeln die Kotlin-Struktur: `core.js` (I18n/Format/Model), `store.js` (GymStore),
   `stats.js` (Stats/Progression/Dashboard-Berechnungen), `pictograms.js`, `ui.js` (`h()`-DOM-Helfer,
   Icons, Diagramme, Dialog), `nav.js` (Navigation = GymApp-State + Browser-History), `filter.js`,

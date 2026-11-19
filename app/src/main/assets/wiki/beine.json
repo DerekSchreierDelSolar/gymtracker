@@ -1,0 +1,300 @@
+{
+  "Kniebeugen": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Adduktoren, Rumpf", "Quads, glutes, adductors, core"],
+    "how": [
+      ["Füße etwa schulterbreit, Fußspitzen leicht nach außen.", "Feet about shoulder-width, toes turned out slightly."],
+      ["Tief einatmen, Bauch anspannen, Brust raus.", "Take a deep breath, brace your core, chest up."],
+      ["Hüfte nach hinten-unten setzen, Knie folgen der Richtung der Zehen.", "Sit your hips back and down; knees track in line with your toes."],
+      ["Mindestens bis Oberschenkel waagerecht, dann kraftvoll über die ganze Fußsohle hochdrücken.", "Go to at least thighs parallel, then drive up through your whole foot."]
+    ],
+    "tips": [
+      ["Knie nicht nach innen fallen lassen.", "Don't let your knees cave inward."],
+      ["Fersen bleiben am Boden.", "Keep your heels down."],
+      ["Rücken gerade – unten nicht rund werden lassen.", "Keep your back neutral – don't round at the bottom."]
+    ],
+    "variants": {
+      "Langhantel": ["Stange auf dem oberen Trapez, nicht auf dem Nacken. Im Rack mit Sicherungsablagen auf passender Höhe.", "Bar on your upper traps, not your neck. Squat in a rack with safety pins at the right height."],
+      "Multipresse": ["Füße etwas vor den Körper stellen, damit die senkrechte Stange passt.", "Place your feet slightly forward so the vertical bar path fits you."],
+      "Körpergewicht": ["Arme nach vorne strecken hilft beim Gleichgewicht.", "Reaching your arms forward helps with balance."]
+    }
+  },
+  "Goblet Squat": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Rumpf", "Quads, glutes, core"],
+    "how": [
+      ["Gewicht senkrecht vor der Brust halten, Ellbogen nach unten.", "Hold the weight vertically at your chest, elbows pointing down."],
+      ["Füße schulterbreit, Oberkörper aufrecht.", "Feet shoulder-width, torso upright."],
+      ["Tief in die Hocke gehen, Ellbogen zwischen die Knie.", "Squat deep, elbows between your knees."],
+      ["Über die ganze Fußsohle hochdrücken.", "Drive up through your whole foot."]
+    ],
+    "tips": [
+      ["Ideal, um die Kniebeuge zu lernen.", "Great for learning the squat pattern."],
+      ["Gewicht nah am Körper halten, nicht nach vorne kippen.", "Keep the weight close; don't tip forward."]
+    ]
+  },
+  "Frontkniebeugen": {
+    "muscles": ["Oberschenkel vorne, Gesäß, oberer Rücken, Rumpf", "Quads, glutes, upper back, core"],
+    "how": [
+      ["Stange vorne auf den Schultern ablegen, Ellbogen hoch.", "Rest the bar on the front of your shoulders, elbows high."],
+      ["Oberkörper bleibt sehr aufrecht.", "Keep your torso very upright."],
+      ["Tief beugen und mit hohen Ellbogen hochdrücken.", "Squat deep and drive up with your elbows high."]
+    ],
+    "tips": [
+      ["Fallen die Ellbogen ab, rollt die Stange nach vorne.", "If your elbows drop, the bar rolls forward."],
+      ["Wer wenig Handgelenk-Beweglichkeit hat, kann die Arme kreuzen.", "If wrist mobility is limited, use a cross-arm grip."]
+    ]
+  },
+  "Hackenschmidt-Kniebeugen": {
+    "muscles": ["Oberschenkel vorne, Gesäß", "Quads, glutes"],
+    "how": [
+      ["Rücken ans Polster, Schultern unter die Auflagen, Füße mittig auf die Plattform.", "Back against the pad, shoulders under the pads, feet in the middle of the platform."],
+      ["Sicherung lösen und tief absenken.", "Release the safety and lower deep."],
+      ["Über die ganze Fußsohle hochdrücken, Knie oben nicht durchstrecken.", "Drive up through your whole foot without locking your knees at the top."]
+    ],
+    "tips": [
+      ["Füße weiter oben = mehr Gesäß, weiter unten = mehr Oberschenkel.", "Feet higher = more glutes, lower = more quads."],
+      ["Gesäß und Rücken bleiben am Polster.", "Keep your glutes and back on the pad."]
+    ]
+  },
+  "Beinpresse": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Adduktoren", "Quads, glutes, adductors"],
+    "how": [
+      ["Rücken und Gesäß fest ans Polster, Füße schulterbreit auf die Plattform.", "Back and glutes firmly on the pad, feet shoulder-width on the platform."],
+      ["Sicherung lösen, Knie Richtung Brust beugen bis etwa 90°.", "Release the safety and bend your knees toward your chest to about 90°."],
+      ["Plattform wegdrücken, ohne die Knie ganz durchzustrecken.", "Push the platform away without fully locking your knees."]
+    ],
+    "tips": [
+      ["Unten darf das Gesäß nicht vom Sitz abheben (Rundrücken).", "Your glutes must not lift off the seat at the bottom (rounded back)."],
+      ["Knie oben nie ruckartig durchstrecken.", "Never snap your knees straight at the top."],
+      ["Knie zeigen in Richtung der Zehen.", "Knees point the same way as your toes."]
+    ]
+  },
+  "Rumänisches Kreuzheben": {
+    "muscles": ["Beinbeuger, Gesäß, unterer Rücken", "Hamstrings, glutes, lower back"],
+    "how": [
+      ["Aufrecht mit dem Gewicht vor den Oberschenkeln starten, Knie leicht gebeugt.", "Start standing with the weight in front of your thighs, knees soft."],
+      ["Hüfte weit nach hinten schieben, das Gewicht gleitet nah an den Beinen nach unten.", "Push your hips far back; the weight slides down close to your legs."],
+      ["Bis zur deutlichen Dehnung hinten im Oberschenkel (meist knapp unter dem Knie).", "Go until you feel a strong hamstring stretch (usually just below the knee)."],
+      ["Mit der Hüfte nach vorne wieder aufrichten.", "Drive your hips forward to stand back up."]
+    ],
+    "tips": [
+      ["Es ist eine Hüftbewegung, keine Kniebeuge – Kniewinkel bleibt fast gleich.", "It's a hip hinge, not a squat – your knee angle barely changes."],
+      ["Rücken bleibt gerade, das Gewicht nicht ablegen.", "Keep your back flat and don't set the weight down."]
+    ]
+  },
+  "Sumo-Kreuzheben": {
+    "muscles": ["Gesäß, Adduktoren, Oberschenkel, Rücken", "Glutes, adductors, quads, back"],
+    "how": [
+      ["Weiter Stand, Fußspitzen deutlich nach außen, Stange über dem Mittelfuß.", "Wide stance, toes well turned out, bar over mid-foot."],
+      ["Stange innerhalb der Beine schulterbreit greifen, Brust raus.", "Grip the bar inside your legs at shoulder width, chest up."],
+      ["Knie nach außen drücken und die Stange hochziehen.", "Push your knees out and lift the bar."],
+      ["Oben Hüfte strecken, kontrolliert ablegen.", "Lock out your hips, lower under control."]
+    ],
+    "tips": [
+      ["Knie folgen den Fußspitzen.", "Knees track over your toes."],
+      ["Rücken gerade, kein Ruck vom Boden.", "Back flat, no jerking off the floor."]
+    ]
+  },
+  "Hip Thrust": {
+    "muscles": ["Gesäß, Beinbeuger", "Glutes, hamstrings"],
+    "how": [
+      ["Oberer Rücken an der Bank, Gewicht (mit Polster) auf der Hüfte, Füße hüftbreit.", "Upper back against a bench, padded weight across your hips, feet hip-width."],
+      ["Hüfte nach oben drücken, bis Oberkörper und Oberschenkel eine Linie bilden.", "Drive your hips up until your torso and thighs form a line."],
+      ["Oben das Gesäß fest anspannen, dann kontrolliert absenken.", "Squeeze your glutes hard at the top, then lower under control."]
+    ],
+    "tips": [
+      ["Oben kein Hohlkreuz – Becken leicht einrollen, Kinn zur Brust.", "No arching at the top – tuck your pelvis slightly, chin toward chest."],
+      ["Schienbeine oben etwa senkrecht.", "Shins roughly vertical at the top."],
+      ["Durch die Fersen drücken.", "Push through your heels."]
+    ]
+  },
+  "Ausfallschritte": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
+    "how": [
+      ["Aufrecht stehen und einen großen Schritt nach vorne machen.", "Stand tall and take a big step forward."],
+      ["Beide Knie beugen, bis das hintere Knie knapp über dem Boden ist.", "Bend both knees until your back knee is just above the floor."],
+      ["Mit dem vorderen Bein zurück in den Stand drücken.", "Push back to standing through your front leg."]
+    ],
+    "tips": [
+      ["Vorderes Knie bleibt über dem Fuß, nicht nach innen.", "Keep your front knee over your foot, not caving inward."],
+      ["Oberkörper aufrecht, Schritt lang genug.", "Torso upright, step long enough."],
+      ["Hinteres Knie nicht auf den Boden knallen.", "Don't slam your back knee into the floor."]
+    ]
+  },
+  "Ausfallschritte gehend": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
+    "how": [
+      ["Mit Hanteln in den Händen einen großen Schritt nach vorne machen und absenken.", "Holding dumbbells, take a big step forward and lower."],
+      ["Mit dem vorderen Bein hochdrücken und das hintere Bein direkt nach vorne zum nächsten Schritt bringen.", "Drive up through the front leg and bring the back leg straight through into the next step."],
+      ["Abwechselnd weitergehen.", "Keep alternating as you walk."]
+    ],
+    "tips": [
+      ["Genug Platz einplanen.", "Make sure you have enough space."],
+      ["Ruhig und kontrolliert gehen, nicht stolpern.", "Walk steadily and controlled, don't stumble."]
+    ]
+  },
+  "Bulgarische Kniebeugen": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
+    "how": [
+      ["Hinteren Fuß mit dem Spann auf eine Bank legen, vorderer Fuß etwa ein großer Schritt davor.", "Rest the top of your back foot on a bench, front foot about a big step ahead."],
+      ["Senkrecht nach unten absenken, bis der vordere Oberschenkel etwa waagerecht ist.", "Lower straight down until your front thigh is about parallel."],
+      ["Mit dem vorderen Bein hochdrücken.", "Drive up through the front leg."]
+    ],
+    "tips": [
+      ["Fuß weiter vorne = mehr Gesäß, näher an der Bank = mehr Oberschenkel.", "Front foot further out = more glutes, closer = more quads."],
+      ["Vorderes Knie stabil über dem Fuß halten.", "Keep your front knee stable over your foot."]
+    ],
+    "variants": {
+      "Multipresse": ["Die geführte Stange hilft beim Gleichgewicht – Fuß gut positionieren.", "The guided bar helps balance – set your foot position carefully."]
+    }
+  },
+  "Step-ups": {
+    "muscles": ["Oberschenkel vorne, Gesäß", "Quads, glutes"],
+    "how": [
+      ["Einen Fuß komplett auf eine kniehohe Box oder Bank stellen.", "Place one whole foot on a knee-high box or bench."],
+      ["Über das obere Bein hochdrücken, bis du oben stehst.", "Drive through the top leg until you're standing on the box."],
+      ["Kontrolliert wieder absteigen.", "Step down under control."]
+    ],
+    "tips": [
+      ["Nicht mit dem unteren Bein abspringen.", "Don't push off with the bottom leg."],
+      ["Stabile Box verwenden.", "Use a stable box."]
+    ]
+  },
+  "Beinstrecker": {
+    "muscles": ["Oberschenkel vorne", "Quads"],
+    "how": [
+      ["Rückenlehne so einstellen, dass das Knie auf Höhe der Drehachse ist; Polster über dem Sprunggelenk.", "Adjust the backrest so your knee lines up with the pivot; pad above your ankles."],
+      ["Beine strecken und oben kurz anspannen.", "Extend your legs and squeeze briefly at the top."],
+      ["Langsam wieder absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Nicht mit Schwung arbeiten.", "Don't use momentum."],
+      ["Gesäß bleibt auf dem Sitz, Griffe festhalten.", "Keep your glutes on the seat and hold the handles."]
+    ]
+  },
+  "Beinbeuger": {
+    "muscles": ["Beinbeuger (hinterer Oberschenkel)", "Hamstrings"],
+    "how": [
+      ["Gerät einstellen: Knie auf Höhe der Drehachse, Polster über der Ferse.", "Set up so your knee lines up with the pivot and the pad sits above your heels."],
+      ["Beine kontrolliert beugen.", "Curl your legs under control."],
+      ["Langsam zurück bis fast zur Streckung.", "Return slowly to almost full extension."]
+    ],
+    "tips": [
+      ["Hüfte bleibt am Polster, nicht hochkommen.", "Keep your hips on the pad; don't let them lift."],
+      ["Besonders die Abwärtsbewegung langsam ausführen.", "Take the lowering part especially slowly."]
+    ]
+  },
+  "Adduktoren": {
+    "muscles": ["Oberschenkel-Innenseite (Adduktoren)", "Inner thighs (adductors)"],
+    "how": [
+      ["Aufrecht sitzen, Beine an den Polstern, Startweite bequem einstellen.", "Sit upright with your legs against the pads; set a comfortable start width."],
+      ["Beine kontrolliert zusammendrücken.", "Squeeze your legs together under control."],
+      ["Langsam wieder öffnen.", "Open slowly again."]
+    ],
+    "tips": [
+      ["Startweite nicht zu groß wählen – Zerrungsgefahr.", "Don't set the starting width too wide – risk of strain."],
+      ["Keine ruckartigen Bewegungen.", "Avoid jerky movements."]
+    ]
+  },
+  "Abduktoren": {
+    "muscles": ["Äußeres Gesäß (Gluteus medius)", "Outer glutes (gluteus medius)"],
+    "how": [
+      ["Aufrecht sitzen, Polster an der Außenseite der Knie.", "Sit upright with the pads on the outside of your knees."],
+      ["Beine nach außen drücken.", "Push your legs outward."],
+      ["Langsam zurückführen, ohne dass das Gewicht aufschlägt.", "Return slowly without letting the weight stack slam."]
+    ],
+    "tips": [
+      ["Leicht nach vorne lehnen betont das Gesäß noch mehr.", "Leaning slightly forward targets the glutes even more."],
+      ["Gleichmäßiges Tempo, kein Schwung.", "Steady tempo, no swinging."]
+    ]
+  },
+  "Wadenheben stehend": {
+    "muscles": ["Waden (v. a. Zwillingswadenmuskel)", "Calves (mainly gastrocnemius)"],
+    "how": [
+      ["Fußballen auf eine Kante stellen, Beine fast gestreckt.", "Put the balls of your feet on an edge, legs nearly straight."],
+      ["Fersen tief absenken, bis die Wade gedehnt ist.", "Lower your heels deep into a calf stretch."],
+      ["So hoch wie möglich auf die Zehen drücken, oben kurz halten.", "Rise as high as possible onto your toes and hold briefly."]
+    ],
+    "tips": [
+      ["Volle Bewegung statt schnellem Wippen.", "Full range of motion instead of quick bouncing."],
+      ["Unten kurz pausieren, um den Dehnreflex zu nehmen.", "Pause briefly at the bottom to remove the bounce."]
+    ],
+    "variants": {
+      "Kurzhantel": ["Eine Hantel in einer Hand, mit der anderen festhalten – einbeinig wird es deutlich schwerer.", "Hold a dumbbell in one hand and steady yourself with the other – single-leg is much harder."]
+    }
+  },
+  "Wadenheben sitzend": {
+    "muscles": ["Waden (v. a. Schollenmuskel)", "Calves (mainly soleus)"],
+    "how": [
+      ["Sitzen, Polster auf den Oberschenkeln knapp über dem Knie, Fußballen auf der Kante.", "Sit with the pad on your thighs just above the knee, balls of your feet on the edge."],
+      ["Fersen tief absenken.", "Lower your heels deep."],
+      ["Fersen so hoch wie möglich heben, kurz halten.", "Raise your heels as high as possible and hold briefly."]
+    ],
+    "tips": [
+      ["Langsam, mit voller Bewegung.", "Slow, with full range of motion."],
+      ["Ergänzt das Wadenheben stehend gut.", "A good complement to standing calf raises."]
+    ]
+  },
+  "Glute Kickbacks": {
+    "muscles": ["Gesäß", "Glutes"],
+    "how": [
+      ["Fußschlaufe am unteren Kabel befestigen, am Gerät festhalten, leicht vorbeugen.", "Attach an ankle strap to a low cable, hold the machine and lean slightly forward."],
+      ["Gestrecktes Bein nach hinten führen, bis das Gesäß fest angespannt ist.", "Drive your leg straight back until your glutes are fully squeezed."],
+      ["Langsam zurück.", "Return slowly."]
+    ],
+    "tips": [
+      ["Nicht ins Hohlkreuz gehen – die Bewegung kommt aus der Hüfte.", "Don't arch your lower back – the movement comes from the hip."],
+      ["Standbein leicht gebeugt.", "Keep your standing leg slightly bent."]
+    ]
+  },
+  "Beckenheben": {
+    "muscles": ["Gesäß, Beinbeuger, unterer Rücken", "Glutes, hamstrings, lower back"],
+    "how": [
+      ["Auf den Rücken legen, Knie angewinkelt, Füße hüftbreit am Boden.", "Lie on your back, knees bent, feet hip-width on the floor."],
+      ["Becken anheben, bis Schultern, Hüfte und Knie eine Linie bilden.", "Lift your hips until shoulders, hips and knees form a line."],
+      ["Oben das Gesäß anspannen, langsam absenken.", "Squeeze your glutes at the top and lower slowly."]
+    ],
+    "tips": [
+      ["Durch die Fersen drücken.", "Push through your heels."],
+      ["Oben kein Hohlkreuz.", "No arching at the top."],
+      ["Schwerer: einbeinig oder mit Gewicht auf der Hüfte.", "Harder: single leg or with weight on your hips."]
+    ]
+  },
+  "Nordic Curls": {
+    "muscles": ["Beinbeuger (sehr intensiv)", "Hamstrings (very intense)"],
+    "how": [
+      ["Knien, Fersen fixieren lassen (Partner, Polster oder Sprossenwand).", "Kneel with your heels anchored (partner, pad or wall bars)."],
+      ["Körper von Knie bis Kopf gerade halten und langsam nach vorne sinken lassen.", "Keep your body straight from knees to head and slowly lean forward."],
+      ["So lange wie möglich bremsen, mit den Händen abfangen und kräftig zurückdrücken.", "Resist as long as possible, catch yourself with your hands and push back up."]
+    ],
+    "tips": [
+      ["Sehr anstrengend – mit wenigen Wiederholungen beginnen, Muskelkater ist häufig.", "Very demanding – start with few reps; soreness is common."],
+      ["Hüfte nicht abknicken.", "Don't bend at the hips."],
+      ["Weiche Unterlage für die Knie.", "Use a soft pad under your knees."]
+    ]
+  },
+  "Wandsitzen": {
+    "muscles": ["Oberschenkel vorne", "Quads"],
+    "how": [
+      ["Rücken an die Wand, Füße etwa hüftbreit vor dem Körper.", "Back against the wall, feet about hip-width in front of you."],
+      ["Herunterrutschen, bis Knie und Hüfte etwa 90° gebeugt sind.", "Slide down until your knees and hips are bent about 90°."],
+      ["Position halten (Zeit wird gemessen).", "Hold the position (timed)."]
+    ],
+    "tips": [
+      ["Knie über den Knöcheln, nicht weiter vorne.", "Knees over your ankles, not further forward."],
+      ["Hände nicht auf den Oberschenkeln abstützen.", "Don't rest your hands on your thighs."],
+      ["Ruhig weiteratmen.", "Keep breathing steadily."]
+    ]
+  },
+  "Seitliches Gehen": {
+    "muscles": ["Äußeres Gesäß (Gluteus medius)", "Outer glutes (gluteus medius)"],
+    "how": [
+      ["Band um die Beine (über den Knien oder an den Knöcheln), leicht in die Hocke gehen.", "Place the band around your legs (above the knees or at the ankles) and sit into a slight squat."],
+      ["Seitlich Schritte machen, ohne dass die Füße zusammenkommen.", "Step sideways without letting your feet come together."],
+      ["Gleich viele Schritte in beide Richtungen.", "Take the same number of steps in each direction."]
+    ],
+    "tips": [
+      ["Spannung im Band halten, Knie nicht nach innen fallen lassen.", "Keep tension on the band; don't let your knees cave in."],
+      ["Oberkörper ruhig, nicht hin und her schaukeln.", "Keep your torso still, don't rock side to side."]
+    ]
+  }
+}

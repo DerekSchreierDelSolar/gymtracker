@@ -12,6 +12,8 @@ export const nav = {
   tab: 0,
   exercise: null,        // geöffnete Übung
   catalog: false,
+  wiki: false,           // Übungs-Wiki geöffnet
+  wikiQuery: '',
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
   trainingStart: null,   // laufendes Training (Startzeit)

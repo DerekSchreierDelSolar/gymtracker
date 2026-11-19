@@ -207,6 +207,7 @@ fun CatalogScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            WikiButton(entry.name)
                             Text(
                                 if (added) "✓" else "+",
                                 style = MaterialTheme.typography.titleLarge,

@@ -3,11 +3,11 @@
 // (Updates landen ohne Zutun auf dem Handy), ohne Internet die zuletzt geladene.
 // Die Trainingsdaten selbst liegen im localStorage, nicht hier.
 
-const CACHE = 'gymtracker-v1';
+const CACHE = 'gymtracker-v2';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/core.js', './js/data.js', './js/store.js', './js/stats.js', './js/pictograms.js',
-  './js/ui.js', './js/nav.js', './js/layout.js', './js/filter.js',
+  './js/ui.js', './js/nav.js', './js/layout.js', './js/filter.js', './js/wiki.js', './js/wiki-data.js',
   './js/screens/home.js', './js/screens/exercise.js', './js/screens/workout.js', './js/screens/training.js',
   './icons/apple-touch-icon.png', './icons/icon-192.png', './icons/icon-512.png', './icons/favicon-32.png',
 ];

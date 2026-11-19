@@ -1,0 +1,166 @@
+{
+  "Bankdrücken": {
+    "muscles": ["Brust, vordere Schulter, Trizeps", "Chest, front delts, triceps"],
+    "how": [
+      ["Auf die Bank legen, Augen etwa unter der Stange, Füße fest am Boden.", "Lie on the bench with your eyes roughly under the bar, feet planted firmly."],
+      ["Schulterblätter zusammen- und nach unten ziehen, leichtes Hohlkreuz ist erlaubt.", "Pull your shoulder blades back and down; a slight arch is fine."],
+      ["Gewicht kontrolliert zur unteren Brust (etwa Höhe Brustbein) absenken.", "Lower the weight under control to your lower chest (around the sternum)."],
+      ["Kraftvoll nach oben drücken, bis die Arme fast gestreckt sind.", "Press up powerfully until your arms are almost straight."]
+    ],
+    "tips": [
+      ["Ellbogen nicht 90° abspreizen, sondern etwa 45–70° zum Körper – schont die Schultern.", "Don't flare your elbows to 90°; keep them about 45–70° from your torso to protect your shoulders."],
+      ["Gesäß bleibt auf der Bank, Handgelenke gerade über den Ellbogen.", "Keep your glutes on the bench and wrists stacked over your elbows."],
+      ["Nicht von der Brust abfedern lassen.", "Don't bounce the weight off your chest."]
+    ],
+    "variants": {
+      "Langhantel": ["Bei schweren Sätzen mit Sicherungsablagen oder Partner trainieren.", "Use safety arms or a spotter for heavy sets."],
+      "Kurzhantel": ["Größerer Bewegungsradius; unten tiefer gehen, oben die Hanteln nicht zusammenschlagen.", "Greater range of motion; go a little deeper and don't clank the dumbbells together at the top."],
+      "Maschine": ["Sitz so einstellen, dass die Griffe auf Höhe der unteren Brust sind.", "Adjust the seat so the handles are level with your lower chest."],
+      "Multipresse": ["Bank so stellen, dass die Stange auf die untere Brust trifft. Sicherungshaken nutzen.", "Position the bench so the bar touches your lower chest. Use the safety catches."]
+    }
+  },
+  "Schrägbankdrücken": {
+    "muscles": ["Obere Brust, vordere Schulter, Trizeps", "Upper chest, front delts, triceps"],
+    "how": [
+      ["Bank auf 30–45° stellen, Rücken und Gesäß fest anlegen.", "Set the bench to 30–45° and keep your back and glutes in contact."],
+      ["Schulterblätter zurück und nach unten ziehen.", "Pull your shoulder blades back and down."],
+      ["Gewicht zur oberen Brust unterhalb des Schlüsselbeins absenken.", "Lower the weight to your upper chest, just below the collarbone."],
+      ["Senkrecht nach oben drücken.", "Press straight up."]
+    ],
+    "tips": [
+      ["Steiler als 45° verschiebt die Last auf die Schultern.", "Steeper than 45° shifts the work to your shoulders."],
+      ["Ellbogen leicht angelegt halten, nicht weit abspreizen.", "Keep your elbows slightly tucked, not flared wide."],
+      ["Nicht ins Hohlkreuz drücken, um das Gewicht hochzubekommen.", "Don't over-arch your back to grind the weight up."]
+    ],
+    "variants": {
+      "Kurzhantel": ["Hanteln mit leicht nach innen gedrehten Handflächen sind schultergerechter.", "Slightly turning your palms inward is easier on the shoulders."],
+      "Maschine": ["Sitzhöhe so wählen, dass die Griffe auf Höhe der oberen Brust starten.", "Set the seat so the handles start level with your upper chest."],
+      "Multipresse": ["Bank so ausrichten, dass die Stange die obere Brust trifft.", "Line the bench up so the bar meets your upper chest."]
+    }
+  },
+  "Negativbankdrücken": {
+    "muscles": ["Untere Brust, Trizeps", "Lower chest, triceps"],
+    "how": [
+      ["Auf die negativ geneigte Bank legen, Beine fest einhaken.", "Lie on the decline bench and hook your legs securely."],
+      ["Gewicht zur unteren Brust absenken.", "Lower the weight to your lower chest."],
+      ["Kontrolliert nach oben drücken.", "Press back up under control."]
+    ],
+    "tips": [
+      ["Neigung von 15–30° reicht, sonst steigt der Druck im Kopf stark.", "A 15–30° decline is enough; steeper builds a lot of pressure in your head."],
+      ["Bei der Langhantel unbedingt mit Partner oder Ablagen – Aufstehen ist schwierig.", "With a barbell always use a spotter or safeties – getting out from under it is awkward."],
+      ["Nach dem Satz langsam aufsetzen, sonst kann einem schwindelig werden.", "Sit up slowly after the set to avoid dizziness."]
+    ]
+  },
+  "Floor Press": {
+    "muscles": ["Brust, Trizeps", "Chest, triceps"],
+    "how": [
+      ["Auf den Boden legen, Knie angewinkelt, Gewicht über der Brust.", "Lie on the floor with knees bent, weight above your chest."],
+      ["Absenken, bis die Oberarme sanft den Boden berühren.", "Lower until your upper arms gently touch the floor."],
+      ["Kurz ablegen lassen (nicht aufprallen) und hochdrücken.", "Pause briefly (don't slam) and press up."]
+    ],
+    "tips": [
+      ["Verkürzte Bewegung schont die Schultern und trainiert den Trizeps stark.", "The shortened range is shoulder-friendly and works the triceps hard."],
+      ["Ellbogen etwa 45° zum Körper.", "Keep elbows about 45° from your torso."],
+      ["Langhantel am besten im Rack auf Bodenhöhe starten.", "Ideally start the barbell from a rack set at floor height."]
+    ]
+  },
+  "Fliegende": {
+    "muscles": ["Brust (Dehnung), vordere Schulter", "Chest (stretch focus), front delts"],
+    "how": [
+      ["Arme vor der Brust, Ellbogen leicht gebeugt und fest in dieser Stellung.", "Arms in front of your chest, elbows slightly bent and locked in that angle."],
+      ["Arme in einem weiten Bogen seitlich öffnen, bis eine Dehnung in der Brust spürbar ist.", "Open your arms in a wide arc until you feel a stretch in your chest."],
+      ["Im selben Bogen zurückführen, als würdest du einen großen Baum umarmen.", "Bring them back along the same arc, as if hugging a big tree."]
+    ],
+    "tips": [
+      ["Keine Drückbewegung daraus machen – der Ellbogenwinkel bleibt gleich.", "Don't turn it into a press – the elbow angle stays the same."],
+      ["Nicht zu tief gehen, die Schultern sollen nicht nach vorne kippen.", "Don't go too deep; your shoulders shouldn't roll forward."],
+      ["Lieber leichtes Gewicht und saubere Dehnung.", "Use light weight and a controlled stretch."]
+    ],
+    "variants": {
+      "Kurzhantel": ["Oben kaum Spannung – die Arbeit passiert im unteren Teil.", "Little tension at the top – the work happens in the lower half."],
+      "Maschine / Butterfly": ["Sitz so einstellen, dass die Griffe auf Brusthöhe sind; Schultern bleiben hinten.", "Set the seat so the handles are at chest height; keep your shoulders back."],
+      "Kabelzug / Crossover": ["Ein Schritt nach vorne, leicht vorgebeugt; die Hände treffen sich vor dem Körper.", "Step forward, lean slightly; your hands meet in front of your body."]
+    }
+  },
+  "Fliegende von unten": {
+    "muscles": ["Obere Brust, vordere Schulter", "Upper chest, front delts"],
+    "how": [
+      ["Kabelrollen ganz unten einstellen, mittig stehen.", "Set the pulleys at the lowest position and stand in the middle."],
+      ["Mit leicht gebeugten Armen die Griffe von unten-seitlich nach oben-vorne führen.", "With slightly bent arms, bring the handles from low and wide to high in front of you."],
+      ["Die Hände treffen sich etwa auf Kinnhöhe, dann langsam zurück.", "Your hands meet around chin height, then return slowly."]
+    ],
+    "tips": [
+      ["Nicht mit dem Oberkörper schwingen.", "Don't swing your torso."],
+      ["Schultern unten lassen, nicht hochziehen.", "Keep your shoulders down, don't shrug."]
+    ]
+  },
+  "Schrägbank-Fliegende": {
+    "muscles": ["Obere Brust", "Upper chest"],
+    "how": [
+      ["Bank auf 30–45°, Arme über der oberen Brust, Ellbogen leicht gebeugt.", "Bench at 30–45°, arms above your upper chest, elbows slightly bent."],
+      ["Arme seitlich im Bogen öffnen bis zur Dehnung.", "Open your arms in an arc until you feel a stretch."],
+      ["Im gleichen Bogen zurückführen.", "Bring them back along the same arc."]
+    ],
+    "tips": [
+      ["Ellbogenwinkel konstant halten.", "Keep the elbow angle constant."],
+      ["Leichtes Gewicht, kontrollierte Bewegung, vor allem unten.", "Light weight and control, especially at the bottom."]
+    ],
+    "variants": {
+      "Kabelzug": ["Bank zwischen zwei unteren Kabelrollen platzieren – Spannung über die ganze Bewegung.", "Place the bench between two low pulleys – tension throughout the whole movement."]
+    }
+  },
+  "Pullover": {
+    "muscles": ["Brust, Latissimus, Trizeps (langer Kopf)", "Chest, lats, triceps (long head)"],
+    "how": [
+      ["Quer oder längs auf der Bank liegen, eine Hantel mit beiden Händen über der Brust halten.", "Lie across or along the bench holding one dumbbell with both hands above your chest."],
+      ["Mit leicht gebeugten Armen hinter den Kopf absenken, bis Brust und Lat gedehnt sind.", "With slightly bent arms, lower it behind your head until chest and lats are stretched."],
+      ["Im Bogen zurück über die Brust führen.", "Bring it back in an arc over your chest."]
+    ],
+    "tips": [
+      ["Rippen unten halten, kein starkes Hohlkreuz.", "Keep your ribs down and avoid a big arch."],
+      ["Nur so weit absenken, wie es die Schultern schmerzfrei erlauben.", "Only go as far back as your shoulders allow pain-free."],
+      ["Hantel sicher greifen (Hände um die obere Scheibe legen).", "Grip the dumbbell securely (hands cupped around the top plate)."]
+    ]
+  },
+  "Dips": {
+    "muscles": ["Untere Brust, Trizeps, vordere Schulter", "Lower chest, triceps, front delts"],
+    "how": [
+      ["Im Stütz an den Holmen starten, Arme gestreckt, Schultern tief.", "Start in a support position on the bars, arms straight, shoulders down."],
+      ["Oberkörper leicht nach vorne neigen und absenken, bis die Oberarme etwa waagerecht sind.", "Lean slightly forward and lower until your upper arms are about parallel to the floor."],
+      ["Wieder nach oben drücken.", "Press back up."]
+    ],
+    "tips": [
+      ["Nicht tiefer als bis zur Waagerechten – starke Belastung für die Schulter.", "Don't go much below parallel – it stresses the shoulder."],
+      ["Schultern nicht zu den Ohren ziehen.", "Don't let your shoulders creep up to your ears."],
+      ["Aufrechter Oberkörper = mehr Trizeps, vorgeneigt = mehr Brust.", "Upright torso = more triceps, leaning forward = more chest."]
+    ],
+    "variants": {
+      "Maschine": ["Das Gegengewicht unterstützt: mehr Gewicht = leichter.", "The counterweight assists you: more weight = easier."]
+    }
+  },
+  "Liegestütze": {
+    "muscles": ["Brust, Trizeps, vordere Schulter, Rumpf", "Chest, triceps, front delts, core"],
+    "how": [
+      ["Hände etwas breiter als schulterbreit, Körper von Kopf bis Ferse gerade.", "Hands slightly wider than shoulder width, body straight from head to heels."],
+      ["Brust kontrolliert bis knapp über den Boden absenken.", "Lower your chest under control until just above the floor."],
+      ["Gleichmäßig hochdrücken, ohne dass die Hüfte durchhängt.", "Push back up evenly without letting your hips sag."]
+    ],
+    "tips": [
+      ["Bauch und Gesäß anspannen – kein Hohlkreuz, kein Po in die Luft.", "Brace your abs and glutes – no sagging hips, no butt in the air."],
+      ["Ellbogen etwa 45° zum Körper.", "Elbows about 45° from your body."],
+      ["Zu schwer? Erst mit Händen auf einer Bank oder auf den Knien üben.", "Too hard? Start with hands on a bench or from your knees."]
+    ]
+  },
+  "Schräge Liegestütze": {
+    "muscles": ["Obere Brust, vordere Schulter, Trizeps", "Upper chest, front delts, triceps"],
+    "how": [
+      ["Füße auf einer Bank oder Stufe, Hände am Boden.", "Feet on a bench or step, hands on the floor."],
+      ["Körper gerade halten und Brust zum Boden absenken.", "Keep your body straight and lower your chest to the floor."],
+      ["Hochdrücken.", "Push back up."]
+    ],
+    "tips": [
+      ["Je höher die Füße, desto schwerer und desto mehr Schulter.", "The higher your feet, the harder it gets and the more shoulders work."],
+      ["Hüfte nicht abknicken lassen.", "Don't let your hips pike or sag."]
+    ]
+  }
+}

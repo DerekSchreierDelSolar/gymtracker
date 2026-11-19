@@ -50,6 +50,8 @@ const ICONS = {
   check: '<path d="M5 12l5 5 9-10"/>',
   download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
   upload: '<path d="M12 15V4M7 9l5-5 5 5M5 20h14"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.8h.01" stroke-width="2.8"/>',
+  book: '<path d="M12 6.5v13"/><path d="M12 6.5 8 5H3v13h5l4 1.5 4-1.5h5V5h-5z"/>',
   share: '<path d="M12 15V4M7 9l5-5 5 5"/><path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>',
 };
 export const icon = (name, size = 24) => h('span', {
