@@ -106,6 +106,24 @@ fun WikiButton(name: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WikiSheet(name: String, onDismiss: () -> Unit) {
+    if (wikiFor(name) == null) return
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) { WikiContent(name, showHeader = true, showMuscles = true) }
+    }
+}
+
+/**
+ * Inhalt des Wikis (für das Blatt und den Reiter „Info“ der Übungsdetails).
+ * showHeader = Symbol + Name, showMuscles = Körperdiagramm.
+ */
+@Composable
+fun ColumnScope.WikiContent(name: String, showHeader: Boolean, showMuscles: Boolean) {
     val entry = wikiFor(name) ?: return
     val catalogEntry = CATALOG.firstOrNull { it.name == name }
     val base = catalogEntry?.base ?: name
@@ -117,56 +135,47 @@ fun WikiSheet(name: String, onDismiss: () -> Unit) {
             entry.variants[variantKey(c)]?.let { exName(c.name) to it }
         }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                ExerciseIcon(catalogEntry?.name ?: CATALOG.first { it.base == base }.name, group, Modifier.size(48.dp))
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text(
-                        if (catalogEntry != null) exName(name) else baseName(base),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Text(
-                        entry.muscles.text,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            if (entry.how.isNotEmpty()) {
-                WikiHeading(tr("Ausführung", "How to"))
-                entry.how.forEachIndexed { i, t -> WikiLine("${i + 1}.", t.text) }
-            }
-            if (entry.tips.isNotEmpty()) {
-                WikiHeading(tr("Darauf achten", "Watch out"))
-                entry.tips.forEach { WikiLine("⚠", it.text, MaterialTheme.colorScheme.error) }
-            }
-            if (notes.isNotEmpty()) {
-                WikiHeading(if (catalogEntry != null) tr("Speziell mit diesem Gerät", "With this equipment") else tr("Varianten", "Variations"))
-                notes.forEach { (label, t) ->
-                    Text(label, style = MaterialTheme.typography.labelLarge)
-                    Text(t.text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 4.dp))
-                }
-            }
+    if (showHeader) Row(verticalAlignment = Alignment.CenterVertically) {
+        ExerciseIcon(catalogEntry?.name ?: CATALOG.first { it.base == base }.name, group, Modifier.size(48.dp))
+        Spacer(Modifier.width(12.dp))
+        Column {
             Text(
-                tr(
-                    "Allgemeine Hinweise – ersetzen keine Einweisung. Bei Schmerzen abbrechen.",
-                    "General guidance – not a substitute for coaching. Stop if it hurts."
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 12.dp)
+                if (catalogEntry != null) exName(name) else baseName(base),
+                style = MaterialTheme.typography.titleLarge
+            )
+            Text(
+                entry.muscles.text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
+    if (showMuscles) musclesOf(name)?.let { MuscleMap(it.primary, it.secondary, Modifier.padding(top = 8.dp)) }
+
+    if (entry.how.isNotEmpty()) {
+        WikiHeading(tr("Ausführung", "How to"))
+        entry.how.forEachIndexed { i, t -> WikiLine("${i + 1}.", t.text) }
+    }
+    if (entry.tips.isNotEmpty()) {
+        WikiHeading(tr("Darauf achten", "Watch out"))
+        entry.tips.forEach { WikiLine("⚠", it.text, MaterialTheme.colorScheme.error) }
+    }
+    if (notes.isNotEmpty()) {
+        WikiHeading(if (catalogEntry != null) tr("Speziell mit diesem Gerät", "With this equipment") else tr("Varianten", "Variations"))
+        notes.forEach { (label, t) ->
+            Text(label, style = MaterialTheme.typography.labelLarge)
+            Text(t.text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 4.dp))
+        }
+    }
+    Text(
+        tr(
+            "Allgemeine Hinweise – ersetzen keine Einweisung. Bei Schmerzen abbrechen.",
+            "General guidance – not a substitute for coaching. Stop if it hurts."
+        ),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 12.dp)
+    )
 }
 
 @Composable

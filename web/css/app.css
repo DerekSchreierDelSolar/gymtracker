@@ -404,3 +404,14 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .heat-list { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .heat-legend span, .heat-list span { display: inline-flex; align-items: center; gap: 6px; }
 .heat-legend i, .heat-list i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+/* ---------- Reiter (Übungsdetails) ---------- */
+.tab-row { display: flex; border-bottom: 1px solid var(--outline, rgba(127,127,127,.25)); }
+.tab { flex: 1; text-align: center; justify-content: center; padding: 12px 4px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; }
+.tab.selected { color: var(--primary); border-bottom-color: var(--primary); }
+.progress-head { display: flex; justify-content: space-between; align-items: center; }
+.progress-head b { display: block; font-size: 22px; margin-top: 2px; }
+.progress-head .right { text-align: right; }
+.chart-dates { display: flex; justify-content: space-between; font-size: 12px; margin-top: -4px; }
+.wiki-inline { display: flex; flex-direction: column; gap: 6px; }
+.wiki-inline h3 { font-size: 17px; font-weight: 600; margin-top: 14px; }

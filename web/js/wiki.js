@@ -7,6 +7,7 @@ import { exerciseIconHtml } from './pictograms.js';
 import { h, icon, iconBtn, groupHeader, muted } from './ui.js';
 import { nav, update, openDialog, closeDialog } from './nav.js';
 import { screen } from './layout.js';
+import { muscleMap, musclesOf } from './bodymap.js';
 
 /** [de, en] → aktuelle Sprache */
 const t = pair => (isEnglish() ? pair[1] : pair[0]);
@@ -43,35 +44,46 @@ export const openWiki = name => openDialog(() => wikiSheet(name));
  * name = Katalog-Name (nur Hinweis zu dieser Variante) oder Grundübung (Hinweise zu allen Varianten).
  */
 function wikiSheet(name) {
+  return h('div', { class: 'dialog-backdrop sheet-backdrop', onclick: e => { if (e.target === e.currentTarget) closeDialog(); } },
+    h('div', { class: 'sheet', role: 'dialog' },
+      h('div', { class: 'sheet-handle', onclick: closeDialog }),
+      h('div', { class: 'sheet-body' }, wikiContent(name, { header: true, muscles: true }))));
+}
+
+/**
+ * Inhalt des Wikis (für das Blatt und den Reiter „Info“ der Übungsdetails).
+ * header = Symbol + Name, muscles = Körperdiagramm.
+ */
+export function wikiContent(name, { header, muscles }) {
   const entry = wikiFor(name);
+  if (!entry) return null;
   const cat = byName.get(name);
   const base = cat?.base ?? name;
   const first = cat ?? CATALOG.find(c => c.base === base);
   const notes = cat
     ? (entry.variants?.[variantKey(cat)] ? [[equipmentLabel(cat.equipment), entry.variants[variantKey(cat)]]] : [])
     : CATALOG.filter(c => c.base === base && entry.variants?.[variantKey(c)]).map(c => [exName(c.name), entry.variants[variantKey(c)]]);
-
-  return h('div', { class: 'dialog-backdrop sheet-backdrop', onclick: e => { if (e.target === e.currentTarget) closeDialog(); } },
-    h('div', { class: 'sheet', role: 'dialog' },
-      h('div', { class: 'sheet-handle', onclick: closeDialog }),
-      h('div', { class: 'sheet-body' },
-        h('div', { class: 'wiki-head' },
-          h('span', { html: exerciseIconHtml(first.name, first.group, 48) }),
-          h('div', null, h('h2', null, cat ? exName(name) : baseName(base)), h('p', { class: 'accent' }, t(entry.muscles)))),
-        entry.how?.length ? [
-          h('h3', null, tr('Ausführung', 'How to')),
-          h('ol', { class: 'wiki-list' }, entry.how.map(p => h('li', null, t(p)))),
-        ] : null,
-        entry.tips?.length ? [
-          h('h3', null, tr('Darauf achten', 'Watch out')),
-          h('ul', { class: 'wiki-list warn' }, entry.tips.map(p => h('li', null, t(p)))),
-        ] : null,
-        notes.length ? [
-          h('h3', null, cat ? tr('Speziell mit diesem Gerät', 'With this equipment') : tr('Varianten', 'Variations')),
-          notes.map(([label, p]) => h('div', { class: 'wiki-note' }, h('b', null, label), h('p', null, t(p)))),
-        ] : null,
-        muted(tr('Allgemeine Hinweise – ersetzen keine Einweisung. Bei Schmerzen abbrechen.',
-          'General guidance – not a substitute for coaching. Stop if it hurts.'), 'small wiki-disclaimer'))));
+  const m = muscles ? musclesOf(name) : null;
+  return [
+    header ? h('div', { class: 'wiki-head' },
+      h('span', { html: exerciseIconHtml(first.name, first.group, 48) }),
+      h('div', null, h('h2', null, cat ? exName(name) : baseName(base)), h('p', { class: 'accent' }, t(entry.muscles)))) : null,
+    m ? muscleMap(m.primary, m.secondary) : null,
+    entry.how?.length ? [
+      h('h3', null, tr('Ausführung', 'How to')),
+      h('ol', { class: 'wiki-list' }, entry.how.map(p => h('li', null, t(p)))),
+    ] : null,
+    entry.tips?.length ? [
+      h('h3', null, tr('Darauf achten', 'Watch out')),
+      h('ul', { class: 'wiki-list warn' }, entry.tips.map(p => h('li', null, t(p)))),
+    ] : null,
+    notes.length ? [
+      h('h3', null, cat ? tr('Speziell mit diesem Gerät', 'With this equipment') : tr('Varianten', 'Variations')),
+      notes.map(([label, p]) => h('div', { class: 'wiki-note' }, h('b', null, label), h('p', null, t(p)))),
+    ] : null,
+    muted(tr('Allgemeine Hinweise – ersetzen keine Einweisung. Bei Schmerzen abbrechen.',
+      'General guidance – not a substitute for coaching. Stop if it hurts.'), 'small wiki-disclaimer'),
+  ];
 }
 
 /** Wiki-Übersicht: alle Grundübungen nach Muskelgruppe, mit Suche. */

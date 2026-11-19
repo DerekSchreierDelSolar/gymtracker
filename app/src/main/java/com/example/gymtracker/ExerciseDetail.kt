@@ -257,31 +257,44 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
     val history = store.setsFor(exercise)
     var confirmDelete by remember { mutableStateOf(false) }
     var editMuscles by remember { mutableStateOf(false) }
-    // Diagramm-Ansicht bei Kraftübungen: false = Maximalgewicht, true = geschätztes 1RM
-    var show1RM by rememberSaveable { mutableStateOf(false) }
     // Vom Nutzer übernommener Gewichts-Vorschlag (füllt das kg-Feld)
     var appliedWeight by remember { mutableStateOf<Double?>(null) }
 
+    // Reiter: Training (Eingabe + Verlauf), Fortschritt, Muskeln, Info (nur mit Wiki-Eintrag)
+    val tabs = listOfNotNull(
+        tr("Training", "Training"),
+        tr("Fortschritt", "Progress"),
+        tr("Muskeln", "Muscles"),
+        if (wikiFor(exercise) != null) tr("Info", "Info") else null
+    )
+    var tab by rememberSaveable(exercise) { mutableIntStateOf(0) }
+
     // Nach Tag gruppiert, neuester Tag zuerst
     val days = history.groupBy { fmtDate(it.time) }
-    val best = if (cardio || timed) history.maxByOrNull { it.reps } else history.maxByOrNull { it.weight }
-    val best1RM = if (cardio || timed) null else history.filter { it.weight > 0 }.maxOfOrNull { oneRepMax(it.weight, it.reps) }
 
     Scaffold(topBar = {
-        TopAppBar(
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    ExerciseIcon(exercise, group, Modifier.size(32.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(exName(exercise))
+        Column {
+            TopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ExerciseIcon(exercise, group, Modifier.size(32.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(exName(exercise))
+                    }
+                },
+                navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
+                actions = { IconAction(Ico.DELETE, onClick = { confirmDelete = true }) }
+            )
+            PrimaryTabRow(selectedTabIndex = tab.coerceAtMost(tabs.size - 1)) {
+                tabs.forEachIndexed { i, label ->
+                    Tab(
+                        selected = tab == i, onClick = { tab = i },
+                        text = { Text(label, maxLines = 1) },
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            },
-            navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
-            actions = {
-                WikiButton(exercise)
-                IconAction(Ico.DELETE, onClick = { confirmDelete = true })
             }
-        )
+        }
     }) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -290,113 +303,62 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 0. Körperdiagramm: belastete Muskeln (eigene Übungen: selbst festlegen)
-            val muscles = musclesOf(exercise)
-            val custom = catalogGroup(exercise) == null
-            if (muscles != null || custom) item {
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (muscles != null) MuscleMap(muscles.primary, muscles.secondary)
-                        else Text(
-                            tr("Noch keine Muskeln festgelegt.", "No muscles set yet."),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (custom) TextButton(onClick = { editMuscles = true }) {
-                            Text(if (muscles != null) tr("Muskeln bearbeiten", "Edit muscles") else tr("Muskeln festlegen", "Set muscles"))
-                        }
+            when (tab) {
+                // ----- Training: Vorschlag, Eingabe, Verlauf pro Tag -----
+                0 -> {
+                    item { ProgressionHint(store, exercise, onApply = { appliedWeight = it }) }
+                    item { SetInput(store, exercise, weightOverride = appliedWeight) }
+                    if (days.isNotEmpty()) item {
+                        Text(tr("Verlauf", "History"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
                     }
-                }
-            }
-
-            // 1. Fortschritts-Diagramm (ab 2 Trainingstagen)
-            if (days.size >= 2) {
-                item {
-                    when {
-                        cardio -> ProgressChart(
-                            days.values.map { d -> d.sumOf { it.reps }.toDouble() }.reversed(),
-                            title = tr("Minuten pro Trainingstag", "Minutes per training day"), unit = "min"
-                        )
-                        timed -> ProgressChart(
-                            days.values.map { d -> d.maxOf { it.reps }.toDouble() }.reversed(),
-                            title = tr("Längste Zeit pro Training", "Longest hold per session"), unit = "s"
-                        )
-                        else -> Column {
-                            // Umschalter: Maximalgewicht oder geschätztes 1RM
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(bottom = 6.dp)) {
-                                FilterChip(selected = !show1RM, onClick = { show1RM = false },
-                                    label = { Text(tr("Max. Gewicht", "Max weight")) })
-                                FilterChip(selected = show1RM, onClick = { show1RM = true },
-                                    label = { Text(tr("Geschätztes 1RM", "Estimated 1RM")) })
+                    days.forEach { (day, daySets) ->
+                        item(key = day) {
+                            Card(Modifier.fillMaxWidth()) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(
+                                        if (cardio)
+                                            "$day · " + plural(daySets.size, tr("Einheit", "session"), tr("Einheiten", "sessions")) +
+                                                " · ${daySets.sumOf { it.reps }} " + tr("Min gesamt", "min total")
+                                        else if (timed)
+                                            "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
+                                                " · " + tr("gesamt ", "total ") + fmtSeconds(daySets.sumOf { it.reps })
+                                        else
+                                            "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
+                                                " · ${fmtW(daySets.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    daySets.sortedBy { it.time }.forEachIndexed { i, s -> SetRow(store, s, i + 1, cardio) }
+                                }
                             }
-                            if (show1RM) ProgressChart(
-                                days.values.map { d -> d.maxOf { oneRepMax(it.weight, it.reps) } }.reversed()
-                                    .map { Math.round(it * 2) / 2.0 },
-                                title = tr("Geschätztes 1RM pro Training", "Estimated 1RM per session"), unit = "kg"
-                            ) else ProgressChart(
-                                days.values.map { d -> d.maxOf { it.weight } }.reversed(),
-                                title = tr("Maximalgewicht pro Training", "Max weight per session"), unit = "kg"
-                            )
                         }
                     }
                 }
-            }
 
-            // Bestleistung (+ geschätztes 1RM bei Kraftübungen)
-            if (best != null) {
-                item {
-                    Column(Modifier.padding(top = 4.dp)) {
-                        Text(
-                            (if (cardio || timed) tr("🏆 Längste Einheit: ", "🏆 Longest: ")
-                            else tr("🏆 Bestleistung: ", "🏆 Personal record: ")) + fmtSet(best, cardio),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        if (best1RM != null) {
-                            Text(
-                                tr("Geschätztes 1RM: ", "Estimated 1RM: ") + "${fmtW(Math.round(best1RM * 2) / 2.0)} kg",
-                                style = MaterialTheme.typography.bodySmall,
+                // ----- Fortschritt: Rekord, Zuwachs, Diagramm -----
+                1 -> item { ExerciseProgress(history, cardio, timed) }
+
+                // ----- Muskeln: Körperdiagramm (eigene Übungen: selbst festlegen) -----
+                2 -> item {
+                    val muscles = musclesOf(exercise)
+                    val custom = catalogGroup(exercise) == null
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (muscles != null) MuscleMap(muscles.primary, muscles.secondary)
+                            else Text(
+                                tr("Noch keine Muskeln festgelegt.", "No muscles set yet."),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            if (custom) TextButton(onClick = { editMuscles = true }) {
+                                Text(if (muscles != null) tr("Muskeln bearbeiten", "Edit muscles") else tr("Muskeln festlegen", "Set muscles"))
+                            }
                         }
                     }
                 }
-            }
 
-            // Progressions-Vorschlag
-            item { ProgressionHint(store, exercise, onApply = { appliedWeight = it }) }
-
-            // 2. Eingabe
-            item { SetInput(store, exercise, weightOverride = appliedWeight) }
-
-            // 3. Verlauf pro Tag
-            if (days.isNotEmpty()) {
-                item {
-                    Text(
-                        tr("Verlauf", "History"),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-            }
-            days.forEach { (day, daySets) ->
-                item(key = day) {
-                    Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(12.dp)) {
-                            Text(
-                                if (cardio)
-                                    "$day · " + plural(daySets.size, tr("Einheit", "session"), tr("Einheiten", "sessions")) +
-                                        " · ${daySets.sumOf { it.reps }} " + tr("Min gesamt", "min total")
-                                else if (timed)
-                                    "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                        " · " + tr("gesamt ", "total ") + fmtSeconds(daySets.sumOf { it.reps })
-                                else
-                                    "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                        " · ${fmtW(daySets.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            daySets.sortedBy { it.time }.forEachIndexed { i, s ->
-                                SetRow(store, s, i + 1, cardio)
-                            }
-                        }
+                // ----- Info: Wiki (Ausführung, Hinweise) -----
+                else -> item {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        WikiContent(exercise, showHeader = false, showMuscles = false)
                     }
                 }
             }
@@ -432,3 +394,110 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
 }
 
 
+
+// ---------- Reiter „Fortschritt“ ----------
+
+/** Gruppierung der Fortschritts-Werte. */
+private enum class ProgressBucket(val de: String, val en: String) { DAY("Tage", "Days"), WEEK("Wochen", "Weeks"), MONTH("Monate", "Months") }
+
+/** Kennzahl im Diagramm (Kraftübungen). */
+private enum class ProgressMetric(val de: String, val en: String) { MAX("Max. Gewicht", "Max weight"), ORM("Geschätztes 1RM", "Estimated 1RM"), VOLUME("Volumen", "Volume") }
+
+/**
+ * Rekord, Zuwachs seit dem ersten Training und Verlaufsdiagramm.
+ * Kraft: Max. Gewicht / geschätztes 1RM / Volumen; Cardio: Minuten; Zeitübungen: längste Zeit.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ExerciseProgress(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
+    var bucket by rememberSaveable { mutableStateOf(ProgressBucket.DAY) }
+    var metric by rememberSaveable { mutableStateOf(ProgressMetric.MAX) }
+    if (history.isEmpty()) {
+        Text(tr("Noch keine Sätze eingetragen.", "No sets logged yet."), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        return
+    }
+    val strength = !cardio && !timed
+    val unit = when { cardio -> "min"; timed -> "s"; else -> "kg" }
+
+    // Wert eines Zeitabschnitts
+    fun value(l: List<GymSet>): Double = when {
+        cardio -> l.sumOf { it.reps }.toDouble()
+        timed -> l.maxOf { it.reps }.toDouble()
+        metric == ProgressMetric.ORM -> Math.round(l.maxOf { oneRepMax(it.weight, it.reps) } * 2) / 2.0
+        metric == ProgressMetric.VOLUME -> l.sumOf { it.weight * it.reps }
+        else -> l.maxOf { it.weight }
+    }
+    // Zeitabschnitte, älteste zuerst
+    val key: (Long) -> Int = when (bucket) {
+        ProgressBucket.DAY -> { t -> dayKey(t) }
+        ProgressBucket.WEEK -> { t -> dayKey(startOfWeek(t)) }
+        ProgressBucket.MONTH -> { t -> monthIndex(t) }
+    }
+    val groups = history.sortedBy { it.time }.groupBy { key(it.time) }.values.toList()
+    val values = groups.map(::value)
+
+    // Rekord und Zuwachs (Tageswerte, unabhängig von der Gruppierung)
+    val perDay = history.sortedBy { it.time }.groupBy { dayKey(it.time) }.values.map(::value)
+    val record = perDay.max()
+    val gain = record - perDay.first()
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Card(Modifier.fillMaxWidth()) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(tr("Rekord", "Record"), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("🏆 ${fmtW(record)} $unit", style = MaterialTheme.typography.titleLarge)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(tr("seit dem ersten Training", "since first session"), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        (if (gain > 0) "+" else "") + "${fmtW(gain)} $unit" + if (gain > 0) " ↑" else "",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = if (gain > 0) completionColor(1f) else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+        if (strength) {
+            val best = history.maxBy { it.weight }
+            Text(
+                tr("Bester Satz: ", "Best set: ") + fmtSet(best, false) + " · " + tr("geschätztes 1RM ", "estimated 1RM ") +
+                    "${fmtW(Math.round(history.maxOf { oneRepMax(it.weight, it.reps) } * 2) / 2.0)} kg",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                ProgressMetric.entries.forEach { m ->
+                    FilterChip(selected = metric == m, onClick = { metric = m }, label = { Text(tr(m.de, m.en)) })
+                }
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            ProgressBucket.entries.forEach { b ->
+                FilterChip(selected = bucket == b, onClick = { bucket = b }, label = { Text(tr(b.de, b.en)) })
+            }
+        }
+        if (values.size >= 2) {
+            val title = when {
+                cardio -> tr("Minuten", "Minutes")
+                timed -> tr("Längste Zeit", "Longest hold")
+                else -> tr(metric.de, metric.en)
+            } + " " + when (bucket) {
+                ProgressBucket.DAY -> tr("pro Trainingstag", "per training day")
+                ProgressBucket.WEEK -> tr("pro Woche", "per week")
+                ProgressBucket.MONTH -> tr("pro Monat", "per month")
+            }
+            ProgressChart(values, title = title, unit = if (metric == ProgressMetric.VOLUME && strength) "kg" else unit)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(fmtShortDate(groups.first().first().time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(fmtShortDate(groups.last().first().time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else {
+            Text(
+                tr("Ab zwei Einträgen in dieser Einteilung erscheint hier ein Diagramm.", "A chart appears once there are two entries for this grouping."),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
