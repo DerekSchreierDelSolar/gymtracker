@@ -326,11 +326,10 @@ val HEAT_LEVELS = listOf(
 fun heatColor(p: Float): Color? = HEAT_LEVELS.lastOrNull { p >= it.first }?.second
 
 /**
- * Belastung je Muskel, relativ zum am stärksten trainierten (= 1.0).
- * Jeder Satz zählt 1 für die Hauptmuskeln und 0,5 für die Hilfsmuskeln.
+ * Sätze je Muskel: jeder Satz zählt 1 für die Hauptmuskeln und 0,5 für die Hilfsmuskeln.
  * Übungen ohne bekannte Muskeln werden übersprungen.
  */
-fun muscleLoad(sets: List<GymSet>): Map<String, Float> {
+fun muscleScore(sets: List<GymSet>): Map<String, Float> {
     val score = HashMap<String, Float>()
     val cache = HashMap<String, MuscleSet?>()
     for (s in sets) {
@@ -338,6 +337,11 @@ fun muscleLoad(sets: List<GymSet>): Map<String, Float> {
         m.primary.forEach { score[it] = (score[it] ?: 0f) + 1f }
         m.secondary.forEach { score[it] = (score[it] ?: 0f) + 0.5f }
     }
+    return score
+}
+
+/** Belastung je Muskel relativ zum am stärksten trainierten (= 1.0). */
+fun relativeLoad(score: Map<String, Float>): Map<String, Float> {
     val max = score.values.maxOrNull() ?: return emptyMap()
     return score.mapValues { it.value / max }
 }
@@ -364,19 +368,44 @@ enum class StatPeriod(private val de: String, private val en: String) {
     }
 }
 
-/** Karte „Trainierte Muskeln“: Heatmap + Farblegende + Muskeln mit Prozent. */
-@OptIn(ExperimentalLayoutApi::class)
+/** Startseite: Karte „Trainierte Muskeln“ mit Zeitraum-Umschalter, Werte in Prozent. */
 @Composable
 fun MuscleHeatCard(store: GymStore, period: StatPeriod, onPeriod: (StatPeriod) -> Unit) {
-    val load = muscleLoad(period.filter(store.sets))
+    MuscleHeatCard(
+        title = tr("Trainierte Muskeln", "Trained muscles"),
+        score = muscleScore(period.filter(store.sets)),
+        showSets = false,
+        empty = tr("Keine Trainings in diesem Zeitraum.", "No workouts in this period.")
+    ) {
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            StatPeriod.entries.forEach { p ->
+                FilterChip(selected = p == period, onClick = { onPeriod(p) }, label = { Text(p.label) })
+            }
+        }
+    }
+}
+
+/** „6,5“ bzw. „6“ – halbe Sätze kommen von Hilfsmuskeln. */
+fun fmtSets(v: Float): String = fmtW(Math.round(v * 2) / 2.0)
+
+/**
+ * Karte mit Heatmap: Figur, Farblegende und Muskeln (stärkste zuerst).
+ * showSets = true: Summe der Sätze je Muskel (Trainingsübersicht), sonst Prozent vom Maximum.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun MuscleHeatCard(
+    title: String,
+    score: Map<String, Float>,
+    showSets: Boolean,
+    empty: String,
+    header: (@Composable () -> Unit)? = null
+) {
+    val load = relativeLoad(score)
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(tr("Trainierte Muskeln", "Trained muscles"), style = MaterialTheme.typography.titleMedium)
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                StatPeriod.entries.forEach { p ->
-                    FilterChip(selected = p == period, onClick = { onPeriod(p) }, label = { Text(p.label) })
-                }
-            }
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            header?.invoke()
             BodyFigure({ id -> load[id]?.let(::heatColor) })
             // Farblegende
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -388,22 +417,29 @@ fun MuscleHeatCard(store: GymStore, period: StatPeriod, onPeriod: (StatPeriod) -
                 }
             }
             if (load.isEmpty()) {
-                Text(
-                    tr("Keine Trainings in diesem Zeitraum.", "No workouts in this period."),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(empty, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
-                // Muskeln mit Prozent, stärkste zuerst
+                // Muskeln mit Prozent bzw. Sätzen, stärkste zuerst
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    load.entries.sortedByDescending { it.value }.forEach { (id, p) ->
+                    score.entries.sortedByDescending { it.value }.forEach { (id, v) ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            heatColor(p)?.let { LegendDot(it) }
-                            Text("${muscleLabel(id)} ${Math.round(p * 100)} %", style = MaterialTheme.typography.bodyMedium)
+                            heatColor(load.getValue(id))?.let { LegendDot(it) }
+                            Text(
+                                muscleLabel(id) + " " +
+                                    if (showSets) fmtSets(v) + " " + tr(if (v == 1f) "Satz" else "Sätze", if (v == 1f) "set" else "sets")
+                                    else "${Math.round(load.getValue(id) * 100)} %",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                 }
-                // Nie trainierte Muskeln als Hinweis
+                if (showSets) Text(
+                    tr("Summe: ", "Total: ") + fmtSets(score.values.sum()) + " " + tr("Muskel-Sätze", "muscle sets") +
+                        " · " + plural(score.size, tr("Muskel", "muscle"), tr("Muskeln", "muscles")) +
+                        tr(" (Hilfsmuskel zählt ½)", " (secondary counts ½)"),
+                    style = MaterialTheme.typography.titleSmall
+                )
+                // Nicht trainierte Muskeln als Hinweis
                 val missing = MUSCLES.keys.filter { it !in load }
                 if (missing.isNotEmpty()) Text(
                     tr("Nicht trainiert: ", "Not trained: ") + missing.joinToString(", ") { muscleLabel(it) },

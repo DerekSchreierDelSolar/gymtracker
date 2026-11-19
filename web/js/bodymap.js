@@ -2,7 +2,7 @@
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
 import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
-import { tr, isEnglish, CustomMeta, dayKey } from './core.js';
+import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural } from './core.js';
 import { h, chip, dialog } from './ui.js';
 import { wikiFor } from './wiki.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
@@ -115,8 +115,8 @@ export const HEAT_LEVELS = [
 ];
 export const heatColor = p => HEAT_LEVELS.filter(l => p >= l[0]).pop()?.[1] ?? null;
 
-/** Belastung je Muskel relativ zum stärksten (= 1). Satz: Hauptmuskeln 1, Hilfsmuskeln 0,5. */
-export function muscleLoad(sets) {
+/** Sätze je Muskel: Hauptmuskeln 1, Hilfsmuskeln 0,5 pro Satz (wie muscleScore in BodyMap.kt). */
+export function muscleScore(sets) {
   const score = {}, cache = new Map();
   for (const s of sets) {
     if (!cache.has(s.exercise)) cache.set(s.exercise, musclesOf(s.exercise));
@@ -125,6 +125,11 @@ export function muscleLoad(sets) {
     for (const id of m.primary) score[id] = (score[id] ?? 0) + 1;
     for (const id of m.secondary) score[id] = (score[id] ?? 0) + 0.5;
   }
+  return score;
+}
+
+/** Belastung relativ zum am stärksten trainierten Muskel (= 1). */
+export function relativeLoad(score) {
   const max = Math.max(0, ...Object.values(score));
   return max ? Object.fromEntries(Object.entries(score).map(([k, v]) => [k, v / max])) : {};
 }
@@ -146,19 +151,37 @@ export function periodFilter(p, sets) {
   return sets;
 }
 
-/** Karte „Trainierte Muskeln“ für die Startseite. */
+/** Startseite: Karte „Trainierte Muskeln“ mit Zeitraum-Umschalter, Werte in Prozent. */
 export function muscleHeatCard(sets, period, onPeriod) {
-  const load = muscleLoad(periodFilter(period, sets));
-  const entries = Object.entries(load).sort((a, b) => b[1] - a[1]);
+  return heatCard({
+    title: tr('Trainierte Muskeln', 'Trained muscles'),
+    score: muscleScore(periodFilter(period, sets)),
+    showSets: false,
+    empty: tr('Keine Trainings in diesem Zeitraum.', 'No workouts in this period.'),
+    header: h('div', { class: 'chips hscroll-chips' }, STAT_PERIODS.map(p => chip(periodLabel(p), p === period, () => onPeriod(p)))),
+  });
+}
+
+/** „6,5“ bzw. „6“ – halbe Sätze kommen von Hilfsmuskeln. */
+const fmtSets = v => fmtW(Math.round(v * 2) / 2);
+
+/** Karte mit Heatmap. showSets = Summe der Sätze je Muskel (Trainingsübersicht), sonst Prozent. */
+export function heatCard({ title, score, showSets, empty, header = null }) {
+  const load = relativeLoad(score);
+  const entries = Object.entries(score).sort((a, b) => b[1] - a[1]);
   const missing = Object.keys(MUSCLES).filter(id => !(id in load));
   const dot = c => h('i', { style: `background:${c}` });
+  const total = Object.values(score).reduce((a, v) => a + v, 0);
   return h('div', { class: 'card pad-m heat-card' },
-    h('h3', null, tr('Trainierte Muskeln', 'Trained muscles')),
-    h('div', { class: 'chips hscroll-chips' }, STAT_PERIODS.map(p => chip(periodLabel(p), p === period, () => onPeriod(p)))),
+    h('h3', null, title),
+    header,
     h('div', { class: 'muscle-map' }, bodyFigure(id => (load[id] ? heatColor(load[id]) : null))),
     h('div', { class: 'heat-legend' }, HEAT_LEVELS.map(([, c, label]) => h('span', null, dot(c), label))),
     entries.length
-      ? [h('div', { class: 'heat-list' }, entries.map(([id, p]) => h('span', null, dot(heatColor(p)), `${muscleLabel(id)} ${Math.round(p * 100)} %`))),
+      ? [h('div', { class: 'heat-list' }, entries.map(([id, v]) => h('span', null, dot(heatColor(load[id])),
+          `${muscleLabel(id)} ` + (showSets ? `${fmtSets(v)} ${v === 1 ? tr('Satz', 'set') : tr('Sätze', 'sets')}` : `${Math.round(load[id] * 100)} %`)))),
+        showSets ? h('b', null, tr('Summe: ', 'Total: ') + `${fmtSets(total)} ` + tr('Muskel-Sätze', 'muscle sets') + ' · ' +
+          plural(entries.length, tr('Muskel', 'muscle'), tr('Muskeln', 'muscles')) + tr(' (Hilfsmuskel zählt ½)', ' (secondary counts ½)')) : null,
         missing.length ? h('p', { class: 'muted small' }, tr('Nicht trainiert: ', 'Not trained: ') + missing.map(muscleLabel).join(', ')) : null]
-      : h('p', { class: 'muted' }, tr('Keine Trainings in diesem Zeitraum.', 'No workouts in this period.')));
+      : h('p', { class: 'muted' }, empty));
 }

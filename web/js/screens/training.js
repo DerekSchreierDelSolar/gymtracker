@@ -1,6 +1,7 @@
 // Trainingsmodus und Trainingsübersicht – entspricht TrainingScreen.kt und SummaryScreen.kt.
 
 import { wikiButton } from '../wiki.js';
+import { heatCard, muscleScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
@@ -211,6 +212,7 @@ function exercisePage(w, start, name) {
 
 export function summaryScreen(t, onDone) {
   const stats = sessionStats(store, t);
+  const sessionSets = stats.results.flatMap(r => r.sets);
   const tiles = [];
   if (t.id >= 0) tiles.push([tr('Dauer', 'Duration'), fmtDuration(t.end - t.start)]);
   tiles.push([tr('Sätze', 'Sets'), String(stats.sets)]);
@@ -252,6 +254,10 @@ export function summaryScreen(t, onDone) {
       h('div', { class: 'stat-grid' }, tiles.map(([l, v]) => statBox(l, v))),
       stats.kcal == null ? muted(tr('Tipp: Trag unter „Körper“ dein Gewicht ein, dann schätzt die App den Kalorienverbrauch.',
         'Tip: enter your weight under "Body" and the app will estimate calories burned.'), 'small') : null,
+      sessionSets.length ? heatCard({
+        title: tr('Trainierte Muskeln', 'Trained muscles'), score: muscleScore(sessionSets), showSets: true,
+        empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),
+      }) : null,
       volumeItems.length >= 2 ? chartCard(tr('Volumen pro Übung', 'Volume per exercise'), tr('Gewicht × Wiederholungen', 'Weight × reps'),
         horizontalBars(volumeItems, v => `${fmtW(v)} kg`)) : null,
       trend,

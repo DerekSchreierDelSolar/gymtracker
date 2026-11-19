@@ -82,6 +82,17 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                 }
             }
 
+            // Heatmap: welche Muskeln dieses Training belastet hat (Summe der Sätze)
+            val sessionSets = stats.results.flatMap { it.sets }
+            if (sessionSets.isNotEmpty()) item {
+                MuscleHeatCard(
+                    title = tr("Trainierte Muskeln", "Trained muscles"),
+                    score = muscleScore(sessionSets),
+                    showSets = true,
+                    empty = tr("Für diese Übungen sind keine Muskeln hinterlegt.", "No muscles known for these exercises.")
+                )
+            }
+
             // Diagramm 1: Volumen pro Übung (nur Kraftübungen mit Sätzen)
             val volumeItems = stats.results
                 .filter { !it.group.isCardio && !isTimed(it.name) && it.sets.isNotEmpty() }
