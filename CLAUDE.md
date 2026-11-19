@@ -129,3 +129,5 @@ Supersätze, Trainingsplan mit Wochentagen + Erinnerung, Pausen-Timer als Benach
 - **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
   Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
   Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
+- **Genauere kcal** (besprochen 19.11.2026, zurückgestellt): korrigierte MET-Methode mit Grundumsatz nach Mifflin-St-Jeor
+  → optionale Einstellungen Geschlecht, Geburtsjahr, Größe; ohne Angaben weiter einfache MET-Formel.
