@@ -1,0 +1,234 @@
+package com.example.gymtracker
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.unit.dp
+import java.text.SimpleDateFormat
+import java.util.Date
+
+/** Überschrift einer Kategorie: farbiger Punkt + Name (Übungsliste und Katalog). */
+@Composable
+fun GroupHeader(group: MuscleGroup) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(top = 14.dp, bottom = 4.dp)
+    ) {
+        Box(
+            Modifier
+                .size(10.dp)
+                .clip(CircleShape)
+                .background(group.color)
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(group.label, style = MaterialTheme.typography.titleMedium)
+    }
+}
+
+
+// ---------- Diagramme (Trainingsübersicht & Körper) ----------
+
+/** Überschrift + Inhalt in einer Karte – einheitlicher Rahmen für alle Diagramme. */
+@Composable
+fun ChartCard(title: String, subtitle: String? = null, content: @Composable () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            if (subtitle != null) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            content()
+        }
+    }
+}
+
+/**
+ * Waagerechte Balken (z. B. Volumen pro Übung). Eine Datenreihe → eine Farbe;
+ * jede Zeile ist direkt beschriftet (Name links, Wert rechts), daher keine Legende nötig.
+ * Gebaut aus normalen Layout-Bausteinen statt Canvas: Balkenlänge = Anteil am größten Wert.
+ */
+@Composable
+fun HorizontalBars(items: List<Pair<String, Double>>, format: (Double) -> String) {
+    val max = items.maxOfOrNull { it.second }?.takeIf { it > 0 } ?: return
+    val barColor = MaterialTheme.colorScheme.primary
+    val track = MaterialTheme.colorScheme.surfaceContainerHigh
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        items.forEach { (label, value) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.width(104.dp)
+                )
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(track)
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth((value / max).toFloat().coerceIn(0.02f, 1f))
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(barColor)
+                    )
+                }
+                Text(
+                    format(value),
+                    style = MaterialTheme.typography.labelMedium,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(72.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Senkrechte Säulen über die Zeit (z. B. Volumen der letzten Trainings).
+ * Die letzte Säule (= aktuelles Training) ist in voller Akzentfarbe, die älteren gedämpft.
+ * Beschriftet werden nur der aktuelle Wert und das Datum unter jeder Säule.
+ */
+@Composable
+fun HistoryBars(values: List<Double>, labels: List<String>, format: (Double) -> String) {
+    val max = values.maxOrNull()?.takeIf { it > 0 } ?: return
+    val strong = MaterialTheme.colorScheme.primary
+    // Gedämpfte Farbe deckend mischen (statt halbtransparent), damit nichts durchscheint
+    val muted = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        .compositeOver(MaterialTheme.colorScheme.surfaceContainerHighest)
+    val grid = MaterialTheme.colorScheme.outlineVariant
+    // Nur oben abgerundet: die Säule steht auf der Grundlinie
+    val barShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
+    Column {
+        Text(
+            format(values.last()),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.align(Alignment.End)
+        )
+        Spacer(Modifier.height(4.dp))
+        // Jede Säule bekommt eine gleich breite Spalte (weight 1f) – die Datumszeile darunter
+        // verwendet dieselben Spalten, dadurch steht jedes Datum genau unter seiner Säule.
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+        ) {
+            values.forEachIndexed { i, v ->
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    Box(
+                        Modifier
+                            .width(28.dp)
+                            .fillMaxHeight((v / max).toFloat().coerceIn(0.02f, 1f))
+                            .clip(barShape)
+                            .background(if (i == values.lastIndex) strong else muted)
+                    )
+                }
+            }
+        }
+        // Dezente Grundlinie
+        HorizontalDivider(color = grid)
+        Spacer(Modifier.height(4.dp))
+        Row(Modifier.fillMaxWidth()) {
+            labels.forEach {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+/** Kurzes Datum für Achsen-Beschriftungen („18.11.“ bzw. „11/18“). */
+fun fmtShortDate(t: Long): String =
+    SimpleDateFormat(tr("dd.MM.", "MM/dd"), appLocale()).format(Date(t))
+
+// ---------- Diagramm ----------
+
+@Composable
+fun ProgressChart(values: List<Double>, title: String, unit: String) {
+    ChartCard(title, subtitle = "${fmtW(values.min())} – ${fmtW(values.max())} $unit") {
+        LineChart(values, unit)
+    }
+}
+
+/**
+ * Liniendiagramm: 2 dp Linie, kleine Punkte mit Hintergrund-Ring, dezente Hilfslinien.
+ * Beschriftet ist nur der letzte (aktuelle) Wert.
+ */
+@Composable
+fun LineChart(values: List<Double>, unit: String) {
+    if (values.size < 2) return
+    val color = MaterialTheme.colorScheme.primary
+    val grid = MaterialTheme.colorScheme.outlineVariant
+    val surface = MaterialTheme.colorScheme.surfaceContainerHighest
+    Column {
+        Text(
+            "${fmtW(values.last())} $unit",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.align(Alignment.End)
+        )
+        Canvas(
+            Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .padding(vertical = 8.dp)
+        ) {
+            val pad = 6.dp.toPx()
+            val min = values.min()
+            val max = values.max()
+            // Etwas Luft oben/unten, damit eine fast flache Linie nicht am Rand klebt
+            val span = (max - min).takeIf { it > 0 } ?: 1.0
+            val lo = min - span * 0.1
+            val hi = max + span * 0.1
+            val usableH = size.height - 2 * pad
+            // Drei dezente horizontale Hilfslinien
+            for (k in 0..2) {
+                val y = pad + usableH * k / 2f
+                drawLine(grid, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
+            }
+            val stepX = (size.width - 2 * pad) / (values.size - 1)
+            val points = values.mapIndexed { i, v ->
+                Offset(pad + i * stepX, (pad + usableH - (v - lo) / (hi - lo) * usableH).toFloat())
+            }
+            points.zipWithNext { a, b -> drawLine(color, a, b, 2.dp.toPx(), StrokeCap.Round) }
+            points.forEachIndexed { i, pt ->
+                val r = if (i == points.lastIndex) 5.dp.toPx() else 3.5.dp.toPx()
+                drawCircle(surface, r + 2.dp.toPx(), pt) // Ring in Hintergrundfarbe trennt Punkt von Linie
+                drawCircle(color, r, pt)
+            }
+        }
+    }
+}
+
