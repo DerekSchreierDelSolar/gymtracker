@@ -123,3 +123,6 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
 Ernährungstagebuch, Körpermaße, Fortschrittsfotos, Satz-Typen (Aufwärmen/Drop), Notizen,
 Supersätze, Trainingsplan mit Wochentagen + Erinnerung, Pausen-Timer als Benachrichtigung
 (Foreground Service), automatisches Backup, Homescreen-Widget.
+- **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
+  Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
+  Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
