@@ -1,12 +1,23 @@
 // Körperdiagramm (Meerschweinchen) – entspricht MuscleMap in BodyMap.kt.
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
-import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
+import { MUSCLES, BODY, BODY_SHAPES, POSES } from './body-data.js';
 import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural } from './core.js';
 import { h, chip, dialog } from './ui.js';
 import { wikiFor } from './wiki.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
 import { store } from './store.js';
+
+// ---------- Posen (wie enum class Pose in BodyMap.kt) ----------
+
+/** Aktuelle Pose; app.js würfelt bei jedem Bildschirmwechsel neu (newPose). */
+let currentPose = 'RELAXED';
+export function newPose() {
+  const keys = Object.keys(POSES);
+  currentPose = keys[Math.floor(Math.random() * keys.length)];
+}
+newPose();
+export const poseLabel = () => (isEnglish() ? POSES[currentPose][1] : POSES[currentPose][0]);
 
 export const PRIMARY_COLOR = '#E24B4A';
 export const SECONDARY_COLOR = '#EF9F27';
@@ -33,18 +44,19 @@ function placements(s, view = 'BOTH') {
 }
 
 /** SVG-Text der Figur. colorOf(Muskel-ID) = Farbe oder null (neutral grau); view = BOTH/FRONT/BACK. */
-function svg(colorOf, view = 'BOTH') {
+function svg(colorOf, view = 'BOTH', pose = currentPose) {
+  const shapes = BODY_SHAPES.filter(s => !s.pose || s.pose === pose);
   const c = COLORS[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'];
   const color = s => s.fill === 'MUSCLE'
     ? (colorOf(s.id) ?? c.neutral)
     : s.fill === 'DARK' ? '#2B211B' : s.fill === 'LIGHT' ? '#FFFFFF' : c[s.fill];
   const parts = [];
   // 1. Außenkontur: alle Körperteile dick umranden; die Füllungen danach überdecken die Linien innen
-  for (const s of BODY_SHAPES) if (!s.id) for (const t of placements(s, view)) {
+  for (const s of shapes) if (!s.id) for (const t of placements(s, view)) {
     parts.push(`<path transform="${t}" d="${s.d}" fill="none" stroke="${c.outline}" stroke-width="2.4" stroke-linejoin="round"/>`);
   }
   // 2. Flächen (Muskeln mit dünner Fuge in Fellfarbe)
-  for (const s of BODY_SHAPES) for (const t of placements(s, view)) {
+  for (const s of shapes) for (const t of placements(s, view)) {
     // Muskeln: dünne Fuge in Fellfarbe; Fell: gleichfarbiger Rand schließt die Naht an der Spiegelachse
     const stroke = s.fill === 'MUSCLE' ? ` stroke="${c.FUR}" stroke-width="0.7"`
       : s.fill === 'FUR' || s.fill === 'PATCH' ? ` stroke="${color(s)}" stroke-width="0.8"` : '';
@@ -195,16 +207,49 @@ export function heatCard({ title, score, showSets, empty, header = null }) {
 export const musclesOnSide = view =>
   Object.keys(MUSCLES).filter(id => BODY_SHAPES.some(s => s.id === id && (s.view === view || s.view === 'BOTH')));
 
-/** Karte: Titel oben, links die Figur einer Seite, rechts Haupt- und Hilfsmuskeln dieser Seite. */
-export function muscleSideCard(view, primary, secondary) {
+/** Pro Muskel: wann zuletzt trainiert und Sätze in den letzten 7 Tagen (Hilfsmuskel = ½) – wie muscleStats. */
+export function muscleStats(sets) {
+  const now = Date.now();
+  const week = muscleScore(sets.filter(s => s.time >= now - 7 * 24 * 3600 * 1000));
+  const last = {}, cache = new Map();
+  for (const s of sets) {
+    if (!cache.has(s.exercise)) cache.set(s.exercise, musclesOf(s.exercise));
+    const m = cache.get(s.exercise);
+    if (!m) continue;
+    for (const id of [...m.primary, ...m.secondary]) if (s.time > (last[id] ?? 0)) last[id] = s.time;
+  }
+  return Object.fromEntries(Object.keys(MUSCLES).map(id => [id, { lastTime: last[id] ?? null, weekSets: week[id] ?? 0 }]));
+}
+
+/** „heute“, „gestern“, „vor 3 Tagen“, „noch nie“. */
+export function fmtAgo(t) {
+  if (t == null) return tr('noch nie', 'never');
+  const days = dayKey(Date.now()) - dayKey(t);
+  return days === 0 ? tr('heute', 'today') : days === 1 ? tr('gestern', 'yesterday') : tr(`vor ${days} Tagen`, `${days} days ago`);
+}
+
+/**
+ * Karte: Titel + Pose oben, links die Figur einer Seite, rechts Haupt- und Hilfsmuskeln dieser Seite
+ * mit „zuletzt …“ (unter 48 h: „erholt sich“) und Sätzen in 7 Tagen.
+ */
+export function muscleSideCard(view, primary, secondary, stats) {
   const ids = musclesOnSide(view);
   const main = ids.filter(id => primary.includes(id));
   const help = ids.filter(id => secondary.includes(id) && !primary.includes(id));
+  const row = id => {
+    const st = stats[id];
+    const recovering = st.lastTime != null && Date.now() - st.lastTime < 48 * 3600 * 1000;
+    return h('div', { class: 'side-muscle' },
+      h('div', null, muscleLabel(id)),
+      h('small', { class: recovering ? 'recovering' : 'muted' }, tr('zuletzt ', 'last ') + fmtAgo(st.lastTime) + (recovering ? tr(' · erholt sich', ' · recovering') : '')),
+      h('small', { class: 'muted' }, `${fmtSets(st.weekSets)} ${st.weekSets === 1 ? tr('Satz', 'set') : tr('Sätze', 'sets')}` + tr(' in 7 Tagen', ' in 7 days')));
+  };
   const group = (title, list, color) => list.length ? h('div', { class: 'side-group' },
-    h('small', null, h('i', { style: `background:${color}` }), title),
-    list.map(id => h('div', null, muscleLabel(id)))) : null;
+    h('small', null, h('i', { style: `background:${color}` }), title), list.map(row)) : null;
   return h('div', { class: 'card pad-m glass side-card' },
-    h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back')),
+    h('div', { class: 'side-head' },
+      h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back')),
+      h('small', { class: 'muted' }, '💪 ' + poseLabel())),
     h('div', { class: 'side-body' },
       h('div', { class: 'side-figure', html: svg(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null), view) }),
       h('div', { class: 'side-list' },

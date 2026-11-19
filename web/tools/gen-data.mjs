@@ -142,7 +142,11 @@ const bodyShapes = [...block(bodyKt, 'val BODY_SHAPES: List<BodyShape> = listOf(
   d: m[3],
   mirror: !/mirror = false/.test(m[4]),
   fill: m[4].match(/fill = BodyFill\.(\w+)/)?.[1] ?? (m[1] === 'null' ? 'FUR' : 'MUSCLE'),
+  pose: m[4].match(/pose = Pose\.(\w+)/)?.[1] ?? null,   // nur in dieser Pose zeichnen (Arme)
 }));
+// Posen (enum class Pose): Name → [de, en]
+const poses = Object.fromEntries([...block(bodyKt, 'enum class Pose(private val de: String, private val en: String) {', '}')
+  .matchAll(/(\w+)\("([^"]*)", "([^"]*)"\)/g)].map(m => [m[1], [m[2], m[3]]]));
 const bodyConst = n => Number(bodyKt.match(new RegExp("const val " + n + " = ([0-9.]+)f"))[1]);
 for (const s of bodyShapes) if (s.id && !muscles[s.id]) throw new Error('BodyMap: unbekannte Muskel-ID ' + s.id);
 for (const [b, e] of Object.entries(wiki)) {
@@ -152,6 +156,8 @@ writeFileSync(join(root, 'web/js/body-data.js'),
   `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus BodyMap.kt – nicht von Hand ändern!\n` +
   `export const MUSCLES = ${JSON.stringify(muscles)};\n` +
   `export const BODY = { width: ${bodyConst('BODY_WIDTH')}, height: ${bodyConst('BODY_HEIGHT')}, backOffset: ${bodyConst('BACK_OFFSET')} };\n` +
+  `export const POSES = ${JSON.stringify(poses)};
+` +
   `export const BODY_SHAPES = [\n${bodyShapes.map(s => '  ' + JSON.stringify(s)).join(',\n')}\n];\n`);
 console.log(`body-data.js: ${bodyShapes.length} Formen, ${Object.keys(muscles).length} Muskeln`);
 

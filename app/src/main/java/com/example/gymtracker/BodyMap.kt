@@ -69,7 +69,23 @@ class BodyShape(
     val d: String,
     val mirror: Boolean = true,
     val fill: BodyFill = if (id != null) BodyFill.MUSCLE else BodyFill.FUR
+,
+    /** Nur in dieser Pose zeichnen (Arme); null = in jeder Pose (Rumpf, Beine, Kopf). */
+    val pose: Pose? = null
 )
+
+/** Bodybuilding-Posen des Meerschweinchens: bei jedem Öffnen zufällig eine (nur die Arme ändern sich). */
+enum class Pose(private val de: String, private val en: String) {
+    RELAXED("Entspannt", "Relaxed"),
+    DOUBLE_BICEPS("Doppelbizeps", "Double biceps"),
+    LAT_SPREAD("Lat-Spread", "Lat spread");
+
+    val label: String get() = tr(de, en)
+}
+
+/** Zufällige Pose, die erhalten bleibt, solange der Bildschirm offen ist. */
+@Composable
+fun rememberRandomPose(key: Any? = null): Pose = remember(key) { Pose.entries.random() }
 
 const val BODY_WIDTH = 100f
 const val BODY_HEIGHT = 196f
@@ -84,8 +100,16 @@ const val BACK_OFFSET = 108f
 val BODY_SHAPES: List<BodyShape> = listOf(
     // ----- Körper (vorne und hinten gleich) -----
     BodyShape(null, BodyView.BOTH, "M30 18 Q16 12 15 22 Q17 30 28 28 Z", fill = BodyFill.PATCH),             // Ohr (hängend, seitlich)
-    BodyShape(null, BodyView.BOTH, "M13 70 Q8 78 9 90 L10 100 Q7 110 8 122 L15 124 Q17 112 19 102 Q23 92 23 82 Q22 74 18 70 Z"), // Arm
-    BodyShape(null, BodyView.BOTH, "M7 120 Q4 129 9 133 Q15 135 16 124 Z", fill = BodyFill.PINK),            // Pfote
+    BodyShape(null, BodyView.BOTH, "M13 70 Q8 78 9 90 L10 100 Q7 110 8 122 L15 124 Q17 112 19 102 Q23 92 23 82 Q22 74 18 70 Z", pose = Pose.RELAXED), // Arm
+    BodyShape(null, BodyView.BOTH, "M7 120 Q4 129 9 133 Q15 135 16 124 Z", fill = BodyFill.PINK, pose = Pose.RELAXED),            // Pfote
+    // Doppelbizeps: Oberarm waagerecht nach außen, Unterarm senkrecht nach oben, Faust neben dem Kopf
+    BodyShape(null, BodyView.BOTH, "M23 60 Q13 56 5 61 Q0 66 3 73 Q12 78 23 76 Z", pose = Pose.DOUBLE_BICEPS),   // Oberarm
+    BodyShape(null, BodyView.BOTH, "M2 71 Q0 58 3 45 L11 44 Q13 57 10 72 Z", pose = Pose.DOUBLE_BICEPS),        // Unterarm
+    BodyShape(null, BodyView.BOTH, "M2 47 Q1 38 7 36 Q13 37 12 47 Z", fill = BodyFill.PINK, pose = Pose.DOUBLE_BICEPS), // Faust
+    // Lat-Spread: Ellbogen nach außen, Fäuste in die Taille gestemmt
+    BodyShape(null, BodyView.BOTH, "M13 69 Q5 78 3 90 L10 96 Q14 86 23 80 Z", pose = Pose.LAT_SPREAD),           // Oberarm
+    BodyShape(null, BodyView.BOTH, "M3 87 Q7 99 22 109 L28 104 Q16 94 11 87 Z", pose = Pose.LAT_SPREAD),         // Unterarm
+    BodyShape(null, BodyView.BOTH, "M21 103 Q28 99 32 105 Q29 112 22 111 Z", fill = BodyFill.PINK, pose = Pose.LAT_SPREAD), // Faust
     BodyShape(null, BodyView.BOTH, "M33 128 Q27 140 28 152 Q29 158 31 162 Q28 170 30 178 L34 186 L45 186 Q46 176 46 166 Q47 160 47 154 Q49 144 49 136 L50 132 Z"), // Bein
     BodyShape(null, BodyView.BOTH, "M33 184 Q28 192 34 194 L47 194 Q49 189 46 184 Z", fill = BodyFill.PINK),  // Fuß
     BodyShape(null, BodyView.BOTH, "M50 46 L42 48 Q34 55 24 58 Q14 60 11 68 Q10 76 15 80 L22 82 Q25 96 31 108 Q33 116 31 124 Q30 130 34 134 L50 136 Z"), // Rumpf (V-Form)
@@ -107,8 +131,12 @@ val BODY_SHAPES: List<BodyShape> = listOf(
     BodyShape("traps", BodyView.FRONT, "M43 49 Q36 54 28 57 L38 59 Q42 56 45 53 Z"),
     BodyShape("delts", BodyView.FRONT, "M25 58 Q14 60 11.5 68 Q11 75 15 79 Q19 76 22 70 Q25 64 30 60 Z"),
     BodyShape("chest", BodyView.FRONT, "M49 60 L36 60 Q28 62 24 70 Q24 79 31 83 Q40 86 49 82 Z"),
-    BodyShape("biceps", BodyView.FRONT, "M21 80 Q15 82 13 90 Q13 96 15 99 Q19 98 21 92 Q23 86 21 80 Z"),
-    BodyShape("forearms", BodyView.FRONT, "M10 103 Q8 110 9 118 L13 121 Q15 112 18 104 Q14 101 10 103 Z"),
+    BodyShape("biceps", BodyView.FRONT, "M21 80 Q15 82 13 90 Q13 96 15 99 Q19 98 21 92 Q23 86 21 80 Z", pose = Pose.RELAXED),
+    BodyShape("forearms", BodyView.FRONT, "M10 103 Q8 110 9 118 L13 121 Q15 112 18 104 Q14 101 10 103 Z", pose = Pose.RELAXED),
+    BodyShape("biceps", BodyView.FRONT, "M21 63 Q17 52 8 59 Q8 65 15 66 Q19 66 21 63 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("forearms", BodyView.FRONT, "M3 67 Q2 57 4 49 L9 48 Q10 57 8 67 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("biceps", BodyView.FRONT, "M14 72 Q7 80 5.5 88 Q9.5 89 13 81 Q16 76 20 74 Z", pose = Pose.LAT_SPREAD),
+    BodyShape("forearms", BodyView.FRONT, "M7 91 Q12 99 21 105 L24 102 Q16 96 11 90 Z", pose = Pose.LAT_SPREAD),
     BodyShape("abs", BodyView.FRONT, "M49 87 L43 88 Q42 93 43 97 L49 97 Z"),                       // Sixpack oben
     BodyShape("abs", BodyView.FRONT, "M49 99 L43 99 Q42 104 43 108 L49 108 Z"),                    // Mitte
     BodyShape("abs", BodyView.FRONT, "M49 110 L43 110 Q42 116 44 120 Q46 124 49 125 Z"),           // unten
@@ -125,8 +153,12 @@ val BODY_SHAPES: List<BodyShape> = listOf(
     BodyShape("lats", BodyView.BACK, "M43 72 Q35 64 26 66 Q23 76 25 86 Q29 98 37 108 Q42 102 45 92 Z"),
     BodyShape("lowerback", BodyView.BACK, "M49 94 L46 96 Q43 106 43.5 116 Q46 122 49 123 Z"),
     BodyShape("obliques", BodyView.BACK, "M27 92 Q26 102 30 110 L33 108 Q30 100 30 92 Z"),
-    BodyShape("triceps", BodyView.BACK, "M22 79 Q16 81 13 88 Q12 95 15 99 L19 98 Q22 90 22 79 Z"),
-    BodyShape("forearms", BodyView.BACK, "M10 103 Q8 110 9 118 L13 121 Q15 112 18 104 Q14 101 10 103 Z"),
+    BodyShape("triceps", BodyView.BACK, "M22 79 Q16 81 13 88 Q12 95 15 99 L19 98 Q22 90 22 79 Z", pose = Pose.RELAXED),
+    BodyShape("forearms", BodyView.BACK, "M10 103 Q8 110 9 118 L13 121 Q15 112 18 104 Q14 101 10 103 Z", pose = Pose.RELAXED),
+    BodyShape("triceps", BodyView.BACK, "M21 69 Q12 72 5 69 Q6 75 13 76 Q19 76 21 72 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("forearms", BodyView.BACK, "M3 67 Q2 57 4 49 L9 48 Q10 57 8 67 Z", pose = Pose.DOUBLE_BICEPS),
+    BodyShape("triceps", BodyView.BACK, "M15 73 Q8 81 6 89 L10 91 Q13 84 19 77 Z", pose = Pose.LAT_SPREAD),
+    BodyShape("forearms", BodyView.BACK, "M7 91 Q12 99 21 105 L24 102 Q16 96 11 90 Z", pose = Pose.LAT_SPREAD),
     BodyShape("glutes", BodyView.BACK, "M49 122 Q40 120 33 125 Q29 132 32 140 Q40 146 49 143 Z"),
     BodyShape("hamstrings", BodyView.BACK, "M32 142 Q29 148 30 154 Q32 159 36 160 Q38 152 39 145 Z"), // äußerer Kopf
     BodyShape("hamstrings", BodyView.BACK, "M41 146 Q39 152 40 159 Q44 161 46 157 Q47 150 46 145 Z"), // innerer Kopf
@@ -179,7 +211,13 @@ fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier
  * view = nur eine Seite (FRONT/BACK) zeichnen, ohne Beschriftung; widthFraction = Breite im Container.
  */
 @Composable
-fun BodyFigure(colorOf: (String) -> Color?, modifier: Modifier = Modifier, view: BodyView = BodyView.BOTH, widthFraction: Float = 0.72f) {
+fun BodyFigure(
+    colorOf: (String) -> Color?,
+    modifier: Modifier = Modifier,
+    view: BodyView = BodyView.BOTH,
+    widthFraction: Float = 0.72f,
+    pose: Pose = rememberRandomPose()
+) {
     // Hell/dunkel am tatsächlichen Hintergrund ablesen (App-Einstellung kann vom System abweichen)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val fur = if (dark) Color(0xFF5C4D41) else Color(0xFFF3E6D6)
@@ -194,7 +232,7 @@ fun BodyFigure(colorOf: (String) -> Color?, modifier: Modifier = Modifier, view:
         BodyView.BOTH -> bodyPaths
         BodyView.FRONT -> bodyPaths.filter { it.dx == 0f }
         BodyView.BACK -> bodyPaths.filter { it.dx == BACK_OFFSET }
-    }
+    }.filter { it.shape.pose == null || it.shape.pose == pose }
 
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Canvas(
@@ -466,26 +504,64 @@ fun MuscleHeatCard(
 fun musclesOnSide(view: BodyView): List<String> =
     MUSCLES.keys.filter { id -> BODY_SHAPES.any { it.id == id && (it.view == view || it.view == BodyView.BOTH) } }
 
+/** Pro Muskel: wann zuletzt trainiert und wie viele Sätze in den letzten 7 Tagen (Hilfsmuskel = ½). */
+data class MuscleStat(val lastTime: Long?, val weekSets: Float)
+
+fun muscleStats(sets: List<GymSet>): Map<String, MuscleStat> {
+    val now = System.currentTimeMillis()
+    val week = muscleScore(sets.filter { it.time >= now - 7L * 24 * 3600 * 1000 })
+    val last = HashMap<String, Long>()
+    val cache = HashMap<String, MuscleSet?>()
+    for (s in sets) {
+        val m = cache.getOrPut(s.exercise) { musclesOf(s.exercise) } ?: continue
+        for (id in m.primary + m.secondary) if (s.time > (last[id] ?: 0L)) last[id] = s.time
+    }
+    return MUSCLES.keys.associateWith { MuscleStat(last[it], week[it] ?: 0f) }
+}
+
+/** „heute“, „gestern“, „vor 3 Tagen“, „noch nie“. */
+fun fmtAgo(t: Long?): String {
+    if (t == null) return tr("noch nie", "never")
+    val days = dayKey(System.currentTimeMillis()) - dayKey(t)
+    return when (days) {
+        0 -> tr("heute", "today")
+        1 -> tr("gestern", "yesterday")
+        else -> tr("vor $days Tagen", "$days days ago")
+    }
+}
+
 /**
- * Karte für eine Seite (Vorder- oder Rückseite): Titel oben, darunter links die Figur,
- * rechts die beteiligten Muskeln dieser Seite – gruppiert nach Haupt- und Hilfsmuskeln.
+ * Karte für eine Seite (Vorder- oder Rückseite): Titel + Pose oben, darunter links die Figur,
+ * rechts die beteiligten Muskeln dieser Seite – gruppiert nach Haupt- und Hilfsmuskeln,
+ * je Muskel: zuletzt trainiert (mit Erholungshinweis) und Sätze in den letzten 7 Tagen.
  */
 @Composable
-fun MuscleSideCard(view: BodyView, primary: List<String>, secondary: List<String>, colors: CardColors = CardDefaults.cardColors()) {
+fun MuscleSideCard(
+    view: BodyView,
+    primary: List<String>,
+    secondary: List<String>,
+    pose: Pose,
+    stats: Map<String, MuscleStat>,
+    colors: CardColors = CardDefaults.cardColors()
+) {
     val ids = musclesOnSide(view)
     val main = ids.filter { it in primary }
     val help = ids.filter { it in secondary && it !in primary }
     Card(Modifier.fillMaxWidth(), colors = colors) {
         Column(Modifier.padding(16.dp)) {
-            Text(
-                if (view == BodyView.FRONT) tr("Vorderseite", "Front") else tr("Rückseite", "Back"),
-                style = MaterialTheme.typography.titleMedium
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (view == BodyView.FRONT) tr("Vorderseite", "Front") else tr("Rückseite", "Back"),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+                Text("💪 " + pose.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BodyFigure(
                     { id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null },
-                    Modifier.weight(0.42f), view = view, widthFraction = 1f
+                    Modifier.weight(0.42f), view = view, widthFraction = 1f, pose = pose
                 )
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(0.58f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -494,23 +570,44 @@ fun MuscleSideCard(view: BodyView, primary: List<String>, secondary: List<String
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    MuscleGroupList(tr("Hauptmuskeln", "Primary"), main, PRIMARY_COLOR)
-                    MuscleGroupList(tr("Hilfsmuskeln", "Secondary"), help, SECONDARY_COLOR)
+                    MuscleGroupList(tr("Hauptmuskeln", "Primary"), main, PRIMARY_COLOR, stats)
+                    MuscleGroupList(tr("Hilfsmuskeln", "Secondary"), help, SECONDARY_COLOR, stats)
                 }
             }
         }
     }
 }
 
-/** Überschrift („Hauptmuskeln“) mit Farbpunkt, darunter die Muskeln. */
+/** Überschrift („Hauptmuskeln“) mit Farbpunkt, darunter die Muskeln mit Kennzahlen. */
 @Composable
-private fun MuscleGroupList(title: String, ids: List<String>, color: Color) {
+private fun MuscleGroupList(title: String, ids: List<String>, color: Color, stats: Map<String, MuscleStat>) {
     if (ids.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             LegendDot(color)
             Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        ids.forEach { Text(muscleLabel(it), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp)) }
+        ids.forEach { id ->
+            val st = stats[id]
+            // Erholung: unter 48 Stunden seit dem letzten Training = „erholt sich“
+            val recovering = st?.lastTime != null && System.currentTimeMillis() - st.lastTime < 48L * 3600 * 1000
+            Column(Modifier.padding(start = 16.dp)) {
+                Text(muscleLabel(id), style = MaterialTheme.typography.bodyLarge)
+                if (st != null) {
+                    Text(
+                        tr("zuletzt ", "last ") + fmtAgo(st.lastTime) +
+                            if (recovering) tr(" · erholt sich", " · recovering") else "",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (recovering) SECONDARY_COLOR else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        fmtSets(st.weekSets) + " " + tr(if (st.weekSets == 1f) "Satz" else "Sätze", if (st.weekSets == 1f) "set" else "sets") +
+                            tr(" in 7 Tagen", " in 7 days"),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
 }
