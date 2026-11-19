@@ -202,7 +202,7 @@ export function exerciseDetailScreen(name) {
   }
 
   return screen({
-    title: exName(name), back: true, key: `ex-${name}-${tab}`,
+    title: exName(name), back: true, key: `ex-${name}-${tab}`, backdrop: exerciseImageUrl(name),
     titleIcon: exerciseIconHtml(name, group, 32),
     actions: [iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') })],
     top: h('div', { class: 'tab-row' }, tabs.map((label, i) =>

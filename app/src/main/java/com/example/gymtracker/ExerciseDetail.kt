@@ -9,6 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
@@ -274,9 +276,15 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
     // Nach Tag gruppiert, neuester Tag zuerst
     val days = history.groupBy { fmtDate(it.time) }
 
-    Scaffold(topBar = {
+    // Übungsbild als durchsichtiger Hintergrund; Kopfzeile und Reiter dann ebenfalls durchsichtig
+    val img = hasExerciseImage(exercise)
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    ExerciseBackdrop(exercise)
+    Scaffold(containerColor = if (img) Color.Transparent else MaterialTheme.colorScheme.background, topBar = {
         Column {
             TopAppBar(
+                colors = if (img) TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent, scrolledContainerColor = Color.Transparent)
+                else TopAppBarDefaults.topAppBarColors(),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         ExerciseIcon(exercise, group, Modifier.size(32.dp))
@@ -287,7 +295,10 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                 navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
                 actions = { IconAction(Ico.DELETE, onClick = { confirmDelete = true }) }
             )
-            PrimaryTabRow(selectedTabIndex = tab.coerceAtMost(tabs.size - 1)) {
+            PrimaryTabRow(
+                selectedTabIndex = tab.coerceAtMost(tabs.size - 1),
+                containerColor = if (img) Color.Transparent else TabRowDefaults.primaryContainerColor
+            ) {
                 tabs.forEachIndexed { i, label ->
                     Tab(
                         selected = tab == i, onClick = { tab = i },
@@ -366,6 +377,8 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                 }
             }
         }
+    }
+
     }
 
     if (editMuscles) MuscleEditDialog(store, exercise, onDismiss = { editMuscles = false })

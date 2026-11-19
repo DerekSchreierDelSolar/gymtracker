@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -256,10 +256,10 @@ fun motionOf(name: String, group: MuscleGroup): Motion = MOTION_OF[name] ?: grou
 @Composable
 fun ExerciseIcon(name: String, group: MuscleGroup, modifier: Modifier = Modifier) {
     // Foto, falls vorhanden (ExerciseImages.kt), sonst das gezeichnete Piktogramm
-    // Im kleinen Kreis auf Kopf und Oberkörper zoomen (Bild ist ein ganzes Motiv)
-    val zoom = Modifier.clip(CircleShape).graphicsLayer {
-        scaleX = 1.45f; scaleY = 1.45f
-        transformOrigin = TransformOrigin(0.5f, 0.4f)
+    // Abgerundetes Quadrat (zeigt mehr vom Bild als ein Kreis), leicht auf die Figur gezoomt
+    val zoom = Modifier.clip(RoundedCornerShape(percent = 24)).graphicsLayer {
+        scaleX = 1.15f; scaleY = 1.15f
+        transformOrigin = TransformOrigin(0.5f, 0.45f)
     }
     if (!ExerciseImage(name, modifier.then(zoom))) MotionIcon(motionOf(name, group), group.color, modifier)
 }

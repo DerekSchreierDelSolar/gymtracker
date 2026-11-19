@@ -9,6 +9,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Brush
 
 // ---------- Übungsbilder (ersetzen die Piktogramme, wo vorhanden) ----------
 //
@@ -58,4 +67,37 @@ fun ExerciseImage(name: String, modifier: Modifier = Modifier): Boolean {
     val bmp = ExerciseImages.keyFor(name)?.let(ExerciseImages::bitmap) ?: return false
     Image(bmp, contentDescription = exName(name), modifier = modifier, contentScale = ContentScale.Crop)
     return true
+}
+
+/** Hat die Übung ein Bild? (für durchsichtige Kopfzeilen über dem Hintergrundbild) */
+fun hasExerciseImage(name: String): Boolean = ExerciseImages.keyFor(name) != null
+
+/**
+ * Übungsbild als dezenter Hintergrund (in einer Box hinter dem Inhalt):
+ * oben gut sichtbar, nach unten weich in die Hintergrundfarbe auslaufend, damit Text lesbar bleibt.
+ */
+@Composable
+fun BoxScope.ExerciseBackdrop(name: String) {
+    val bmp = ExerciseImages.keyFor(name)?.let(ExerciseImages::bitmap) ?: return
+    val bg = MaterialTheme.colorScheme.background
+    // Quadratisch in voller Breite oben (ganzes Motiv sichtbar), darunter normaler Hintergrund
+    Box(
+        Modifier
+            .align(Alignment.TopCenter)
+            .fillMaxWidth()
+            .aspectRatio(1f)
+    ) {
+        Image(bmp, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop, alpha = 0.35f)
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        0f to bg.copy(alpha = 0.1f),
+                        0.55f to bg.copy(alpha = 0.45f),
+                        1f to bg
+                    )
+                )
+        )
+    }
 }

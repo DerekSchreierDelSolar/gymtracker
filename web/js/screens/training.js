@@ -8,7 +8,7 @@ import {
   goalCompletion, completionColor,
 } from '../core.js';
 import { sessionStats } from '../stats.js';
-import { exerciseIconHtml } from '../pictograms.js';
+import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import {
   h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, percentRing, onTick, muted,
 } from '../ui.js';
@@ -155,7 +155,7 @@ export function trainingScreen(w, onFinish) {
   onSwipe(page, () => setIndex(index + 1), () => setIndex(index - 1));
 
   return screen({
-    title: w.name, key: 'training-' + index,
+    title: w.name, key: 'training-' + index, backdrop: exerciseImageUrl(name),
     subtitle: h('span', null, clock, ' · ' + (goalTotal === 0
       ? plural(totalSets, tr('Satz', 'set'), tr('Sätze', 'sets'))
       : `${goalDone}/${goalTotal} ` + tr('Ziel-Sätze', 'target sets') + ` · ${goalPercent} %`)),

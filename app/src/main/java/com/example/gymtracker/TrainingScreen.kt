@@ -300,6 +300,9 @@ fun TrainingExercisePage(
     val lastDay = previous.firstOrNull()?.let { fmtDate(it.time) }
     val lastSets = previous.filter { fmtDate(it.time) == lastDay }.sortedBy { it.time }
 
+    // Übungsbild als durchsichtiger Hintergrund der Seite (wechselt beim Wischen mit)
+    Box(Modifier.fillMaxSize()) {
+    ExerciseBackdrop(name)
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -373,6 +376,7 @@ fun TrainingExercisePage(
         today.forEachIndexed { i, s ->
             item(key = s.id) { SetRow(store, s, i + 1, cardio) }
         }
+    }
     }
 }
 
