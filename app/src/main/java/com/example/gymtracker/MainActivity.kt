@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val store = GymStore(applicationContext)
         Wiki.load(applicationContext)
+        ExerciseImages.load(applicationContext)
         setContent {
             // Gewähltes Design; "system" folgt der Einstellung des Handys
             val dark = when (store.themeMode) {

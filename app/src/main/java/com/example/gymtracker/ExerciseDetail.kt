@@ -9,6 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -358,6 +360,7 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                 // ----- Info: Wiki (Ausführung, Hinweise) -----
                 else -> item {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        ExerciseImage(exercise, Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp)))
                         WikiContent(exercise, showHeader = false, showMuscles = false)
                     }
                 }

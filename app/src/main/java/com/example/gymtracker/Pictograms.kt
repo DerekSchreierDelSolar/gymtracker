@@ -3,6 +3,10 @@ package com.example.gymtracker
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -251,7 +255,13 @@ fun motionOf(name: String, group: MuscleGroup): Motion = MOTION_OF[name] ?: grou
 /** Rundes Symbol einer Übung: Kreis in Kategorie-Farbe mit Piktogramm der Bewegung. */
 @Composable
 fun ExerciseIcon(name: String, group: MuscleGroup, modifier: Modifier = Modifier) {
-    MotionIcon(motionOf(name, group), group.color, modifier)
+    // Foto, falls vorhanden (ExerciseImages.kt), sonst das gezeichnete Piktogramm
+    // Im kleinen Kreis auf Kopf und Oberkörper zoomen (Bild ist ein ganzes Motiv)
+    val zoom = Modifier.clip(CircleShape).graphicsLayer {
+        scaleX = 1.45f; scaleY = 1.45f
+        transformOrigin = TransformOrigin(0.5f, 0.4f)
+    }
+    if (!ExerciseImage(name, modifier.then(zoom))) MotionIcon(motionOf(name, group), group.color, modifier)
 }
 
 /** Rundes Symbol einer Muskelgruppe (Filter-Chips, Workout-Vorschau). */

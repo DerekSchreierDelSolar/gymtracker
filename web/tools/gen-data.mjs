@@ -3,9 +3,10 @@
 //
 // Aufruf (im Projektordner):   node web/tools/gen-data.mjs
 // Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt / assets/wiki/*.json erneut ausführen.
-// Erzeugt zusätzlich web/js/wiki-data.js (Übungs-Wiki).
+// Erzeugt zusätzlich web/js/wiki-data.js (Übungs-Wiki), web/js/body-data.js (Körperdiagramm)
+// und kopiert die Übungsbilder nach web/img/exercises/ (Liste in web/js/image-data.js).
 
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, copyFileSync, existsSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -153,3 +154,15 @@ writeFileSync(join(root, 'web/js/body-data.js'),
   `export const BODY = { width: ${bodyConst('BODY_WIDTH')}, height: ${bodyConst('BODY_HEIGHT')}, backOffset: ${bodyConst('BACK_OFFSET')} };\n` +
   `export const BODY_SHAPES = [\n${bodyShapes.map(s => '  ' + JSON.stringify(s)).join(',\n')}\n];\n`);
 console.log(`body-data.js: ${bodyShapes.length} Formen, ${Object.keys(muscles).length} Muskeln`);
+
+// ----- Übungsbilder: app/src/main/assets/exercises/*.jpg → web/img/exercises/ + Liste in web/js/image-data.js -----
+const imgSrc = join(root, 'app/src/main/assets/exercises');
+const imgDst = join(root, 'web/img/exercises');
+const imageKeys = existsSync(imgSrc) ? readdirSync(imgSrc).filter(f => f.endsWith('.jpg')).map(f => f.slice(0, -4)).sort() : [];
+rmSync(imgDst, { recursive: true, force: true });
+mkdirSync(imgDst, { recursive: true });
+for (const k of imageKeys) copyFileSync(join(imgSrc, k + '.jpg'), join(imgDst, k + '.jpg'));
+writeFileSync(join(root, 'web/js/image-data.js'),
+  `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs – nicht von Hand ändern!\n` +
+  `export const EXERCISE_IMAGES = new Set(${JSON.stringify(imageKeys)});\n`);
+console.log(`image-data.js: ${imageKeys.length} Übungsbilder`);

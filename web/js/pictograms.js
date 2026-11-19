@@ -2,7 +2,8 @@
 // hier stehen nur die Zeichen-Hilfsfunktionen, die SVG-Elemente statt Canvas-Aufrufen erzeugen.
 // Koordinatensystem 0..1 (viewBox="0 0 1 1"), Seitenansichten blicken nach links.
 
-import { MOTION_OF, DEFAULT_MOTION, drawMotionWith } from './data.js';
+import { MOTION_OF, DEFAULT_MOTION, drawMotionWith, CATALOG } from './data.js';
+import { EXERCISE_IMAGES } from './image-data.js';
 import { groupColor } from './core.js';
 
 const cache = new Map();
@@ -65,5 +66,29 @@ export function motionIconHtml(motion, color, size) {
   return `<svg class="motion-icon" viewBox="0 0 1 1" width="${size}" height="${size}" aria-hidden="true">` +
     `<circle cx="0.5" cy="0.5" r="0.5" fill="${color}"/>${motionSvg(motion)}</svg>`;
 }
-export const exerciseIconHtml = (name, group, size = 44) => motionIconHtml(motionOf(name, group), groupColor(group), size);
+
+// ---------- Übungsbilder (wie ExerciseImages.kt): Foto statt Piktogramm, wo vorhanden ----------
+
+/** „Bankdrücken (Langhantel)“ → „bankdruecken-langhantel“ */
+export const exerciseImageKey = name => name.toLowerCase()
+  .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+/** URL des Bildes einer Übung: eigenes Bild, sonst das der Grundübung, sonst null. */
+export function exerciseImageUrl(name) {
+  let k = exerciseImageKey(name);
+  if (!EXERCISE_IMAGES.has(k)) {
+    const base = CATALOG.find(c => c.name === name)?.base;
+    k = base ? exerciseImageKey(base) : null;
+    if (!k || !EXERCISE_IMAGES.has(k)) return null;
+  }
+  return `img/exercises/${k}.jpg`;
+}
+
+export function exerciseIconHtml(name, group, size = 44) {
+  const url = exerciseImageUrl(name);
+  // Im kleinen Kreis auf Kopf und Oberkörper zoomen (CSS .ex-photo)
+  if (url) return `<span class="ex-photo" style="width:${size}px;height:${size}px"><img src="${url}" alt="" loading="lazy"></span>`;
+  return motionIconHtml(motionOf(name, group), groupColor(group), size);
+}
 export const muscleIconHtml = (group, size = 28) => motionIconHtml(DEFAULT_MOTION[group] ?? 'DUMBBELL', groupColor(group), size);

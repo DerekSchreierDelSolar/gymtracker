@@ -9,7 +9,7 @@ import {
   fmtShortDate, completionColor,
 } from '../core.js';
 import { progressionSuggestion } from '../stats.js';
-import { exerciseIconHtml } from '../pictograms.js';
+import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import { h, icon, iconBtn, chip, dialog, textField, progressChart, onTick, muted } from '../ui.js';
 import { nav, rerender, openDialog, closeDialog, goBack } from '../nav.js';
 import { screen } from '../layout.js';
@@ -195,7 +195,11 @@ export function exerciseDetailScreen(name) {
     ];
   } else if (tab === 1) content = exerciseProgress(history, cardio, timed);
   else if (tab === 2) content = muscleCard(name);
-  else content = h('div', { class: 'wiki-inline' }, wikiContent(name, { header: false, muscles: false }));
+  else {
+    const url = exerciseImageUrl(name);
+    content = h('div', { class: 'wiki-inline' }, url ? h('img', { class: 'ex-hero', src: url, alt: exName(name) }) : null,
+      wikiContent(name, { header: false, muscles: false }));
+  }
 
   return screen({
     title: exName(name), back: true, key: `ex-${name}-${tab}`,

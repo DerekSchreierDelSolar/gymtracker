@@ -58,6 +58,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `Progression.kt` | 💡 Gewichts-Vorschlag (doppelte Progression) |
 | `Wiki.kt` | Übungs-Wiki: lädt `assets/wiki/*.json` (`Wiki.load`), `wikiFor(name)`, `WikiButton` (ⓘ), `WikiSheet` (Bottom Sheet), `WikiScreen` (Übersicht + Suche) |
 | `BodyMap.kt` | Körperdiagramm (Meerschweinchen, vorne + hinten): `MUSCLES` (Muskel-IDs + Namen), `BODY_SHAPES` (SVG-Pfade, linke Hälfte + Spiegelung), `MuscleMap(primary, secondary)`. Muskeln: `musclesOf(name)` = Wiki-JSON (`primary`/`secondary`, alle Grundübungen) bzw. bei eigenen Übungen `CustomMeta.muscles` (gespeichert als `customMuscles`); `MusclePicker`/`MuscleEditDialog`. Heatmap: `muscleScore(sets)` (Hauptmuskel 1, Hilfsmuskel 0,5 pro Satz), `relativeLoad`, `HEAT_LEVELS`, `StatPeriod`, `MuscleHeatCard` (Startseite in %, Trainingsübersicht mit Satz-Summe) |
+| `ExerciseImages.kt` | Übungsbilder statt Piktogrammen: `assets/exercises/<schlüssel>.jpg`, `exerciseImageKey(name)` („Bankdrücken (Langhantel)“ → `bankdruecken-langhantel`, Grundübung-Bild gilt für alle Varianten), `ExerciseImage`; `ExerciseIcon` nimmt automatisch das Foto (gezoomt im Kreis) |
 | `Icons.kt` | `AppIcon`/`Ico` (Linien-Icons für Buttons/Navigation) |
 | `Pictograms.kt` | Übungs-Piktogramme: `Motion` (~47 Bewegungen), `MOTION_OF` (Katalog-Name → Bewegung), `ExerciseIcon(name, group)`, `MuscleIcon(group)`, `drawMotion()` |
 | `Components.kt` | `GroupHeader`, `ChartCard`, `HorizontalBars`, `HistoryBars`, `LineChart`, `ProgressChart` |
@@ -88,6 +89,8 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
   Prüfen, dass `MOTION_OF` alle Katalog-Namen abdeckt (Vergleich per grep/comm).
   Neue Grundübung zusätzlich in `assets/wiki/<gruppe>.json` beschreiben (`gen-data.mjs` warnt, wenn ein Eintrag fehlt,
   und bricht bei unbekannten Grundübungen/Varianten ab).
+- **Übungsbild hinzufügen:** `.	oolsdd-exercise-image.ps1 -Source <bild> -Exercise "<Katalog- oder Grundübungsname>"`
+  (verkleinert auf 512 × 512 JPEG), danach `node web/tools/gen-data.mjs` (kopiert nach `web/img/exercises/`).
 - Symbole: wo der Übungsname bekannt ist `ExerciseIcon(name, group)`, sonst `MuscleIcon(group)`.
   Piktogramme zeichnen in 0..1-Koordinaten, Seitenansicht blickt nach links; alles innerhalb
   des Kreises halten (Abstand zur Mitte < 0,48). Zum Prüfen temporär ein Raster aller
