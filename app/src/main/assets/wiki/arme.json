@@ -1,6 +1,8 @@
 {
   "Bizepscurls": {
     "muscles": ["Bizeps, Unterarm", "Biceps, forearms"],
+    "primary": ["biceps"],
+    "secondary": ["forearms"],
     "how": [
       ["Aufrecht stehen, Gewicht in Untergriff, Ellbogen nah am Körper.", "Stand tall, underhand grip, elbows close to your sides."],
       ["Gewicht durch Beugen im Ellbogen hochcurlen.", "Curl the weight up by bending at the elbows."],
@@ -21,6 +23,8 @@
   },
   "Hammercurls": {
     "muscles": ["Oberarmmuskel (Brachialis), Bizeps, Unterarm", "Brachialis, biceps, forearms"],
+    "primary": ["biceps", "forearms"],
+    "secondary": [],
     "how": [
       ["Gewicht mit neutralem Griff halten (Daumen zeigt nach vorne).", "Hold the weight with a neutral grip (thumbs pointing forward)."],
       ["Hochcurlen, ohne das Handgelenk zu drehen.", "Curl up without rotating your wrist."],
@@ -36,6 +40,8 @@
   },
   "Konzentrationscurls": {
     "muscles": ["Bizeps", "Biceps"],
+    "primary": ["biceps"],
+    "secondary": [],
     "how": [
       ["Sitzen, Ellbogen an der Innenseite des Oberschenkels abstützen.", "Sit and brace your elbow against the inside of your thigh."],
       ["Hantel langsam hochcurlen.", "Curl the dumbbell up slowly."],
@@ -48,6 +54,8 @@
   },
   "Schrägbank-Curls": {
     "muscles": ["Bizeps (langer Kopf, Dehnung)", "Biceps (long head, stretch)"],
+    "primary": ["biceps"],
+    "secondary": [],
     "how": [
       ["Auf eine Schrägbank (ca. 45–60°) setzen, Arme hängen senkrecht nach unten.", "Sit on an incline bench (about 45–60°), arms hanging straight down."],
       ["Hanteln hochcurlen, Oberarme bleiben senkrecht.", "Curl the dumbbells up, keeping your upper arms vertical."],
@@ -60,6 +68,8 @@
   },
   "Scott-Curls": {
     "muscles": ["Bizeps, Brachialis", "Biceps, brachialis"],
+    "primary": ["biceps"],
+    "secondary": ["forearms"],
     "how": [
       ["Oberarme flach auf das schräge Polster legen, Achseln an der Oberkante.", "Lay your upper arms flat on the angled pad, armpits at the top edge."],
       ["Gewicht hochcurlen.", "Curl the weight up."],
@@ -72,6 +82,8 @@
   },
   "Reverse Curls": {
     "muscles": ["Unterarm (Oberseite), Brachialis", "Forearms (top), brachialis"],
+    "primary": ["forearms"],
+    "secondary": ["biceps"],
     "how": [
       ["Stange im Obergriff schulterbreit halten.", "Hold the bar with an overhand grip at shoulder width."],
       ["Mit Ellbogen am Körper hochcurlen.", "Curl up with your elbows at your sides."],
@@ -84,6 +96,8 @@
   },
   "Unterarm-Curls": {
     "muscles": ["Unterarm-Beuger, Griffkraft", "Forearm flexors, grip"],
+    "primary": ["forearms"],
+    "secondary": [],
     "how": [
       ["Unterarme auf Oberschenkel oder Bank legen, Handgelenke hängen über die Kante, Untergriff.", "Rest your forearms on your thighs or a bench, wrists over the edge, underhand grip."],
       ["Gewicht nur aus dem Handgelenk hochrollen.", "Curl the weight up using only your wrists."],
@@ -96,6 +110,8 @@
   },
   "Trizepsdrücken": {
     "muscles": ["Trizeps", "Triceps"],
+    "primary": ["triceps"],
+    "secondary": [],
     "how": [
       ["Vor dem hohen Kabel stehen, Stange oder Seil greifen, Ellbogen am Körper.", "Stand at a high cable, grab a bar or rope, elbows at your sides."],
       ["Arme nach unten strecken, bis sie ganz gestreckt sind.", "Push down until your arms are fully straight."],
@@ -112,6 +128,8 @@
   },
   "Trizepsdrücken über Kopf": {
     "muscles": ["Trizeps (v. a. langer Kopf)", "Triceps (especially the long head)"],
+    "primary": ["triceps"],
+    "secondary": [],
     "how": [
       ["Gewicht über den Kopf bringen, Oberarme neben dem Kopf.", "Bring the weight overhead with your upper arms beside your head."],
       ["Gewicht hinter dem Kopf absenken, bis die Dehnung spürbar ist.", "Lower it behind your head until you feel a stretch."],
@@ -128,6 +146,8 @@
   },
   "Trizeps-Kickbacks": {
     "muscles": ["Trizeps", "Triceps"],
+    "primary": ["triceps"],
+    "secondary": [],
     "how": [
       ["Vorgebeugt, Oberarm waagerecht und nah am Körper.", "Bent over, upper arm parallel to the floor and close to your body."],
       ["Unterarm nach hinten strecken, bis der Arm gerade ist.", "Extend your forearm back until your arm is straight."],
@@ -140,6 +160,8 @@
   },
   "French Press": {
     "muscles": ["Trizeps", "Triceps"],
+    "primary": ["triceps"],
+    "secondary": [],
     "how": [
       ["Auf die Bank legen, Gewicht mit gestreckten Armen über der Brust.", "Lie on the bench with the weight above your chest, arms straight."],
       ["Nur im Ellbogen beugen und das Gewicht zur Stirn bzw. knapp dahinter absenken.", "Bend only at the elbows, lowering the weight to your forehead or just behind it."],
@@ -152,6 +174,8 @@
   },
   "Enges Bankdrücken": {
     "muscles": ["Trizeps, Brust, vordere Schulter", "Triceps, chest, front delts"],
+    "primary": ["triceps", "chest"],
+    "secondary": ["delts"],
     "how": [
       ["Wie beim Bankdrücken liegen, Griff etwa schulterbreit.", "Set up like a bench press with a grip about shoulder-width."],
       ["Stange zur unteren Brust absenken, Ellbogen nah am Körper.", "Lower the bar to your lower chest, elbows close to your body."],
@@ -164,6 +188,8 @@
   },
   "Bankdips": {
     "muscles": ["Trizeps, vordere Schulter", "Triceps, front delts"],
+    "primary": ["triceps"],
+    "secondary": ["delts", "chest"],
     "how": [
       ["Hände hinter dem Körper auf eine Bankkante, Beine nach vorne.", "Hands on the edge of a bench behind you, legs out in front."],
       ["Gesäß vor der Bank nach unten absenken, bis die Oberarme etwa waagerecht sind.", "Lower your hips in front of the bench until your upper arms are about parallel."],
@@ -177,6 +203,8 @@
   },
   "Diamond-Liegestütze": {
     "muscles": ["Trizeps, Brust", "Triceps, chest"],
+    "primary": ["triceps", "chest"],
+    "secondary": ["delts"],
     "how": [
       ["Hände unter der Brust so zusammen, dass Daumen und Zeigefinger ein Dreieck bilden.", "Hands together under your chest so your thumbs and index fingers form a triangle."],
       ["Körper gerade, Brust zu den Händen absenken.", "Keep your body straight and lower your chest to your hands."],

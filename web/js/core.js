@@ -52,7 +52,7 @@ export const catalogEntry = name => catalogIndex.get(name.toLowerCase());
 export const catalogGroup = name => catalogEntry(name)?.group ?? null;
 
 /** Zusatzangaben zu eigenen Übungen (vom Store befüllt): Gerät und Zeitmessung. */
-export const CustomMeta = { equipment: {}, timed: new Set() };
+export const CustomMeta = { equipment: {}, timed: new Set(), muscles: {} }; // muscles: Name → { primary: [...], secondary: [...] }
 
 export const isTimed = name => TIMED_CATALOG.has(name) || CustomMeta.timed.has(name);
 export const equipmentOf = name => catalogEntry(name)?.equipment ?? CustomMeta.equipment[name] ?? null;

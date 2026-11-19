@@ -256,6 +256,7 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
     val timed = isTimed(exercise)
     val history = store.setsFor(exercise)
     var confirmDelete by remember { mutableStateOf(false) }
+    var editMuscles by remember { mutableStateOf(false) }
     // Diagramm-Ansicht bei Kraftübungen: false = Maximalgewicht, true = geschätztes 1RM
     var show1RM by rememberSaveable { mutableStateOf(false) }
     // Vom Nutzer übernommener Gewichts-Vorschlag (füllt das kg-Feld)
@@ -289,11 +290,20 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 0. Körperdiagramm: belastete Muskeln
-            wikiFor(exercise)?.takeIf { it.primary.isNotEmpty() }?.let { w ->
-                item {
-                    Card(Modifier.fillMaxWidth()) {
-                        MuscleMap(w.primary, w.secondary, Modifier.padding(16.dp))
+            // 0. Körperdiagramm: belastete Muskeln (eigene Übungen: selbst festlegen)
+            val muscles = musclesOf(exercise)
+            val custom = catalogGroup(exercise) == null
+            if (muscles != null || custom) item {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (muscles != null) MuscleMap(muscles.primary, muscles.secondary)
+                        else Text(
+                            tr("Noch keine Muskeln festgelegt.", "No muscles set yet."),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (custom) TextButton(onClick = { editMuscles = true }) {
+                            Text(if (muscles != null) tr("Muskeln bearbeiten", "Edit muscles") else tr("Muskeln festlegen", "Set muscles"))
+                        }
                     }
                 }
             }
@@ -392,6 +402,8 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
             }
         }
     }
+
+    if (editMuscles) MuscleEditDialog(store, exercise, onDismiss = { editMuscles = false })
 
     if (confirmDelete) {
         AlertDialog(

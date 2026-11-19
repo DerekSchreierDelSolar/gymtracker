@@ -1,6 +1,8 @@
 {
   "Crunches": {
     "muscles": ["Gerader Bauchmuskel", "Rectus abdominis"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
     "how": [
       ["Auf den Rücken legen, Knie angewinkelt, Hände an den Schläfen oder vor der Brust.", "Lie on your back, knees bent, hands at your temples or across your chest."],
       ["Oberkörper einrollen, bis die Schulterblätter vom Boden abheben.", "Curl your upper body until your shoulder blades leave the floor."],
@@ -18,6 +20,8 @@
   },
   "Sit-ups": {
     "muscles": ["Bauch, Hüftbeuger", "Abs, hip flexors"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
     "how": [
       ["Auf den Rücken legen, Knie angewinkelt, Füße am Boden (evtl. fixiert).", "Lie on your back, knees bent, feet on the floor (optionally anchored)."],
       ["Oberkörper einrollen und ganz aufrichten.", "Curl up and sit all the way up."],
@@ -30,6 +34,8 @@
   },
   "Fahrrad-Crunches": {
     "muscles": ["Schräge und gerade Bauchmuskeln", "Obliques, rectus abdominis"],
+    "primary": ["obliques", "abs"],
+    "secondary": [],
     "how": [
       ["Auf den Rücken legen, Hände an den Schläfen, Beine angehoben.", "Lie on your back, hands at your temples, legs lifted."],
       ["Ellbogen zum gegenüberliegenden Knie drehen, das andere Bein strecken.", "Rotate your elbow toward the opposite knee while extending the other leg."],
@@ -42,6 +48,8 @@
   },
   "Unterarmstütz / Plank": {
     "muscles": ["Gesamte Rumpfmuskulatur, Schultern", "Entire core, shoulders"],
+    "primary": ["abs"],
+    "secondary": ["obliques", "delts", "glutes"],
     "how": [
       ["Unterarme unter den Schultern abstützen, Beine gestreckt auf den Zehen.", "Support yourself on your forearms under your shoulders, legs straight on your toes."],
       ["Körper von Kopf bis Ferse eine gerade Linie.", "Body in a straight line from head to heels."],
@@ -55,6 +63,8 @@
   },
   "Seitstütz": {
     "muscles": ["Seitliche Bauchmuskeln, Gesäß, Schulter", "Obliques, glutes, shoulder"],
+    "primary": ["obliques"],
+    "secondary": ["abs", "glutes", "delts"],
     "how": [
       ["Seitlich auf einen Unterarm stützen, Ellbogen unter der Schulter, Beine gestreckt übereinander.", "Prop yourself up on one forearm, elbow under your shoulder, legs straight and stacked."],
       ["Hüfte anheben, bis der Körper eine gerade Linie bildet.", "Lift your hips until your body forms a straight line."],
@@ -67,6 +77,8 @@
   },
   "Beinheben liegend": {
     "muscles": ["Unterer Bauch, Hüftbeuger", "Lower abs, hip flexors"],
+    "primary": ["abs"],
+    "secondary": [],
     "how": [
       ["Auf den Rücken legen, Hände neben dem Körper oder unter dem Gesäß.", "Lie on your back, hands at your sides or under your glutes."],
       ["Gestreckte Beine bis etwa senkrecht anheben.", "Raise your straight legs to about vertical."],
@@ -79,6 +91,8 @@
   },
   "Hängendes Beinheben": {
     "muscles": ["Unterer Bauch, Hüftbeuger, Griffkraft", "Lower abs, hip flexors, grip"],
+    "primary": ["abs"],
+    "secondary": ["obliques", "forearms"],
     "how": [
       ["An einer Klimmzugstange hängen, Körper ruhig.", "Hang from a pull-up bar, body still."],
       ["Beine (gestreckt oder angewinkelt) nach oben heben und das Becken einrollen.", "Raise your legs (straight or bent) and curl your pelvis up."],
@@ -91,6 +105,8 @@
   },
   "Knieheben an der Dip-Station": {
     "muscles": ["Unterer Bauch, Hüftbeuger", "Lower abs, hip flexors"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
     "how": [
       ["Unterarme auf die Polster, Rücken an die Lehne, Beine hängen.", "Forearms on the pads, back against the backrest, legs hanging."],
       ["Knie zur Brust ziehen und das Becken leicht einrollen.", "Pull your knees to your chest and curl your pelvis slightly."],
@@ -103,6 +119,8 @@
   },
   "Mountain Climbers": {
     "muscles": ["Rumpf, Schultern, Hüftbeuger, Ausdauer", "Core, shoulders, hip flexors, conditioning"],
+    "primary": ["abs"],
+    "secondary": ["delts", "quads"],
     "how": [
       ["In den hohen Liegestütz gehen, Hände unter den Schultern.", "Get into a high plank, hands under your shoulders."],
       ["Abwechselnd die Knie schnell Richtung Brust ziehen.", "Drive your knees toward your chest alternately and quickly."],
@@ -115,6 +133,8 @@
   },
   "Dead Bug": {
     "muscles": ["Tiefe Rumpfmuskulatur", "Deep core"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
     "how": [
       ["Auf den Rücken legen, Arme senkrecht nach oben, Knie 90° angehoben.", "Lie on your back, arms pointing up, knees lifted at 90°."],
       ["Gleichzeitig einen Arm nach hinten und das gegenüberliegende Bein nach vorne strecken.", "Extend one arm back and the opposite leg forward at the same time."],
@@ -128,6 +148,8 @@
   },
   "V-Ups": {
     "muscles": ["Gerader Bauchmuskel, Hüftbeuger", "Rectus abdominis, hip flexors"],
+    "primary": ["abs"],
+    "secondary": [],
     "how": [
       ["Gestreckt auf dem Rücken liegen, Arme über dem Kopf.", "Lie flat on your back, arms overhead."],
       ["Gleichzeitig Oberkörper und gestreckte Beine anheben, Hände Richtung Füße.", "Lift your torso and straight legs at the same time, reaching hands toward feet."],
@@ -140,6 +162,8 @@
   },
   "Ab-Roller": {
     "muscles": ["Gesamter Rumpf, Latissimus, Schultern", "Entire core, lats, shoulders"],
+    "primary": ["abs"],
+    "secondary": ["lats", "delts", "obliques"],
     "how": [
       ["Auf den Knien, Rad unter den Schultern.", "Kneel with the wheel under your shoulders."],
       ["Langsam nach vorne rollen, Körper bleibt gerade.", "Roll forward slowly, keeping your body straight."],
@@ -153,6 +177,8 @@
   },
   "Russian Twists": {
     "muscles": ["Schräge Bauchmuskeln", "Obliques"],
+    "primary": ["obliques"],
+    "secondary": ["abs"],
     "how": [
       ["Sitzen, Oberkörper leicht zurückgelehnt, Knie angewinkelt (Füße am Boden oder angehoben).", "Sit with your torso leaning back slightly, knees bent (feet down or lifted)."],
       ["Oberkörper abwechselnd nach links und rechts drehen.", "Rotate your torso left and right alternately."],
@@ -165,6 +191,8 @@
   },
   "Holzhacker": {
     "muscles": ["Schräge Bauchmuskeln, Rumpf, Schultern", "Obliques, core, shoulders"],
+    "primary": ["obliques"],
+    "secondary": ["abs", "delts"],
     "how": [
       ["Seitlich zum Kabel stehen (oben oder unten eingestellt), Griff mit beiden Händen.", "Stand sideways to the cable (high or low), holding the handle with both hands."],
       ["Diagonal quer über den Körper ziehen und dabei den Oberkörper drehen.", "Pull diagonally across your body while rotating your torso."],
@@ -177,6 +205,8 @@
   },
   "Pallof Press": {
     "muscles": ["Rumpf (Anti-Rotation)", "Core (anti-rotation)"],
+    "primary": ["obliques", "abs"],
+    "secondary": [],
     "how": [
       ["Seitlich zum Kabel/Band stehen, Griff mit beiden Händen vor der Brust.", "Stand sideways to the cable/band, holding the handle at your chest with both hands."],
       ["Arme gerade nach vorne strecken, ohne dass der Körper sich zur Seite dreht.", "Press your arms straight out without letting your body rotate."],

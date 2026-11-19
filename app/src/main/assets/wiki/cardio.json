@@ -1,6 +1,8 @@
 {
   "Laufband": {
     "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "primary": ["quads", "calves"],
+    "secondary": ["hamstrings", "glutes"],
     "how": [
       ["Mit langsamem Gehen starten und 5 Minuten aufwärmen.", "Start walking slowly and warm up for 5 minutes."],
       ["Tempo steigern, aufrecht laufen, Arme locker mitschwingen.", "Increase the pace, run tall, arms swinging loosely."],
@@ -14,6 +16,8 @@
   },
   "Laufband Gehen mit Steigung": {
     "muscles": ["Herz-Kreislauf, Gesäß, Waden", "Cardio, glutes, calves"],
+    "primary": ["glutes", "calves"],
+    "secondary": ["quads", "hamstrings"],
     "how": [
       ["Steigung auf 8–15 % stellen, Tempo 4–6 km/h.", "Set the incline to 8–15% and the speed to 4–6 km/h."],
       ["Aufrecht gehen, ganze Fußsohle aufsetzen.", "Walk tall, placing your whole foot."],
@@ -26,6 +30,8 @@
   },
   "Crosstrainer": {
     "muscles": ["Herz-Kreislauf, Beine, Arme", "Cardio, legs, arms"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "calves", "delts"],
     "how": [
       ["Aufrecht auf die Pedale stellen, Griffe locker halten.", "Stand upright on the pedals and hold the handles loosely."],
       ["Gleichmäßig treten und mit den Armen mitschieben und -ziehen.", "Stride evenly, pushing and pulling with your arms."],
@@ -38,6 +44,8 @@
   },
   "Fahrradergometer": {
     "muscles": ["Herz-Kreislauf, Oberschenkel", "Cardio, quads"],
+    "primary": ["quads"],
+    "secondary": ["glutes", "hamstrings", "calves"],
     "how": [
       ["Sattelhöhe so einstellen, dass das Bein unten fast gestreckt ist.", "Set the saddle so your leg is almost straight at the bottom."],
       ["Gleichmäßig treten, Trittfrequenz 70–90 pro Minute.", "Pedal evenly at 70–90 rpm."],
@@ -50,6 +58,8 @@
   },
   "Spinning": {
     "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "primary": ["quads"],
+    "secondary": ["glutes", "hamstrings", "calves"],
     "how": [
       ["Sattel auf Hüfthöhe, Lenker gleich hoch oder etwas höher.", "Saddle at hip height, handlebars level or slightly higher."],
       ["Mit Widerstand treten, Phasen im Sitzen und Stehen abwechseln.", "Pedal against resistance, alternating seated and standing phases."],
@@ -62,6 +72,8 @@
   },
   "Air Bike": {
     "muscles": ["Herz-Kreislauf, ganzer Körper", "Cardio, full body"],
+    "primary": ["quads"],
+    "secondary": ["delts", "glutes", "chest", "lats"],
     "how": [
       ["Sattel einstellen wie beim Fahrrad.", "Adjust the saddle like a regular bike."],
       ["Gleichzeitig mit Beinen treten und mit den Armen drücken/ziehen.", "Pedal with your legs while pushing and pulling with your arms."],
@@ -74,6 +86,8 @@
   },
   "Rudergerät": {
     "muscles": ["Herz-Kreislauf, Beine, Rücken, Arme", "Cardio, legs, back, arms"],
+    "primary": ["lats", "quads"],
+    "secondary": ["glutes", "hamstrings", "biceps", "lowerback"],
     "how": [
       ["Füße festschnallen, Griff mit gestreckten Armen, Knie angewinkelt.", "Strap in your feet, hold the handle with straight arms, knees bent."],
       ["Reihenfolge beim Zug: Beine strecken – Oberkörper leicht zurück – Arme zum Bauch.", "Drive order: legs – lean back slightly – arms to your stomach."],
@@ -87,6 +101,8 @@
   },
   "Ski-Ergometer": {
     "muscles": ["Herz-Kreislauf, Latissimus, Trizeps, Rumpf", "Cardio, lats, triceps, core"],
+    "primary": ["lats", "triceps"],
+    "secondary": ["abs", "delts"],
     "how": [
       ["Griffe über Kopf greifen, Füße hüftbreit.", "Grab the handles overhead, feet hip-width."],
       ["Mit gestreckten Armen nach unten ziehen und dabei Hüfte und Knie beugen.", "Pull down with straight arms while hinging at your hips and bending your knees."],
@@ -99,6 +115,8 @@
   },
   "Stepper": {
     "muscles": ["Herz-Kreislauf, Gesäß, Oberschenkel, Waden", "Cardio, glutes, quads, calves"],
+    "primary": ["glutes", "quads"],
+    "secondary": ["calves", "hamstrings"],
     "how": [
       ["Aufrecht stehen, Griffe nur leicht berühren.", "Stand tall and only lightly touch the handles."],
       ["Gleichmäßig steigen, ganze Fußsohle aufsetzen.", "Step evenly, placing your whole foot."],
@@ -111,6 +129,8 @@
   },
   "Laufen (draußen)": {
     "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "primary": ["quads", "calves"],
+    "secondary": ["hamstrings", "glutes"],
     "how": [
       ["Mit lockerem Traben oder Gehen aufwärmen.", "Warm up with an easy jog or walk."],
       ["Aufrecht laufen, kurze Schritte, Füße etwa unter dem Körper aufsetzen.", "Run tall with short strides, landing roughly under your body."],
@@ -123,6 +143,8 @@
   },
   "Gehen": {
     "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "primary": ["calves"],
+    "secondary": ["quads", "glutes"],
     "how": [
       ["Zügig gehen, Arme mitschwingen.", "Walk briskly, arms swinging."],
       ["Aufrechte Haltung, Blick nach vorne.", "Upright posture, eyes forward."]
@@ -134,6 +156,8 @@
   },
   "Wandern": {
     "muscles": ["Herz-Kreislauf, Beine, Gesäß", "Cardio, legs, glutes"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["calves", "hamstrings"],
     "how": [
       ["Gleichmäßiges Tempo wählen, bergauf kürzere Schritte.", "Choose a steady pace with shorter steps uphill."],
       ["Bergab Knie leicht gebeugt, kontrolliert gehen.", "Downhill, keep your knees soft and walk under control."]
@@ -145,6 +169,8 @@
   },
   "Radfahren (draußen)": {
     "muscles": ["Herz-Kreislauf, Beine", "Cardio, legs"],
+    "primary": ["quads"],
+    "secondary": ["glutes", "hamstrings", "calves"],
     "how": [
       ["Sattel so einstellen, dass das Bein unten fast gestreckt ist.", "Set the saddle so your leg is almost straight at the bottom."],
       ["Gleichmäßig treten, lieber leichter Gang und höhere Trittfrequenz.", "Pedal smoothly; prefer an easier gear and higher cadence."]
@@ -156,6 +182,8 @@
   },
   "Schwimmen": {
     "muscles": ["Herz-Kreislauf, ganzer Körper", "Cardio, full body"],
+    "primary": ["lats", "delts"],
+    "secondary": ["chest", "triceps", "quads"],
     "how": [
       ["Mit ein paar lockeren Bahnen einschwimmen.", "Warm up with a few easy lengths."],
       ["Gleichmäßig atmen, lange Züge.", "Breathe steadily and take long strokes."],
@@ -168,6 +196,8 @@
   },
   "Seilspringen": {
     "muscles": ["Herz-Kreislauf, Waden, Koordination", "Cardio, calves, coordination"],
+    "primary": ["calves"],
+    "secondary": ["quads", "delts", "forearms"],
     "how": [
       ["Seillänge: mit einem Fuß auf der Mitte reichen die Griffe etwa bis zu den Achseln.", "Rope length: standing on the middle, the handles reach about your armpits."],
       ["Aus den Handgelenken drehen, Ellbogen nah am Körper.", "Turn the rope with your wrists, elbows close to your body."],
@@ -180,6 +210,8 @@
   },
   "HIIT": {
     "muscles": ["Herz-Kreislauf, ganzer Körper", "Cardio, full body"],
+    "primary": ["quads"],
+    "secondary": ["glutes", "delts", "abs", "calves"],
     "how": [
       ["Gut aufwärmen (5–10 Minuten).", "Warm up well (5–10 minutes)."],
       ["Kurze, sehr intensive Belastungen (z. B. 20–40 s) mit Pausen abwechseln.", "Alternate short, very intense efforts (e.g. 20–40 s) with rest."],
@@ -192,6 +224,8 @@
   },
   "Boxen (Sandsack)": {
     "muscles": ["Herz-Kreislauf, Schultern, Rumpf", "Cardio, shoulders, core"],
+    "primary": ["delts"],
+    "secondary": ["triceps", "obliques", "chest", "calves"],
     "how": [
       ["Boxbandagen und Handschuhe anziehen.", "Wrap your hands and put on gloves."],
       ["In Grundstellung leicht auf den Fußballen, Deckung oben.", "Stand in your stance, light on the balls of your feet, guard up."],
@@ -204,6 +238,8 @@
   },
   "Battle Ropes": {
     "muscles": ["Herz-Kreislauf, Schultern, Arme, Rumpf", "Cardio, shoulders, arms, core"],
+    "primary": ["delts"],
+    "secondary": ["forearms", "abs", "biceps", "triceps"],
     "how": [
       ["Leicht in die Hocke gehen, Seilenden fest greifen.", "Sit into a quarter squat and grip the rope ends firmly."],
       ["Abwechselnd oder gleichzeitig Wellen schlagen.", "Make waves alternately or with both arms together."],

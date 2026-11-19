@@ -1,11 +1,11 @@
 // Übungs-Bausteine und Übungsdetail – entspricht ExerciseDetail.kt, Progression.kt (UI) und ExerciseTile.
 
-import { wikiButton, wikiFor } from '../wiki.js';
-import { muscleMap } from '../bodymap.js';
+import { wikiButton } from '../wiki.js';
+import { muscleMap, musclesOf, muscleEditDialog } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
-  oneRepMax, parseNum, parseIntStrict, startOfToday, groupColor,
+  oneRepMax, parseNum, parseIntStrict, startOfToday, groupColor, catalogGroup,
 } from '../core.js';
 import { progressionSuggestion } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
@@ -199,7 +199,7 @@ export function exerciseDetailScreen(name) {
     titleIcon: exerciseIconHtml(name, group, 32),
     actions: [wikiButton(name), iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') })],
     content: h('div', { class: 'stack pad' },
-      wikiFor(name)?.primary?.length ? h('div', { class: 'card pad-m' }, muscleMap(wikiFor(name).primary, wikiFor(name).secondary ?? [])) : null,
+      muscleCard(name),
       chart,
       best ? h('div', null,
         h('b', null, (cardio || timed ? tr('🏆 Längste Einheit: ', '🏆 Longest: ') : tr('🏆 Bestleistung: ', '🏆 Personal record: ')) + fmtSet(best, cardio)),
@@ -215,4 +215,15 @@ export function exerciseDetailScreen(name) {
             : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtW(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
         list.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio))))),
   });
+}
+
+/** Karte mit Körperdiagramm; bei eigenen Übungen mit „Muskeln festlegen/bearbeiten“. */
+function muscleCard(name) {
+  const m = musclesOf(name);
+  const custom = catalogGroup(name) == null;
+  if (!m && !custom) return null;
+  return h('div', { class: 'card pad-m muscle-card' },
+    m ? muscleMap(m.primary, m.secondary) : muted(tr('Noch keine Muskeln festgelegt.', 'No muscles set yet.')),
+    custom ? h('button', { class: 'btn text', onclick: () => muscleEditDialog(name) },
+      m ? tr('Muskeln bearbeiten', 'Edit muscles') : tr('Muskeln festlegen', 'Set muscles')) : null);
 }

@@ -392,6 +392,8 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .muscle-figure { width: 72%; }
 .muscle-figure svg { display: block; width: 100%; height: auto; }
 .muscle-views { width: 72%; display: flex; justify-content: space-around; font-size: 12px; margin-top: 4px; }
-.muscle-legend { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; margin-top: 10px; }
+.muscle-legend { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 10px; }
 .muscle-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .muscle-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.muscle-card { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.chip-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 2px; vertical-align: middle; }

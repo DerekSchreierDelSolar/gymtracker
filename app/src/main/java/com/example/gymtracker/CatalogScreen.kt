@@ -24,6 +24,7 @@ fun CustomExerciseDialog(store: GymStore, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var group by remember { mutableStateOf(MuscleGroup.BRUST) }
     var equipment by remember { mutableStateOf<Equipment?>(null) }
+    var muscles by remember { mutableStateOf(MuscleSet(emptyList(), emptyList())) }
     var timed by remember { mutableStateOf(false) }
     val exists = name.isNotBlank() && (store.hasExercise(name) || catalogGroup(name.trim()) != null)
 
@@ -83,11 +84,13 @@ fun CustomExerciseDialog(store: GymStore, onDismiss: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                Text(tr("Muskeln (optional)", "Muscles (optional)"), style = MaterialTheme.typography.titleSmall)
+                MusclePicker(muscles) { muscles = it }
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { if (store.addCustomExercise(name, group, equipment, timed)) onDismiss() },
+                onClick = { if (store.addCustomExercise(name, group, equipment, timed, muscles)) onDismiss() },
                 enabled = name.isNotBlank() && !exists
             ) { Text(tr("Anlegen", "Create")) }
         },

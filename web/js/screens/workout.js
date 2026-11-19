@@ -1,6 +1,7 @@
 // Workouts, Übungsauswahl, Katalog – entspricht WorkoutScreens.kt und CatalogScreen.kt.
 
 import { wikiButton } from '../wiki.js';
+import { musclePicker } from '../bodymap.js';
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import {
@@ -243,7 +244,7 @@ export function catalogScreen() {
 }
 
 export function customExerciseDialog() {
-  const st = { name: '', group: 'BRUST', equipment: null, timed: false };
+  const st = { name: '', group: 'BRUST', equipment: null, timed: false, muscles: { primary: [], secondary: [] } };
   openDialog(() => {
     const exists = st.name.trim() !== '' && (store.hasExercise(st.name) || catalogGroup(st.name.trim()) != null);
     return dialog(tr('Eigene Übung', 'Custom exercise'), [
@@ -258,11 +259,13 @@ export function customExerciseDialog() {
           h('div', { class: 'chips' },
             chip(tr('Wiederholungen', 'Reps'), !st.timed, () => { st.timed = false; rerender(); }),
             chip(tr('Zeit (Sekunden)', 'Time (seconds)'), st.timed, () => { st.timed = true; rerender(); }))],
+      h('b', { class: 'small-title' }, tr('Muskeln (optional)', 'Muscles (optional)')),
+      musclePicker(st.muscles),
     ], [
       { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
       {
         label: tr('Anlegen', 'Create'), disabled: !st.name.trim() || exists,
-        onClick: () => { if (store.addCustomExercise(st.name, st.group, st.equipment, st.timed)) closeDialog(); },
+        onClick: () => { if (store.addCustomExercise(st.name, st.group, st.equipment, st.timed, st.muscles)) closeDialog(); },
       },
     ], closeDialog);
   });

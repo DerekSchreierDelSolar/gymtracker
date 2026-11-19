@@ -45,13 +45,15 @@ val MuscleGroup.isCardio: Boolean get() = this == MuscleGroup.CARDIO
 val TIMED_CATALOG = setOf("Unterarmstütz / Plank (Körpergewicht)", "Seitstütz (Körpergewicht)", "Wandsitzen (Körpergewicht)", "Farmer's Walk (Kurzhantel)", "Farmer's Walk (Kettlebell)")
 
 /**
- * Zusatzangaben zu eigenen Übungen (nicht im Katalog): Gerät und ob sie zeitbasiert sind.
+ * Zusatzangaben zu eigenen Übungen (nicht im Katalog): Gerät, ob sie zeitbasiert sind, Muskeln.
  * Global, weil Formatierung und Filter sie an vielen Stellen brauchen; befüllt vom GymStore.
  * Compose-States, damit Änderungen sofort sichtbar werden.
  */
 object CustomMeta {
     val equipment = mutableStateMapOf<String, Equipment>()
     val timed = mutableStateListOf<String>()
+    /** Selbst gewählte Haupt-/Hilfsmuskeln (Körperdiagramm). */
+    val muscles = mutableStateMapOf<String, MuscleSet>()
 }
 
 /** Wird die Übung nach Zeit (Sekunden) statt nach Wiederholungen gemessen? */

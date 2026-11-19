@@ -3,6 +3,8 @@ package com.example.gymtracker
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
 import androidx.compose.material3.*
@@ -162,7 +164,7 @@ val SECONDARY_COLOR = Color(0xFFEF9F27)
  * primary = Hauptmuskeln (rot), secondary = Hilfsmuskeln (orange), Rest grau.
  */
 @Composable
-fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier = Modifier) {
+fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier = Modifier, showLegend: Boolean = true) {
     // Hell/dunkel am tatsächlichen Hintergrund ablesen (App-Einstellung kann vom System abweichen)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val fur = if (dark) Color(0xFF5C4D41) else Color(0xFFF3E6D6)
@@ -198,6 +200,8 @@ fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier
                         }
                     }
                     drawPath(b.path, color)
+                    // Fell: gleichfarbiger Rand schließt die Naht zwischen den gespiegelten Hälften
+                    if (b.shape.fill == BodyFill.FUR || b.shape.fill == BodyFill.PATCH) drawPath(b.path, color, style = Stroke(width = 0.8f))
                     // dünne Fuge zwischen benachbarten Muskeln
                     if (b.shape.fill == BodyFill.MUSCLE) drawPath(b.path, fur, style = Stroke(width = 0.7f))
                 }
@@ -207,20 +211,19 @@ fun MuscleMap(primary: List<String>, secondary: List<String>, modifier: Modifier
             Text(tr("Vorne", "Front"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(tr("Hinten", "Back"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        MuscleLegend(primary, secondary, Modifier.padding(top = 8.dp))
+        if (showLegend) MuscleLegend(primary, secondary, Modifier.padding(top = 8.dp))
     }
 }
 
-/** „Haupt: Brust · Hilfs: Trizeps, Schultern“ mit Farbpunkten. */
+/** „● Haupt: Brust“ und darunter „● Hilfs: Trizeps, Schultern“. */
 @Composable
 fun MuscleLegend(primary: List<String>, secondary: List<String>, modifier: Modifier = Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        if (primary.isNotEmpty()) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        if (primary.isNotEmpty()) Row(verticalAlignment = Alignment.CenterVertically) {
             LegendDot(PRIMARY_COLOR)
             Text(tr("Haupt: ", "Primary: ") + primary.joinToString(", ") { muscleLabel(it) }, style = MaterialTheme.typography.bodyMedium)
         }
-        if (primary.isNotEmpty() && secondary.isNotEmpty()) Text("  ·  ", style = MaterialTheme.typography.bodyMedium)
-        if (secondary.isNotEmpty()) {
+        if (secondary.isNotEmpty()) Row(verticalAlignment = Alignment.CenterVertically) {
             LegendDot(SECONDARY_COLOR)
             Text(tr("Hilfs: ", "Secondary: ") + secondary.joinToString(", ") { muscleLabel(it) }, style = MaterialTheme.typography.bodyMedium)
         }
@@ -228,5 +231,76 @@ fun MuscleLegend(primary: List<String>, secondary: List<String>, modifier: Modif
 }
 
 @Composable
-private fun LegendDot(color: Color) =
+fun LegendDot(color: Color) =
     Box(Modifier.padding(end = 6.dp).size(10.dp).background(color, CircleShape))
+
+// ---------- Muskeln einer Übung ----------
+
+/** Haupt- und Hilfsmuskeln (Muskel-IDs aus MUSCLES). */
+data class MuscleSet(val primary: List<String>, val secondary: List<String>) {
+    val isEmpty: Boolean get() = primary.isEmpty() && secondary.isEmpty()
+}
+
+/** Muskeln einer Übung: selbst gewählte (eigene Übung) oder aus dem Wiki (Katalog); null = unbekannt. */
+fun musclesOf(name: String): MuscleSet? =
+    CustomMeta.muscles[name]
+        ?: wikiFor(name)?.let { MuscleSet(it.primary, it.secondary) }?.takeIf { !it.isEmpty }
+
+/**
+ * Auswahl der Muskeln mit Vorschau: zwei Chip-Reihen (Haupt/Hilfs). Ein Muskel kann nur in einer
+ * der beiden Listen stehen – Auswahl in der einen entfernt ihn aus der anderen.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun MusclePicker(value: MuscleSet, onChange: (MuscleSet) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        MuscleMap(value.primary, value.secondary, showLegend = false)
+        Text(tr("Hauptmuskeln", "Primary muscles"), style = MaterialTheme.typography.titleSmall)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            MUSCLES.keys.forEach { id ->
+                val on = id in value.primary
+                FilterChip(
+                    selected = on,
+                    onClick = {
+                        onChange(if (on) value.copy(primary = value.primary - id)
+                        else MuscleSet(value.primary + id, value.secondary - id))
+                    },
+                    label = { Text(muscleLabel(id)) },
+                    leadingIcon = if (on) { { LegendDot(PRIMARY_COLOR) } } else null
+                )
+            }
+        }
+        Text(tr("Hilfsmuskeln", "Secondary muscles"), style = MaterialTheme.typography.titleSmall)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            MUSCLES.keys.forEach { id ->
+                val on = id in value.secondary
+                FilterChip(
+                    selected = on,
+                    onClick = {
+                        onChange(if (on) value.copy(secondary = value.secondary - id)
+                        else MuscleSet(value.primary - id, value.secondary + id))
+                    },
+                    label = { Text(muscleLabel(id)) },
+                    leadingIcon = if (on) { { LegendDot(SECONDARY_COLOR) } } else null
+                )
+            }
+        }
+    }
+}
+
+/** Dialog „Muskeln bearbeiten“ für eigene Übungen. */
+@Composable
+fun MuscleEditDialog(store: GymStore, name: String, onDismiss: () -> Unit) {
+    var value by remember { mutableStateOf(CustomMeta.muscles[name] ?: MuscleSet(emptyList(), emptyList())) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(tr("Muskeln", "Muscles")) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) { MusclePicker(value) { value = it } }
+        },
+        confirmButton = {
+            TextButton(onClick = { store.setCustomMuscles(name, value); onDismiss() }) { Text(tr("Speichern", "Save")) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(tr("Abbrechen", "Cancel")) } }
+    )
+}

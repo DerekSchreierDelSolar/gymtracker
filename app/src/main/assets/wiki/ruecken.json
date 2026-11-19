@@ -1,6 +1,8 @@
 {
   "Kreuzheben": {
     "muscles": ["Unterer Rücken, Gesäß, Beinbeuger, Oberschenkel, Griffkraft", "Lower back, glutes, hamstrings, quads, grip"],
+    "primary": ["lowerback", "glutes", "hamstrings"],
+    "secondary": ["quads", "traps", "lats", "forearms"],
     "how": [
       ["Füße hüftbreit, die Stange über dem Mittelfuß, nah am Schienbein.", "Feet hip-width, bar over mid-foot, close to your shins."],
       ["Hüfte nach hinten schieben, Stange schulterbreit greifen, Rücken gerade, Brust raus.", "Push your hips back, grip the bar shoulder-width, back flat, chest up."],
@@ -19,6 +21,8 @@
   },
   "Rudern vorgebeugt": {
     "muscles": ["Oberer Rücken, Latissimus, hintere Schulter, Bizeps", "Upper back, lats, rear delts, biceps"],
+    "primary": ["lats", "traps"],
+    "secondary": ["delts", "biceps", "lowerback"],
     "how": [
       ["Knie leicht gebeugt, Oberkörper mit geradem Rücken etwa 45° nach vorne beugen.", "Knees slightly bent, hinge forward to about 45° with a flat back."],
       ["Gewicht an gestreckten Armen hängen lassen.", "Let the weight hang at arm's length."],
@@ -33,6 +37,8 @@
   },
   "Einarmiges Rudern": {
     "muscles": ["Latissimus, oberer Rücken, Bizeps", "Lats, upper back, biceps"],
+    "primary": ["lats"],
+    "secondary": ["traps", "biceps", "delts"],
     "how": [
       ["Eine Hand und ein Knie auf der Bank abstützen, Rücken waagerecht und gerade.", "Support yourself with one hand and knee on the bench, back flat and level."],
       ["Gewicht hängt am gestreckten Arm.", "The weight hangs at arm's length."],
@@ -49,6 +55,8 @@
   },
   "T-Bar-Rudern": {
     "muscles": ["Mittlerer Rücken, Latissimus, hintere Schulter", "Mid back, lats, rear delts"],
+    "primary": ["lats", "traps"],
+    "secondary": ["delts", "biceps", "lowerback"],
     "how": [
       ["Über der Stange stehen, Griff fassen, mit geradem Rücken vorbeugen.", "Straddle the bar, grab the handle and hinge forward with a flat back."],
       ["Gewicht Richtung Brust/Bauch ziehen, Schulterblätter zusammen.", "Row toward your chest/stomach, squeezing your shoulder blades."],
@@ -64,6 +72,8 @@
   },
   "Brustgestütztes Rudern": {
     "muscles": ["Oberer Rücken, Latissimus, hintere Schulter", "Upper back, lats, rear delts"],
+    "primary": ["lats", "traps"],
+    "secondary": ["delts", "biceps"],
     "how": [
       ["Mit der Brust auf das Polster bzw. die Schrägbank legen.", "Rest your chest on the pad or an incline bench."],
       ["Gewicht/Griffe zum Körper ziehen, Schulterblätter zusammenführen.", "Pull the weight/handles toward you and squeeze your shoulder blades."],
@@ -76,6 +86,8 @@
   },
   "Rudern sitzend": {
     "muscles": ["Mittlerer Rücken, Latissimus, Bizeps", "Mid back, lats, biceps"],
+    "primary": ["lats", "traps"],
+    "secondary": ["biceps", "delts"],
     "how": [
       ["Aufrecht sitzen, Füße an der Plattform, Knie leicht gebeugt.", "Sit tall, feet on the platform, knees slightly bent."],
       ["Griff zum Bauch ziehen, Brust raus, Schulterblätter zusammen.", "Pull the handle to your stomach, chest up, shoulder blades together."],
@@ -88,6 +100,8 @@
   },
   "Rack Pulls": {
     "muscles": ["Oberer und unterer Rücken, Gesäß, Trapez, Griff", "Upper and lower back, glutes, traps, grip"],
+    "primary": ["lowerback", "traps", "glutes"],
+    "secondary": ["hamstrings", "lats", "forearms"],
     "how": [
       ["Stange auf Kniehöhe (oder knapp darunter) im Rack ablegen.", "Set the bar in the rack at knee height (or just below)."],
       ["Wie beim Kreuzheben greifen, Rücken gerade, anspannen.", "Grip as for a deadlift, back flat, brace."],
@@ -100,6 +114,8 @@
   },
   "Good Mornings": {
     "muscles": ["Beinbeuger, Gesäß, unterer Rücken", "Hamstrings, glutes, lower back"],
+    "primary": ["hamstrings", "lowerback"],
+    "secondary": ["glutes"],
     "how": [
       ["Stange wie bei Kniebeugen auf dem oberen Rücken, Knie leicht gebeugt.", "Bar on your upper back like a squat, knees slightly bent."],
       ["Hüfte nach hinten schieben und den geraden Oberkörper nach vorne neigen.", "Push your hips back and tilt your straight torso forward."],
@@ -112,6 +128,8 @@
   },
   "Latziehen": {
     "muscles": ["Latissimus, oberer Rücken, Bizeps", "Lats, upper back, biceps"],
+    "primary": ["lats"],
+    "secondary": ["biceps", "traps", "delts"],
     "how": [
       ["Oberschenkel unter dem Polster fixieren, Stange etwas breiter als schulterbreit greifen.", "Lock your thighs under the pad and grip the bar a bit wider than shoulders."],
       ["Leicht zurücklehnen, Brust raus.", "Lean back slightly, chest up."],
@@ -129,6 +147,8 @@
   },
   "Latziehen eng": {
     "muscles": ["Latissimus (unterer Bereich), Bizeps", "Lats (lower part), biceps"],
+    "primary": ["lats"],
+    "secondary": ["biceps", "traps"],
     "how": [
       ["Engen Griff (V-Griff) einhängen und mit neutralem Griff fassen.", "Attach a close-grip (V) handle and hold it with a neutral grip."],
       ["Leicht zurücklehnen und den Griff zur Brust ziehen.", "Lean back slightly and pull the handle to your chest."],
@@ -141,6 +161,8 @@
   },
   "Überzüge": {
     "muscles": ["Latissimus", "Lats"],
+    "primary": ["lats"],
+    "secondary": ["triceps", "chest"],
     "how": [
       ["Vor dem hohen Kabel stehen, Stange oder Seil mit gestreckten Armen greifen, leicht vorbeugen.", "Stand at a high cable, grab a bar or rope with straight arms and hinge slightly."],
       ["Mit fast gestreckten Armen in einem Bogen zu den Oberschenkeln ziehen.", "With nearly straight arms, pull in an arc down to your thighs."],
@@ -153,6 +175,8 @@
   },
   "Klimmzüge": {
     "muscles": ["Latissimus, oberer Rücken, Bizeps, Griffkraft", "Lats, upper back, biceps, grip"],
+    "primary": ["lats"],
+    "secondary": ["biceps", "traps", "delts", "forearms"],
     "how": [
       ["An der Stange hängen, Obergriff etwas breiter als schulterbreit.", "Hang from the bar with an overhand grip a bit wider than your shoulders."],
       ["Schulterblätter nach unten ziehen und Körper anspannen.", "Pull your shoulder blades down and brace your body."],
@@ -171,6 +195,8 @@
   },
   "Klimmzüge Untergriff": {
     "muscles": ["Latissimus, Bizeps", "Lats, biceps"],
+    "primary": ["lats", "biceps"],
+    "secondary": ["traps", "forearms"],
     "how": [
       ["Stange im Untergriff schulterbreit fassen.", "Grip the bar underhand at shoulder width."],
       ["Schulterblätter nach unten ziehen, dann die Brust zur Stange ziehen.", "Pull your shoulder blades down, then pull your chest toward the bar."],
@@ -183,6 +209,8 @@
   },
   "Australische Klimmzüge": {
     "muscles": ["Oberer Rücken, Latissimus, Bizeps, Rumpf", "Upper back, lats, biceps, core"],
+    "primary": ["lats", "traps"],
+    "secondary": ["biceps", "delts", "abs"],
     "how": [
       ["Unter eine hüfthohe Stange (z. B. in der Multipresse) legen und greifen.", "Lie under a hip-high bar (e.g. in a Smith machine) and grab it."],
       ["Körper gerade wie ein Brett, Fersen am Boden.", "Body straight like a plank, heels on the floor."],
@@ -195,6 +223,8 @@
   },
   "Hyperextensions": {
     "muscles": ["Unterer Rücken, Gesäß, Beinbeuger", "Lower back, glutes, hamstrings"],
+    "primary": ["lowerback"],
+    "secondary": ["glutes", "hamstrings"],
     "how": [
       ["Hüfte knapp über dem Polster, Fersen fixiert.", "Hips just above the pad, heels locked in."],
       ["Mit geradem Rücken nach vorne absenken.", "Lower forward with a flat back."],

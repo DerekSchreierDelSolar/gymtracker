@@ -121,7 +121,7 @@ class GymStore(context: Context) {
             file.copyTo(File(file.parentFile, "gym_data_before_import.json"), overwrite = true)
         }
         exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear()
-        CustomMeta.equipment.clear(); CustomMeta.timed.clear()
+        CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         readFrom(root)
         save()
     }
@@ -143,6 +143,13 @@ class GymStore(context: Context) {
             }
             val tm = root.optJSONArray("customTimed") ?: JSONArray()
             for (i in 0 until tm.length()) CustomMeta.timed.add(migrateName(tm.getString(i)))
+            // Eigene Übungen: Muskeln fürs Körperdiagramm { "Name": { "primary": [...], "secondary": [...] } }
+            val mu = root.optJSONObject("customMuscles") ?: JSONObject()
+            mu.keys().forEach { key ->
+                val o = mu.optJSONObject(key) ?: return@forEach
+                fun ids(a: JSONArray?) = if (a == null) emptyList() else List(a.length()) { a.getString(it) }.filter { it in MUSCLES }
+                CustomMeta.muscles[migrateName(key)] = MuscleSet(ids(o.optJSONArray("primary")), ids(o.optJSONArray("secondary")))
+            }
             root.optJSONObject("settings")?.let { weeklyGoal = it.optInt("weeklyGoal", 3) }
             val wo = root.optJSONArray("workouts") ?: JSONArray()
             for (i in 0 until wo.length()) {
@@ -212,6 +219,11 @@ class GymStore(context: Context) {
         root.put("groups", g)
         root.put("customEquipment", JSONObject().also { o -> CustomMeta.equipment.forEach { (k, v) -> o.put(k, v.name) } })
         root.put("customTimed", JSONArray(CustomMeta.timed.toList()))
+        root.put("customMuscles", JSONObject().also { o ->
+            CustomMeta.muscles.forEach { (k, m) ->
+                o.put(k, JSONObject().put("primary", JSONArray(m.primary)).put("secondary", JSONArray(m.secondary)))
+            }
+        })
         val wo = JSONArray()
         workouts.forEach { w ->
             val o = JSONObject()
@@ -276,15 +288,22 @@ class GymStore(context: Context) {
      * Eigene Übung anlegen. Gibt false zurück, wenn der Name leer ist oder schon existiert
      * (als eigene Übung oder im Katalog).
      */
-    fun addCustomExercise(name: String, group: MuscleGroup, equipment: Equipment?, timed: Boolean): Boolean {
+    fun addCustomExercise(name: String, group: MuscleGroup, equipment: Equipment?, timed: Boolean, muscles: MuscleSet? = null): Boolean {
         val n = name.trim()
         if (n.isEmpty() || hasExercise(n) || catalogGroup(n) != null) return false
         exercises.add(n)
         groups[n] = group
         if (equipment != null) CustomMeta.equipment[n] = equipment
         if (timed && !group.isCardio) CustomMeta.timed.add(n)
+        if (muscles != null && !muscles.isEmpty) CustomMeta.muscles[n] = muscles
         save()
         return true
+    }
+
+    /** Muskeln einer eigenen Übung festlegen (leere Auswahl = entfernen). */
+    fun setCustomMuscles(name: String, muscles: MuscleSet) {
+        if (muscles.isEmpty) CustomMeta.muscles.remove(name) else CustomMeta.muscles[name] = muscles
+        save()
     }
 
     fun changeWeeklyGoal(n: Int) {
@@ -300,6 +319,7 @@ class GymStore(context: Context) {
         exercises.remove(name)
         groups.remove(name)
         CustomMeta.equipment.remove(name)
+        CustomMeta.muscles.remove(name)
         CustomMeta.timed.remove(name)
         sets.removeAll { it.exercise == name }
         // Übung auch aus allen Workouts entfernen

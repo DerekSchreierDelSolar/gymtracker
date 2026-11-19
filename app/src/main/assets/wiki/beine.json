@@ -1,6 +1,8 @@
 {
   "Kniebeugen": {
     "muscles": ["Oberschenkel vorne, Gesäß, Adduktoren, Rumpf", "Quads, glutes, adductors, core"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["adductors", "hamstrings", "lowerback", "abs"],
     "how": [
       ["Füße etwa schulterbreit, Fußspitzen leicht nach außen.", "Feet about shoulder-width, toes turned out slightly."],
       ["Tief einatmen, Bauch anspannen, Brust raus.", "Take a deep breath, brace your core, chest up."],
@@ -20,6 +22,8 @@
   },
   "Goblet Squat": {
     "muscles": ["Oberschenkel vorne, Gesäß, Rumpf", "Quads, glutes, core"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["adductors", "abs"],
     "how": [
       ["Gewicht senkrecht vor der Brust halten, Ellbogen nach unten.", "Hold the weight vertically at your chest, elbows pointing down."],
       ["Füße schulterbreit, Oberkörper aufrecht.", "Feet shoulder-width, torso upright."],
@@ -33,6 +37,8 @@
   },
   "Frontkniebeugen": {
     "muscles": ["Oberschenkel vorne, Gesäß, oberer Rücken, Rumpf", "Quads, glutes, upper back, core"],
+    "primary": ["quads"],
+    "secondary": ["glutes", "abs", "traps"],
     "how": [
       ["Stange vorne auf den Schultern ablegen, Ellbogen hoch.", "Rest the bar on the front of your shoulders, elbows high."],
       ["Oberkörper bleibt sehr aufrecht.", "Keep your torso very upright."],
@@ -45,6 +51,8 @@
   },
   "Hackenschmidt-Kniebeugen": {
     "muscles": ["Oberschenkel vorne, Gesäß", "Quads, glutes"],
+    "primary": ["quads"],
+    "secondary": ["glutes"],
     "how": [
       ["Rücken ans Polster, Schultern unter die Auflagen, Füße mittig auf die Plattform.", "Back against the pad, shoulders under the pads, feet in the middle of the platform."],
       ["Sicherung lösen und tief absenken.", "Release the safety and lower deep."],
@@ -57,6 +65,8 @@
   },
   "Beinpresse": {
     "muscles": ["Oberschenkel vorne, Gesäß, Adduktoren", "Quads, glutes, adductors"],
+    "primary": ["quads"],
+    "secondary": ["glutes", "adductors"],
     "how": [
       ["Rücken und Gesäß fest ans Polster, Füße schulterbreit auf die Plattform.", "Back and glutes firmly on the pad, feet shoulder-width on the platform."],
       ["Sicherung lösen, Knie Richtung Brust beugen bis etwa 90°.", "Release the safety and bend your knees toward your chest to about 90°."],
@@ -70,6 +80,8 @@
   },
   "Rumänisches Kreuzheben": {
     "muscles": ["Beinbeuger, Gesäß, unterer Rücken", "Hamstrings, glutes, lower back"],
+    "primary": ["hamstrings", "glutes"],
+    "secondary": ["lowerback"],
     "how": [
       ["Aufrecht mit dem Gewicht vor den Oberschenkeln starten, Knie leicht gebeugt.", "Start standing with the weight in front of your thighs, knees soft."],
       ["Hüfte weit nach hinten schieben, das Gewicht gleitet nah an den Beinen nach unten.", "Push your hips far back; the weight slides down close to your legs."],
@@ -83,6 +95,8 @@
   },
   "Sumo-Kreuzheben": {
     "muscles": ["Gesäß, Adduktoren, Oberschenkel, Rücken", "Glutes, adductors, quads, back"],
+    "primary": ["glutes", "adductors", "quads"],
+    "secondary": ["hamstrings", "lowerback", "traps"],
     "how": [
       ["Weiter Stand, Fußspitzen deutlich nach außen, Stange über dem Mittelfuß.", "Wide stance, toes well turned out, bar over mid-foot."],
       ["Stange innerhalb der Beine schulterbreit greifen, Brust raus.", "Grip the bar inside your legs at shoulder width, chest up."],
@@ -96,6 +110,8 @@
   },
   "Hip Thrust": {
     "muscles": ["Gesäß, Beinbeuger", "Glutes, hamstrings"],
+    "primary": ["glutes"],
+    "secondary": ["hamstrings"],
     "how": [
       ["Oberer Rücken an der Bank, Gewicht (mit Polster) auf der Hüfte, Füße hüftbreit.", "Upper back against a bench, padded weight across your hips, feet hip-width."],
       ["Hüfte nach oben drücken, bis Oberkörper und Oberschenkel eine Linie bilden.", "Drive your hips up until your torso and thighs form a line."],
@@ -109,6 +125,8 @@
   },
   "Ausfallschritte": {
     "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["adductors", "hamstrings"],
     "how": [
       ["Aufrecht stehen und einen großen Schritt nach vorne machen.", "Stand tall and take a big step forward."],
       ["Beide Knie beugen, bis das hintere Knie knapp über dem Boden ist.", "Bend both knees until your back knee is just above the floor."],
@@ -122,6 +140,8 @@
   },
   "Ausfallschritte gehend": {
     "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["adductors", "hamstrings"],
     "how": [
       ["Mit Hanteln in den Händen einen großen Schritt nach vorne machen und absenken.", "Holding dumbbells, take a big step forward and lower."],
       ["Mit dem vorderen Bein hochdrücken und das hintere Bein direkt nach vorne zum nächsten Schritt bringen.", "Drive up through the front leg and bring the back leg straight through into the next step."],
@@ -134,6 +154,8 @@
   },
   "Bulgarische Kniebeugen": {
     "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["adductors", "hamstrings"],
     "how": [
       ["Hinteren Fuß mit dem Spann auf eine Bank legen, vorderer Fuß etwa ein großer Schritt davor.", "Rest the top of your back foot on a bench, front foot about a big step ahead."],
       ["Senkrecht nach unten absenken, bis der vordere Oberschenkel etwa waagerecht ist.", "Lower straight down until your front thigh is about parallel."],
@@ -149,6 +171,8 @@
   },
   "Step-ups": {
     "muscles": ["Oberschenkel vorne, Gesäß", "Quads, glutes"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "calves"],
     "how": [
       ["Einen Fuß komplett auf eine kniehohe Box oder Bank stellen.", "Place one whole foot on a knee-high box or bench."],
       ["Über das obere Bein hochdrücken, bis du oben stehst.", "Drive through the top leg until you're standing on the box."],
@@ -161,6 +185,8 @@
   },
   "Beinstrecker": {
     "muscles": ["Oberschenkel vorne", "Quads"],
+    "primary": ["quads"],
+    "secondary": [],
     "how": [
       ["Rückenlehne so einstellen, dass das Knie auf Höhe der Drehachse ist; Polster über dem Sprunggelenk.", "Adjust the backrest so your knee lines up with the pivot; pad above your ankles."],
       ["Beine strecken und oben kurz anspannen.", "Extend your legs and squeeze briefly at the top."],
@@ -173,6 +199,8 @@
   },
   "Beinbeuger": {
     "muscles": ["Beinbeuger (hinterer Oberschenkel)", "Hamstrings"],
+    "primary": ["hamstrings"],
+    "secondary": ["calves"],
     "how": [
       ["Gerät einstellen: Knie auf Höhe der Drehachse, Polster über der Ferse.", "Set up so your knee lines up with the pivot and the pad sits above your heels."],
       ["Beine kontrolliert beugen.", "Curl your legs under control."],
@@ -185,6 +213,8 @@
   },
   "Adduktoren": {
     "muscles": ["Oberschenkel-Innenseite (Adduktoren)", "Inner thighs (adductors)"],
+    "primary": ["adductors"],
+    "secondary": [],
     "how": [
       ["Aufrecht sitzen, Beine an den Polstern, Startweite bequem einstellen.", "Sit upright with your legs against the pads; set a comfortable start width."],
       ["Beine kontrolliert zusammendrücken.", "Squeeze your legs together under control."],
@@ -197,6 +227,8 @@
   },
   "Abduktoren": {
     "muscles": ["Äußeres Gesäß (Gluteus medius)", "Outer glutes (gluteus medius)"],
+    "primary": ["glutes"],
+    "secondary": [],
     "how": [
       ["Aufrecht sitzen, Polster an der Außenseite der Knie.", "Sit upright with the pads on the outside of your knees."],
       ["Beine nach außen drücken.", "Push your legs outward."],
@@ -209,6 +241,8 @@
   },
   "Wadenheben stehend": {
     "muscles": ["Waden (v. a. Zwillingswadenmuskel)", "Calves (mainly gastrocnemius)"],
+    "primary": ["calves"],
+    "secondary": [],
     "how": [
       ["Fußballen auf eine Kante stellen, Beine fast gestreckt.", "Put the balls of your feet on an edge, legs nearly straight."],
       ["Fersen tief absenken, bis die Wade gedehnt ist.", "Lower your heels deep into a calf stretch."],
@@ -224,6 +258,8 @@
   },
   "Wadenheben sitzend": {
     "muscles": ["Waden (v. a. Schollenmuskel)", "Calves (mainly soleus)"],
+    "primary": ["calves"],
+    "secondary": [],
     "how": [
       ["Sitzen, Polster auf den Oberschenkeln knapp über dem Knie, Fußballen auf der Kante.", "Sit with the pad on your thighs just above the knee, balls of your feet on the edge."],
       ["Fersen tief absenken.", "Lower your heels deep."],
@@ -236,6 +272,8 @@
   },
   "Glute Kickbacks": {
     "muscles": ["Gesäß", "Glutes"],
+    "primary": ["glutes"],
+    "secondary": ["hamstrings"],
     "how": [
       ["Fußschlaufe am unteren Kabel befestigen, am Gerät festhalten, leicht vorbeugen.", "Attach an ankle strap to a low cable, hold the machine and lean slightly forward."],
       ["Gestrecktes Bein nach hinten führen, bis das Gesäß fest angespannt ist.", "Drive your leg straight back until your glutes are fully squeezed."],
@@ -248,6 +286,8 @@
   },
   "Beckenheben": {
     "muscles": ["Gesäß, Beinbeuger, unterer Rücken", "Glutes, hamstrings, lower back"],
+    "primary": ["glutes"],
+    "secondary": ["hamstrings", "lowerback"],
     "how": [
       ["Auf den Rücken legen, Knie angewinkelt, Füße hüftbreit am Boden.", "Lie on your back, knees bent, feet hip-width on the floor."],
       ["Becken anheben, bis Schultern, Hüfte und Knie eine Linie bilden.", "Lift your hips until shoulders, hips and knees form a line."],
@@ -261,6 +301,8 @@
   },
   "Nordic Curls": {
     "muscles": ["Beinbeuger (sehr intensiv)", "Hamstrings (very intense)"],
+    "primary": ["hamstrings"],
+    "secondary": ["glutes", "calves"],
     "how": [
       ["Knien, Fersen fixieren lassen (Partner, Polster oder Sprossenwand).", "Kneel with your heels anchored (partner, pad or wall bars)."],
       ["Körper von Knie bis Kopf gerade halten und langsam nach vorne sinken lassen.", "Keep your body straight from knees to head and slowly lean forward."],
@@ -274,6 +316,8 @@
   },
   "Wandsitzen": {
     "muscles": ["Oberschenkel vorne", "Quads"],
+    "primary": ["quads"],
+    "secondary": ["glutes"],
     "how": [
       ["Rücken an die Wand, Füße etwa hüftbreit vor dem Körper.", "Back against the wall, feet about hip-width in front of you."],
       ["Herunterrutschen, bis Knie und Hüfte etwa 90° gebeugt sind.", "Slide down until your knees and hips are bent about 90°."],
@@ -287,6 +331,8 @@
   },
   "Seitliches Gehen": {
     "muscles": ["Äußeres Gesäß (Gluteus medius)", "Outer glutes (gluteus medius)"],
+    "primary": ["glutes"],
+    "secondary": [],
     "how": [
       ["Band um die Beine (über den Knien oder an den Knöcheln), leicht in die Hocke gehen.", "Place the band around your legs (above the knees or at the ankles) and sit into a slight squat."],
       ["Seitlich Schritte machen, ohne dass die Füße zusammenkommen.", "Step sideways without letting your feet come together."],

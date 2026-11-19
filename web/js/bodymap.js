@@ -2,8 +2,11 @@
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
 import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
-import { tr, isEnglish } from './core.js';
-import { h } from './ui.js';
+import { tr, isEnglish, CustomMeta } from './core.js';
+import { h, chip, dialog } from './ui.js';
+import { wikiFor } from './wiki.js';
+import { openDialog, closeDialog, rerender } from './nav.js';
+import { store } from './store.js';
 
 export const PRIMARY_COLOR = '#E24B4A';
 export const SECONDARY_COLOR = '#EF9F27';
@@ -39,7 +42,9 @@ function svg(primary, secondary) {
   }
   // 2. Flächen (Muskeln mit dünner Fuge in Fellfarbe)
   for (const s of BODY_SHAPES) for (const t of placements(s)) {
-    const stroke = s.fill === 'MUSCLE' ? ` stroke="${c.FUR}" stroke-width="0.7"` : '';
+    // Muskeln: dünne Fuge in Fellfarbe; Fell: gleichfarbiger Rand schließt die Naht an der Spiegelachse
+    const stroke = s.fill === 'MUSCLE' ? ` stroke="${c.FUR}" stroke-width="0.7"`
+      : s.fill === 'FUR' || s.fill === 'PATCH' ? ` stroke="${color(s)}" stroke-width="0.8"` : '';
     parts.push(`<path transform="${t}" d="${s.d}" fill="${color(s)}"${stroke}/>`);
   }
   const w = BODY.backOffset + BODY.width;
@@ -47,12 +52,49 @@ function svg(primary, secondary) {
 }
 
 /** Körperdiagramm mit Beschriftung „Vorne/Hinten“ und Legende „Haupt: … · Hilfs: …“. */
-export function muscleMap(primary, secondary = []) {
+export function muscleMap(primary, secondary = [], { legend = true } = {}) {
   return h('div', { class: 'muscle-map' },
     h('div', { class: 'muscle-figure', html: svg(primary, secondary) }),
     h('div', { class: 'muscle-views muted' }, h('span', null, tr('Vorne', 'Front')), h('span', null, tr('Hinten', 'Back'))),
-    h('div', { class: 'muscle-legend' },
+    legend ? h('div', { class: 'muscle-legend' },
       primary.length ? h('span', null, h('i', { style: `background:${PRIMARY_COLOR}` }), tr('Haupt: ', 'Primary: ') + primary.map(muscleLabel).join(', ')) : null,
-      primary.length && secondary.length ? h('span', { class: 'muted' }, '·') : null,
-      secondary.length ? h('span', null, h('i', { style: `background:${SECONDARY_COLOR}` }), tr('Hilfs: ', 'Secondary: ') + secondary.map(muscleLabel).join(', ')) : null));
+      secondary.length ? h('span', null, h('i', { style: `background:${SECONDARY_COLOR}` }), tr('Hilfs: ', 'Secondary: ') + secondary.map(muscleLabel).join(', ')) : null) : null);
+}
+
+// ---------- Muskeln einer Übung ----------
+
+/** Muskeln einer Übung: selbst gewählte (eigene Übung) oder aus dem Wiki; null = unbekannt. */
+export function musclesOf(name) {
+  if (CustomMeta.muscles[name]) return CustomMeta.muscles[name];
+  const w = wikiFor(name);
+  return w?.primary?.length ? { primary: w.primary, secondary: w.secondary ?? [] } : null;
+}
+
+/** Auswahl mit Vorschau. st = { primary: [...], secondary: [...] } wird direkt verändert. */
+export function musclePicker(st) {
+  const toggle = (list, other, id) => {
+    if (st[list].includes(id)) st[list] = st[list].filter(x => x !== id);
+    else { st[list] = [...st[list], id]; st[other] = st[other].filter(x => x !== id); }
+    rerender();
+  };
+  const dot = c => `<i class="chip-dot" style="background:${c}"></i>`;
+  return [
+    muscleMap(st.primary, st.secondary, { legend: false }),
+    h('b', { class: 'small-title' }, tr('Hauptmuskeln', 'Primary muscles')),
+    h('div', { class: 'chips wrap' }, Object.keys(MUSCLES).map(id =>
+      chip(muscleLabel(id), st.primary.includes(id), () => toggle('primary', 'secondary', id), st.primary.includes(id) ? dot(PRIMARY_COLOR) : null))),
+    h('b', { class: 'small-title' }, tr('Hilfsmuskeln', 'Secondary muscles')),
+    h('div', { class: 'chips wrap' }, Object.keys(MUSCLES).map(id =>
+      chip(muscleLabel(id), st.secondary.includes(id), () => toggle('secondary', 'primary', id), st.secondary.includes(id) ? dot(SECONDARY_COLOR) : null))),
+  ];
+}
+
+/** Dialog „Muskeln bearbeiten“ für eigene Übungen. */
+export function muscleEditDialog(name) {
+  const cur = CustomMeta.muscles[name];
+  const st = { primary: [...(cur?.primary ?? [])], secondary: [...(cur?.secondary ?? [])] };
+  openDialog(() => dialog(tr('Muskeln', 'Muscles'), musclePicker(st), [
+    { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
+    { label: tr('Speichern', 'Save'), onClick: () => { closeDialog(); store.setCustomMuscles(name, st); } },
+  ], closeDialog));
 }

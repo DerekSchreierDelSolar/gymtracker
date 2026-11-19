@@ -61,6 +61,9 @@ class GymStore {
     for (const [k, g] of Object.entries(obj(root.groups))) this.groups[migrateName(k)] = g;
     for (const [k, e] of Object.entries(obj(root.customEquipment))) CustomMeta.equipment[migrateName(k)] = e;
     for (const t of arr(root.customTimed)) CustomMeta.timed.add(migrateName(t));
+    for (const [k, m] of Object.entries(obj(root.customMuscles))) {
+      CustomMeta.muscles[migrateName(k)] = { primary: arr(m?.primary).map(String), secondary: arr(m?.secondary).map(String) };
+    }
 
     this.workouts = arr(root.workouts).map(o => ({
       id: o.id, name: o.name,
@@ -93,6 +96,7 @@ class GymStore {
       groups: this.groups,
       customEquipment: CustomMeta.equipment,
       customTimed: [...CustomMeta.timed],
+      customMuscles: CustomMeta.muscles,
       workouts: this.workouts,
       sessions: this.sessions,
       weights: this.weights,
@@ -129,7 +133,7 @@ class GymStore {
     const old = localStorage.getItem(KEY);
     if (old) localStorage.setItem('gym_data_before_import', old);
     this.exercises = []; this.sets = []; this.groups = {}; this.workouts = []; this.sessions = []; this.weights = [];
-    CustomMeta.equipment = {}; CustomMeta.timed = new Set();
+    CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
     this.#readFrom(root);
     this.#save();
   }
@@ -141,6 +145,12 @@ class GymStore {
   setRest(sec) { this.restSeconds = sec; this.#save(); }
   setTheme(mode) { this.themeMode = mode; this.#save(); }
   setLanguage(lang) { setAppLanguage(lang); this.#save(); }
+  /** Muskeln einer eigenen Übung festlegen (leere Auswahl = entfernen). */
+  setCustomMuscles(name, m) {
+    if (m.primary.length || m.secondary.length) CustomMeta.muscles[name] = m; else delete CustomMeta.muscles[name];
+    this.#save();
+  }
+
   changeWeeklyGoal(n) { this.weeklyGoal = Math.min(14, Math.max(1, n)); this.#save(); }
 
   // ----- Übungen -----
@@ -160,13 +170,14 @@ class GymStore {
   }
 
   /** Eigene Übung anlegen; false, wenn der Name leer ist oder schon existiert. */
-  addCustomExercise(name, group, equipment, timed) {
+  addCustomExercise(name, group, equipment, timed, muscles = null) {
     const n = name.trim();
     if (!n || this.hasExercise(n) || catalogGroup(n)) return false;
     this.exercises.push(n);
     this.groups[n] = group;
     if (equipment) CustomMeta.equipment[n] = equipment;
     if (timed && !isCardio(group)) CustomMeta.timed.add(n);
+    if (muscles && (muscles.primary.length || muscles.secondary.length)) CustomMeta.muscles[n] = muscles;
     this.#save();
     return true;
   }
@@ -178,6 +189,7 @@ class GymStore {
     this.exercises = this.exercises.filter(e => e !== name);
     delete this.groups[name];
     delete CustomMeta.equipment[name];
+    delete CustomMeta.muscles[name];
     CustomMeta.timed.delete(name);
     this.sets = this.sets.filter(s => s.exercise !== name);
     for (const w of this.workouts) {

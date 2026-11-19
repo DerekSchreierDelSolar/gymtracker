@@ -23,6 +23,8 @@
   },
   "Schrägbankdrücken": {
     "muscles": ["Obere Brust, vordere Schulter, Trizeps", "Upper chest, front delts, triceps"],
+    "primary": ["chest"],
+    "secondary": ["delts", "triceps"],
     "how": [
       ["Bank auf 30–45° stellen, Rücken und Gesäß fest anlegen.", "Set the bench to 30–45° and keep your back and glutes in contact."],
       ["Schulterblätter zurück und nach unten ziehen.", "Pull your shoulder blades back and down."],
@@ -42,6 +44,8 @@
   },
   "Negativbankdrücken": {
     "muscles": ["Untere Brust, Trizeps", "Lower chest, triceps"],
+    "primary": ["chest"],
+    "secondary": ["triceps", "delts"],
     "how": [
       ["Auf die negativ geneigte Bank legen, Beine fest einhaken.", "Lie on the decline bench and hook your legs securely."],
       ["Gewicht zur unteren Brust absenken.", "Lower the weight to your lower chest."],
@@ -55,6 +59,8 @@
   },
   "Floor Press": {
     "muscles": ["Brust, Trizeps", "Chest, triceps"],
+    "primary": ["chest", "triceps"],
+    "secondary": ["delts"],
     "how": [
       ["Auf den Boden legen, Knie angewinkelt, Gewicht über der Brust.", "Lie on the floor with knees bent, weight above your chest."],
       ["Absenken, bis die Oberarme sanft den Boden berühren.", "Lower until your upper arms gently touch the floor."],
@@ -68,6 +74,8 @@
   },
   "Fliegende": {
     "muscles": ["Brust (Dehnung), vordere Schulter", "Chest (stretch focus), front delts"],
+    "primary": ["chest"],
+    "secondary": ["delts"],
     "how": [
       ["Arme vor der Brust, Ellbogen leicht gebeugt und fest in dieser Stellung.", "Arms in front of your chest, elbows slightly bent and locked in that angle."],
       ["Arme in einem weiten Bogen seitlich öffnen, bis eine Dehnung in der Brust spürbar ist.", "Open your arms in a wide arc until you feel a stretch in your chest."],
@@ -86,6 +94,8 @@
   },
   "Fliegende von unten": {
     "muscles": ["Obere Brust, vordere Schulter", "Upper chest, front delts"],
+    "primary": ["chest"],
+    "secondary": ["delts"],
     "how": [
       ["Kabelrollen ganz unten einstellen, mittig stehen.", "Set the pulleys at the lowest position and stand in the middle."],
       ["Mit leicht gebeugten Armen die Griffe von unten-seitlich nach oben-vorne führen.", "With slightly bent arms, bring the handles from low and wide to high in front of you."],
@@ -98,6 +108,8 @@
   },
   "Schrägbank-Fliegende": {
     "muscles": ["Obere Brust", "Upper chest"],
+    "primary": ["chest"],
+    "secondary": ["delts"],
     "how": [
       ["Bank auf 30–45°, Arme über der oberen Brust, Ellbogen leicht gebeugt.", "Bench at 30–45°, arms above your upper chest, elbows slightly bent."],
       ["Arme seitlich im Bogen öffnen bis zur Dehnung.", "Open your arms in an arc until you feel a stretch."],
@@ -113,6 +125,8 @@
   },
   "Pullover": {
     "muscles": ["Brust, Latissimus, Trizeps (langer Kopf)", "Chest, lats, triceps (long head)"],
+    "primary": ["chest", "lats"],
+    "secondary": ["triceps"],
     "how": [
       ["Quer oder längs auf der Bank liegen, eine Hantel mit beiden Händen über der Brust halten.", "Lie across or along the bench holding one dumbbell with both hands above your chest."],
       ["Mit leicht gebeugten Armen hinter den Kopf absenken, bis Brust und Lat gedehnt sind.", "With slightly bent arms, lower it behind your head until chest and lats are stretched."],
@@ -126,6 +140,8 @@
   },
   "Dips": {
     "muscles": ["Untere Brust, Trizeps, vordere Schulter", "Lower chest, triceps, front delts"],
+    "primary": ["chest", "triceps"],
+    "secondary": ["delts"],
     "how": [
       ["Im Stütz an den Holmen starten, Arme gestreckt, Schultern tief.", "Start in a support position on the bars, arms straight, shoulders down."],
       ["Oberkörper leicht nach vorne neigen und absenken, bis die Oberarme etwa waagerecht sind.", "Lean slightly forward and lower until your upper arms are about parallel to the floor."],
@@ -142,6 +158,8 @@
   },
   "Liegestütze": {
     "muscles": ["Brust, Trizeps, vordere Schulter, Rumpf", "Chest, triceps, front delts, core"],
+    "primary": ["chest"],
+    "secondary": ["triceps", "delts", "abs"],
     "how": [
       ["Hände etwas breiter als schulterbreit, Körper von Kopf bis Ferse gerade.", "Hands slightly wider than shoulder width, body straight from head to heels."],
       ["Brust kontrolliert bis knapp über den Boden absenken.", "Lower your chest under control until just above the floor."],
@@ -155,6 +173,8 @@
   },
   "Schräge Liegestütze": {
     "muscles": ["Obere Brust, vordere Schulter, Trizeps", "Upper chest, front delts, triceps"],
+    "primary": ["chest", "delts"],
+    "secondary": ["triceps"],
     "how": [
       ["Füße auf einer Bank oder Stufe, Hände am Boden.", "Feet on a bench or step, hands on the floor."],
       ["Körper gerade halten und Brust zum Boden absenken.", "Keep your body straight and lower your chest to the floor."],

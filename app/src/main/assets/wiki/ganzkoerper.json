@@ -1,6 +1,8 @@
 {
   "Swing": {
     "muscles": ["Gesäß, Beinbeuger, Rücken, Ausdauer", "Glutes, hamstrings, back, conditioning"],
+    "primary": ["glutes", "hamstrings"],
+    "secondary": ["lowerback", "delts", "abs", "forearms"],
     "how": [
       ["Füße etwas breiter als hüftbreit, Kettlebell vor dir am Boden.", "Feet a bit wider than hips, kettlebell on the floor in front of you."],
       ["Mit geradem Rücken greifen, die Kettlebell zwischen den Beinen nach hinten schwingen.", "Grab it with a flat back and hike it back between your legs."],
@@ -15,6 +17,8 @@
   },
   "Turkish Get-up": {
     "muscles": ["Ganzer Körper, Schulterstabilität, Rumpf", "Full body, shoulder stability, core"],
+    "primary": ["delts", "abs"],
+    "secondary": ["obliques", "glutes", "quads", "triceps"],
     "how": [
       ["Auf dem Rücken liegen, Kettlebell mit gestrecktem Arm senkrecht nach oben.", "Lie on your back holding the kettlebell straight up with one arm."],
       ["Über Ellbogen und Hand aufrichten, Hüfte anheben, Bein nach hinten durchfädeln und knien.", "Rise onto your elbow and hand, lift your hips, sweep your leg back into a kneel."],
@@ -29,6 +33,8 @@
   },
   "Clean & Press": {
     "muscles": ["Ganzer Körper, Schultern, Beine", "Full body, shoulders, legs"],
+    "primary": ["delts", "glutes"],
+    "secondary": ["quads", "triceps", "traps", "hamstrings"],
     "how": [
       ["Kettlebell zwischen den Beinen, mit Hüftstoß nach oben in die Halteposition an der Schulter bringen (Clean).", "From between your legs, use a hip drive to bring the bell into the rack at your shoulder (clean)."],
       ["Aus der Halteposition über den Kopf drücken.", "Press it overhead from the rack."],
@@ -41,6 +47,8 @@
   },
   "Thruster": {
     "muscles": ["Beine, Gesäß, Schultern, Ausdauer", "Legs, glutes, shoulders, conditioning"],
+    "primary": ["quads", "delts"],
+    "secondary": ["glutes", "triceps", "abs"],
     "how": [
       ["Gewicht vorne auf Schulterhöhe, Füße schulterbreit.", "Weight in front at shoulder height, feet shoulder-width."],
       ["In eine tiefe Kniebeuge gehen.", "Drop into a deep squat."],
@@ -54,6 +62,8 @@
   },
   "Umsetzen / Power Clean": {
     "muscles": ["Ganzer Körper, Explosivkraft", "Full body, explosive power"],
+    "primary": ["glutes", "hamstrings", "traps"],
+    "secondary": ["quads", "lowerback", "delts", "forearms"],
     "how": [
       ["Start wie beim Kreuzheben, Stange nah am Schienbein.", "Start like a deadlift, bar close to your shins."],
       ["Stange vom Boden heben und über den Knien explosiv Hüfte und Knie strecken (Sprung-Bewegung).", "Lift off the floor, then above the knees explode by extending hips and knees (jump motion)."],
@@ -68,6 +78,8 @@
   },
   "Reißen / Snatch": {
     "muscles": ["Ganzer Körper, Explosivkraft, Beweglichkeit", "Full body, explosive power, mobility"],
+    "primary": ["glutes", "hamstrings", "delts", "traps"],
+    "secondary": ["quads", "lowerback", "triceps"],
     "how": [
       ["Breiter Griff, Start wie beim Kreuzheben.", "Wide grip, start like a deadlift."],
       ["Explosiv strecken und die Stange in einer Bewegung über den Kopf bringen.", "Extend explosively and bring the bar overhead in one motion."],
@@ -81,6 +93,8 @@
   },
   "Farmer's Walk": {
     "muscles": ["Griffkraft, Trapez, Rumpf, ganzer Körper", "Grip, traps, core, full body"],
+    "primary": ["forearms", "traps"],
+    "secondary": ["abs", "obliques", "glutes", "calves"],
     "how": [
       ["Schwere Gewichte in beide Hände nehmen (mit geradem Rücken aufheben).", "Pick up heavy weights in both hands (lift with a flat back)."],
       ["Aufrecht stehen, Schultern hinten und unten.", "Stand tall, shoulders back and down."],
@@ -93,6 +107,8 @@
   },
   "Burpees": {
     "muscles": ["Ganzer Körper, Ausdauer", "Full body, conditioning"],
+    "primary": ["quads", "chest"],
+    "secondary": ["delts", "triceps", "abs", "glutes"],
     "how": [
       ["Aus dem Stand in die Hocke, Hände auf den Boden.", "From standing, squat down and put your hands on the floor."],
       ["Füße nach hinten springen in den Liegestütz (optional ein Liegestütz).", "Jump your feet back into a plank (optionally do a push-up)."],
@@ -106,6 +122,8 @@
   },
   "Box Jumps": {
     "muscles": ["Beine, Gesäß, Explosivkraft", "Legs, glutes, explosive power"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["calves", "hamstrings"],
     "how": [
       ["Etwa eine Fußlänge vor der Box stehen.", "Stand about a foot's length from the box."],
       ["Mit Armschwung abspringen und mit beiden Füßen gleichzeitig mittig auf der Box landen.", "Swing your arms, jump and land with both feet in the middle of the box."],
@@ -119,6 +137,8 @@
   },
   "Hampelmann": {
     "muscles": ["Ausdauer, Waden, Schultern", "Conditioning, calves, shoulders"],
+    "primary": ["calves"],
+    "secondary": ["delts", "quads", "glutes"],
     "how": [
       ["Aufrecht stehen, Arme seitlich am Körper.", "Stand tall, arms at your sides."],
       ["Springen und dabei Beine grätschen und Arme über den Kopf führen.", "Jump while spreading your legs and raising your arms overhead."],
