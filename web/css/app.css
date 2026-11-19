@@ -385,3 +385,13 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .wiki-note p { margin-top: 2px; line-height: 1.4; }
 .wiki-disclaimer { margin-top: 14px; }
 .wiki-search { margin: 0 0 4px; }
+
+/* ---------- Körperdiagramm (Meerschweinchen) ---------- */
+
+.muscle-map { display: flex; flex-direction: column; align-items: center; }
+.muscle-figure { width: 72%; }
+.muscle-figure svg { display: block; width: 100%; height: auto; }
+.muscle-views { width: 72%; display: flex; justify-content: space-around; font-size: 12px; margin-top: 4px; }
+.muscle-legend { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; margin-top: 10px; }
+.muscle-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.muscle-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }

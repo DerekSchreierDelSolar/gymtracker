@@ -1,6 +1,7 @@
 // Übungs-Bausteine und Übungsdetail – entspricht ExerciseDetail.kt, Progression.kt (UI) und ExerciseTile.
 
-import { wikiButton } from '../wiki.js';
+import { wikiButton, wikiFor } from '../wiki.js';
+import { muscleMap } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
@@ -198,6 +199,7 @@ export function exerciseDetailScreen(name) {
     titleIcon: exerciseIconHtml(name, group, 32),
     actions: [wikiButton(name), iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') })],
     content: h('div', { class: 'stack pad' },
+      wikiFor(name)?.primary?.length ? h('div', { class: 'card pad-m' }, muscleMap(wikiFor(name).primary, wikiFor(name).secondary ?? [])) : null,
       chart,
       best ? h('div', null,
         h('b', null, (cardio || timed ? tr('🏆 Längste Einheit: ', '🏆 Longest: ') : tr('🏆 Bestleistung: ', '🏆 Personal record: ')) + fmtSet(best, cardio)),

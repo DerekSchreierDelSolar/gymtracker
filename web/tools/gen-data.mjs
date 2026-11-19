@@ -129,3 +129,27 @@ writeFileSync(join(root, 'web/js/wiki-data.js'),
   `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus app/src/main/assets/wiki/*.json – nicht von Hand ändern!\n` +
   `export const WIKI = ${JSON.stringify(wiki)};\n`);
 console.log(`wiki-data.js: ${Object.keys(wiki).length} Einträge`);
+
+// ----- Körperdiagramm (Meerschweinchen): Formen und Muskelnamen aus BodyMap.kt → web/js/body-data.js -----
+const bodyKt = read('BodyMap.kt');
+const muscles = Object.fromEntries([...block(bodyKt, 'val MUSCLES: Map<String, WikiText> = linkedMapOf(').matchAll(
+  /"(\w+)" to WikiText\("([^"]*)", "([^"]*)"\)/g)].map(m => [m[1], { de: m[2], en: m[3] }]));
+const bodyShapes = [...block(bodyKt, 'val BODY_SHAPES: List<BodyShape> = listOf(').matchAll(
+  /BodyShape\((null|"\w+"), BodyView\.(\w+), "([^"]*)"([^)]*)\)/g)].map(m => ({
+  id: m[1] === 'null' ? null : m[1].slice(1, -1),
+  view: m[2],
+  d: m[3],
+  mirror: !/mirror = false/.test(m[4]),
+  fill: m[4].match(/fill = BodyFill\.(\w+)/)?.[1] ?? (m[1] === 'null' ? 'FUR' : 'MUSCLE'),
+}));
+const bodyConst = n => Number(bodyKt.match(new RegExp("const val " + n + " = ([0-9.]+)f"))[1]);
+for (const s of bodyShapes) if (s.id && !muscles[s.id]) throw new Error('BodyMap: unbekannte Muskel-ID ' + s.id);
+for (const [b, e] of Object.entries(wiki)) {
+  for (const id of [...(e.primary ?? []), ...(e.secondary ?? [])]) if (!muscles[id]) throw new Error(`Wiki: unbekannte Muskel-ID ${id} bei ${b}`);
+}
+writeFileSync(join(root, 'web/js/body-data.js'),
+  `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus BodyMap.kt – nicht von Hand ändern!\n` +
+  `export const MUSCLES = ${JSON.stringify(muscles)};\n` +
+  `export const BODY = { width: ${bodyConst('BODY_WIDTH')}, height: ${bodyConst('BODY_HEIGHT')}, backOffset: ${bodyConst('BACK_OFFSET')} };\n` +
+  `export const BODY_SHAPES = [\n${bodyShapes.map(s => '  ' + JSON.stringify(s)).join(',\n')}\n];\n`);
+console.log(`body-data.js: ${bodyShapes.length} Formen, ${Object.keys(muscles).length} Muskeln`);

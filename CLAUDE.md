@@ -57,6 +57,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `CatalogScreen.kt` | Katalog + `CustomExerciseDialog` |
 | `Progression.kt` | 💡 Gewichts-Vorschlag (doppelte Progression) |
 | `Wiki.kt` | Übungs-Wiki: lädt `assets/wiki/*.json` (`Wiki.load`), `wikiFor(name)`, `WikiButton` (ⓘ), `WikiSheet` (Bottom Sheet), `WikiScreen` (Übersicht + Suche) |
+| `BodyMap.kt` | Körperdiagramm (Meerschweinchen, vorne + hinten): `MUSCLES` (Muskel-IDs + Namen), `BODY_SHAPES` (SVG-Pfade, linke Hälfte + Spiegelung), `MuscleMap(primary, secondary)`. **Prototyp:** bisher nur Bankdrücken zugeordnet (`primary`/`secondary` in der Wiki-JSON) |
 | `Icons.kt` | `AppIcon`/`Ico` (Linien-Icons für Buttons/Navigation) |
 | `Pictograms.kt` | Übungs-Piktogramme: `Motion` (~47 Bewegungen), `MOTION_OF` (Katalog-Name → Bewegung), `ExerciseIcon(name, group)`, `MuscleIcon(group)`, `drawMotion()` |
 | `Components.kt` | `GroupHeader`, `ChartCard`, `HorizontalBars`, `HistoryBars`, `LineChart`, `ProgressChart` |
@@ -99,8 +100,9 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
   (`gym_data`); laufendes Training zusätzlich in `gym_training` (iOS beendet Web-Apps im Hintergrund).
 - `web/js/data.js` wird **erzeugt**: `node web/tools/gen-data.mjs` liest CATALOG, CARDIO_MET,
   RENAMED_EXERCISES, TIMED_CATALOG, TEMPLATES, MOTION_OF und den `drawMotion`-Code aus den Kotlin-Dateien.
-  Erzeugt außerdem `web/js/wiki-data.js` aus `app/src/main/assets/wiki/*.json` (Logik in `web/js/wiki.js`).
-  **Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt / Wiki-JSON erneut ausführen.**
+  Erzeugt außerdem `web/js/wiki-data.js` aus `app/src/main/assets/wiki/*.json` (Logik in `web/js/wiki.js`)
+  und `web/js/body-data.js` aus `BodyMap.kt` (Logik in `web/js/bodymap.js`).
+  **Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt / BodyMap.kt / Wiki-JSON erneut ausführen.**
 - Dateien spiegeln die Kotlin-Struktur: `core.js` (I18n/Format/Model), `store.js` (GymStore),
   `stats.js` (Stats/Progression/Dashboard-Berechnungen), `pictograms.js`, `ui.js` (`h()`-DOM-Helfer,
   Icons, Diagramme, Dialog), `nav.js` (Navigation = GymApp-State + Browser-History), `filter.js`,

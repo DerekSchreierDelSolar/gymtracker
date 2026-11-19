@@ -1,6 +1,8 @@
 {
   "Bankdrücken": {
     "muscles": ["Brust, vordere Schulter, Trizeps", "Chest, front delts, triceps"],
+    "primary": ["chest"],
+    "secondary": ["triceps", "delts"],
     "how": [
       ["Auf die Bank legen, Augen etwa unter der Stange, Füße fest am Boden.", "Lie on the bench with your eyes roughly under the bar, feet planted firmly."],
       ["Schulterblätter zusammen- und nach unten ziehen, leichtes Hohlkreuz ist erlaubt.", "Pull your shoulder blades back and down; a slight arch is fine."],

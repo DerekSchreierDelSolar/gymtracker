@@ -289,6 +289,15 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // 0. Körperdiagramm: belastete Muskeln
+            wikiFor(exercise)?.takeIf { it.primary.isNotEmpty() }?.let { w ->
+                item {
+                    Card(Modifier.fillMaxWidth()) {
+                        MuscleMap(w.primary, w.secondary, Modifier.padding(16.dp))
+                    }
+                }
+            }
+
             // 1. Fortschritts-Diagramm (ab 2 Trainingstagen)
             if (days.size >= 2) {
                 item {

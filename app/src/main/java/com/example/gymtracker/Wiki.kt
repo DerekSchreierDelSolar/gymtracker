@@ -33,7 +33,10 @@ data class WikiEntry(
     val how: List<WikiText>,
     val tips: List<WikiText>,
     /** Hinweise zu einzelnen Geräte-Varianten, Schlüssel = Klammertext im Katalog-Namen. */
-    val variants: Map<String, WikiText>
+    val variants: Map<String, WikiText>,
+    /** Muskel-IDs (siehe MUSCLES in BodyMap.kt): Haupt- und Hilfsmuskeln fürs Körperdiagramm. */
+    val primary: List<String> = emptyList(),
+    val secondary: List<String> = emptyList()
 )
 
 object Wiki {
@@ -55,13 +58,17 @@ object Wiki {
     private fun pair(a: JSONArray) = WikiText(a.getString(0), a.getString(1))
     private fun pairs(a: JSONArray?) = if (a == null) emptyList() else List(a.length()) { pair(a.getJSONArray(it)) }
 
+    private fun strings(a: JSONArray?) = if (a == null) emptyList() else List(a.length()) { a.getString(it) }
+
     private fun parse(o: JSONObject): WikiEntry {
         val v = o.optJSONObject("variants")
         return WikiEntry(
             muscles = pair(o.getJSONArray("muscles")),
             how = pairs(o.optJSONArray("how")),
             tips = pairs(o.optJSONArray("tips")),
-            variants = v?.keys()?.asSequence()?.associateWith { pair(v.getJSONArray(it)) }.orEmpty()
+            variants = v?.keys()?.asSequence()?.associateWith { pair(v.getJSONArray(it)) }.orEmpty(),
+            primary = strings(o.optJSONArray("primary")),
+            secondary = strings(o.optJSONArray("secondary"))
         )
     }
 }
