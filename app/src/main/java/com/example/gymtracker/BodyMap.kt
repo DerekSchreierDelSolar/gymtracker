@@ -69,29 +69,15 @@ class BodyShape(
     val d: String,
     val mirror: Boolean = true,
     val fill: BodyFill = if (id != null) BodyFill.MUSCLE else BodyFill.FUR
-,
-    /** Nur in dieser Pose zeichnen (Arme); null = in jeder Pose (Rumpf, Beine, Kopf). */
-    val pose: Pose? = null
+
 )
 
-/** Bodybuilding-Posen des Meerschweinchens: bei jedem Öffnen zufällig eine (nur die Arme ändern sich). */
-enum class Pose(private val de: String, private val en: String) {
-    RELAXED("Entspannt", "Relaxed"),
-    DOUBLE_BICEPS("Doppelbizeps", "Double biceps"),
-    LAT_SPREAD("Lat-Spread", "Lat spread");
-
-    val label: String get() = tr(de, en)
-}
-
-/** Zufällige Pose, die erhalten bleibt, solange der Bildschirm offen ist. */
-@Composable
-fun rememberRandomPose(key: Any? = null): Pose = remember(key) { Pose.entries.random() }
 
 const val BODY_WIDTH = 100f
 const val BODY_HEIGHT = 196f
-const val BACK_OFFSET = 122f
-/** Rand links/rechts um jede Figur (Arme in Posen ragen über 0..100 hinaus). */
-const val BODY_PAD = 11f
+const val BACK_OFFSET = 108f
+/** Rand links/rechts um jede Figur (für Formen, die über 0..100 hinausragen). */
+const val BODY_PAD = 0f
 
 /*
  * Muskulöses Meerschweinchen (passend zum App-Icon): Meerschweinchen-Kopf mit Hängeohren,
@@ -102,16 +88,8 @@ const val BODY_PAD = 11f
 val BODY_SHAPES: List<BodyShape> = listOf(
     // ----- Körper (vorne und hinten gleich) -----
     BodyShape(null, BodyView.BOTH, "M30 18 Q16 12 15 22 Q17 30 28 28 Z", fill = BodyFill.PATCH),             // Ohr (hängend, seitlich)
-    BodyShape(null, BodyView.BOTH, "M13 70 Q8 78 9 90 L10 100 Q7 110 8 122 L15 124 Q17 112 19 102 Q23 92 23 82 Q22 74 18 70 Z", pose = Pose.RELAXED), // Arm
-    BodyShape(null, BodyView.BOTH, "M7 120 Q4 129 9 133 Q15 135 16 124 Z", fill = BodyFill.PINK, pose = Pose.RELAXED),            // Pfote
-    // Doppelbizeps: Oberarm waagerecht nach außen, Unterarm senkrecht nach oben, Faust neben dem Kopf
-    BodyShape(null, BodyView.BOTH, "M24 59 Q14 51 1 56 Q-7 60 -7 68 Q2 77 24 77 Z", pose = Pose.DOUBLE_BICEPS),   // Oberarm
-    BodyShape(null, BodyView.BOTH, "M-8 68 Q-9 50 -6 30 L4.5 29 Q6 48 4 66 Z", pose = Pose.DOUBLE_BICEPS),        // Unterarm
-    BodyShape(null, BodyView.BOTH, "M-7 32 Q-8 20 -1 18 Q6 19 5.5 31 Z", fill = BodyFill.PINK, pose = Pose.DOUBLE_BICEPS), // Faust
-    // Lat-Spread: Ellbogen nach außen, Fäuste in die Taille gestemmt
-    BodyShape(null, BodyView.BOTH, "M13 69 Q5 78 3 90 L10 96 Q14 86 23 80 Z", pose = Pose.LAT_SPREAD),           // Oberarm
-    BodyShape(null, BodyView.BOTH, "M3 87 Q7 99 22 109 L28 104 Q16 94 11 87 Z", pose = Pose.LAT_SPREAD),         // Unterarm
-    BodyShape(null, BodyView.BOTH, "M21 103 Q28 99 32 105 Q29 112 22 111 Z", fill = BodyFill.PINK, pose = Pose.LAT_SPREAD), // Faust
+    BodyShape(null, BodyView.BOTH, "M13 70 Q8 78 9 90 L10 100 Q7 110 8 122 L15 124 Q17 112 19 102 Q23 92 23 82 Q22 74 18 70 Z"), // Arm
+    BodyShape(null, BodyView.BOTH, "M7 120 Q4 129 9 133 Q15 135 16 124 Z", fill = BodyFill.PINK),            // Pfote
     BodyShape(null, BodyView.BOTH, "M33 128 Q27 140 28 152 Q29 158 31 162 Q28 170 30 178 L34 186 L45 186 Q46 176 46 166 Q47 160 47 154 Q49 144 49 136 L50 132 Z"), // Bein
     BodyShape(null, BodyView.BOTH, "M33 184 Q28 192 34 194 L47 194 Q49 189 46 184 Z", fill = BodyFill.PINK),  // Fuß
     BodyShape(null, BodyView.BOTH, "M50 46 L42 48 Q34 55 24 58 Q14 60 11 68 Q10 76 15 80 L22 82 Q25 96 31 108 Q33 116 31 124 Q30 130 34 134 L50 136 Z"), // Rumpf (V-Form)
@@ -133,12 +111,8 @@ val BODY_SHAPES: List<BodyShape> = listOf(
     BodyShape("traps", BodyView.FRONT, "M43 49 Q36 54 28 57 L38 59 Q42 56 45 53 Z"),
     BodyShape("delts", BodyView.FRONT, "M25 58 Q14 60 11.5 68 Q11 75 15 79 Q19 76 22 70 Q25 64 30 60 Z"),
     BodyShape("chest", BodyView.FRONT, "M49 60 L36 60 Q28 62 24 70 Q24 79 31 83 Q40 86 49 82 Z"),
-    BodyShape("biceps", BodyView.FRONT, "M21 79.5 Q13.5 80.5 11 88 Q10.5 95 13 100 Q17.5 100.5 20 94 Q22.5 87 21 79.5 Z", pose = Pose.RELAXED),
-    BodyShape("forearms", BodyView.FRONT, "M10 103 Q8 110 8.5 119 L13.5 121.5 Q15.5 112 18.5 103.5 Q14 101.5 10 103 Z", pose = Pose.RELAXED),
-    BodyShape("biceps", BodyView.FRONT, "M22 66 Q19 52 6 54 Q-2 57 -1 65 Q10 70 22 66 Z", pose = Pose.DOUBLE_BICEPS),
-    BodyShape("forearms", BodyView.FRONT, "M-6.5 62 Q-7.5 48 -5 34 L3 33.5 Q4 48 2.5 62 Z", pose = Pose.DOUBLE_BICEPS),
-    BodyShape("biceps", BodyView.FRONT, "M14 72 Q7 80 5.5 88 Q9.5 89 13 81 Q16 76 20 74 Z", pose = Pose.LAT_SPREAD),
-    BodyShape("forearms", BodyView.FRONT, "M7 91 Q12 99 21 105 L24 102 Q16 96 11 90 Z", pose = Pose.LAT_SPREAD),
+    BodyShape("biceps", BodyView.FRONT, "M21 79.5 Q13.5 80.5 11 88 Q10.5 95 13 100 Q17.5 100.5 20 94 Q22.5 87 21 79.5 Z"),
+    BodyShape("forearms", BodyView.FRONT, "M10 103 Q8 110 8.5 119 L13.5 121.5 Q15.5 112 18.5 103.5 Q14 101.5 10 103 Z"),
     BodyShape("abs", BodyView.FRONT, "M49 87 L43 88 Q42 93 43 97 L49 97 Z"),                       // Sixpack oben
     BodyShape("abs", BodyView.FRONT, "M49 99 L43 99 Q42 104 43 108 L49 108 Z"),                    // Mitte
     BodyShape("abs", BodyView.FRONT, "M49 110 L43 110 Q42 116 44 120 Q46 124 49 125 Z"),           // unten
@@ -155,12 +129,8 @@ val BODY_SHAPES: List<BodyShape> = listOf(
     BodyShape("lats", BodyView.BACK, "M43 72 Q35 64 26 66 Q23 76 25 86 Q29 98 37 108 Q42 102 45 92 Z"),
     BodyShape("lowerback", BodyView.BACK, "M49 94 L46 96 Q43 106 43.5 116 Q46 122 49 123 Z"),
     BodyShape("obliques", BodyView.BACK, "M29 100 Q28.5 110 32 118 L38 116 Q34 109 33.5 104 Q31 101 29 100 Z"),
-    BodyShape("triceps", BodyView.BACK, "M22 79.5 Q14.5 80.5 11.5 88 Q10.5 95 12.5 100 L19 99.5 Q22.5 91 22 79.5 Z", pose = Pose.RELAXED),
-    BodyShape("forearms", BodyView.BACK, "M10 103 Q8 110 8.5 119 L13.5 121.5 Q15.5 112 18.5 103.5 Q14 101.5 10 103 Z", pose = Pose.RELAXED),
-    BodyShape("triceps", BodyView.BACK, "M22.5 67 Q10 70 -5 66 Q-4 74 6 75.5 Q16 76.5 22.5 73 Z", pose = Pose.DOUBLE_BICEPS),
-    BodyShape("forearms", BodyView.BACK, "M-6.5 62 Q-7.5 48 -5 34 L3 33.5 Q4 48 2.5 62 Z", pose = Pose.DOUBLE_BICEPS),
-    BodyShape("triceps", BodyView.BACK, "M15 73 Q8 81 6 89 L10 91 Q13 84 19 77 Z", pose = Pose.LAT_SPREAD),
-    BodyShape("forearms", BodyView.BACK, "M7 91 Q12 99 21 105 L24 102 Q16 96 11 90 Z", pose = Pose.LAT_SPREAD),
+    BodyShape("triceps", BodyView.BACK, "M22 79.5 Q14.5 80.5 11.5 88 Q10.5 95 12.5 100 L19 99.5 Q22.5 91 22 79.5 Z"),
+    BodyShape("forearms", BodyView.BACK, "M10 103 Q8 110 8.5 119 L13.5 121.5 Q15.5 112 18.5 103.5 Q14 101.5 10 103 Z"),
     BodyShape("glutes", BodyView.BACK, "M49 122 Q40 120 33 125 Q29 132 32 140 Q40 146 49 143 Z"),
     BodyShape("hamstrings", BodyView.BACK, "M32 142 Q29 148 30 154 Q32 159 36 160 Q38 152 39 145 Z"), // äußerer Kopf
     BodyShape("hamstrings", BodyView.BACK, "M41 146 Q39 152 40 159 Q44 161 46 157 Q47 150 46 145 Z"), // innerer Kopf
@@ -217,8 +187,7 @@ fun BodyFigure(
     colorOf: (String) -> Color?,
     modifier: Modifier = Modifier,
     view: BodyView = BodyView.BOTH,
-    widthFraction: Float = 0.72f,
-    pose: Pose = rememberRandomPose()
+    widthFraction: Float = 0.72f
 ) {
     // Hell/dunkel am tatsächlichen Hintergrund ablesen (App-Einstellung kann vom System abweichen)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
@@ -234,7 +203,7 @@ fun BodyFigure(
         BodyView.BOTH -> bodyPaths
         BodyView.FRONT -> bodyPaths.filter { it.dx == 0f }
         BodyView.BACK -> bodyPaths.filter { it.dx == BACK_OFFSET }
-    }.filter { it.shape.pose == null || it.shape.pose == pose }
+    }
 
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Canvas(
@@ -507,7 +476,7 @@ fun musclesOnSide(view: BodyView): List<String> =
     MUSCLES.keys.filter { id -> BODY_SHAPES.any { it.id == id && (it.view == view || it.view == BodyView.BOTH) } }
 
 /**
- * Karte für eine Seite (Vorder- oder Rückseite): Titel + Pose oben, darunter das Meerschweinchen
+ * Karte für eine Seite (Vorder- oder Rückseite): Titel oben, darunter das Meerschweinchen
  * mittig und groß. showList = unten die Muskeln der ganzen Übung (Haupt-/Hilfsmuskeln), für die letzte Karte.
  */
 @Composable
@@ -515,7 +484,6 @@ fun MuscleSideCard(
     view: BodyView,
     primary: List<String>,
     secondary: List<String>,
-    pose: Pose,
     showList: Boolean = false,
     colors: CardColors = CardDefaults.cardColors()
 ) {
@@ -527,12 +495,11 @@ fun MuscleSideCard(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
-                Text("💪 " + pose.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(8.dp))
             BodyFigure(
                 { id -> if (id in primary) PRIMARY_COLOR else if (id in secondary) SECONDARY_COLOR else null },
-                view = view, widthFraction = 0.62f, pose = pose
+                view = view, widthFraction = 0.62f
             )
             if (showList) {
                 Spacer(Modifier.height(16.dp))

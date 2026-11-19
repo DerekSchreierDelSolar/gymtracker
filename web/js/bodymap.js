@@ -1,23 +1,12 @@
 // Körperdiagramm (Meerschweinchen) – entspricht MuscleMap in BodyMap.kt.
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
-import { MUSCLES, BODY, BODY_SHAPES, POSES } from './body-data.js';
+import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
 import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural } from './core.js';
 import { h, chip, dialog } from './ui.js';
 import { wikiFor } from './wiki.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
 import { store } from './store.js';
-
-// ---------- Posen (wie enum class Pose in BodyMap.kt) ----------
-
-/** Aktuelle Pose; app.js würfelt bei jedem Bildschirmwechsel neu (newPose). */
-let currentPose = 'RELAXED';
-export function newPose() {
-  const keys = Object.keys(POSES);
-  currentPose = keys[Math.floor(Math.random() * keys.length)];
-}
-newPose();
-export const poseLabel = () => (isEnglish() ? POSES[currentPose][1] : POSES[currentPose][0]);
 
 export const PRIMARY_COLOR = '#E24B4A';
 export const SECONDARY_COLOR = '#EF9F27';
@@ -44,8 +33,8 @@ function placements(s, view = 'BOTH') {
 }
 
 /** SVG-Text der Figur. colorOf(Muskel-ID) = Farbe oder null (neutral grau); view = BOTH/FRONT/BACK. */
-function svg(colorOf, view = 'BOTH', pose = currentPose) {
-  const shapes = BODY_SHAPES.filter(s => !s.pose || s.pose === pose);
+function svg(colorOf, view = 'BOTH') {
+  const shapes = BODY_SHAPES;
   const c = COLORS[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'];
   const color = s => s.fill === 'MUSCLE'
     ? (colorOf(s.id) ?? c.neutral)
@@ -208,7 +197,7 @@ export const musclesOnSide = view =>
   Object.keys(MUSCLES).filter(id => BODY_SHAPES.some(s => s.id === id && (s.view === view || s.view === 'BOTH')));
 
 /**
- * Karte: Titel + Pose oben, das Meerschweinchen einer Seite mittig und groß.
+ * Karte: Titel oben, das Meerschweinchen einer Seite mittig und groß.
  * showList = unten die Muskeln der ganzen Übung (für die letzte Karte) – wie MuscleSideCard.
  */
 export function muscleSideCard(view, primary, secondary, showList = false) {
@@ -218,8 +207,7 @@ export function muscleSideCard(view, primary, secondary, showList = false) {
     h('div', { class: 'side-names' }, list.map(muscleLabel).join(', '))) : null;
   return h('div', { class: 'card pad-m glass side-card' },
     h('div', { class: 'side-head' },
-      h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back')),
-      h('small', { class: 'muted' }, '💪 ' + poseLabel())),
+      h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back'))),
     h('div', { class: 'side-figure', html: svg(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null), view) }),
     showList ? h('div', { class: 'side-list' },
       group(tr('Hauptmuskeln', 'Primary'), primary, PRIMARY_COLOR),

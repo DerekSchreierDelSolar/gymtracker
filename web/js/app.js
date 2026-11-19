@@ -8,7 +8,6 @@ import { homeScreen } from './screens/home.js';
 import { exerciseDetailScreen } from './screens/exercise.js';
 import { workoutScreen, workoutPickerScreen, catalogScreen } from './screens/workout.js';
 import { wikiScreen } from './wiki.js';
-import { newPose } from './bodymap.js';
 import { trainingScreen, summaryScreen, confirmEndTraining, keepScreenOn, unlockAudio } from './screens/training.js';
 
 const root = document.getElementById('app');
@@ -67,7 +66,6 @@ setBackHandler(() => {
 
 const scrollPositions = new Map();
 let rendering = false, again = false;
-let lastScreenKey = null;
 
 function render() {
   if (rendering) { again = true; return; } // Änderung während des Zeichnens → danach nochmal
@@ -82,9 +80,6 @@ function render() {
       const focusId = active?.id && root.contains(active) ? active.id : null;
       const sel = focusId && 'selectionStart' in active ? [active.selectionStart, active.selectionEnd] : null;
 
-      // Neue Bodybuilding-Pose, sobald ein anderer Bildschirm geöffnet wird (nicht bei jedem Neuzeichnen)
-      const screenKey = JSON.stringify([nav.exercise, nav.tab, nav.summaryId, nav.workoutId, nav.trainingStart != null, nav.wiki, nav.catalog]);
-      if (screenKey !== lastScreenKey) { lastScreenKey = screenKey; newPose(); }
       tickers.length = 0;
       applyTheme();
       document.documentElement.lang = tr('de', 'en');
