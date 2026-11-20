@@ -172,6 +172,15 @@ writeFileSync(join(root, 'web/js/body-data.js'),
   `export const BODY_SHAPES = [\n${bodyShapes.map(s => '  ' + JSON.stringify(s)).join(',\n')}\n];\n`);
 console.log(`body-data.js: ${bodyShapes.length} Formen, ${Object.keys(muscles).length} Muskeln`);
 
+// ----- Fragen-Bot: app/src/main/assets/bot.json → web/js/bot-data.js -----
+const bot = JSON.parse(readFileSync(join(root, 'app/src/main/assets/bot.json'), 'utf8'));
+for (const k of Object.keys(bot.targets)) if (!regionKeys.has(k) && !muscles[k]) throw new Error('bot.json: unbekannte Region/Muskel ' + k);
+for (const f of bot.faq) if (f.a?.length !== 2 || !f.keys?.length) throw new Error('bot.json: Eintrag braucht keys und a = [de, en]');
+writeFileSync(join(root, 'web/js/bot-data.js'),
+  `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus app/src/main/assets/bot.json – nicht von Hand ändern!\n` +
+  `export const BOT = ${JSON.stringify(bot)};\n`);
+console.log(`bot-data.js: ${bot.faq.length} Fragen, ${Object.keys(bot.targets).length} Muskel-/Regionsbegriffe`);
+
 // ----- Übungsbilder: app/src/main/assets/exercises/*.jpg → web/img/exercises/ + Liste in web/js/image-data.js -----
 const imgSrc = join(root, 'app/src/main/assets/exercises');
 const imgDst = join(root, 'web/img/exercises');

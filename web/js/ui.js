@@ -53,6 +53,8 @@ const ICONS = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.8h.01" stroke-width="2.8"/>',
   book: '<path d="M12 6.5v13"/><path d="M12 6.5 8 5H3v13h5l4 1.5 4-1.5h5V5h-5z"/>',
   share: '<path d="M12 15V4M7 9l5-5 5 5"/><path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>',
+  chat: '<path d="M5 5h14l2 2v8l-2 2h-9l-4 3.5.5-3.5H5l-2-2V7z"/><path d="M8 11h.01M12 11h.01M16 11h.01" stroke-width="2.6"/>',
+  send: '<path d="M3 11 21 3l-7 18-3-8z"/><path d="M11 13 21 3"/>',
 };
 export const icon = (name, size = 24) => h('span', {
   class: 'icon',

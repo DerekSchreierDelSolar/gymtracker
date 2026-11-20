@@ -1,4 +1,4 @@
-// Startseite mit 5 Tabs – entspricht HomeScreen.kt, DashboardTab.kt, CalendarTab.kt, BodyTab.kt.
+// Startseite mit 6 Tabs – entspricht HomeScreen.kt, DashboardTab.kt, CalendarTab.kt, BodyTab.kt.
 
 import { store } from '../store.js';
 import {
@@ -17,6 +17,7 @@ import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
+import { botTab, botInput } from '../bot.js';
 
 const TABS = () => [
   ['home', tr('Start', 'Home'), tr('Übersicht', 'Overview')],
@@ -24,12 +25,13 @@ const TABS = () => [
   ['list', 'Workouts', 'Workouts'],
   ['calendar', tr('Kalender', 'Calendar'), tr('Kalender', 'Calendar')],
   ['body', tr('Körper', 'Body'), tr('Körper', 'Body')],
+  ['chat', tr('Fragen', 'Ask'), tr('Fragen', 'Ask')],
 ];
 
 export function homeScreen(onStartWorkout) {
   const tab = nav.tab;
-  const setTab = i => { if (i >= 0 && i < 5) update({ tab: i, menuOpen: false }); };
-  const content = [dashboardTab, exerciseGrid, workoutList, calendarTab, bodyTab][tab](onStartWorkout);
+  const setTab = i => { if (i >= 0 && i < 6) update({ tab: i, menuOpen: false }); };
+  const content = [dashboardTab, exerciseGrid, workoutList, calendarTab, bodyTab, botTab][tab](onStartWorkout);
   const wrap = h('div', { class: 'tab-page' }, content);
   onSwipe(wrap, () => setTab(tab + 1), () => setTab(tab - 1));
 
@@ -46,9 +48,10 @@ export function homeScreen(onStartWorkout) {
     content: wrap,
     fab: tab === 1 ? fab(tr('Übung', 'Exercise'), 'add', () => go({ catalog: true }))
       : tab === 2 ? fab('Workout', 'add', newWorkoutDialog) : null,
-    bottom: h('nav', { class: 'bottom-nav' }, TABS().map(([ico, label], i) =>
+    // Tab „Fragen“: Eingabeleiste über der Navigation
+    bottom: [tab === 5 ? botInput() : null, h('nav', { class: 'bottom-nav' }, TABS().map(([ico, label], i) =>
       h('button', { class: ['nav-item', i === tab && 'selected'], onclick: () => setTab(i) },
-        h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label)))),
+        h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label))))],
   });
 }
 

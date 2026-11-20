@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
         store = GymStore(applicationContext)
         AutoBackup.load(applicationContext)
         Wiki.load(applicationContext)
+        Bot.load(applicationContext)
         ExerciseImages.load(applicationContext)
         setContent {
             // Gewähltes Design; "system" folgt der Einstellung des Handys

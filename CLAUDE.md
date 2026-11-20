@@ -47,7 +47,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `Format.kt` | `fmtW`, `fmtDate`, `fmtDateTime`, `fmtDuration`, `plural` |
 | `Stats.kt` | `ExerciseResult`, `SessionStats`, `sessionStats()`, `estimateKcal()`, `allSessions()` |
 | `Filter.kt` | `ExerciseFilter` (Kategorie/Gerät/Suche), `FilterUiState`, `FilterActions`, `FilterBar` |
-| `HomeScreen.kt` | Startseite: TopBar, ⋮-Menü (Export/Import/Einstellungen), NavigationBar, **HorizontalPager mit 5 Tabs**, `SettingsDialog`, `ExerciseGrid`, `TileGrid`, `ExerciseTile` |
+| `HomeScreen.kt` | Startseite: TopBar, ⋮-Menü (Export/Import/Einstellungen), NavigationBar, **HorizontalPager mit 6 Tabs**, `SettingsDialog`, `ExerciseGrid`, `TileGrid`, `ExerciseTile` |
 | `DashboardTab.kt` | Tab 0 „Start“: Wochenziel, Serie, Schnellstart, Muskel-Heatmap, Diagramme (Zeitraum-Umschalter), Rekorde |
 | `WorkoutScreens.kt` | Tab 2 Liste, `NewWorkoutDialog` (+Vorlagen), `WorkoutScreen` (Drag & Drop), `WorkoutPickerScreen` (Ziel-Sätze) |
 | `TrainingScreen.kt` | Trainingsmodus (Pager pro Übung, Name + Eingabe + heutige Sätze + Verlauf früherer Tage per `HistoryDayCard`), Titel „1/6 · Workout“ + Dauer; Seite: Name + ⓘ, `RecordLine`, drei `CircleStat` (Wdh.-Ziel per `repsGoal`, Pause: antippen = Länge ändern bzw. Countdown überspringen, Sätze dieser Übung), Eingabe, heutige Sätze, Verlauf; Vibration |
@@ -57,12 +57,15 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `ExerciseDetail.kt` | `SetInput` (inkl. Stoppuhr), `SetRow`/`EditSetDialog`, `ExerciseDetailScreen` mit Reitern Training (`RecordLine`, Verlauf neueste zuerst, Satz antippen = bearbeiten)/Fortschritt/Info (`MuscleSideCard` Vorder-/Rückseite, Figur mittig groß, Muskelliste nur in der letzten Karte + Wiki), `glassCardColors()`, `ExerciseProgress` (Rekord, Zuwachs, Kennzahl + Tage/Wochen/Monate) |
 | `CatalogScreen.kt` | Katalog + `CustomExerciseDialog` |
 | `Progression.kt` | 💡 Gewichts-Vorschlag (doppelte Progression) |
+| `Bot.kt` | Fragen-Bot ohne KI: lädt `assets/bot.json` (`Bot.load`), `Bot.answer(frage)` → Übung (Ausführung/Tipps/Muskeln aus dem Wiki), Muskel/Region (passende Übungen nach Stufe) oder feste App-Frage; Wörter-Vergleich mit Tippfehler-Toleranz (Levenshtein), `Bot.history` = Verlauf |
+| `BotTab.kt` | Tab 5 „Fragen“: Chat-Blasen, Übungs-Chips öffnen `WikiSheet`, Vorschläge, Eingabefeld |
 | `Wiki.kt` | Übungs-Wiki: lädt `assets/wiki/*.json` (`Wiki.load`), `wikiFor(name)`, `WikiButton` (ⓘ), `WikiSheet` (Bottom Sheet), `WikiScreen` (Übersicht + Suche) |
 | `BodyMap.kt` | Körperdiagramm (Meerschweinchen, vorne + hinten): `MUSCLES` (Muskel-IDs + Namen), `BODY_SHAPES` (SVG-Pfade, linke Hälfte + Spiegelung; je Muskel `fiber` = Faserrichtung und `detail` = anatomische Fugen in 0..1 des Rahmens; `BodyFill.TISSUE` = Rumpf/Arme/Beine als Muskelgewebe, `BodyFill.DECO` = Zier-Muskeln ohne Heatmap), `MuscleMap(primary, secondary)`. Optik „plastisch“: `BodyFigure` zeichnet Licht-Ebenen (`lightOf`: Muskel-Polster, Rumpf/Glieder als Zylinder, Kopf als Kugel), Fasern, Fugen, Muskeln nahtlos (Rand in eigener Farbe, auf `silhouette` beschnitten) – Web identisch in `bodymap.js` (`svg()`). Muskeln: `musclesOf(name)` = Wiki-JSON (`primary`/`secondary`, alle Grundübungen) bzw. bei eigenen Übungen `CustomMeta.muscles` (gespeichert als `customMuscles`); `MusclePicker`/`MuscleEditDialog`. Heatmap: `muscleScore(sets)` (Hauptmuskel 1, Hilfsmuskel 0,5 pro Satz), `relativeLoad`, `HEAT_LEVELS`, `StatPeriod`, `MuscleHeatCard` (Startseite in %, Trainingsübersicht mit Satz-Summe) |
 | `ExerciseImages.kt` | Übungsbilder statt Piktogrammen: `assets/exercises/<schlüssel>.jpg`, `exerciseImageKey(name)` („Bankdrücken (Langhantel)“ → `bankdruecken-langhantel`, Grundübung-Bild gilt für alle Varianten), `ExerciseImage`; `ExerciseIcon` nimmt automatisch das Foto (abgerundetes Quadrat, leicht gezoomt); `ExerciseBackdrop` = Bild als durchsichtiger Hintergrund (Übungsdetail, Trainingsseite; Web: `screen({ backdrop })`) |
 | `Icons.kt` | `AppIcon`/`Ico` (Linien-Icons für Buttons/Navigation) |
 | `Pictograms.kt` | Übungs-Piktogramme: `Motion` (~47 Bewegungen), `MOTION_OF` (Katalog-Name → Bewegung), `ExerciseIcon(name, group)`, `MuscleIcon(group)`, `drawMotion()` |
 | `Components.kt` | `GroupHeader`, `ChartCard`, `HorizontalBars`, `HistoryBars`, `LineChart`, `ProgressChart` |
+| `assets/bot.json` | Wissen des Bots: `faq` (je `keys` = Stichwörter ohne Umlaute, `a` = [de, en]), `targets` (Region/Muskel → Begriffe), Wortlisten für Übungs-/Muskel-/Wie-/Tipp-Fragen. **Bei neuen App-Funktionen hier eine Antwort ergänzen.** Web: `bot-data.js` (gen-data) + `web/js/bot.js` (gleiche Logik) |
 | `assets/wiki/*.json` | Wiki-Inhalte pro Muskelgruppe, Schlüssel = Grundübung (`base`): `muscles`, `how`, `tips` (je `[de, en]`), `primary`/`secondary` (Muskel-IDs), optional `regions` (Region → Stufe 1 / 0.6 / 0.3, z. B. `"chest.upper": 1` bei Schrägbankdrücken; ersetzt für die genannten Muskeln primary/secondary), optional `variants` (Schlüssel = Klammertext des Katalog-Namens) |
 | `res/mipmap-*/` | App-Icon (Meerschweinchen): `ic_launcher_foreground.png` (108 dp, Adaptive Icon) + Legacy-`ic_launcher(_round).png` (48 dp), erzeugt per PowerShell/System.Drawing aus dem Original-PNG |
 | `ui/theme/` | Farben (Indigo), Typografie, Formen; `GymTrackerTheme(dynamicColor = false)` |
@@ -87,7 +90,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 - Neue gespeicherte Felder: in `readFrom()` mit `opt…`-Default lesen (alte Dateien bleiben gültig)
   und in `toJson()` schreiben. Bei Import zusätzlich in `importJson()` leeren.
 - **Kotlin-Falle:** Properties in `GymStore`, die `load()` befüllt, müssen **vor** `init { load() }` stehen.
-- `HomeScreen`-Tabs: 0 Start, 1 Übungen, 2 Workouts, 3 Kalender, 4 Körper (Pager-Größe 5).
+- `HomeScreen`-Tabs: 0 Start, 1 Übungen, 2 Workouts, 3 Kalender, 4 Körper, 5 Fragen (Pager-Größe 6; Web: `TABS` in home.js).
 - Alle UI-Texte über `tr(...)`; Zahlen/Datum über `fmtW`/`fmtDate` (locale-abhängig).
 - **Neue Katalog-Übung** = Zeile in `CATALOG` (Catalog.kt) **und** Eintrag in `MOTION_OF` (Pictograms.kt),
   bei Cardio zusätzlich MET in `CARDIO_MET`, bei Zeitübung in `TIMED_CATALOG`.

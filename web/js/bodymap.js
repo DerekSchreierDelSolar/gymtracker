@@ -34,7 +34,7 @@ export const LIGHT_COLOR = '#F2C94C';
 const LEVELS = [1, 0.6, 0.3];
 const stageOf = v => LEVELS.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
 export const levelColor = v => (!v || v <= 0 ? null : v >= 0.8 ? PRIMARY_COLOR : v >= 0.45 ? SECONDARY_COLOR : LIGHT_COLOR);
-const levelTitle = st => (st === 1 ? tr('Hauptarbeit', 'Main work') : st === 0.6 ? tr('Mittel', 'Moderate') : tr('Leicht', 'Light'));
+export const levelTitle = st => (st === 1 ? tr('Hauptarbeit', 'Main work') : st === 0.6 ? tr('Mittel', 'Moderate') : tr('Leicht', 'Light'));
 
 /**
  * Belastung je Region einer Übung (m = { primary, secondary, regions? }): Hauptmuskel = alle seine Regionen 1,
@@ -50,7 +50,7 @@ export function levelsOf(m) {
 }
 
 /** Beschriftungen je Stufe: ganzer Muskel, wenn alle seine Regionen in der Stufe sind, sonst die Regionen. */
-function levelLabels(levels) {
+export function levelLabels(levels) {
   return LEVELS.map(st => [st, Object.keys(MUSCLES).flatMap(m => {
     const regs = MUSCLE_REGIONS[m];
     const inStage = regs.filter(r => levels[r] != null && stageOf(levels[r]) === st);

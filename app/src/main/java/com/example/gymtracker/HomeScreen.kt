@@ -60,7 +60,7 @@ fun HomeScreen(
     val listUi = rememberFilterUi(listFilter)
 
     // Pager für die fünf Hauptbereiche, synchron mit `tab`
-    val pagerState = rememberPagerState(initialPage = tab) { 5 }
+    val pagerState = rememberPagerState(initialPage = tab) { 6 }
     val currentOnTab by rememberUpdatedState(onTab)
     LaunchedEffect(tab) {
         if (pagerState.currentPage != tab) pagerState.animateScrollToPage(tab)
@@ -113,7 +113,8 @@ fun HomeScreen(
                                 1 -> tr("Übungen", "Exercises")
                                 2 -> "Workouts"
                                 3 -> tr("Kalender", "Calendar")
-                                else -> tr("Körper", "Body")
+                                4 -> tr("Körper", "Body")
+                                else -> tr("Fragen", "Ask")
                             },
                             style = MaterialTheme.typography.headlineSmall
                         )
@@ -184,13 +185,14 @@ fun HomeScreen(
                     Triple(Ico.DUMBBELL, tr("Übungen", "Exercises"), 1),
                     Triple(Ico.LIST, "Workouts", 2),
                     Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 3),
-                    Triple(Ico.BODY, tr("Körper", "Body"), 4)
+                    Triple(Ico.BODY, tr("Körper", "Body"), 4),
+                    Triple(Ico.CHAT, tr("Fragen", "Ask"), 5)
                 ).forEach { (icon, label, i) ->
                     NavigationBarItem(
                         selected = tab == i,
                         onClick = { onTab(i) },
                         icon = { AppIcon(icon) },
-                        label = { Text(label) },
+                        label = { Text(label, maxLines = 1, softWrap = false) },
                         // Akzentfarbe statt der Standard-Zweitfarbe
                         colors = NavigationBarItemDefaults.colors(
                             indicatorColor = MaterialTheme.colorScheme.primaryContainer,
@@ -236,7 +238,8 @@ fun HomeScreen(
                 1 -> ExerciseGrid(store, modifier, listFilter, onListFilter, listUi, onOpen, onCatalog)
                 2 -> WorkoutList(store, modifier, onOpenWorkout, onNew = { showNewWorkout = true })
                 3 -> CalendarTab(store, modifier, calMonth, onCalMonth, calDay, onCalDay, onOpenSession)
-                else -> BodyTab(store, modifier)
+                4 -> BodyTab(store, modifier)
+                else -> BotTab(modifier)
             }
         }
     }
