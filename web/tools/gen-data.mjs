@@ -142,6 +142,9 @@ const bodyShapes = [...block(bodyKt, 'val BODY_SHAPES: List<BodyShape> = listOf(
   d: m[3],
   mirror: !/mirror = false/.test(m[4]),
   fill: m[4].match(/fill = BodyFill\.(\w+)/)?.[1] ?? (m[1] === 'null' ? 'FUR' : 'MUSCLE'),
+  // Faserrichtung (Grad) und anatomische Fugen („u0 v0 uc vc u1 v1, …“) – siehe BodyShape in BodyMap.kt
+  fiber: Number(m[4].match(/fiber = (-?[\d.]+)f/)?.[1] ?? 0),
+  detail: m[4].match(/detail = "([^"]*)"/)?.[1] ?? '',
 }));
 const bodyConst = n => Number(bodyKt.match(new RegExp("const val " + n + " = ([0-9.]+)f"))[1]);
 for (const s of bodyShapes) if (s.id && !muscles[s.id]) throw new Error('BodyMap: unbekannte Muskel-ID ' + s.id);
