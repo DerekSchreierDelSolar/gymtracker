@@ -145,15 +145,29 @@ const bodyShapes = [...block(bodyKt, 'val BODY_SHAPES: List<BodyShape> = listOf(
   // Faserrichtung (Grad) und anatomische Fugen („u0 v0 uc vc u1 v1, …“) – siehe BodyShape in BodyMap.kt
   fiber: Number(m[4].match(/fiber = (-?[\d.]+)f/)?.[1] ?? 0),
   detail: m[4].match(/detail = "([^"]*)"/)?.[1] ?? '',
+  // Regionen: ganze Fläche (region) bzw. Teilflächen „key: Polygon; …“ (regions)
+  region: m[4].match(/region = "([^"]*)"/)?.[1] ?? '',
+  regions: m[4].match(/regions = "([^"]*)"/)?.[1] ?? '',
 }));
+const regionNames = Object.fromEntries([...block(bodyKt, 'val REGION_NAMES: Map<String, WikiText> = linkedMapOf(').matchAll(
+  /"([\w.]+)" to WikiText\("([^"]*)", "([^"]*)"\)/g)].map(m => [m[1], { de: m[2], en: m[3] }]));
 const bodyConst = n => Number(bodyKt.match(new RegExp("const val " + n + " = ([0-9.]+)f"))[1]);
 for (const s of bodyShapes) if (s.id && !muscles[s.id]) throw new Error('BodyMap: unbekannte Muskel-ID ' + s.id);
+// Alle Regionsschlüssel der Formen (ungeteilte Muskeln: Muskel-ID)
+const regionKeys = new Set(bodyShapes.flatMap(s => s.regions ? s.regions.split(';').map(r => r.split(':')[0].trim())
+  : s.region ? [s.region] : s.fill === 'MUSCLE' ? [s.id] : []));
+for (const k of regionKeys) if (k.includes('.') && !regionNames[k]) throw new Error('BodyMap: Region ohne Namen ' + k);
 for (const [b, e] of Object.entries(wiki)) {
   for (const id of [...(e.primary ?? []), ...(e.secondary ?? [])]) if (!muscles[id]) throw new Error(`Wiki: unbekannte Muskel-ID ${id} bei ${b}`);
+  for (const [k, v] of Object.entries(e.regions ?? {})) {
+    if (!regionKeys.has(k)) throw new Error(`Wiki: unbekannte Region ${k} bei ${b}`);
+    if (![1, 0.6, 0.3].includes(v)) throw new Error(`Wiki: Stufe ${v} bei ${b}/${k} (erlaubt: 1, 0.6, 0.3)`);
+  }
 }
 writeFileSync(join(root, 'web/js/body-data.js'),
   `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus BodyMap.kt – nicht von Hand ändern!\n` +
   `export const MUSCLES = ${JSON.stringify(muscles)};\n` +
+  `export const REGION_NAMES = ${JSON.stringify(regionNames)};\n` +
   `export const BODY = { width: ${bodyConst('BODY_WIDTH')}, height: ${bodyConst('BODY_HEIGHT')}, backOffset: ${bodyConst('BACK_OFFSET')}, pad: ${bodyConst('BODY_PAD')} };\n` +
   `export const BODY_SHAPES = [\n${bodyShapes.map(s => '  ' + JSON.stringify(s)).join(',\n')}\n];\n`);
 console.log(`body-data.js: ${bodyShapes.length} Formen, ${Object.keys(muscles).length} Muskeln`);

@@ -414,8 +414,8 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                     val muscles = musclesOf(exercise)
                     val custom = catalogGroup(exercise) == null
                     if (muscles != null) {
-                        item { MuscleSideCard(BodyView.FRONT, muscles.primary, muscles.secondary, colors = glassCardColors()) }
-                        item { MuscleSideCard(BodyView.BACK, muscles.primary, muscles.secondary, showList = true, colors = glassCardColors()) }
+                        item { MuscleSideCard(BodyView.FRONT, muscles.levels(), colors = glassCardColors()) }
+                        item { MuscleSideCard(BodyView.BACK, muscles.levels(), showList = true, colors = glassCardColors()) }
                     } else item {
                         Text(tr("Noch keine Muskeln festgelegt.", "No muscles set yet."), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

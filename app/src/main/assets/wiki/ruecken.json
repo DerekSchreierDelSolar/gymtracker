@@ -3,6 +3,7 @@
     "muscles": ["Unterer Rücken, Gesäß, Beinbeuger, Oberschenkel, Griffkraft", "Lower back, glutes, hamstrings, quads, grip"],
     "primary": ["lowerback", "glutes", "hamstrings"],
     "secondary": ["quads", "traps", "lats", "forearms"],
+    "regions": { "glutes.max": 1, "glutes.med": 0.3, "hamstrings.outer": 1, "hamstrings.inner": 1, "traps.upper": 0.6, "traps.middle": 0.6, "lats.upper": 0.3, "lats.lower": 0.3 },
     "how": [
       ["Füße hüftbreit, die Stange über dem Mittelfuß, nah am Schienbein.", "Feet hip-width, bar over mid-foot, close to your shins."],
       ["Hüfte nach hinten schieben, Stange schulterbreit greifen, Rücken gerade, Brust raus.", "Push your hips back, grip the bar shoulder-width, back flat, chest up."],
@@ -23,6 +24,7 @@
     "muscles": ["Oberer Rücken, Latissimus, hintere Schulter, Bizeps", "Upper back, lats, rear delts, biceps"],
     "primary": ["lats", "traps"],
     "secondary": ["delts", "biceps", "lowerback"],
+    "regions": { "lats.upper": 1, "lats.lower": 0.6, "traps.middle": 1, "traps.lower": 0.6, "delts.rear": 0.6 },
     "how": [
       ["Knie leicht gebeugt, Oberkörper mit geradem Rücken etwa 45° nach vorne beugen.", "Knees slightly bent, hinge forward to about 45° with a flat back."],
       ["Gewicht an gestreckten Armen hängen lassen.", "Let the weight hang at arm's length."],
@@ -39,6 +41,7 @@
     "muscles": ["Latissimus, oberer Rücken, Bizeps", "Lats, upper back, biceps"],
     "primary": ["lats"],
     "secondary": ["traps", "biceps", "delts"],
+    "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.middle": 0.6, "delts.rear": 0.6 },
     "how": [
       ["Eine Hand und ein Knie auf der Bank abstützen, Rücken waagerecht und gerade.", "Support yourself with one hand and knee on the bench, back flat and level."],
       ["Gewicht hängt am gestreckten Arm.", "The weight hangs at arm's length."],
@@ -57,6 +60,7 @@
     "muscles": ["Mittlerer Rücken, Latissimus, hintere Schulter", "Mid back, lats, rear delts"],
     "primary": ["lats", "traps"],
     "secondary": ["delts", "biceps", "lowerback"],
+    "regions": { "lats.upper": 1, "lats.lower": 0.6, "traps.middle": 1, "traps.lower": 0.3, "delts.rear": 0.6 },
     "how": [
       ["Über der Stange stehen, Griff fassen, mit geradem Rücken vorbeugen.", "Straddle the bar, grab the handle and hinge forward with a flat back."],
       ["Gewicht Richtung Brust/Bauch ziehen, Schulterblätter zusammen.", "Row toward your chest/stomach, squeezing your shoulder blades."],
@@ -74,6 +78,7 @@
     "muscles": ["Oberer Rücken, Latissimus, hintere Schulter", "Upper back, lats, rear delts"],
     "primary": ["lats", "traps"],
     "secondary": ["delts", "biceps"],
+    "regions": { "lats.upper": 1, "lats.lower": 0.6, "traps.middle": 1, "traps.lower": 0.3, "delts.rear": 0.6 },
     "how": [
       ["Mit der Brust auf das Polster bzw. die Schrägbank legen.", "Rest your chest on the pad or an incline bench."],
       ["Gewicht/Griffe zum Körper ziehen, Schulterblätter zusammenführen.", "Pull the weight/handles toward you and squeeze your shoulder blades."],
@@ -88,6 +93,7 @@
     "muscles": ["Mittlerer Rücken, Latissimus, Bizeps", "Mid back, lats, biceps"],
     "primary": ["lats", "traps"],
     "secondary": ["biceps", "delts"],
+    "regions": { "lats.upper": 1, "lats.lower": 1, "traps.middle": 1, "traps.lower": 0.3, "delts.rear": 0.6 },
     "how": [
       ["Aufrecht sitzen, Füße an der Plattform, Knie leicht gebeugt.", "Sit tall, feet on the platform, knees slightly bent."],
       ["Griff zum Bauch ziehen, Brust raus, Schulterblätter zusammen.", "Pull the handle to your stomach, chest up, shoulder blades together."],
@@ -102,6 +108,7 @@
     "muscles": ["Oberer und unterer Rücken, Gesäß, Trapez, Griff", "Upper and lower back, glutes, traps, grip"],
     "primary": ["lowerback", "traps", "glutes"],
     "secondary": ["hamstrings", "lats", "forearms"],
+    "regions": { "traps.upper": 1, "traps.middle": 1, "glutes.max": 1, "lats.upper": 0.3, "lats.lower": 0.3 },
     "how": [
       ["Stange auf Kniehöhe (oder knapp darunter) im Rack ablegen.", "Set the bar in the rack at knee height (or just below)."],
       ["Wie beim Kreuzheben greifen, Rücken gerade, anspannen.", "Grip as for a deadlift, back flat, brace."],
@@ -116,6 +123,7 @@
     "muscles": ["Beinbeuger, Gesäß, unterer Rücken", "Hamstrings, glutes, lower back"],
     "primary": ["hamstrings", "lowerback"],
     "secondary": ["glutes"],
+    "regions": { "hamstrings.outer": 1, "hamstrings.inner": 1, "glutes.max": 0.6 },
     "how": [
       ["Stange wie bei Kniebeugen auf dem oberen Rücken, Knie leicht gebeugt.", "Bar on your upper back like a squat, knees slightly bent."],
       ["Hüfte nach hinten schieben und den geraden Oberkörper nach vorne neigen.", "Push your hips back and tilt your straight torso forward."],
@@ -130,6 +138,7 @@
     "muscles": ["Latissimus, oberer Rücken, Bizeps", "Lats, upper back, biceps"],
     "primary": ["lats"],
     "secondary": ["biceps", "traps", "delts"],
+    "regions": { "lats.upper": 1, "lats.lower": 1, "traps.lower": 0.6, "traps.middle": 0.3, "delts.rear": 0.3 },
     "how": [
       ["Oberschenkel unter dem Polster fixieren, Stange etwas breiter als schulterbreit greifen.", "Lock your thighs under the pad and grip the bar a bit wider than shoulders."],
       ["Leicht zurücklehnen, Brust raus.", "Lean back slightly, chest up."],
@@ -149,6 +158,7 @@
     "muscles": ["Latissimus (unterer Bereich), Bizeps", "Lats (lower part), biceps"],
     "primary": ["lats"],
     "secondary": ["biceps", "traps"],
+    "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6 },
     "how": [
       ["Engen Griff (V-Griff) einhängen und mit neutralem Griff fassen.", "Attach a close-grip (V) handle and hold it with a neutral grip."],
       ["Leicht zurücklehnen und den Griff zur Brust ziehen.", "Lean back slightly and pull the handle to your chest."],
@@ -163,6 +173,7 @@
     "muscles": ["Latissimus", "Lats"],
     "primary": ["lats"],
     "secondary": ["triceps", "chest"],
+    "regions": { "lats.lower": 1, "lats.upper": 0.6, "triceps.long": 0.6, "chest.lower": 0.6, "chest.mid": 0.3 },
     "how": [
       ["Vor dem hohen Kabel stehen, Stange oder Seil mit gestreckten Armen greifen, leicht vorbeugen.", "Stand at a high cable, grab a bar or rope with straight arms and hinge slightly."],
       ["Mit fast gestreckten Armen in einem Bogen zu den Oberschenkeln ziehen.", "With nearly straight arms, pull in an arc down to your thighs."],
@@ -177,6 +188,7 @@
     "muscles": ["Latissimus, oberer Rücken, Bizeps, Griffkraft", "Lats, upper back, biceps, grip"],
     "primary": ["lats"],
     "secondary": ["biceps", "traps", "delts", "forearms"],
+    "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6, "delts.rear": 0.3, "biceps.long": 0.6, "biceps.short": 0.6, "biceps.brachialis": 0.6 },
     "how": [
       ["An der Stange hängen, Obergriff etwas breiter als schulterbreit.", "Hang from the bar with an overhand grip a bit wider than your shoulders."],
       ["Schulterblätter nach unten ziehen und Körper anspannen.", "Pull your shoulder blades down and brace your body."],
@@ -197,6 +209,7 @@
     "muscles": ["Latissimus, Bizeps", "Lats, biceps"],
     "primary": ["lats", "biceps"],
     "secondary": ["traps", "forearms"],
+    "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6, "biceps.long": 1, "biceps.short": 1, "biceps.brachialis": 0.6 },
     "how": [
       ["Stange im Untergriff schulterbreit fassen.", "Grip the bar underhand at shoulder width."],
       ["Schulterblätter nach unten ziehen, dann die Brust zur Stange ziehen.", "Pull your shoulder blades down, then pull your chest toward the bar."],
@@ -211,6 +224,7 @@
     "muscles": ["Oberer Rücken, Latissimus, Bizeps, Rumpf", "Upper back, lats, biceps, core"],
     "primary": ["lats", "traps"],
     "secondary": ["biceps", "delts", "abs"],
+    "regions": { "lats.upper": 1, "lats.lower": 0.6, "traps.middle": 1, "delts.rear": 0.6 },
     "how": [
       ["Unter eine hüfthohe Stange (z. B. in der Multipresse) legen und greifen.", "Lie under a hip-high bar (e.g. in a Smith machine) and grab it."],
       ["Körper gerade wie ein Brett, Fersen am Boden.", "Body straight like a plank, heels on the floor."],

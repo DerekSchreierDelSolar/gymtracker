@@ -3,6 +3,7 @@
     "muscles": ["Vordere und seitliche Schulter, Trizeps, oberer Rücken", "Front and side delts, triceps, upper back"],
     "primary": ["delts"],
     "secondary": ["triceps", "traps"],
+    "regions": { "delts.front": 1, "delts.side": 0.6, "traps.upper": 0.3, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3 },
     "how": [
       ["Gewicht auf Schulterhöhe, Unterarme senkrecht, Bauch und Gesäß angespannt.", "Weight at shoulder height, forearms vertical, abs and glutes braced."],
       ["Senkrecht über den Kopf drücken, bis die Arme fast gestreckt sind.", "Press straight overhead until your arms are nearly straight."],
@@ -23,6 +24,7 @@
     "muscles": ["Vordere und seitliche Schulter, Trizeps", "Front and side delts, triceps"],
     "primary": ["delts"],
     "secondary": ["triceps"],
+    "regions": { "delts.front": 1, "delts.side": 1, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3 },
     "how": [
       ["Hanteln vor dem Gesicht, Handflächen zeigen zu dir.", "Dumbbells in front of your face, palms facing you."],
       ["Beim Hochdrücken die Arme öffnen und die Hände nach außen drehen.", "As you press up, open your arms and rotate your palms to face forward."],
@@ -37,6 +39,7 @@
     "muscles": ["Seitliche Schulter", "Side delts"],
     "primary": ["delts"],
     "secondary": ["traps"],
+    "regions": { "delts.side": 1, "delts.front": 0.3, "delts.rear": 0.3, "traps.upper": 0.6 },
     "how": [
       ["Aufrecht stehen, Gewicht seitlich am Körper, Ellbogen leicht gebeugt.", "Stand tall, weight at your sides, elbows slightly bent."],
       ["Arme seitlich bis etwa Schulterhöhe anheben – Ellbogen führen.", "Raise your arms out to the side to about shoulder height – lead with the elbows."],
@@ -56,6 +59,7 @@
     "muscles": ["Vordere Schulter", "Front delts"],
     "primary": ["delts"],
     "secondary": ["chest"],
+    "regions": { "delts.front": 1, "delts.side": 0.3, "chest.upper": 0.6 },
     "how": [
       ["Aufrecht stehen, Gewicht vor den Oberschenkeln.", "Stand tall, weight in front of your thighs."],
       ["Mit fast gestreckten Armen nach vorne bis Schulterhöhe heben.", "Raise it forward with nearly straight arms to shoulder height."],
@@ -70,6 +74,7 @@
     "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],
     "primary": ["delts"],
     "secondary": ["traps"],
+    "regions": { "delts.rear": 1, "delts.side": 0.3, "traps.middle": 0.6, "lats.upper": 0.3 },
     "how": [
       ["Vorgebeugt (oder an der Maschine mit Brust am Polster), Arme leicht gebeugt.", "Bent over (or chest against the pad on the machine), arms slightly bent."],
       ["Arme seitlich nach außen und hinten öffnen.", "Open your arms out and back."],
@@ -88,6 +93,7 @@
     "muscles": ["Hintere Schulter, Rotatorenmanschette, oberer Rücken", "Rear delts, rotator cuff, upper back"],
     "primary": ["delts", "traps"],
     "secondary": [],
+    "regions": { "delts.rear": 1, "delts.side": 0.3, "traps.middle": 1, "traps.upper": 0.3 },
     "how": [
       ["Seil am Kabel auf Kopf- oder Augenhöhe, mit Daumen nach hinten greifen.", "Rope on a cable at head or eye height, grip with thumbs pointing back."],
       ["Seil Richtung Gesicht ziehen, dabei die Enden auseinanderziehen.", "Pull the rope toward your face, spreading the ends apart."],
@@ -103,6 +109,7 @@
     "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],
     "primary": ["delts", "traps"],
     "secondary": [],
+    "regions": { "delts.rear": 1, "traps.middle": 1, "traps.upper": 0.3 },
     "how": [
       ["Band schulterbreit mit gestreckten Armen vor der Brust halten.", "Hold the band at shoulder width with straight arms in front of your chest."],
       ["Band auseinanderziehen, bis es die Brust berührt.", "Pull the band apart until it touches your chest."],
@@ -117,6 +124,7 @@
     "muscles": ["Seitliche Schulter, Trapez", "Side delts, traps"],
     "primary": ["delts", "traps"],
     "secondary": ["biceps"],
+    "regions": { "delts.side": 1, "delts.front": 0.6, "traps.upper": 1, "traps.middle": 0.3 },
     "how": [
       ["Aufrecht stehen, Gewicht vor dem Körper, etwa schulterbreit greifen.", "Stand tall, weight in front of you, grip about shoulder-width."],
       ["Mit den Ellbogen voran bis etwa Brusthöhe ziehen.", "Pull up leading with your elbows to about chest height."],
@@ -132,6 +140,7 @@
     "muscles": ["Oberer Trapez (Nacken)", "Upper traps"],
     "primary": ["traps"],
     "secondary": ["forearms"],
+    "regions": { "traps.upper": 1, "traps.middle": 0.3 },
     "how": [
       ["Aufrecht stehen, Gewicht an gestreckten Armen.", "Stand tall holding the weight at arm's length."],
       ["Schultern gerade nach oben Richtung Ohren ziehen.", "Lift your shoulders straight up toward your ears."],
@@ -146,6 +155,7 @@
     "muscles": ["Schultern, Trizeps", "Shoulders, triceps"],
     "primary": ["delts"],
     "secondary": ["triceps", "chest"],
+    "regions": { "delts.front": 1, "delts.side": 0.6, "chest.upper": 0.6, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3 },
     "how": [
       ["Aus dem Liegestütz die Hüfte hochschieben, sodass der Körper ein umgedrehtes V bildet.", "From a push-up position push your hips up so your body forms an upside-down V."],
       ["Kopf zwischen den Händen Richtung Boden absenken.", "Lower your head toward the floor between your hands."],

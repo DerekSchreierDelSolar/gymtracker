@@ -87,7 +87,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
             if (sessionSets.isNotEmpty()) item {
                 MuscleHeatCard(
                     title = tr("Trainierte Muskeln", "Trained muscles"),
-                    score = muscleScore(sessionSets),
+                    score = regionScore(sessionSets),
                     showSets = true,
                     empty = tr("Für diese Übungen sind keine Muskeln hinterlegt.", "No muscles known for these exercises.")
                 )

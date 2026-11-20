@@ -36,7 +36,9 @@ data class WikiEntry(
     val variants: Map<String, WikiText>,
     /** Muskel-IDs (siehe MUSCLES in BodyMap.kt): Haupt- und Hilfsmuskeln fürs Körperdiagramm. */
     val primary: List<String> = emptyList(),
-    val secondary: List<String> = emptyList()
+    val secondary: List<String> = emptyList(),
+    /** Genauer: Region (REGION_NAMES in BodyMap.kt) → Stufe 1 / 0,6 / 0,3 – überschreibt primary/secondary für diese Muskeln. */
+    val regions: Map<String, Float> = emptyMap()
 )
 
 object Wiki {
@@ -68,7 +70,8 @@ object Wiki {
             tips = pairs(o.optJSONArray("tips")),
             variants = v?.keys()?.asSequence()?.associateWith { pair(v.getJSONArray(it)) }.orEmpty(),
             primary = strings(o.optJSONArray("primary")),
-            secondary = strings(o.optJSONArray("secondary"))
+            secondary = strings(o.optJSONArray("secondary")),
+            regions = o.optJSONObject("regions")?.let { r -> r.keys().asSequence().associateWith { r.getDouble(it).toFloat() } }.orEmpty()
         )
     }
 }
@@ -150,7 +153,7 @@ fun ColumnScope.WikiContent(name: String, showHeader: Boolean, showMuscles: Bool
             )
         }
     }
-    if (showMuscles) musclesOf(name)?.let { MuscleMap(it.primary, it.secondary, Modifier.padding(top = 8.dp)) }
+    if (showMuscles) musclesOf(name)?.let { MuscleMap(it.levels(), Modifier.padding(top = 8.dp)) }
 
     if (entry.how.isNotEmpty()) {
         WikiHeading(tr("Ausführung", "How to"))

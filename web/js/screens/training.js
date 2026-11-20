@@ -1,7 +1,7 @@
 // Trainingsmodus und Trainingsübersicht – entspricht TrainingScreen.kt und SummaryScreen.kt.
 
 import { wikiButton } from '../wiki.js';
-import { heatCard, muscleScore } from '../bodymap.js';
+import { heatCard, regionScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
@@ -285,7 +285,7 @@ export function summaryScreen(t, onDone) {
       stats.kcal == null ? muted(tr('Tipp: Trag unter „Körper“ dein Gewicht ein, dann schätzt die App den Kalorienverbrauch.',
         'Tip: enter your weight under "Body" and the app will estimate calories burned.'), 'small') : null,
       sessionSets.length ? heatCard({
-        title: tr('Trainierte Muskeln', 'Trained muscles'), score: muscleScore(sessionSets), showSets: true,
+        title: tr('Trainierte Muskeln', 'Trained muscles'), score: regionScore(sessionSets), showSets: true,
         empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),
       }) : null,
       volumeItems.length >= 2 ? chartCard(tr('Volumen pro Übung', 'Volume per exercise'), tr('Gewicht × Wiederholungen', 'Weight × reps'),

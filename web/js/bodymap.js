@@ -1,7 +1,7 @@
 // Körperdiagramm (Meerschweinchen) – entspricht MuscleMap in BodyMap.kt.
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
-import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
+import { MUSCLES, REGION_NAMES, BODY, BODY_SHAPES } from './body-data.js';
 import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural, isWork } from './core.js';
 import { h, chip, dialog, horizontalBars } from './ui.js';
 import { wikiFor } from './wiki.js';
@@ -12,6 +12,51 @@ export const PRIMARY_COLOR = '#E24B4A';
 export const SECONDARY_COLOR = '#EF9F27';
 
 export const muscleLabel = id => (MUSCLES[id] ? (isEnglish() ? MUSCLES[id].en : MUSCLES[id].de) : id);
+
+// ---------- Regionen (Teile eines Muskels, „muskel.teil“) – wie REGION_NAMES/MUSCLE_REGIONS in BodyMap.kt ----------
+export const regionLabel = k => (REGION_NAMES[k] ? (isEnglish() ? REGION_NAMES[k].en : REGION_NAMES[k].de) : muscleLabel(k));
+export const muscleOfRegion = k => k.split('.')[0];
+/** Teilflächen einer Form: [[key, Polygon], …] */
+const regionPolys = s => s._polys ??= (s.regions ? s.regions.split(';').map(r => [r.split(':')[0].trim(), r.split(':')[1].trim()]) : []);
+/** Alle Regionen einer Form (leer = nicht einfärbbar) */
+const regionKeys = s => regionPolys(s).length ? regionPolys(s).map(r => r[0]) : s.region ? [s.region] : s.fill === 'MUSCLE' ? [s.id] : [];
+/** Regionen je Muskel (ungeteilter Muskel = nur seine ID) */
+const MUSCLE_REGIONS = (() => {
+  const all = [...new Set(BODY_SHAPES.flatMap(regionKeys))];
+  return Object.fromEntries(Object.keys(MUSCLES).map(m => {
+    const r = all.filter(k => muscleOfRegion(k) === m);
+    return [m, r.length ? r : [m]];
+  }));
+})();
+
+export const LIGHT_COLOR = '#F2C94C';
+/** Stufen der Belastung einer Region durch eine Übung: 1 Hauptarbeit, 0,6 mittel, 0,3 leicht. */
+const LEVELS = [1, 0.6, 0.3];
+const stageOf = v => LEVELS.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+export const levelColor = v => (!v || v <= 0 ? null : v >= 0.8 ? PRIMARY_COLOR : v >= 0.45 ? SECONDARY_COLOR : LIGHT_COLOR);
+const levelTitle = st => (st === 1 ? tr('Hauptarbeit', 'Main work') : st === 0.6 ? tr('Mittel', 'Moderate') : tr('Leicht', 'Light'));
+
+/**
+ * Belastung je Region einer Übung (m = { primary, secondary, regions? }): Hauptmuskel = alle seine Regionen 1,
+ * Hilfsmuskel 0,6; nennt `regions` Regionen eines Muskels, gelten für diesen Muskel nur diese (wie MuscleSet.levels).
+ */
+export function levelsOf(m) {
+  const out = {};
+  for (const id of m.secondary ?? []) for (const r of MUSCLE_REGIONS[id] ?? []) out[r] = 0.6;
+  for (const id of m.primary ?? []) for (const r of MUSCLE_REGIONS[id] ?? []) out[r] = 1;
+  const own = new Set(Object.keys(m.regions ?? {}).map(muscleOfRegion));
+  for (const r of Object.keys(out)) if (own.has(muscleOfRegion(r))) delete out[r];
+  return Object.assign(out, m.regions ?? {});
+}
+
+/** Beschriftungen je Stufe: ganzer Muskel, wenn alle seine Regionen in der Stufe sind, sonst die Regionen. */
+function levelLabels(levels) {
+  return LEVELS.map(st => [st, Object.keys(MUSCLES).flatMap(m => {
+    const regs = MUSCLE_REGIONS[m];
+    const inStage = regs.filter(r => levels[r] != null && stageOf(levels[r]) === st);
+    return !inStage.length ? [] : inStage.length === regs.length ? [muscleLabel(m)] : inStage.map(regionLabel);
+  })]).filter(([, l]) => l.length);
+}
 
 const COLORS = {
   light: { FUR: '#F3E6D6', PATCH: '#9C6B45', PINK: '#F2B8B5', outline: '#7A5A43', neutral: '#CFC7BE', TISSUE: '#C8BDB1' },
@@ -47,6 +92,17 @@ const box = s => s._box ??= (() => {
   const p = points(s.d), xs = p.map(q => q[0]), ys = p.map(q => q[1]);
   return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
 })();
+/** Region-Polygon (Pfad M/L/Q/Z in 0..1 des Rahmens) → Koordinaten der ungespiegelten Form */
+function polyAbs(s, poly) {
+  const b = box(s), X = u => (b.x0 + u * (b.x1 - b.x0)).toFixed(2), Y = v => (b.y0 + v * (b.y1 - b.y0)).toFixed(2);
+  let out = '', nums = [];
+  const flush = () => { for (let i = 0; i < nums.length; i += 2) out += ` ${X(nums[i])} ${Y(nums[i + 1])}`; nums = []; };
+  for (const t of poly.match(/[MLQZ]|-?\.?\d+(\.\d+)?/g)) {
+    if (/[MLQZ]/.test(t)) { flush(); out += ' ' + t; } else nums.push(Number(t));
+  }
+  flush();
+  return out.trim();
+}
 /** Liegt die Form ganz im Kopf (Kreis um 50/30)? Flecken dort übernehmen die Schattierung des Kopfes. */
 const inHead = s => s._inHead ??= points(s.d).every(([x, y]) => Math.hypot(x - 50, y - 30) <= 24.5);
 const isHead = s => s.fill === 'FUR' && !s.mirror && !s.id;
@@ -73,7 +129,9 @@ function defsFor(id, view) {
   // Umriss der Figur je Ansicht (alle Körperteile) – Muskeln wachsen nicht darüber hinaus
   const bodyClip = `<clipPath id="${id}body">${BODY_SHAPES.filter(s => !isMuscle(s))
     .flatMap(s => placements(s, view).map(([t]) => `<path transform="${t}" d="${s.d}"/>`)).join('')}</clipPath>`;
-  const muscleClips = BODY_SHAPES.map((s, i) => s.detail ? `<clipPath id="${id}c${i}"><path d="${s.d}"/></clipPath>` : '').join('');
+  const muscleClips = BODY_SHAPES.map((s, i) => s.detail ? `<clipPath id="${id}c${i}"><path d="${s.d}"/></clipPath>` : '').join('')
+    // Teilflächen (Regionen) in Koordinaten der ungespiegelten Form
+    + BODY_SHAPES.map((s, i) => regionPolys(s).map(([, poly], k) => `<clipPath id="${id}r${i}_${k}"><path d="${polyAbs(s, poly)}"/></clipPath>`).join('')).join('');
   return `<defs>${bodyClip}${muscleClips}
     ${['L', 'R'].map(side => `
       <radialGradient id="${id}m${side}" cx="${side === 'L' ? '32%' : '68%'}" cy="28%" r="80%">
@@ -113,8 +171,8 @@ let figureId = 0;
 function svg(colorOf, view = 'BOTH') {
   const id = 'bf' + figureId++ + '-';
   const c = COLORS[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'];
-  const color = s => s.fill === 'MUSCLE' ? (colorOf(s.id) ?? c.neutral)
-    : s.fill === 'DECO' ? c.neutral
+  // Muskel/Zier-Muskel: Farbe seiner Region (bei Teilflächen erst neutral, die Teile kommen darüber)
+  const color = s => isMuscle(s) ? ((!regionPolys(s).length && regionKeys(s)[0] && colorOf(regionKeys(s)[0])) || c.neutral)
     : s.fill === 'DARK' ? '#2B211B' : s.fill === 'LIGHT' ? '#FFFFFF' : c[s.fill];
   const parts = [];
   // 1. Außenkontur: alle Körperteile dick umranden; die Füllungen danach überdecken die Linien innen
@@ -129,7 +187,14 @@ function svg(colorOf, view = 'BOTH') {
         // Muskel wächst bis an seine Nachbarn heran (Rand etwas dunkler = gewölbte Kante), aber nicht über
         // den Körperumriss hinaus; dazwischen bleibt nur eine feine Fuge
         parts.push(`<g clip-path="url(#${id}body)"><path transform="${t}" d="${s.d}" fill="${col}" stroke="${darken(col, 0.82)}" stroke-width="2.6" stroke-linejoin="round"/></g>`);
-        parts.push(`<path transform="${t}" d="${s.d}" fill="${col}" stroke="#4A2A18" stroke-opacity=".5" stroke-width=".45"/>`);
+        parts.push(`<path transform="${t}" d="${s.d}" fill="${col}"/>`);
+        // Teilflächen (z. B. obere Brust) in ihrer Farbe – samt gewachsenem Rand, auf die Teilfläche beschnitten
+        regionPolys(s).forEach(([key], k) => {
+          const rc = colorOf(key);
+          if (rc) parts.push(`<g clip-path="url(#${id}body)"><g transform="${t}" clip-path="url(#${id}r${i}_${k})">`
+            + `<path d="${s.d}" fill="${rc}" stroke="${darken(rc, 0.82)}" stroke-width="2.6" stroke-linejoin="round"/></g></g>`);
+        });
+        parts.push(`<path transform="${t}" d="${s.d}" fill="none" stroke="#4A2A18" stroke-opacity=".5" stroke-width=".45"/>`);
         parts.push(`<path transform="${t}" d="${s.d}" fill="url(#${id}f${s.fiber ?? 0})"/>`);
       } else {
         // gleichfarbiger Rand schließt die Naht zwischen den gespiegelten Hälften
@@ -170,13 +235,15 @@ export const bodyFigure = colorOf => [
   h('div', { class: 'muscle-views muted' }, h('span', null, tr('Vorne', 'Front')), h('span', null, tr('Hinten', 'Back'))),
 ];
 
-/** Körperdiagramm mit Beschriftung „Vorne/Hinten“ und Legende „Haupt: … · Hilfs: …“. */
-export function muscleMap(primary, secondary = [], { legend = true } = {}) {
+/**
+ * Körperdiagramm einer Übung mit Beschriftung „Vorne/Hinten“ und Legende „Hauptarbeit: … · Mittel: … · Leicht: …“.
+ * levels = Region → Stufe (levelsOf).
+ */
+export function muscleMap(levels, { legend = true } = {}) {
   return h('div', { class: 'muscle-map' },
-    bodyFigure(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null)),
-    legend ? h('div', { class: 'muscle-legend' },
-      primary.length ? h('span', null, h('i', { style: `background:${PRIMARY_COLOR}` }), tr('Haupt: ', 'Primary: ') + primary.map(muscleLabel).join(', ')) : null,
-      secondary.length ? h('span', null, h('i', { style: `background:${SECONDARY_COLOR}` }), tr('Hilfs: ', 'Secondary: ') + secondary.map(muscleLabel).join(', ')) : null) : null);
+    bodyFigure(k => levelColor(levels[k])),
+    legend ? h('div', { class: 'muscle-legend' }, levelLabels(levels).map(([st, labels]) =>
+      h('span', null, h('i', { style: `background:${levelColor(st)}` }), levelTitle(st) + ': ' + labels.join(', ')))) : null);
 }
 
 // ---------- Muskeln einer Übung ----------
@@ -185,7 +252,7 @@ export function muscleMap(primary, secondary = [], { legend = true } = {}) {
 export function musclesOf(name) {
   if (CustomMeta.muscles[name]) return CustomMeta.muscles[name];
   const w = wikiFor(name);
-  return w?.primary?.length ? { primary: w.primary, secondary: w.secondary ?? [] } : null;
+  return w?.primary?.length ? { primary: w.primary, secondary: w.secondary ?? [], regions: w.regions ?? {} } : null;
 }
 
 /** Auswahl mit Vorschau. st = { primary: [...], secondary: [...] } wird direkt verändert. */
@@ -197,7 +264,7 @@ export function musclePicker(st) {
   };
   const dot = c => `<i class="chip-dot" style="background:${c}"></i>`;
   return [
-    muscleMap(st.primary, st.secondary, { legend: false }),
+    muscleMap(levelsOf(st), { legend: false }),
     h('b', { class: 'small-title' }, tr('Hauptmuskeln', 'Primary muscles')),
     h('div', { class: 'chips wrap' }, Object.keys(MUSCLES).map(id =>
       chip(muscleLabel(id), st.primary.includes(id), () => toggle('primary', 'secondary', id), st.primary.includes(id) ? dot(PRIMARY_COLOR) : null))),
@@ -228,18 +295,29 @@ export const HEAT_LEVELS = [
 ];
 export const heatColor = p => HEAT_LEVELS.filter(l => p >= l[0]).pop()?.[1] ?? null;
 
-/** Sätze je Muskel (ohne Aufwärmsätze): Hauptmuskeln 1, Hilfsmuskeln 0,5 pro Satz (wie muscleScore in BodyMap.kt). */
-export function muscleScore(sets) {
+/**
+ * Sätze je Region (ohne Aufwärmsätze): Hauptarbeit 1, mittel 0,5, leicht 0,25 pro Satz (wie regionScore in BodyMap.kt).
+ */
+export function regionScore(sets) {
   const score = {}, cache = new Map();
   for (const s of sets) {
     if (!isWork(s)) continue; // Aufwärmsätze zählen nicht
-    if (!cache.has(s.exercise)) cache.set(s.exercise, musclesOf(s.exercise));
-    const m = cache.get(s.exercise);
-    if (!m) continue;
-    for (const id of m.primary) score[id] = (score[id] ?? 0) + 1;
-    for (const id of m.secondary) score[id] = (score[id] ?? 0) + 0.5;
+    if (!cache.has(s.exercise)) { const m = musclesOf(s.exercise); cache.set(s.exercise, m ? levelsOf(m) : null); }
+    const levels = cache.get(s.exercise);
+    if (!levels) continue;
+    for (const [r, v] of Object.entries(levels)) {
+      const st = stageOf(v);
+      score[r] = (score[r] ?? 0) + (st === 1 ? 1 : st === 0.6 ? 0.5 : 0.25);
+    }
   }
   return score;
+}
+
+/** Sätze je Muskel = seine am stärksten belastete Region. */
+function muscleScoreOf(regionScore) {
+  const out = {};
+  for (const [r, v] of Object.entries(regionScore)) { const m = muscleOfRegion(r); out[m] = Math.max(out[m] ?? 0, v); }
+  return out;
 }
 
 /** Belastung relativ zum am stärksten trainierten Muskel (= 1). */
@@ -269,7 +347,7 @@ export function periodFilter(p, sets) {
 export function muscleHeatCard(sets, period, onPeriod) {
   return heatCard({
     title: tr('Trainierte Muskeln', 'Trained muscles'),
-    score: muscleScore(periodFilter(period, sets)),
+    score: regionScore(periodFilter(period, sets)),
     showSets: false,
     empty: tr('Keine Trainings in diesem Zeitraum.', 'No workouts in this period.'),
     header: h('div', { class: 'chips hscroll-chips' }, STAT_PERIODS.map(p => chip(periodLabel(p), p === period, () => onPeriod(p)))),
@@ -279,8 +357,13 @@ export function muscleHeatCard(sets, period, onPeriod) {
 /** „6,5“ bzw. „6“ – halbe Sätze kommen von Hilfsmuskeln. */
 const fmtSets = v => fmtW(Math.round(v * 2) / 2);
 
-/** Karte mit Heatmap. showSets = Summe der Sätze je Muskel (Trainingsübersicht), sonst Prozent. */
-export function heatCard({ title, score, showSets, empty, header = null }) {
+/**
+ * Karte mit Heatmap. score = Sätze je Region (regionScore): die Figur färbt Regionen, die Liste fasst je Muskel zusammen.
+ * showSets = Summe der Sätze je Muskel (Trainingsübersicht), sonst Prozent.
+ */
+export function heatCard({ title, score: regions, showSets, empty, header = null }) {
+  const regionLoad = relativeLoad(regions);
+  const score = muscleScoreOf(regions);
   const load = relativeLoad(score);
   const entries = Object.entries(score).sort((a, b) => b[1] - a[1]);
   const dot = c => h('i', { style: `background:${c}` });
@@ -288,7 +371,7 @@ export function heatCard({ title, score, showSets, empty, header = null }) {
   return h('div', { class: 'card pad-m heat-card' },
     h('h3', null, title),
     header,
-    h('div', { class: 'muscle-map' }, bodyFigure(id => (load[id] ? heatColor(load[id]) : null))),
+    h('div', { class: 'muscle-map' }, bodyFigure(k => (regionLoad[k] ? heatColor(regionLoad[k]) : null))),
     h('div', { class: 'heat-legend' }, HEAT_LEVELS.map(([, c, label]) => h('span', null, dot(c), label))),
     entries.length
       ? [showSets
@@ -310,19 +393,17 @@ export const musclesOnSide = view =>
   Object.keys(MUSCLES).filter(id => BODY_SHAPES.some(s => s.id === id && (s.view === view || s.view === 'BOTH')));
 
 /**
- * Karte: Titel oben, das Meerschweinchen einer Seite mittig und groß.
- * showList = unten die Muskeln der ganzen Übung (für die letzte Karte) – wie MuscleSideCard.
+ * Karte: Titel oben, das Meerschweinchen einer Seite mittig und groß. levels = Region → Stufe (levelsOf).
+ * showList = unten die Muskeln/Regionen der ganzen Übung nach Stufe (für die letzte Karte) – wie MuscleSideCard.
  */
-export function muscleSideCard(view, primary, secondary, showList = false) {
-  const help = secondary.filter(id => !primary.includes(id));
-  const group = (title, list, color) => list.length ? h('div', { class: 'side-group' },
+export function muscleSideCard(view, levels, showList = false) {
+  const group = (title, labels, color) => h('div', { class: 'side-group' },
     h('small', null, h('i', { style: `background:${color}` }), title),
-    h('div', { class: 'side-names' }, list.map(muscleLabel).join(', '))) : null;
+    h('div', { class: 'side-names' }, labels.join(', ')));
   return h('div', { class: 'card pad-m glass side-card' },
     h('div', { class: 'side-head' },
       h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back'))),
-    h('div', { class: 'side-figure', html: svg(id => (primary.includes(id) ? PRIMARY_COLOR : secondary.includes(id) ? SECONDARY_COLOR : null), view) }),
+    h('div', { class: 'side-figure', html: svg(k => levelColor(levels[k]), view) }),
     showList ? h('div', { class: 'side-list' },
-      group(tr('Hauptmuskeln', 'Primary'), primary, PRIMARY_COLOR),
-      group(tr('Hilfsmuskeln', 'Secondary'), help, SECONDARY_COLOR)) : null);
+      levelLabels(levels).map(([st, labels]) => group(levelTitle(st), labels, levelColor(st)))) : null);
 }

@@ -63,7 +63,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `Icons.kt` | `AppIcon`/`Ico` (Linien-Icons für Buttons/Navigation) |
 | `Pictograms.kt` | Übungs-Piktogramme: `Motion` (~47 Bewegungen), `MOTION_OF` (Katalog-Name → Bewegung), `ExerciseIcon(name, group)`, `MuscleIcon(group)`, `drawMotion()` |
 | `Components.kt` | `GroupHeader`, `ChartCard`, `HorizontalBars`, `HistoryBars`, `LineChart`, `ProgressChart` |
-| `assets/wiki/*.json` | Wiki-Inhalte pro Muskelgruppe, Schlüssel = Grundübung (`base`): `muscles`, `how`, `tips` (je `[de, en]`), optional `variants` (Schlüssel = Klammertext des Katalog-Namens) |
+| `assets/wiki/*.json` | Wiki-Inhalte pro Muskelgruppe, Schlüssel = Grundübung (`base`): `muscles`, `how`, `tips` (je `[de, en]`), `primary`/`secondary` (Muskel-IDs), optional `regions` (Region → Stufe 1 / 0.6 / 0.3, z. B. `"chest.upper": 1` bei Schrägbankdrücken; ersetzt für die genannten Muskeln primary/secondary), optional `variants` (Schlüssel = Klammertext des Katalog-Namens) |
 | `res/mipmap-*/` | App-Icon (Meerschweinchen): `ic_launcher_foreground.png` (108 dp, Adaptive Icon) + Legacy-`ic_launcher(_round).png` (48 dp), erzeugt per PowerShell/System.Drawing aus dem Original-PNG |
 | `ui/theme/` | Farben (Indigo), Typografie, Formen; `GymTrackerTheme(dynamicColor = false)` |
 
@@ -96,6 +96,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
   und bricht bei unbekannten Grundübungen/Varianten ab).
 - **Übungsbild hinzufügen:** `.	oolsdd-exercise-image.ps1 -Source <bild> -Exercise "<Katalog- oder Grundübungsname>"`
   (verkleinert auf 512 × 512 JPEG), danach `node web/tools/gen-data.mjs` (kopiert nach `web/img/exercises/`).
+- **Muskel-Regionen:** Muskeln sind in Regionen geteilt (`REGION_NAMES` in BodyMap.kt, Schlüssel „muskel.teil“, z. B. `chest.upper`; ungeteilte Muskeln: Regionsschlüssel = Muskel-ID). Flächen: `BodyShape.region` (ganze Form) bzw. `regions` (Teilflächen als Polygon in 0..1 des Rahmens). `MuscleSet.levels()` / `levelsOf()` = Region → Stufe; Heatmap zählt je Region (`regionScore`, Hauptarbeit 1 / mittel 0,5 / leicht 0,25 Satz), Liste je Muskel = stärkste Region. `gen-data.mjs` prüft Regionsschlüssel und Stufen im Wiki.
 - Symbole: wo der Übungsname bekannt ist `ExerciseIcon(name, group)`, sonst `MuscleIcon(group)`.
   Piktogramme zeichnen in 0..1-Koordinaten, Seitenansicht blickt nach links; alles innerhalb
   des Kreises halten (Abstand zur Mitte < 0,48). Zum Prüfen temporär ein Raster aller

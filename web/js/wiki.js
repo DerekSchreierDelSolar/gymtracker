@@ -7,7 +7,7 @@ import { exerciseIconHtml } from './pictograms.js';
 import { h, icon, iconBtn, groupHeader, muted } from './ui.js';
 import { nav, update, openDialog, closeDialog } from './nav.js';
 import { screen } from './layout.js';
-import { muscleMap, musclesOf } from './bodymap.js';
+import { muscleMap, musclesOf, levelsOf } from './bodymap.js';
 
 /** [de, en] → aktuelle Sprache */
 const t = pair => (isEnglish() ? pair[1] : pair[0]);
@@ -68,7 +68,7 @@ export function wikiContent(name, { header, muscles }) {
     header ? h('div', { class: 'wiki-head' },
       h('span', { html: exerciseIconHtml(first.name, first.group, 48) }),
       h('div', null, h('h2', null, cat ? exName(name) : baseName(base)), h('p', { class: 'accent' }, t(entry.muscles)))) : null,
-    m ? muscleMap(m.primary, m.secondary) : null,
+    m ? muscleMap(levelsOf(m)) : null,
     entry.how?.length ? [
       h('h3', null, tr('Ausführung', 'How to')),
       h('ol', { class: 'wiki-list' }, entry.how.map(p => h('li', null, t(p)))),

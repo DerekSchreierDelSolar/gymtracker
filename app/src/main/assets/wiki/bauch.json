@@ -3,6 +3,7 @@
     "muscles": ["Gerader Bauchmuskel", "Rectus abdominis"],
     "primary": ["abs"],
     "secondary": ["obliques"],
+    "regions": { "abs.upper": 1, "abs.lower": 0.6 },
     "how": [
       ["Auf den Rücken legen, Knie angewinkelt, Hände an den Schläfen oder vor der Brust.", "Lie on your back, knees bent, hands at your temples or across your chest."],
       ["Oberkörper einrollen, bis die Schulterblätter vom Boden abheben.", "Curl your upper body until your shoulder blades leave the floor."],
@@ -22,6 +23,7 @@
     "muscles": ["Bauch, Hüftbeuger", "Abs, hip flexors"],
     "primary": ["abs"],
     "secondary": ["obliques"],
+    "regions": { "abs.upper": 1, "abs.lower": 1 },
     "how": [
       ["Auf den Rücken legen, Knie angewinkelt, Füße am Boden (evtl. fixiert).", "Lie on your back, knees bent, feet on the floor (optionally anchored)."],
       ["Oberkörper einrollen und ganz aufrichten.", "Curl up and sit all the way up."],
@@ -36,6 +38,7 @@
     "muscles": ["Schräge und gerade Bauchmuskeln", "Obliques, rectus abdominis"],
     "primary": ["obliques", "abs"],
     "secondary": [],
+    "regions": { "abs.upper": 1, "abs.lower": 0.6 },
     "how": [
       ["Auf den Rücken legen, Hände an den Schläfen, Beine angehoben.", "Lie on your back, hands at your temples, legs lifted."],
       ["Ellbogen zum gegenüberliegenden Knie drehen, das andere Bein strecken.", "Rotate your elbow toward the opposite knee while extending the other leg."],
@@ -79,6 +82,7 @@
     "muscles": ["Unterer Bauch, Hüftbeuger", "Lower abs, hip flexors"],
     "primary": ["abs"],
     "secondary": [],
+    "regions": { "abs.lower": 1, "abs.upper": 0.6 },
     "how": [
       ["Auf den Rücken legen, Hände neben dem Körper oder unter dem Gesäß.", "Lie on your back, hands at your sides or under your glutes."],
       ["Gestreckte Beine bis etwa senkrecht anheben.", "Raise your straight legs to about vertical."],
@@ -93,6 +97,7 @@
     "muscles": ["Unterer Bauch, Hüftbeuger, Griffkraft", "Lower abs, hip flexors, grip"],
     "primary": ["abs"],
     "secondary": ["obliques", "forearms"],
+    "regions": { "abs.lower": 1, "abs.upper": 0.6 },
     "how": [
       ["An einer Klimmzugstange hängen, Körper ruhig.", "Hang from a pull-up bar, body still."],
       ["Beine (gestreckt oder angewinkelt) nach oben heben und das Becken einrollen.", "Raise your legs (straight or bent) and curl your pelvis up."],
@@ -107,6 +112,7 @@
     "muscles": ["Unterer Bauch, Hüftbeuger", "Lower abs, hip flexors"],
     "primary": ["abs"],
     "secondary": ["obliques"],
+    "regions": { "abs.lower": 1, "abs.upper": 0.3 },
     "how": [
       ["Unterarme auf die Polster, Rücken an die Lehne, Beine hängen.", "Forearms on the pads, back against the backrest, legs hanging."],
       ["Knie zur Brust ziehen und das Becken leicht einrollen.", "Pull your knees to your chest and curl your pelvis slightly."],
@@ -121,6 +127,7 @@
     "muscles": ["Rumpf, Schultern, Hüftbeuger, Ausdauer", "Core, shoulders, hip flexors, conditioning"],
     "primary": ["abs"],
     "secondary": ["delts", "quads"],
+    "regions": { "abs.lower": 1, "abs.upper": 0.6 },
     "how": [
       ["In den hohen Liegestütz gehen, Hände unter den Schultern.", "Get into a high plank, hands under your shoulders."],
       ["Abwechselnd die Knie schnell Richtung Brust ziehen.", "Drive your knees toward your chest alternately and quickly."],
@@ -135,6 +142,7 @@
     "muscles": ["Tiefe Rumpfmuskulatur", "Deep core"],
     "primary": ["abs"],
     "secondary": ["obliques"],
+    "regions": { "abs.lower": 1, "abs.upper": 0.6 },
     "how": [
       ["Auf den Rücken legen, Arme senkrecht nach oben, Knie 90° angehoben.", "Lie on your back, arms pointing up, knees lifted at 90°."],
       ["Gleichzeitig einen Arm nach hinten und das gegenüberliegende Bein nach vorne strecken.", "Extend one arm back and the opposite leg forward at the same time."],
@@ -150,6 +158,7 @@
     "muscles": ["Gerader Bauchmuskel, Hüftbeuger", "Rectus abdominis, hip flexors"],
     "primary": ["abs"],
     "secondary": [],
+    "regions": { "abs.upper": 1, "abs.lower": 1 },
     "how": [
       ["Gestreckt auf dem Rücken liegen, Arme über dem Kopf.", "Lie flat on your back, arms overhead."],
       ["Gleichzeitig Oberkörper und gestreckte Beine anheben, Hände Richtung Füße.", "Lift your torso and straight legs at the same time, reaching hands toward feet."],
