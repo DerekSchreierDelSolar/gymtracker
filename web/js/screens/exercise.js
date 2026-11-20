@@ -6,7 +6,7 @@ import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
   oneRepMax, parseNum, parseIntStrict, startOfToday, groupColor, catalogGroup, dayKey, monthIndex, startOfWeek,
-  fmtShortDate, completionColor,
+  fmtShortDate, completionColor, SET_TYPES, setTypeOf, setTypeLabel, setTypeShort, setLabels, isWork, isTop,
 } from '../core.js';
 import { progressionSuggestion } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
@@ -49,7 +49,7 @@ const inputs = new Map();
 function inputState(name) {
   if (!inputs.has(name)) {
     const last = store.setsFor(name)[0];
-    inputs.set(name, { weight: last ? fmtW(last.weight) : '', reps: last ? String(last.reps) : '', watchStart: null });
+    inputs.set(name, { weight: last ? fmtW(last.weight) : '', reps: last ? String(last.reps) : '', watchStart: null, type: 'NORMAL' });
   }
   return inputs.get(name);
 }
@@ -75,7 +75,8 @@ export function setInput(name, onAdded = () => {}) {
       return;
     }
     st.watchStart = null;
-    store.addSet(name, w, r);
+    store.addSet(name, w, r, st.type ?? 'NORMAL');
+    st.type = 'NORMAL'; // nach jedem Satz wieder „Normal“
     onAdded();
   };
 
@@ -101,6 +102,11 @@ export function setInput(name, onAdded = () => {}) {
 
   return h('div', { class: 'set-input' }, watch,
     h('div', { class: 'row', id: idBase + '-row', onanimationend: e => e.currentTarget.classList.remove('shake') },
+      // Satz-Typ: antippen = nächster Typ (N → A → D → V); bei Cardio nicht sinnvoll
+      cardio ? null : setTypeButton(st.type ?? 'NORMAL', () => {
+        st.type = SET_TYPES[(SET_TYPES.indexOf(st.type ?? 'NORMAL') + 1) % SET_TYPES.length];
+        rerender();
+      }),
       showWeight ? textField({
         id: idBase + '-w', label: 'kg', value: st.weight, inputmode: 'decimal',
         oninput: v => { st.weight = v; }, onenter: add,
@@ -114,15 +120,33 @@ export function setInput(name, onAdded = () => {}) {
 
 // ---------- Satz-Zeile + Bearbeiten ----------
 
-/** Satz-Zeile; ganze Zeile antippen = bearbeiten (kein Stift-Symbol). */
-export function setRow(set, number, cardio) {
-  return h('div', { class: 'set-row tap', role: 'button', onclick: () => editSetDialog(set, cardio) },
-    h('span', { class: 'grow' }, `${number}. ${fmtSet(set, cardio)}`),
+/** Umschalter für den Satz-Typ (wie SetTypeButton in ExerciseDetail.kt): Kürzel groß, Name klein. */
+function setTypeButton(type, onclick) {
+  return h('button', { class: ['set-type-btn', 'st-' + type], onclick, 'aria-label': tr('Satz-Typ', 'Set type') },
+    h('b', null, setTypeShort(type) || 'N'), h('small', null, setTypeLabel(type)));
+}
+
+/** Liste älteste zuerst → Satz-Zeilen neueste zuerst, Arbeitssätze nummeriert, Aufwärmsätze „A“. */
+export function setRows(list, cardio) {
+  const sorted = list.slice().sort((a, b) => a.time - b.time);
+  const labels = setLabels(sorted);
+  return sorted.map((s, i) => setRow(s, labels[i], cardio)).reverse();
+}
+
+/** Satz-Zeile; ganze Zeile antippen = bearbeiten (kein Stift-Symbol). `label` = „1.“ … bzw. „A“. */
+export function setRow(set, label, cardio) {
+  const type = setTypeOf(set);
+  return h('div', { class: ['set-row', 'tap', !isWork(set) && 'warmup'], role: 'button', onclick: () => editSetDialog(set, cardio) },
+    h('span', { class: ['set-label', 'st-' + type] }, label),
+    h('span', null, ' ' + fmtSet(set, cardio)),
+    type === 'DROP' || type === 'FAILURE' ? h('span', { class: ['set-tag', 'st-' + type] }, setTypeLabel(type)) : null,
+    h('span', { class: 'grow' }),
     h('small', { class: 'muted' }, fmtTime(set.time)));
 }
 
 /** Motivierende Zeile mit dem Rekord (wie RecordLine in ExerciseDetail.kt). */
-export function recordLine(history, cardio, timed) {
+export function recordLine(allSets, cardio, timed) {
+  const history = allSets.filter(isTop); // ohne Aufwärm-/Drop-Sätze
   const today = dayKey(Date.now());
   const byTime = cardio || timed;
   const best = history.length ? history.reduce((a, b) =>
@@ -139,7 +163,7 @@ export function recordLine(history, cardio, timed) {
 }
 
 export function editSetDialog(set, cardio) {
-  const st = { weight: fmtW(set.weight), reps: String(set.reps), confirmDelete: false };
+  const st = { weight: fmtW(set.weight), reps: String(set.reps), type: setTypeOf(set), confirmDelete: false };
   openDialog(() => {
     const w = cardio ? 0 : parseNum(st.weight);
     const r = parseIntStrict(st.reps);
@@ -152,13 +176,16 @@ export function editSetDialog(set, cardio) {
           id: 'edit-r', label: cardio ? tr('Minuten', 'Minutes') : isTimed(set.exercise) ? tr('Sekunden', 'Seconds') : tr('Wdh.', 'Reps'),
           value: st.reps, inputmode: 'numeric', oninput: v => { st.reps = v; rerender(); },
         })),
+      // Satz-Typ (nicht bei Cardio)
+      cardio ? null : h('div', { class: 'chips wrap' },
+        SET_TYPES.map(t => chip(setTypeLabel(t), st.type === t, () => { st.type = t; rerender(); }))),
       h('button', {
         class: 'btn text danger',
         onclick: () => { if (st.confirmDelete) { store.deleteSet(set); closeDialog(); } else { st.confirmDelete = true; rerender(); } },
       }, icon('delete', 18), st.confirmDelete ? tr('Wirklich löschen? Nochmal tippen', 'Really delete? Tap again') : tr('Eintrag löschen', 'Delete entry')),
     ], [
       { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
-      { label: tr('Speichern', 'Save'), disabled: !valid, onClick: () => { store.updateSet(set, w, r); closeDialog(); } },
+      { label: tr('Speichern', 'Save'), disabled: !valid, onClick: () => { store.updateSet(set, w, r, st.type); closeDialog(); } },
     ], closeDialog);
   });
 }
@@ -235,7 +262,8 @@ export function exerciseDetailScreen(name) {
 const BUCKETS = { DAY: ['Tage', 'Days'], WEEK: ['Wochen', 'Weeks'], MONTH: ['Monate', 'Months'] };
 const METRICS = { MAX: ['Max. Gewicht', 'Max weight'], ORM: ['Geschätztes 1RM', 'Estimated 1RM'], VOLUME: ['Volumen', 'Volume'] };
 
-function exerciseProgress(history, cardio, timed) {
+function exerciseProgress(allSets, cardio, timed) {
+  const history = allSets.filter(isTop); // Aufwärm- und Drop-Sätze zählen nicht für den Fortschritt
   if (!history.length) return muted(tr('Noch keine Sätze eingetragen.', 'No sets logged yet.'));
   const strength = !cardio && !timed;
   const unit = cardio ? 'min' : timed ? 's' : 'kg';
@@ -289,18 +317,19 @@ function glassify(el) {
  * Karte eines Trainingstags im Verlauf (Übungsdetails und Trainingsmodus) – wie HistoryDayCard in ExerciseDetail.kt:
  * Kopfzeile mit Sätzen/Volumen, darunter die Sätze (neuester oben, antippen = bearbeiten).
  */
-export function historyDayCard(day, list, cardio, timed) {
+export function historyDayCard(day, all, cardio, timed) {
   const sumReps = l => l.reduce((a, s) => a + s.reps, 0);
+  const list = all.filter(isWork); // Kopfzeile ohne Aufwärmsätze
   return h('div', { class: 'card pad-s glass' },
     h('b', null, `${day} · ` + (cardio
       ? plural(list.length, tr('Einheit', 'session'), tr('Einheiten', 'sessions')) + ` · ${sumReps(list)} ` + tr('Min gesamt', 'min total')
       : timed
         ? plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ' · ' + tr('gesamt ', 'total ') + fmtSeconds(sumReps(list))
         : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtW(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
-    list.length && store.noteFor(list[0].exercise, dayKey(list[0].time))
-      ? h('p', { class: 'day-note' }, '📝 ' + store.noteFor(list[0].exercise, dayKey(list[0].time))) : null,
+    all.length && store.noteFor(all[0].exercise, dayKey(all[0].time))
+      ? h('p', { class: 'day-note' }, '📝 ' + store.noteFor(all[0].exercise, dayKey(all[0].time))) : null,
     // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
-    list.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse());
+    setRows(all, cardio));
 }
 
 /** „📝 Notiz für heute“ (wie NoteButton in ExerciseDetail.kt): antippen öffnet einen Dialog. */

@@ -482,3 +482,16 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .note-btn span:first-child { font-size: 20px; font-style: normal; }
 .day-note { font-style: italic; color: var(--muted); margin: 4px 0 2px; }
 .note-input { width: 100%; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--outline, #ccc); background: transparent; color: var(--text); resize: vertical; }
+
+/* ---------- Satz-Typen (Normal / Aufwärmen / Drop / Versagen) ---------- */
+.st-NORMAL { --st: var(--primary); }
+.st-WARMUP { --st: #7A8AA0; }
+.st-DROP { --st: #E8703A; }
+.st-FAILURE { --st: #D64545; }
+.set-type-btn { flex: 0 0 64px; height: 56px; border-radius: 12px; border: 1px solid var(--st); color: var(--st);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; background: transparent; }
+.set-type-btn b { font-size: 18px; }
+.set-type-btn small { font-size: 10px; white-space: nowrap; }
+.set-label.st-WARMUP { color: var(--st); font-weight: 700; }
+.set-row.warmup > span:not(.set-label) { color: var(--muted); }
+.set-tag { font-size: 12px; color: var(--st); border: 1px solid var(--st); border-radius: 6px; padding: 0 6px; }

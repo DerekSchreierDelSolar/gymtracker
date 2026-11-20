@@ -3,7 +3,7 @@
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, plural, isCardio, isEnglish, groupLabel,
-  GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf,
+  GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
 } from '../core.js';
 import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
@@ -150,7 +150,7 @@ function dashboardTab(onStartWorkout) {
   const volumes = weeklyVolumes(store, 8);
   // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
   const perGroup = new Map();
-  for (const s of periodFilter(nav.statPeriod, store.sets)) {
+  for (const s of periodFilter(nav.statPeriod, store.sets.filter(isWork))) { // ohne Aufwärmsätze
     const g = store.groupOf(s.exercise);
     perGroup.set(g, (perGroup.get(g) ?? 0) + 1);
   }

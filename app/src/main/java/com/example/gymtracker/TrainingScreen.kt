@@ -117,11 +117,11 @@ fun TrainingScreen(
     }
 
     val n = workout.exercises.size
-    val totalSets = workout.exercises.sumOf { store.setsBetween(it, start, Long.MAX_VALUE).size }
+    val totalSets = workout.exercises.sumOf { store.setsBetween(it, start, Long.MAX_VALUE).count { s -> s.isWork } }
     // Fortschritt wie in der Übersicht: Ziel-Sätze, pro Übung höchstens das Ziel
     val goalTotal = workout.exercises.sumOf { store.targetFor(workout, it) }
     val goalDone = workout.exercises.sumOf {
-        minOf(store.setsBetween(it, start, Long.MAX_VALUE).size, store.targetFor(workout, it))
+        minOf(store.setsBetween(it, start, Long.MAX_VALUE).count { s -> s.isWork }, store.targetFor(workout, it))
     }
     val goalPercent = Math.round(goalCompletion(goalDone, goalTotal, totalSets) * 100)
 
@@ -198,7 +198,7 @@ fun TrainingScreen(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     itemsIndexed(workout.exercises) { i, e ->
-                        val count = store.setsBetween(e, start, Long.MAX_VALUE).size
+                        val count = store.setsBetween(e, start, Long.MAX_VALUE).count { it.isWork } // ohne Aufwärmsätze
                         val goal = store.targetFor(workout, e)
                         // ✓ = Ziel erreicht; bei optionalen Übungen: mindestens ein Satz
                         val done = if (goal == 0) count > 0 else count >= goal
@@ -283,6 +283,7 @@ fun TrainingExercisePage(
     val cardio = group.isCardio
     val timed = isTimed(name)
     val today = store.setsBetween(name, start, Long.MAX_VALUE)
+    val todayWork = today.count { it.isWork } // Aufwärmsätze zählen nicht fürs Ziel
     val target = store.targetFor(workout, name)
     // Frühere Trainings dieser Übung (vor diesem Training), nach Tag gruppiert, neuester zuerst
     val previousDays = store.setsFor(name).filter { it.time < start }.groupBy { fmtDate(it.time) }
@@ -336,11 +337,11 @@ fun TrainingExercisePage(
                         onClick = { store.setRest(restOptions[(restOptions.indexOf(sec) + 1) % restOptions.size]) }
                     )
                 }
-                val reached = target > 0 && today.size >= target
+                val reached = target > 0 && todayWork >= target
                 CircleStat(
-                    progress = if (target > 0) today.size.toFloat() / target else if (today.isNotEmpty()) 1f else 0f,
+                    progress = if (target > 0) todayWork.toFloat() / target else if (todayWork > 0) 1f else 0f,
                     color = if (reached) completionColor(1f) else Color(0xFFE88A93),
-                    value = if (target > 0) "${today.size}/$target" else "${today.size}",
+                    value = if (target > 0) "$todayWork/$target" else "$todayWork",
                     label = if (reached) tr("Ziel erreicht ✓", "Goal reached ✓") else tr("Sätze erledigt", "Sets done")
                 )
             }
@@ -353,8 +354,10 @@ fun TrainingExercisePage(
         // Heutige Sätze (neuester oben)
         if (today.isNotEmpty()) {
             item { Text(tr("Heute", "Today"), style = MaterialTheme.typography.titleMedium) }
-            today.sortedBy { it.time }.withIndex().reversed().forEach { (i, s) ->
-                item(key = s.id) { SetRow(store, s, i + 1, cardio) }
+            val sorted = today.sortedBy { it.time }
+            val labels = setLabels(sorted)
+            sorted.indices.reversed().forEach { i ->
+                item(key = sorted[i].id) { SetRow(store, sorted[i], labels[i], cardio) }
             }
         }
 
@@ -381,7 +384,7 @@ fun TrainingExercisePage(
  * Zeitübung: längste Zeit + 10 s. Cardio: Minuten vom letzten Mal.
  */
 fun repsGoal(store: GymStore, name: String, before: Long): Pair<String, String>? {
-    val prev = store.setsFor(name).filter { it.time < before }
+    val prev = store.setsFor(name).filter { it.time < before && it.isTop } // ohne Aufwärm-/Drop-Sätze
     val lastDay = prev.firstOrNull()?.let { dayKey(it.time) } ?: return null
     val last = prev.filter { dayKey(it.time) == lastDay }
     if (store.groupOf(name).isCardio) return "${last.sumOf { it.reps }}" to tr("Minuten zuletzt", "Minutes last time")

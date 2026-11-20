@@ -13,8 +13,51 @@ data class GymSet(
     val exercise: String,
     val weight: Double,
     val reps: Int,
-    val time: Long
-)
+    val time: Long,
+    val type: SetType = SetType.NORMAL
+) {
+    /** Arbeitssatz: zählt für Volumen, kcal, Ziel-Sätze und Heatmap (alles außer Aufwärmen). */
+    val isWork: Boolean get() = type != SetType.WARMUP
+    /** Zählt für Rekorde, 1RM, Fortschritt und Gewichts-Vorschlag (Normal + bis zum Versagen). */
+    val isTop: Boolean get() = type == SetType.NORMAL || type == SetType.FAILURE
+}
+
+/** Satz-Typ. `short` = Kürzel (A/D/V bzw. W/D/F): Aufwärmsätze statt Nummer, außerdem im Typ-Umschalter. */
+enum class SetType(private val shortDe: String, private val shortEn: String, private val de: String, private val en: String) {
+    NORMAL("", "", "Normal", "Normal"),
+    WARMUP("A", "W", "Aufwärmen", "Warm-up"),
+    DROP("D", "D", "Drop", "Drop"),
+    FAILURE("V", "F", "Versagen", "Failure");
+
+    val label: String get() = tr(de, en)
+    val short: String get() = tr(shortDe, shortEn)
+    /** Farbe des Kürzels/Hinweises (Normal: keine eigene Farbe). */
+    val color: Color get() = when (this) {
+        NORMAL -> Color.Unspecified
+        WARMUP -> Color(0xFF7A8AA0)
+        DROP -> Color(0xFFE8703A)
+        FAILURE -> Color(0xFFD64545)
+    }
+
+    companion object {
+        /** Aus dem JSON lesen; unbekannt/fehlend = NORMAL (alte Dateien bleiben gültig). */
+        fun parse(s: String?): SetType = entries.firstOrNull { it.name == s } ?: NORMAL
+    }
+}
+
+/** Nur Arbeitssätze (ohne Aufwärmen). */
+fun List<GymSet>.work(): List<GymSet> = filter { it.isWork }
+/** Nur Sätze, die für Rekorde zählen (ohne Aufwärmen und Drop). */
+fun List<GymSet>.top(): List<GymSet> = filter { it.isTop }
+
+/**
+ * Beschriftung je Satz (Liste älteste zuerst): Arbeitssätze werden 1, 2, 3 … nummeriert,
+ * Aufwärmsätze bekommen ihr Kürzel („A“) und zählen nicht mit.
+ */
+fun setLabels(sortedAsc: List<GymSet>): List<String> {
+    var n = 0
+    return sortedAsc.map { if (it.isWork) "${++n}." else it.type.short }
+}
 
 /** Muskelgruppe: bestimmt Farbe und Symbol einer Übung. */
 enum class MuscleGroup(private val de: String, private val en: String, val color: Color) {

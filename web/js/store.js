@@ -4,7 +4,7 @@
 
 import { RENAMED_EXERCISES, TEMPLATES } from './data.js';
 import {
-  CustomMeta, catalogGroup, isCardio, setAppLanguage, appLanguage, tr, dayKey,
+  CustomMeta, catalogGroup, isCardio, setAppLanguage, appLanguage, tr, dayKey, SET_TYPES, setTypeOf, isWork,
 } from './core.js';
 
 const KEY = 'gym_data';
@@ -12,7 +12,7 @@ const migrateName = n => RENAMED_EXERCISES[n] ?? n;
 
 class GymStore {
   exercises = [];
-  sets = [];            // { id, exercise, weight, reps, time }
+  sets = [];            // { id, exercise, weight, reps, time, type? } (type fehlt = NORMAL)
   groups = {};          // Übungsname → Muskelgruppe
   workouts = [];        // { id, name, exercises: [], targets: {} }
   sessions = [];        // { id, workoutId, workoutName, exercises, start, end, targets }
@@ -90,6 +90,8 @@ class GymStore {
     }));
     this.sets = arr(root.sets).map(o => ({
       id: o.id, exercise: migrateName(o.exercise), weight: Number(o.weight), reps: Number(o.reps), time: o.time,
+      // Satz-Typ nur speichern, wenn er nicht „Normal“ ist (wie Android)
+      ...(SET_TYPES.includes(o.type) && o.type !== 'NORMAL' ? { type: o.type } : {}),
     }));
   }
 
@@ -290,18 +292,19 @@ class GymStore {
 
   // ----- Sätze -----
 
-  addSet(exercise, weight, reps) {
+  addSet(exercise, weight, reps, type = 'NORMAL') {
     let now = Date.now();
     // IDs müssen eindeutig sein (zwei Sätze in derselben Millisekunde)
     while (this.sets.some(s => s.id === now)) now++;
-    this.sets.push({ id: now, exercise, weight, reps, time: now });
+    this.sets.push({ id: now, exercise, weight, reps, time: now, ...(type !== 'NORMAL' ? { type } : {}) });
     this.#save();
   }
 
-  updateSet(set, weight, reps) {
+  updateSet(set, weight, reps, type = setTypeOf(set)) {
     const s = this.sets.find(x => x.id === set.id);
     if (!s) return;
     s.weight = weight; s.reps = reps;
+    if (type === 'NORMAL') delete s.type; else s.type = type;
     this.#save();
   }
 
@@ -368,7 +371,7 @@ class GymStore {
     return {
       id: -day, workoutId: -1, workoutName: tr('Freies Training', 'Free workout'), exercises: exs,
       start: list[0].time, end: list[list.length - 1].time,
-      targets: Object.fromEntries(exs.map(e => [e, list.filter(s => s.exercise === e).length])),
+      targets: Object.fromEntries(exs.map(e => [e, list.filter(s => s.exercise === e && isWork(s)).length])),
     };
   }
 

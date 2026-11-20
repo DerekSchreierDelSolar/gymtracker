@@ -24,7 +24,7 @@ fun startOfToday(): Long = Calendar.getInstance().apply {
  */
 fun progressionSuggestion(store: GymStore, name: String, before: Long): Suggestion? {
     if (store.groupOf(name).isCardio) return null
-    val prev = store.setsFor(name).filter { it.time < before }
+    val prev = store.setsFor(name).filter { it.time < before && it.isTop } // ohne Aufwärm-/Drop-Sätze
     val lastDay = prev.firstOrNull()?.let { dayKey(it.time) } ?: return null
     val last = prev.filter { dayKey(it.time) == lastDay }
 

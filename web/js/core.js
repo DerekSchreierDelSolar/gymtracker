@@ -112,6 +112,28 @@ export function fmtSet(s, cardio) {
 /** Geschätztes 1RM nach Epley. */
 export const oneRepMax = (weight, reps) => (reps <= 1 ? weight : weight * (1 + reps / 30));
 
+// ---------- Satz-Typen (wie SetType in Model.kt) ----------
+// Gespeichert als s.type nur bei abweichenden Typen; fehlend = 'NORMAL'.
+export const SET_TYPES = ['NORMAL', 'WARMUP', 'DROP', 'FAILURE'];
+const SET_TYPE_TEXT = {
+  NORMAL: ['', '', 'Normal', 'Normal'],
+  WARMUP: ['A', 'W', 'Aufwärmen', 'Warm-up'],
+  DROP: ['D', 'D', 'Drop', 'Drop'],
+  FAILURE: ['V', 'F', 'Versagen', 'Failure'],
+};
+export const setTypeOf = s => s.type ?? 'NORMAL';
+export const setTypeLabel = t => tr(SET_TYPE_TEXT[t][2], SET_TYPE_TEXT[t][3]);
+export const setTypeShort = t => tr(SET_TYPE_TEXT[t][0], SET_TYPE_TEXT[t][1]);
+/** Arbeitssatz: zählt für Volumen, kcal, Ziel-Sätze, Heatmap (alles außer Aufwärmen). */
+export const isWork = s => s.type !== 'WARMUP';
+/** Zählt für Rekorde, 1RM, Fortschritt und Gewichts-Vorschlag (Normal + bis zum Versagen). */
+export const isTop = s => !s.type || s.type === 'FAILURE';
+/** Beschriftung je Satz (älteste zuerst): Arbeitssätze „1.“, „2.“ …, Aufwärmsätze ihr Kürzel. */
+export function setLabels(sortedAsc) {
+  let n = 0;
+  return sortedAsc.map(s => (isWork(s) ? `${++n}.` : setTypeShort(setTypeOf(s))));
+}
+
 /** Abschluss 0..1 aus erledigten und geforderten Ziel-Sätzen (ohne Ziel: irgendwas gemacht = 100 %). */
 export const goalCompletion = (done, total, setCount) => (total === 0 ? (setCount > 0 ? 1 : 0) : done / total);
 

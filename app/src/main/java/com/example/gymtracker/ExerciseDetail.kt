@@ -1,6 +1,7 @@
 package com.example.gymtracker
 
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -43,6 +45,8 @@ fun SetInput(
     var repsText by remember(exercise) { mutableStateOf(lastSet?.reps?.toString() ?: "") }
     // Übernommener Vorschlag überschreibt das Gewichtsfeld
     LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtW(weightOverride) }
+    // Satz-Typ des nächsten Satzes; springt nach jedem Satz auf Normal zurück
+    var type by remember(exercise) { mutableStateOf(SetType.NORMAL) }
 
     // Stoppuhr für Zeitübungen: Startzeitpunkt (null = steht)
     var watchStart by remember(exercise) { mutableStateOf<Long?>(null) }
@@ -102,6 +106,11 @@ fun SetInput(
     }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
+        // Satz-Typ: antippen = nächster Typ (N → A → D → V); bei Cardio nicht sinnvoll
+        if (!cardio) {
+            SetTypeButton(type) { type = SetType.entries[(type.ordinal + 1) % SetType.entries.size] }
+            Spacer(Modifier.width(8.dp))
+        }
         // Gewicht: bei Kraftübungen immer, bei Zeitübungen nur, wenn ein Gerät im Spiel ist
         if (!cardio && (!timed || equipmentOf(exercise) != Equipment.KOERPER)) {
             OutlinedTextField(
@@ -136,7 +145,8 @@ fun SetInput(
             val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull() ?: if (timed) 0.0 else null
             val r = repsText.trim().toIntOrNull()
             if (w != null && r != null && r > 0) {
-                store.addSet(exercise, w, r)
+                store.addSet(exercise, w, r, type)
+                type = SetType.NORMAL
                 watchStart = null
                 onAdded()
             }
@@ -152,8 +162,42 @@ fun SetInput(
  * Eine Zeile „1. 60 kg × 8“ mit Stift-Icon. Der Stift öffnet einen Dialog zum Ändern oder Löschen.
  * Wird im Übungs-Verlauf und in der „Heute“-Liste des Trainingsmodus verwendet.
  */
+/** Umschalter für den Satz-Typ: Kürzel groß (N/A/D/V), darunter der Name; gleiche Höhe wie die Eingabefelder. */
 @Composable
-fun SetRow(store: GymStore, set: GymSet, number: Int, cardio: Boolean) {
+fun SetTypeButton(type: SetType, onClick: () -> Unit) {
+    val color = if (type == SetType.NORMAL) MaterialTheme.colorScheme.primary else type.color
+    Column(
+        Modifier
+            .size(width = 64.dp, height = 56.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, color, RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(type.short.ifEmpty { "N" }, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = color)
+        Text(type.label, fontSize = 10.sp, maxLines = 1, color = color)
+    }
+}
+
+/** Kleiner farbiger Hinweis „Drop“/„Versagen“/„Aufwärmen“ hinter einem Satz (Normal: nichts). */
+@Composable
+fun SetTypeTag(type: SetType) {
+    if (type == SetType.NORMAL) return
+    Text(
+        type.label,
+        style = MaterialTheme.typography.labelSmall,
+        color = type.color,
+        modifier = Modifier
+            .padding(start = 8.dp)
+            .border(1.dp, type.color, RoundedCornerShape(6.dp))
+            .padding(horizontal = 6.dp, vertical = 1.dp)
+    )
+}
+
+/** `label` = „1.“, „2.“ … bzw. „A“ bei Aufwärmsätzen (siehe setLabels). */
+@Composable
+fun SetRow(store: GymStore, set: GymSet, label: String, cardio: Boolean) {
     var editing by remember { mutableStateOf(false) }
     // Ganze Zeile antippen = bearbeiten (kein Stift-Symbol)
     Row(
@@ -164,7 +208,12 @@ fun SetRow(store: GymStore, set: GymSet, number: Int, cardio: Boolean) {
             .padding(vertical = 10.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("$number. ${fmtSet(set, cardio)}", modifier = Modifier.weight(1f))
+        // Aufwärmsätze grau, damit die Arbeitssätze hervorstechen
+        val muted = if (set.isWork) Color.Unspecified else MaterialTheme.colorScheme.onSurfaceVariant
+        Text(label, color = if (set.isWork) Color.Unspecified else set.type.color, fontWeight = if (set.isWork) null else FontWeight.Bold)
+        Text(" ${fmtSet(set, cardio)}", color = muted)
+        if (set.type != SetType.WARMUP) SetTypeTag(set.type)
+        Spacer(Modifier.weight(1f))
         Text(
             SimpleDateFormat("HH:mm", appLocale()).format(Date(set.time)),
             style = MaterialTheme.typography.labelSmall,
@@ -176,7 +225,7 @@ fun SetRow(store: GymStore, set: GymSet, number: Int, cardio: Boolean) {
             set = set,
             cardio = cardio,
             onDismiss = { editing = false },
-            onSave = { w, r -> store.updateSet(set, w, r); editing = false },
+            onSave = { w, r, t -> store.updateSet(set, w, r, t); editing = false },
             onDelete = { store.deleteSet(set); editing = false }
         )
     }
@@ -186,16 +235,18 @@ fun SetRow(store: GymStore, set: GymSet, number: Int, cardio: Boolean) {
  * Dialog zum Ändern eines Satzes. „Löschen“ fragt beim ersten Tippen nach
  * („Wirklich löschen?“) – erst der zweite Tipp löscht.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EditSetDialog(
     set: GymSet,
     cardio: Boolean,
     onDismiss: () -> Unit,
-    onSave: (Double, Int) -> Unit,
+    onSave: (Double, Int, SetType) -> Unit,
     onDelete: () -> Unit
 ) {
     var weightText by remember { mutableStateOf(fmtW(set.weight)) }
     var repsText by remember { mutableStateOf(set.reps.toString()) }
+    var type by remember { mutableStateOf(set.type) }
     var confirmDelete by remember { mutableStateOf(false) }
 
     val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull()
@@ -240,6 +291,14 @@ fun EditSetDialog(
                         modifier = Modifier.weight(1f)
                     )
                 }
+                // Satz-Typ (nicht bei Cardio)
+                if (!cardio) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        SetType.entries.forEach { t ->
+                            FilterChip(selected = type == t, onClick = { type = t }, label = { Text(t.label) })
+                        }
+                    }
+                }
                 // Löschen: rot und zweistufig
                 TextButton(
                     onClick = { if (confirmDelete) onDelete() else confirmDelete = true },
@@ -255,7 +314,7 @@ fun EditSetDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(w!!, r!!) }, enabled = valid) { Text(tr("Speichern", "Save")) }
+            TextButton(onClick = { onSave(w!!, r!!, type) }, enabled = valid) { Text(tr("Speichern", "Save")) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(tr("Abbrechen", "Cancel")) } }
     )
@@ -421,7 +480,9 @@ private enum class ProgressMetric(val de: String, val en: String) { MAX("Max. Ge
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExerciseProgress(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
+fun ExerciseProgress(allSets: List<GymSet>, cardio: Boolean, timed: Boolean) {
+    // Aufwärm- und Drop-Sätze zählen nicht für Rekord und Fortschritt
+    val history = allSets.top()
     var bucket by rememberSaveable { mutableStateOf(ProgressBucket.DAY) }
     var metric by rememberSaveable { mutableStateOf(ProgressMetric.MAX) }
     if (history.isEmpty()) {
@@ -529,7 +590,8 @@ fun glassCardColors(): CardColors =
  * Kraft: schwerster Satz (bei Gleichstand mehr Wdh.); Cardio und Zeitübungen: längste Einheit.
  */
 @Composable
-fun RecordLine(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
+fun RecordLine(allSets: List<GymSet>, cardio: Boolean, timed: Boolean) {
+    val history = allSets.top() // ohne Aufwärm-/Drop-Sätze
     val today = dayKey(System.currentTimeMillis())
     val best = if (cardio || timed) history.maxByOrNull { it.reps }
     else history.maxWithOrNull(compareBy<GymSet>({ it.weight }, { it.reps }))
@@ -558,18 +620,19 @@ fun RecordLine(history: List<GymSet>, cardio: Boolean, timed: Boolean) {
  */
 @Composable
 fun HistoryDayCard(store: GymStore, day: String, daySets: List<GymSet>, cardio: Boolean, timed: Boolean) {
+    val work = daySets.work() // Kopfzeile ohne Aufwärmsätze
     Card(Modifier.fillMaxWidth(), colors = glassCardColors()) {
         Column(Modifier.padding(12.dp)) {
             Text(
                 if (cardio)
-                    "$day · " + plural(daySets.size, tr("Einheit", "session"), tr("Einheiten", "sessions")) +
-                        " · ${daySets.sumOf { it.reps }} " + tr("Min gesamt", "min total")
+                    "$day · " + plural(work.size, tr("Einheit", "session"), tr("Einheiten", "sessions")) +
+                        " · ${work.sumOf { it.reps }} " + tr("Min gesamt", "min total")
                 else if (timed)
-                    "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                        " · " + tr("gesamt ", "total ") + fmtSeconds(daySets.sumOf { it.reps })
+                    "$day · " + plural(work.size, tr("Satz", "set"), tr("Sätze", "sets")) +
+                        " · " + tr("gesamt ", "total ") + fmtSeconds(work.sumOf { it.reps })
                 else
-                    "$day · " + plural(daySets.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                        " · ${fmtW(daySets.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
+                    "$day · " + plural(work.size, tr("Satz", "set"), tr("Sätze", "sets")) +
+                        " · ${fmtW(work.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
                 style = MaterialTheme.typography.titleSmall
             )
             daySets.firstOrNull()?.let { store.noteFor(it.exercise, dayKey(it.time)) }?.let { note ->
@@ -582,7 +645,9 @@ fun HistoryDayCard(store: GymStore, day: String, daySets: List<GymSet>, cardio: 
                 )
             }
             // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
-            daySets.sortedBy { it.time }.withIndex().reversed().forEach { (i, s) -> SetRow(store, s, i + 1, cardio) }
+            val sorted = daySets.sortedBy { it.time }
+            val labels = setLabels(sorted)
+            sorted.indices.reversed().forEach { i -> SetRow(store, sorted[i], labels[i], cardio) }
         }
     }
 }

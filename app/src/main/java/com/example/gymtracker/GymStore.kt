@@ -210,7 +210,8 @@ class GymStore(context: Context) {
                         exercise = migrateName(o.getString("exercise")),
                         weight = o.getDouble("weight"),
                         reps = o.getInt("reps"),
-                        time = o.getLong("time")
+                        time = o.getLong("time"),
+                        type = SetType.parse(o.optString("type").ifEmpty { null })
                     )
                 )
             }
@@ -282,6 +283,7 @@ class GymStore(context: Context) {
             o.put("weight", set.weight)
             o.put("reps", set.reps)
             o.put("time", set.time)
+            if (set.type != SetType.NORMAL) o.put("type", set.type.name) // nur abweichende Typen speichern
             s.put(o)
         }
         root.put("sets", s)
@@ -446,17 +448,17 @@ class GymStore(context: Context) {
         save()
     }
 
-    fun addSet(exercise: String, weight: Double, reps: Int) {
+    fun addSet(exercise: String, weight: Double, reps: Int, type: SetType = SetType.NORMAL) {
         val now = System.currentTimeMillis()
-        sets.add(GymSet(now, exercise, weight, reps, now))
+        sets.add(GymSet(now, exercise, weight, reps, now, type))
         save()
     }
 
-    /** Gewicht/Wiederholungen eines bestehenden Satzes ändern (Zeitpunkt bleibt gleich). */
-    fun updateSet(set: GymSet, weight: Double, reps: Int) {
+    /** Gewicht/Wiederholungen/Typ eines bestehenden Satzes ändern (Zeitpunkt bleibt gleich). */
+    fun updateSet(set: GymSet, weight: Double, reps: Int, type: SetType = set.type) {
         val i = sets.indexOf(set)
         if (i < 0) return
-        sets[i] = set.copy(weight = weight, reps = reps)
+        sets[i] = set.copy(weight = weight, reps = reps, type = type)
         save()
     }
 
@@ -511,7 +513,7 @@ class GymStore(context: Context) {
             exercises = exs,
             start = list.first().time,
             end = list.last().time,
-            targets = exs.associateWith { e -> list.count { it.exercise == e } }
+            targets = exs.associateWith { e -> list.count { it.exercise == e && it.isWork } }
         )
     }
 

@@ -345,13 +345,14 @@ val HEAT_LEVELS = listOf(
 fun heatColor(p: Float): Color? = HEAT_LEVELS.lastOrNull { p >= it.first }?.second
 
 /**
- * Sätze je Muskel: jeder Satz zählt 1 für die Hauptmuskeln und 0,5 für die Hilfsmuskeln.
+ * Sätze je Muskel (ohne Aufwärmsätze): jeder Satz zählt 1 für die Hauptmuskeln und 0,5 für die Hilfsmuskeln.
  * Übungen ohne bekannte Muskeln werden übersprungen.
  */
 fun muscleScore(sets: List<GymSet>): Map<String, Float> {
     val score = HashMap<String, Float>()
     val cache = HashMap<String, MuscleSet?>()
     for (s in sets) {
+        if (!s.isWork) continue // Aufwärmsätze zählen nicht
         val m = cache.getOrPut(s.exercise) { musclesOf(s.exercise) } ?: continue
         m.primary.forEach { score[it] = (score[it] ?: 0f) + 1f }
         m.secondary.forEach { score[it] = (score[it] ?: 0f) + 0.5f }

@@ -18,8 +18,8 @@ data class ExerciseResult(
     /** Sätze vom letzten Mal (letzter Trainingstag davor), leer = erstes Mal */
     val previous: List<GymSet>
 ) {
-    /** Sätze, die aufs Ziel angerechnet werden (mehr als das Ziel zählt nicht extra) */
-    val counted: Int get() = minOf(sets.size, target)
+    /** Sätze, die aufs Ziel angerechnet werden (ohne Aufwärmen; mehr als das Ziel zählt nicht extra) */
+    val counted: Int get() = minOf(sets.count { it.isWork }, target)
 }
 
 data class SessionStats(
@@ -58,12 +58,13 @@ fun exerciseResult(
         if (!freeOnly) list
         else list.filter { s -> store.sessions.none { t -> s.time in t.start..t.end && s.exercise in t.exercises } }
     }
-    val best = sets.maxOfOrNull(metric)
-    val prevBest = store.sets.filter { it.exercise == name && it.time < start }.maxOfOrNull(metric)
+    // Aufwärm- und Drop-Sätze zählen nicht für Rekorde
+    val best = sets.top().maxOfOrNull(metric)
+    val prevBest = store.sets.filter { it.exercise == name && it.time < start && it.isTop }.maxOfOrNull(metric)
     // Bestleistung nur, wenn es vorher schon Sätze gab – sonst wäre jedes erste Training ein Rekord
     val record = best != null && prevBest != null && best > prevBest
     // Sätze vom letzten Trainingstag vor diesem Training (für „▲ +2,5 kg vs. letztes Mal“)
-    val before = store.setsFor(name).filter { it.time < start }
+    val before = store.setsFor(name).filter { it.time < start && it.isTop }
     val lastDay = before.firstOrNull()?.let { dayKey(it.time) }
     val previous = before.filter { dayKey(it.time) == lastDay }
     return ExerciseResult(name, group, sets, record, target, previous)
@@ -77,11 +78,11 @@ fun exerciseResult(
  */
 fun estimateKcal(store: GymStore, t: TrainingSession, results: List<ExerciseResult>): Int? {
     val kg = store.weightAt(t.start) ?: return null
-    val cardio = results.filter { it.group.isCardio }
+    val cardio = results.filter { it.group.isCardio }.map { it.copy(sets = it.sets.work()) }
     val cardioMinutes = cardio.sumOf { r -> r.sets.sumOf { it.reps } }
     val cardioKcal = cardio.sumOf { r -> r.sets.sumOf { it.reps } * cardioMet(r.name) } * kg / 60.0
 
-    val strengthSets = results.filter { !it.group.isCardio }.sumOf { it.sets.size }
+    val strengthSets = results.filter { !it.group.isCardio }.sumOf { it.sets.count { s -> s.isWork } }
     val strengthMinutes = when {
         strengthSets == 0 -> 0.0
         // echte Dauer abzüglich Cardio – aber mindestens 1 Minute pro Satz
@@ -101,11 +102,12 @@ fun sessionStats(store: GymStore, t: TrainingSession): SessionStats {
         )
     }
     // Volumen nur aus Kraftübungen mit Wiederholungen (bei Zeitübungen wäre kg × Sekunden sinnlos)
-    val strength = results.filter { !it.group.isCardio && !isTimed(it.name) }.flatMap { it.sets }
-    val cardio = results.filter { it.group.isCardio }.flatMap { it.sets }
+    // Aufwärmsätze zählen weder fürs Volumen noch für die Satzzahl
+    val strength = results.filter { !it.group.isCardio && !isTimed(it.name) }.flatMap { it.sets.work() }
+    val cardio = results.filter { it.group.isCardio }.flatMap { it.sets.work() }
     return SessionStats(
         results = results,
-        sets = results.sumOf { it.sets.size },
+        sets = results.sumOf { it.sets.count { s -> s.isWork } },
         volume = strength.sumOf { it.weight * it.reps },
         cardioMinutes = cardio.sumOf { it.reps },
         records = results.count { it.record },

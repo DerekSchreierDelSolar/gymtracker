@@ -25,7 +25,7 @@ data class RecordEvent(val exercise: String, val set: GymSet)
  */
 fun recordEvents(store: GymStore): List<RecordEvent> {
     val events = mutableListOf<RecordEvent>()
-    store.sets.groupBy { it.exercise }.forEach { (name, list) ->
+    store.sets.top().groupBy { it.exercise }.forEach { (name, list) -> // ohne Aufwärm-/Drop-Sätze
         val byTime = store.groupOf(name).isCardio || isTimed(name)
         val metric: (GymSet) -> Double = if (byTime) { s -> s.reps.toDouble() } else { s -> s.weight }
         var best: Double? = null
@@ -55,7 +55,7 @@ fun previousWeek(weekStart: Long): Long =
 /** Volumen (kg × Wdh.) pro Woche für die letzten `count` Wochen, älteste zuerst. */
 fun weeklyVolumes(store: GymStore, count: Int): List<Pair<Long, Double>> {
     val starts = generateSequence(startOfWeek()) { previousWeek(it) }.take(count).toList().reversed()
-    val strength = store.sets.filter { !store.groupOf(it.exercise).isCardio && !isTimed(it.exercise) }
+    val strength = store.sets.filter { it.isWork && !store.groupOf(it.exercise).isCardio && !isTimed(it.exercise) }
     return starts.map { ws ->
         val we = Calendar.getInstance().apply { timeInMillis = ws; add(Calendar.DAY_OF_MONTH, 7) }.timeInMillis
         ws to strength.filter { it.time in ws until we }.sumOf { it.weight * it.reps }
@@ -195,7 +195,7 @@ fun DashboardTab(
         }
 
         // Diagramm: Sätze pro Muskelgruppe (gleicher Zeitraum wie die Heatmap)
-        val perGroup = period.filter(store.sets)
+        val perGroup = period.filter(store.sets.work()) // ohne Aufwärmsätze
             .groupBy { store.groupOf(it.exercise) }
             .map { (g, l) -> g.label to l.size.toDouble() }
             .sortedByDescending { it.second }

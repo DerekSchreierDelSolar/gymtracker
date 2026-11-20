@@ -5,7 +5,7 @@ import { heatCard, muscleScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
-  goalCompletion, completionColor, dayKey, fmtSeconds,
+  goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort,
 } from '../core.js';
 import { sessionStats } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
@@ -14,7 +14,7 @@ import {
 } from '../ui.js';
 import { nav, update, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
-import { setInput, setRow, historyDayCard, recordLine, noteButton } from './exercise.js';
+import { setInput, setRows, historyDayCard, recordLine, noteButton } from './exercise.js';
 
 // ---------- Ton, Vibration, Bildschirm an ----------
 
@@ -94,7 +94,7 @@ function circleStat(big, onClick) {
 
 /** Wiederholungs-Ziel (wie repsGoal in TrainingScreen.kt): [Wert, Beschriftung] oder null. */
 function repsGoal(name, before) {
-  const prev = store.setsFor(name).filter(s => s.time < before);
+  const prev = store.setsFor(name).filter(s => s.time < before && isTop(s)); // ohne Aufwärm-/Drop-Sätze
   if (!prev.length) return null;
   const lastDay = dayKey(prev[0].time);
   const last = prev.filter(s => dayKey(s.time) === lastDay);
@@ -144,9 +144,9 @@ function restCircle() {
 export function confirmEndTraining(w, onFinish) {
   openDialog(() => {
     const start = nav.trainingStart;
-    const total = w.exercises.reduce((a, e) => a + store.setsBetween(e, start, Infinity).length, 0);
+    const total = w.exercises.reduce((a, e) => a + store.setsBetween(e, start, Infinity).filter(isWork).length, 0);
     const goalTotal = w.exercises.reduce((a, e) => a + store.targetFor(w, e), 0);
-    const goalDone = w.exercises.reduce((a, e) => a + Math.min(store.setsBetween(e, start, Infinity).length, store.targetFor(w, e)), 0);
+    const goalDone = w.exercises.reduce((a, e) => a + Math.min(store.setsBetween(e, start, Infinity).filter(isWork).length, store.targetFor(w, e)), 0);
     const pct = Math.round(goalCompletion(goalDone, goalTotal, total) * 100);
     const setsText = plural(total, tr('Satz', 'set'), tr('Sätze', 'sets')) + tr(' in ', ' in ') + fmtDuration(Date.now() - start);
     return dialog(tr('Training beenden?', 'Finish workout?'),
@@ -167,7 +167,7 @@ export function trainingScreen(w, onFinish) {
   const n = w.exercises.length;
   const index = Math.min(Math.max(0, nav.trainingIndex), Math.max(0, n - 1));
   const setIndex = i => { if (i >= 0 && i < n) update({ trainingIndex: i }); };
-  const countOf = e => store.setsBetween(e, start, Infinity).length;
+  const countOf = e => store.setsBetween(e, start, Infinity).filter(isWork).length; // ohne Aufwärmsätze
   const endDialog = () => confirmEndTraining(w, onFinish);
 
   const name = w.exercises[index];
@@ -212,12 +212,13 @@ function exercisePage(w, start, name) {
     if (!previousDays.has(d)) previousDays.set(d, []);
     previousDays.get(d).push(s);
   }
-  const reached = target > 0 && today.length >= target;
+  const done = today.filter(isWork).length; // Aufwärmsätze zählen nicht fürs Ziel
+  const reached = target > 0 && done >= target;
   const goal = repsGoal(name, start);
   const reps = circleStat(false, null);
   reps.set(1, goal?.[0] ?? '–', goal?.[1] ?? tr('Wiederholungen', 'Reps'), 'var(--primary)');
   const sets = circleStat(false, null);
-  sets.set(target > 0 ? today.length / target : today.length ? 1 : 0, target > 0 ? `${today.length}/${target}` : String(today.length),
+  sets.set(target > 0 ? done / target : done ? 1 : 0, target > 0 ? `${done}/${target}` : String(done),
     reached ? tr('Ziel erreicht ✓', 'Goal reached ✓') : tr('Sätze erledigt', 'Sets done'), reached ? completionColor(1) : '#E88A93');
 
   return [
@@ -228,7 +229,7 @@ function exercisePage(w, start, name) {
     setInput(name, startRest),
     noteButton(name),
     today.length ? [h('h2', { class: 'section' }, tr('Heute', 'Today')),
-      today.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse()] : null,
+      setRows(today, cardio)] : null,
     // Verlauf: frühere Trainings dieser Übung
     previousDays.size
       ? [h('h2', { class: 'section' }, tr('Verlauf', 'History')),
@@ -251,7 +252,7 @@ export function summaryScreen(t, onDone) {
 
   const volumeItems = stats.results
     .filter(r => !isCardio(r.group) && !isTimed(r.name) && r.sets.length)
-    .map(r => [exName(r.name), r.sets.reduce((a, s) => a + s.weight * s.reps, 0)])
+    .map(r => [exName(r.name), r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0)])
     .sort((a, b) => b[1] - a[1]);
 
   let trend = null;
@@ -294,16 +295,16 @@ export function summaryScreen(t, onDone) {
         tr('neue Bestleistung', 'new personal record'), tr('neue Bestleistungen', 'new personal records')) + '!') : null,
       stats.results.map(r => {
         const cardio = isCardio(r.group);
-        const met = r.target > 0 && r.sets.length >= r.target;
+        const met = r.target > 0 && r.sets.filter(isWork).length >= r.target;
         return h('div', { class: 'card row-card' },
           h('span', { html: exerciseIconHtml(r.name, r.group, 40) }),
           h('div', { class: 'grow' },
             h('b', { style: met ? `color:${completionColor(1)}` : null },
-              r.target === 0 ? `${exName(r.name)}  ·  optional` : `${exName(r.name)}  ·  ${r.sets.length}/${r.target}`),
+              r.target === 0 ? `${exName(r.name)}  ·  optional` : `${exName(r.name)}  ·  ${r.sets.filter(isWork).length}/${r.target}`),
             r.sets.length === 0
               ? muted(r.target === 0 ? tr('nicht gemacht', 'not done') : tr('übersprungen', 'skipped'), 'small')
-              : [h('small', null, r.sets.map(s => fmtSet(s, cardio)).join(', ')),
-                !cardio && !isTimed(r.name) ? muted(tr('Volumen: ', 'Volume: ') + `${fmtW(r.sets.reduce((a, s) => a + s.weight * s.reps, 0))} kg`, 'small') : null,
+              : [h('small', null, r.sets.map(s => fmtSet(s, cardio) + (s.type ? ` (${setTypeShort(s.type)})` : '')).join(', ')),
+                !cardio && !isTimed(r.name) ? muted(tr('Volumen: ', 'Volume: ') + `${fmtW(r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0))} kg`, 'small') : null,
                 comparisonLine(r)]),
           r.record ? h('span', { class: 'big-emoji' }, '🏆') : null);
       }),
@@ -313,10 +314,11 @@ export function summaryScreen(t, onDone) {
 
 /** Vergleich mit dem letzten Mal: Kraft = schwerster Satz, Cardio = Minuten gesamt, Zeit = längste. */
 function comparisonLine(r) {
-  if (!r.previous.length || !r.sets.length) return null;
+  const sets = r.sets.filter(isTop); // ohne Aufwärm-/Drop-Sätze (wie r.previous)
+  if (!r.previous.length || !sets.length) return null;
   const cardio = isCardio(r.group), timed = isTimed(r.name);
   const val = l => (cardio ? l.reduce((a, s) => a + s.reps, 0) : timed ? Math.max(...l.map(s => s.reps)) : Math.max(...l.map(s => s.weight)));
-  const diff = val(r.sets) - val(r.previous);
+  const diff = val(sets) - val(r.previous);
   const fmtDiff = d => (cardio ? `${fmtW(d)} min` : timed ? `${Math.trunc(d)} s` : `${fmtW(d)} kg`);
   const [text, color] = diff > 0.001 ? [`▲ +${fmtDiff(diff)}`, completionColor(1)]
     : diff < -0.001 ? [`▼ −${fmtDiff(-diff)}`, null] : [`= ${tr('gleich', 'same')}`, null];

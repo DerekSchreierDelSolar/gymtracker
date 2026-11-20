@@ -2,7 +2,7 @@
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
 import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
-import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural } from './core.js';
+import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural, isWork } from './core.js';
 import { h, chip, dialog } from './ui.js';
 import { wikiFor } from './wiki.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
@@ -120,10 +120,11 @@ export const HEAT_LEVELS = [
 ];
 export const heatColor = p => HEAT_LEVELS.filter(l => p >= l[0]).pop()?.[1] ?? null;
 
-/** Sätze je Muskel: Hauptmuskeln 1, Hilfsmuskeln 0,5 pro Satz (wie muscleScore in BodyMap.kt). */
+/** Sätze je Muskel (ohne Aufwärmsätze): Hauptmuskeln 1, Hilfsmuskeln 0,5 pro Satz (wie muscleScore in BodyMap.kt). */
 export function muscleScore(sets) {
   const score = {}, cache = new Map();
   for (const s of sets) {
+    if (!isWork(s)) continue; // Aufwärmsätze zählen nicht
     if (!cache.has(s.exercise)) cache.set(s.exercise, musclesOf(s.exercise));
     const m = cache.get(s.exercise);
     if (!m) continue;

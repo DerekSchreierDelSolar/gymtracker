@@ -96,7 +96,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
             // Diagramm 1: Volumen pro Übung (nur Kraftübungen mit Sätzen)
             val volumeItems = stats.results
                 .filter { !it.group.isCardio && !isTimed(it.name) && it.sets.isNotEmpty() }
-                .map { exName(it.name) to it.sets.sumOf { s -> s.weight * s.reps } }
+                .map { exName(it.name) to it.sets.work().sumOf { s -> s.weight * s.reps } }
                 .sortedByDescending { it.second }
             if (volumeItems.size >= 2) {
                 item {
@@ -161,9 +161,9 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                         Column(Modifier.weight(1f)) {
                             Text(
                                 if (r.target == 0) "${exName(r.name)}  ·  optional"
-                                else "${exName(r.name)}  ·  ${r.sets.size}/${r.target}",
+                                else "${exName(r.name)}  ·  ${r.sets.count { it.isWork }}/${r.target}",
                                 style = MaterialTheme.typography.titleSmall,
-                                color = if (r.target > 0 && r.sets.size >= r.target) completionColor(1f)
+                                color = if (r.target > 0 && r.sets.count { it.isWork } >= r.target) completionColor(1f)
                                 else MaterialTheme.colorScheme.onSurface
                             )
                             if (r.sets.isEmpty()) {
@@ -174,12 +174,12 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                                 )
                             } else {
                                 Text(
-                                    r.sets.joinToString(", ") { fmtSet(it, cardio) },
+                                    r.sets.joinToString(", ") { fmtSet(it, cardio) + if (it.type != SetType.NORMAL) " (${it.type.short})" else "" },
                                     style = MaterialTheme.typography.bodySmall
                                 )
                                 if (!cardio && !isTimed(r.name)) {
                                     Text(
-                                        tr("Volumen: ", "Volume: ") + "${fmtW(r.sets.sumOf { it.weight * it.reps })} kg",
+                                        tr("Volumen: ", "Volume: ") + "${fmtW(r.sets.work().sumOf { it.weight * it.reps })} kg",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -205,13 +205,14 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
  */
 @Composable
 fun ComparisonLine(r: ExerciseResult) {
-    if (r.previous.isEmpty() || r.sets.isEmpty()) return
+    val sets = r.sets.top() // ohne Aufwärm-/Drop-Sätze (wie r.previous)
+    if (r.previous.isEmpty() || sets.isEmpty()) return
     val cardio = r.group.isCardio
     val timed = isTimed(r.name)
     val now = when {
-        cardio -> r.sets.sumOf { it.reps }.toDouble()
-        timed -> r.sets.maxOf { it.reps }.toDouble()
-        else -> r.sets.maxOf { it.weight }
+        cardio -> sets.sumOf { it.reps }.toDouble()
+        timed -> sets.maxOf { it.reps }.toDouble()
+        else -> sets.maxOf { it.weight }
     }
     val before = when {
         cardio -> r.previous.sumOf { it.reps }.toDouble()

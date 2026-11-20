@@ -2,7 +2,7 @@
 
 import { STRENGTH_MET, MINUTES_PER_SET } from './data.js';
 import {
-  isCardio, isTimed, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays,
+  isCardio, isTimed, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays, isWork, isTop,
 } from './core.js';
 
 const sum = (arr, f = x => x) => arr.reduce((a, x) => a + f(x), 0);
@@ -16,14 +16,15 @@ export function exerciseResult(store, name, start, end, target, freeOnly = false
   let sets = store.setsBetween(name, start, end);
   // Freies Training: nur Sätze, die zu keinem gespeicherten Training gehören (sonst doppelt gezählt)
   if (freeOnly) sets = sets.filter(s => store.isFreeSet(s));
-  const best = max(sets, metric);
-  const prevBest = max(store.sets.filter(s => s.exercise === name && s.time < start), metric);
+  // Aufwärm- und Drop-Sätze zählen nicht für Rekorde
+  const best = max(sets.filter(isTop), metric);
+  const prevBest = max(store.sets.filter(s => s.exercise === name && s.time < start && isTop(s)), metric);
   const record = best != null && prevBest != null && best > prevBest;
   // Sätze vom letzten Trainingstag vor diesem Training
-  const before = store.setsFor(name).filter(s => s.time < start);
+  const before = store.setsFor(name).filter(s => s.time < start && isTop(s));
   const lastDay = before.length ? dayKey(before[0].time) : null;
   const previous = before.filter(s => dayKey(s.time) === lastDay);
-  return { name, group, sets, record, target, previous, counted: Math.min(sets.length, target) };
+  return { name, group, sets, record, target, previous, counted: Math.min(sets.filter(isWork).length, target) };
 }
 
 /** Geschätzter Verbrauch (MET-Methode); null ohne Körpergewicht. */
@@ -31,9 +32,9 @@ export function estimateKcal(store, t, results) {
   const kg = store.weightAt(t.start);
   if (kg == null) return null;
   const cardio = results.filter(r => isCardio(r.group));
-  const cardioMinutes = sum(cardio, r => sum(r.sets, s => s.reps));
-  const cardioKcal = (sum(cardio, r => sum(r.sets, s => s.reps) * cardioMet(r.name)) * kg) / 60;
-  const strengthSets = sum(results.filter(r => !isCardio(r.group)), r => r.sets.length);
+  const cardioMinutes = sum(cardio, r => sum(r.sets.filter(isWork), s => s.reps));
+  const cardioKcal = (sum(cardio, r => sum(r.sets.filter(isWork), s => s.reps) * cardioMet(r.name)) * kg) / 60;
+  const strengthSets = sum(results.filter(r => !isCardio(r.group)), r => r.sets.filter(isWork).length);
   let strengthMinutes = 0;
   if (strengthSets > 0) {
     strengthMinutes = t.id >= 0
@@ -46,9 +47,9 @@ export function estimateKcal(store, t, results) {
 export function sessionStats(store, t) {
   const results = t.exercises.map(e =>
     exerciseResult(store, e, t.start, t.end, t.targets[e] ?? 0, t.id < 0));
-  const strength = results.filter(r => !isCardio(r.group) && !isTimed(r.name)).flatMap(r => r.sets);
-  const cardio = results.filter(r => isCardio(r.group)).flatMap(r => r.sets);
-  const sets = sum(results, r => r.sets.length);
+  const strength = results.filter(r => !isCardio(r.group) && !isTimed(r.name)).flatMap(r => r.sets.filter(isWork));
+  const cardio = results.filter(r => isCardio(r.group)).flatMap(r => r.sets.filter(isWork));
+  const sets = sum(results, r => r.sets.filter(isWork).length);
   const done = sum(results, r => r.counted);
   const total = sum(results, r => r.target);
   const completion = goalCompletion(done, total, sets);
@@ -73,7 +74,7 @@ export function allSessions(store) {
 export function recordEvents(store) {
   const events = [];
   const byEx = new Map();
-  for (const s of store.sets) {
+  for (const s of store.sets.filter(isTop)) { // ohne Aufwärm-/Drop-Sätze
     if (!byEx.has(s.exercise)) byEx.set(s.exercise, []);
     byEx.get(s.exercise).push(s);
   }
@@ -110,7 +111,7 @@ export function weeklyVolumes(store, count) {
   const starts = [];
   let w = startOfWeek();
   for (let i = 0; i < count; i++) { starts.unshift(w); w = addDays(w, -7); }
-  const strength = store.sets.filter(s => !isCardio(store.groupOf(s.exercise)) && !isTimed(s.exercise));
+  const strength = store.sets.filter(s => isWork(s) && !isCardio(store.groupOf(s.exercise)) && !isTimed(s.exercise));
   return starts.map(ws => {
     const we = addDays(ws, 7);
     return [ws, sum(strength.filter(s => s.time >= ws && s.time < we), s => s.weight * s.reps)];
@@ -121,7 +122,7 @@ export function weeklyVolumes(store, count) {
 
 export function progressionSuggestion(store, name, before) {
   if (isCardio(store.groupOf(name))) return null;
-  const prev = store.setsFor(name).filter(s => s.time < before);
+  const prev = store.setsFor(name).filter(s => s.time < before && isTop(s)); // ohne Aufwärm-/Drop-Sätze
   if (!prev.length) return null;
   const lastDay = dayKey(prev[0].time);
   const last = prev.filter(s => dayKey(s.time) === lastDay);

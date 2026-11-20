@@ -74,6 +74,10 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
   `migrateName()` auf alle gespeicherten Namen an (auch bei Import alter Backups). Einträge nie löschen.
 - `GymSet.reps` ist je nach Übung: Wiederholungen | **Minuten** (Cardio, `group.isCardio`) | **Sekunden** (`isTimed(name)`).
   Cardio/Zeit zählen nicht ins Volumen (kg × Wdh.).
+- **Satz-Typen** (`SetType`: NORMAL, WARMUP, DROP, FAILURE; im JSON `"type"` nur bei ≠ NORMAL, Web: `s.type` fehlt = NORMAL).
+  `isWork` (alles außer Aufwärmen) → Volumen, kcal, Ziel-Sätze, Satzzahlen, Heatmap; `isTop` (Normal + Versagen) →
+  Rekorde, 1RM, Fortschritt, 💡-Vorschlag, Wdh.-Ziel, Vergleich „letztes Mal“. Neue Auswertungen immer entsprechend filtern
+  (`work()`/`top()` bzw. `isWork`/`isTop` in core.js). Satzliste: `setLabels()` (Arbeitssätze 1., 2. …, Aufwärmen „A“).
 - Eigene Übungen: Gruppe in `GymStore.groups`, Gerät/Zeit in globalem `CustomMeta`.
 - `TrainingSession` speichert nur Start/Ende + Kopie von Name/Übungen/Zielen; die Sätze sind
   alle `sets` der Übungen im Zeitraum. **Negative Session-ID = „freies Training“** (Sätze ohne
@@ -124,9 +128,9 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
   Offline braucht es **HTTPS** (z. B. GitHub Pages).
 
 ## Ideen-Backlog (vom Nutzer noch nicht umgesetzt)
-Ernährungstagebuch, Körpermaße, Fortschrittsfotos, Satz-Typen (Aufwärmen/Drop),
+Ernährungstagebuch, Körpermaße, Fortschrittsfotos,
 Supersätze, Trainingsplan mit Wochentagen + Erinnerung, Pausen-Timer als Benachrichtigung
-(Foreground Service), Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen pro Übung + Tag: umgesetzt in 1.2, `notes` im JSON = { Übung: { dayKey: Text } }.)
+(Foreground Service), Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen pro Übung + Tag: umgesetzt in 1.2, `notes` im JSON = { Übung: { dayKey: Text } }. Satz-Typen: umgesetzt nach 1.2.)
 - **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
   Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
   Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
