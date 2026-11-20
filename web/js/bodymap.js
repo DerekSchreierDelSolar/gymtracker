@@ -3,7 +3,7 @@
 
 import { MUSCLES, BODY, BODY_SHAPES } from './body-data.js';
 import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural, isWork } from './core.js';
-import { h, chip, dialog } from './ui.js';
+import { h, chip, dialog, horizontalBars } from './ui.js';
 import { wikiFor } from './wiki.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
 import { store } from './store.js';
@@ -184,8 +184,13 @@ export function heatCard({ title, score, showSets, empty, header = null }) {
     h('div', { class: 'muscle-map' }, bodyFigure(id => (load[id] ? heatColor(load[id]) : null))),
     h('div', { class: 'heat-legend' }, HEAT_LEVELS.map(([, c, label]) => h('span', null, dot(c), label))),
     entries.length
-      ? [h('div', { class: 'heat-list' }, entries.map(([id, v]) => h('span', null, dot(heatColor(load[id])),
-          `${muscleLabel(id)} ` + (showSets ? `${fmtSets(v)} ${v === 1 ? tr('Satz', 'set') : tr('Sätze', 'sets')}` : `${Math.round(load[id] * 100)} %`)))),
+      ? [showSets
+          // Trainingsübersicht: Anteil jedes Muskels an der Summe (zusammen 100 %) + Sätze
+          ? [h('small', { class: 'muted' }, tr('Anteil am Training · Sätze', 'Share of workout · sets')),
+            horizontalBars(entries.map(([id, v]) => [muscleLabel(id), v]), v => `${Math.round((v / total) * 100)} % · ${fmtSets(v)}`)]
+          // sonst Prozent relativ zum stärksten Muskel
+          : h('div', { class: 'heat-list' }, entries.map(([id]) => h('span', null, dot(heatColor(load[id])),
+            `${muscleLabel(id)} ${Math.round(load[id] * 100)} %`))),
         showSets ? h('b', null, tr('Summe: ', 'Total: ') + `${fmtSets(total)} ` + tr('Muskel-Sätze', 'muscle sets') + ' · ' +
           plural(entries.length, tr('Muskel', 'muscle'), tr('Muskeln', 'muscles')) + tr(' (Hilfsmuskel zählt ½)', ' (secondary counts ½)')) : null,
         missing.length ? h('p', { class: 'muted small' }, tr('Nicht trainiert: ', 'Not trained: ') + missing.map(muscleLabel).join(', ')) : null]

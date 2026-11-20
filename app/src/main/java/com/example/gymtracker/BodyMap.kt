@@ -439,15 +439,25 @@ fun MuscleHeatCard(
             if (load.isEmpty()) {
                 Text(empty, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
-                // Muskeln mit Prozent bzw. Sätzen, stärkste zuerst
+                if (showSets) {
+                    // Trainingsübersicht: Anteil jedes Muskels an der Summe (zusammen 100 %) + Sätze
+                    val total = score.values.sum()
+                    Text(
+                        tr("Anteil am Training · Sätze", "Share of workout · sets"),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    HorizontalBars(
+                        score.entries.sortedByDescending { it.value }.map { muscleLabel(it.key) to it.value.toDouble() }
+                    ) { v -> "${Math.round(v / total * 100)} % · ${fmtSets(v.toFloat())}" }
+                } else
+                // Muskeln mit Prozent (relativ zum stärksten), stärkste zuerst
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    score.entries.sortedByDescending { it.value }.forEach { (id, v) ->
+                    score.entries.sortedByDescending { it.value }.forEach { (id, _) ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             heatColor(load.getValue(id))?.let { LegendDot(it) }
                             Text(
-                                muscleLabel(id) + " " +
-                                    if (showSets) fmtSets(v) + " " + tr(if (v == 1f) "Satz" else "Sätze", if (v == 1f) "set" else "sets")
-                                    else "${Math.round(load.getValue(id) * 100)} %",
+                                muscleLabel(id) + " ${Math.round(load.getValue(id) * 100)} %",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
