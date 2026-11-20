@@ -17,6 +17,7 @@ class GymStore {
   workouts = [];        // { id, name, exercises: [], targets: {} }
   sessions = [];        // { id, workoutId, workoutName, exercises, start, end, targets }
   weights = [];         // { time, kg }, älteste zuerst
+  notes = {};           // Notizen: { Übung: { Tag (dayKey): Text } } – wie GymStore.notes
   restSeconds = 90;
   lastExport = 0;
   weeklyGoal = 3;
@@ -78,6 +79,10 @@ class GymStore {
     setAppLanguage(s.language ?? 'de');
 
     this.weights = arr(root.weights).map(o => ({ time: o.time, kg: o.kg })).sort((a, b) => a.time - b.time);
+    for (const [ex, days] of Object.entries(obj(root.notes))) {
+      const n = migrateName(ex);
+      for (const [d, text] of Object.entries(obj(days))) if (text) (this.notes[n] ??= {})[d] = String(text);
+    }
     this.sessions = arr(root.sessions).map(o => ({
       id: o.id, workoutId: o.workoutId, workoutName: o.workoutName,
       exercises: arr(o.exercises).map(migrateName),
@@ -100,6 +105,7 @@ class GymStore {
       workouts: this.workouts,
       sessions: this.sessions,
       weights: this.weights,
+      notes: this.notes,
       settings: {
         restSeconds: this.restSeconds,
         lastExport: this.lastExport,
@@ -132,7 +138,7 @@ class GymStore {
     const root = JSON.parse(text); // zuerst parsen: bei Fehler bleibt alles unverändert
     const old = localStorage.getItem(KEY);
     if (old) localStorage.setItem('gym_data_before_import', old);
-    this.exercises = []; this.sets = []; this.groups = {}; this.workouts = []; this.sessions = []; this.weights = [];
+    this.exercises = []; this.sets = []; this.groups = {}; this.workouts = []; this.sessions = []; this.weights = []; this.notes = {};
     CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
     this.#readFrom(root);
     this.#save();
@@ -185,7 +191,18 @@ class GymStore {
   /** Gespeicherte Gruppe, sonst aus dem Katalog, sonst „Sonstige“. */
   groupOf(name) { return this.groups[name] ?? catalogGroup(name) ?? 'SONSTIGE'; }
 
+  /** Notiz einer Übung an einem Tag (dayKey), null = keine. */
+  noteFor(exercise, day) { return this.notes[exercise]?.[day] ?? null; }
+  /** Notiz setzen; leerer Text löscht sie. */
+  setNote(exercise, day, text) {
+    const t = text.trim();
+    if (t) (this.notes[exercise] ??= {})[day] = t;
+    else if (this.notes[exercise]) { delete this.notes[exercise][day]; if (!Object.keys(this.notes[exercise]).length) delete this.notes[exercise]; }
+    this.#save();
+  }
+
   deleteExercise(name) {
+    delete this.notes[name];
     this.exercises = this.exercises.filter(e => e !== name);
     delete this.groups[name];
     delete CustomMeta.equipment[name];

@@ -348,6 +348,7 @@ fun TrainingExercisePage(
 
         // Nach jedem eingetragenen Satz startet die Pause
         item { SetInput(store, name, onAdded = onAdded) }
+        item { NoteButton(store, name) }
 
         // Heutige Sätze (neuester oben)
         if (today.isNotEmpty()) {

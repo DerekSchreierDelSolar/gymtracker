@@ -18,6 +18,8 @@ class GymStore(context: Context) {
     val sessions = mutableStateListOf<TrainingSession>()
     /** Gewichtsverlauf, älteste zuerst */
     val weights = mutableStateListOf<WeightEntry>()
+    /** Notizen pro Übung und Tag: "Übung|Tag" (Tag = dayKey) → Text. Vor init { load() }! */
+    private val notes = mutableStateMapOf<String, String>()
     /** Standard-Pausenlänge in Sekunden (0 = kein Pausen-Timer). `private set`: nur über setRest() änderbar. */
     var restSeconds by mutableIntStateOf(90)
         private set
@@ -120,7 +122,7 @@ class GymStore(context: Context) {
         if (file.exists()) {
             file.copyTo(File(file.parentFile, "gym_data_before_import.json"), overwrite = true)
         }
-        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear()
+        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         readFrom(root)
         save()
@@ -177,6 +179,12 @@ class GymStore(context: Context) {
                     WeightEntry(o.getLong("time"), o.getDouble("kg"))
                 }.sortedBy { it.time }
             )
+            // Notizen: { "Übung": { "20261119": "Text" } }
+            val no = root.optJSONObject("notes") ?: JSONObject()
+            no.keys().forEach { ex ->
+                val days = no.optJSONObject(ex) ?: return@forEach
+                days.keys().forEach { d -> d.toIntOrNull()?.let { notes["${migrateName(ex)}|$it"] = days.getString(d) } }
+            }
             val se = root.optJSONArray("sessions") ?: JSONArray()
             for (i in 0 until se.length()) {
                 val o = se.getJSONObject(i)
@@ -250,6 +258,13 @@ class GymStore(context: Context) {
         root.put("weights", JSONArray().also { arr ->
             weights.forEach { arr.put(JSONObject().put("time", it.time).put("kg", it.kg)) }
         })
+        root.put("notes", JSONObject().also { o ->
+            notes.forEach { (key, text) ->
+                val ex = key.substringBeforeLast('|')
+                val day = key.substringAfterLast('|')
+                (o.optJSONObject(ex) ?: JSONObject().also { o.put(ex, it) }).put(day, text)
+            }
+        })
         root.put(
             "settings",
             JSONObject()
@@ -315,8 +330,19 @@ class GymStore(context: Context) {
     fun groupOf(name: String): MuscleGroup =
         groups[name] ?: catalogGroup(name) ?: MuscleGroup.SONSTIGE
 
+    /** Notiz einer Übung an einem Tag (dayKey), null = keine. */
+    fun noteFor(exercise: String, day: Int): String? = notes["$exercise|$day"]
+
+    /** Notiz setzen; leerer Text löscht sie. */
+    fun setNote(exercise: String, day: Int, text: String) {
+        val t = text.trim()
+        if (t.isEmpty()) notes.remove("$exercise|$day") else notes["$exercise|$day"] = t
+        save()
+    }
+
     fun deleteExercise(name: String) {
         exercises.remove(name)
+        notes.keys.filter { it.substringBeforeLast('|') == name }.forEach { notes.remove(it) }
         groups.remove(name)
         CustomMeta.equipment.remove(name)
         CustomMeta.muscles.remove(name)

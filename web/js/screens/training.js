@@ -14,7 +14,7 @@ import {
 } from '../ui.js';
 import { nav, update, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
-import { setInput, setRow, historyDayCard, recordLine } from './exercise.js';
+import { setInput, setRow, historyDayCard, recordLine, noteButton } from './exercise.js';
 
 // ---------- Ton, Vibration, Bildschirm an ----------
 
@@ -226,6 +226,7 @@ function exercisePage(w, start, name) {
     recordLine(store.setsFor(name), cardio, timed),
     h('div', { class: 'circle-row' }, reps, restCircle(), sets),
     setInput(name, startRest),
+    noteButton(name),
     today.length ? [h('h2', { class: 'section' }, tr('Heute', 'Today')),
       today.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse()] : null,
     // Verlauf: frühere Trainings dieser Übung

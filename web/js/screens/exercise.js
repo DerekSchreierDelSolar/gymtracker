@@ -201,6 +201,7 @@ export function exerciseDetailScreen(name) {
       recordLine(history, cardio, timed),
       progressionHint(name),
       setInput(name),
+      noteButton(name),
       days.size ? h('div', null, h('h2', { class: 'section' }, tr('Verlauf', 'History')),
         muted(tr('Satz antippen zum Bearbeiten', 'Tap a set to edit'), 'small')) : null,
       [...days.entries()].map(([day, list]) => historyDayCard(day, list, cardio, timed)),
@@ -296,6 +297,31 @@ export function historyDayCard(day, list, cardio, timed) {
       : timed
         ? plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ' · ' + tr('gesamt ', 'total ') + fmtSeconds(sumReps(list))
         : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtW(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
+    list.length && store.noteFor(list[0].exercise, dayKey(list[0].time))
+      ? h('p', { class: 'day-note' }, '📝 ' + store.noteFor(list[0].exercise, dayKey(list[0].time))) : null,
     // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
     list.slice().sort((a, b) => a.time - b.time).map((s, i) => setRow(s, i + 1, cardio)).reverse());
 }
+
+/** „📝 Notiz für heute“ (wie NoteButton in ExerciseDetail.kt): antippen öffnet einen Dialog. */
+export function noteButton(name) {
+  const today = dayKey(Date.now());
+  const note = store.noteFor(name, today);
+  const open = () => {
+    const st = { text: note ?? '' };
+    openDialog(() => dialog(tr('Notiz', 'Note'),
+      h('textarea', {
+        id: 'note-text', class: 'note-input', rows: 3, value: st.text,
+        placeholder: tr('z. B. Schulter zwickt, Sitz Stufe 4 …', 'e.g. shoulder twinge, seat level 4 …'),
+        oninput: e => { st.text = e.target.value; },
+      }),
+      [
+        note ? { label: tr('Löschen', 'Delete'), danger: true, onClick: () => { closeDialog(); store.setNote(name, today, ''); } } : null,
+        { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
+        { label: tr('Speichern', 'Save'), onClick: () => { closeDialog(); store.setNote(name, today, st.text); } },
+      ].filter(Boolean), closeDialog));
+  };
+  return h('button', { class: ['note-btn', note && 'has-note'], onclick: open },
+    h('span', null, '📝'), h('span', null, note ?? tr('Notiz für heute hinzufügen', 'Add a note for today')));
+}
+

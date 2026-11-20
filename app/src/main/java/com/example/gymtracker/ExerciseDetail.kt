@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
@@ -330,6 +331,7 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                     item { RecordLine(history, cardio, timed) }
                     item { ProgressionHint(store, exercise, onApply = { appliedWeight = it }) }
                     item { SetInput(store, exercise, weightOverride = appliedWeight) }
+                    item { NoteButton(store, exercise) }
                     if (days.isNotEmpty()) item {
                         Column(Modifier.padding(top = 8.dp)) {
                             Text(tr("Verlauf", "History"), style = MaterialTheme.typography.titleMedium)
@@ -570,8 +572,70 @@ fun HistoryDayCard(store: GymStore, day: String, daySets: List<GymSet>, cardio: 
                         " · ${fmtW(daySets.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
                 style = MaterialTheme.typography.titleSmall
             )
+            daySets.firstOrNull()?.let { store.noteFor(it.exercise, dayKey(it.time)) }?.let { note ->
+                Text(
+                    "📝 $note",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
             // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
             daySets.sortedBy { it.time }.withIndex().reversed().forEach { (i, s) -> SetRow(store, s, i + 1, cardio) }
         }
+    }
+}
+
+/**
+ * „📝 Notiz“ für heute: zeigt die Notiz der Übung (Tag = heute) oder „Notiz hinzufügen“;
+ * Tippen öffnet einen Dialog. Gespeichert pro Übung und Tag (GymStore.setNote).
+ */
+@Composable
+fun NoteButton(store: GymStore, exercise: String) {
+    val today = dayKey(System.currentTimeMillis())
+    val note = store.noteFor(exercise, today)
+    var editing by remember { mutableStateOf(false) }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { editing = true }
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("📝", style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.width(10.dp))
+        Text(
+            note ?: tr("Notiz für heute hinzufügen", "Add a note for today"),
+            style = MaterialTheme.typography.bodyMedium,
+            fontStyle = if (note != null) FontStyle.Italic else FontStyle.Normal,
+            color = if (note != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+        )
+    }
+    if (editing) {
+        var text by remember { mutableStateOf(note ?: "") }
+        AlertDialog(
+            onDismissRequest = { editing = false },
+            title = { Text(tr("Notiz", "Note")) },
+            text = {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text(tr("z. B. Schulter zwickt, Sitz Stufe 4 …", "e.g. shoulder twinge, seat level 4 …")) },
+                    minLines = 2,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = { TextButton(onClick = { store.setNote(exercise, today, text); editing = false }) { Text(tr("Speichern", "Save")) } },
+            dismissButton = {
+                Row {
+                    if (note != null) TextButton(onClick = { store.setNote(exercise, today, ""); editing = false }) {
+                        Text(tr("Löschen", "Delete"), color = MaterialTheme.colorScheme.error)
+                    }
+                    TextButton(onClick = { editing = false }) { Text(tr("Abbrechen", "Cancel")) }
+                }
+            }
+        )
     }
 }

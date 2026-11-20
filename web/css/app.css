@@ -475,3 +475,10 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .circle-stat b.big { font-size: 23px; }
 .circle-stat small { font-size: 13px; color: var(--muted); }
 .circle-stat.final .circle { animation: ring-pulse .5s ease-in-out infinite alternate; }
+
+/* ---------- Notizen ---------- */
+.note-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 4px; border-radius: 12px; text-align: left; color: var(--primary); }
+.note-btn.has-note { color: var(--text); font-style: italic; }
+.note-btn span:first-child { font-size: 20px; font-style: normal; }
+.day-note { font-style: italic; color: var(--muted); margin: 4px 0 2px; }
+.note-input { width: 100%; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--outline, #ccc); background: transparent; color: var(--text); resize: vertical; }

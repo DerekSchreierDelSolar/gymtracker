@@ -124,9 +124,9 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
   Offline braucht es **HTTPS** (z. B. GitHub Pages).
 
 ## Ideen-Backlog (vom Nutzer noch nicht umgesetzt)
-Ernährungstagebuch, Körpermaße, Fortschrittsfotos, Satz-Typen (Aufwärmen/Drop), Notizen,
+Ernährungstagebuch, Körpermaße, Fortschrittsfotos, Satz-Typen (Aufwärmen/Drop),
 Supersätze, Trainingsplan mit Wochentagen + Erinnerung, Pausen-Timer als Benachrichtigung
-(Foreground Service), Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android.)
+(Foreground Service), Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen pro Übung + Tag: umgesetzt in 1.2, `notes` im JSON = { Übung: { dayKey: Text } }.)
 - **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
   Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
   Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
