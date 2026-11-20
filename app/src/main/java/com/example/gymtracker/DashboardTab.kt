@@ -39,6 +39,17 @@ fun recordEvents(store: GymStore): List<RecordEvent> {
     return events.sortedByDescending { it.set.time }
 }
 
+/**
+ * Nächstes Workout nach dem zuletzt trainierten: das folgende in der Liste mit mindestens einer Übung
+ * (nach dem letzten wieder das erste). Noch nie trainiert oder Workout gelöscht → das erste.
+ */
+fun nextWorkoutAfter(workouts: List<Workout>, lastId: Long?): Workout? {
+    val i = workouts.indexOfFirst { it.id == lastId }
+    if (i < 0) return workouts.firstOrNull()
+    return (1..workouts.size).map { workouts[(i + it) % workouts.size] }.firstOrNull { it.exercises.isNotEmpty() }
+        ?: workouts[i]
+}
+
 /** Wochen in Folge mit mindestens einem Training (die laufende Woche zählt, wenn schon trainiert). */
 fun weekStreak(store: GymStore): Int {
     val weeks = allSessions(store).map { startOfWeek(it.start) }.toSet()
@@ -81,9 +92,9 @@ fun DashboardTab(
     // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
     var period by rememberSaveable { mutableStateOf(StatPeriod.WEEK) }
 
-    // „Weiter mit“: Workout des letzten Trainings, sonst das erste Workout
+    // „Weiter mit“: das Workout NACH dem zuletzt trainierten (Reihenfolge der Workout-Liste, am Ende wieder vorn)
     val lastSession = store.sessions.maxByOrNull { it.start }
-    val nextWorkout = lastSession?.let { store.workout(it.workoutId) } ?: store.workouts.firstOrNull()
+    val nextWorkout = nextWorkoutAfter(store.workouts, lastSession?.workoutId)
 
     LazyColumn(
         modifier = modifier,

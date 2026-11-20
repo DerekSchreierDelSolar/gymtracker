@@ -175,7 +175,6 @@ const fmtSets = v => fmtW(Math.round(v * 2) / 2);
 export function heatCard({ title, score, showSets, empty, header = null }) {
   const load = relativeLoad(score);
   const entries = Object.entries(score).sort((a, b) => b[1] - a[1]);
-  const missing = Object.keys(MUSCLES).filter(id => !(id in load));
   const dot = c => h('i', { style: `background:${c}` });
   const total = Object.values(score).reduce((a, v) => a + v, 0);
   return h('div', { class: 'card pad-m heat-card' },
@@ -192,8 +191,7 @@ export function heatCard({ title, score, showSets, empty, header = null }) {
           : h('div', { class: 'heat-list' }, entries.map(([id]) => h('span', null, dot(heatColor(load[id])),
             `${muscleLabel(id)} ${Math.round(load[id] * 100)} %`))),
         showSets ? h('b', null, tr('Summe: ', 'Total: ') + `${fmtSets(total)} ` + tr('Muskel-Sätze', 'muscle sets') + ' · ' +
-          plural(entries.length, tr('Muskel', 'muscle'), tr('Muskeln', 'muscles')) + tr(' (Hilfsmuskel zählt ½)', ' (secondary counts ½)')) : null,
-        missing.length ? h('p', { class: 'muted small' }, tr('Nicht trainiert: ', 'Not trained: ') + missing.map(muscleLabel).join(', ')) : null]
+          plural(entries.length, tr('Muskel', 'muscle'), tr('Muskeln', 'muscles')) + tr(' (Hilfsmuskel zählt ½)', ' (secondary counts ½)')) : null]
       : h('p', { class: 'muted' }, empty));
 }
 

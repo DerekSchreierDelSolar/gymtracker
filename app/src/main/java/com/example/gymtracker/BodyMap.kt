@@ -469,13 +469,6 @@ fun MuscleHeatCard(
                         tr(" (Hilfsmuskel zählt ½)", " (secondary counts ½)"),
                     style = MaterialTheme.typography.titleSmall
                 )
-                // Nicht trainierte Muskeln als Hinweis
-                val missing = MUSCLES.keys.filter { it !in load }
-                if (missing.isNotEmpty()) Text(
-                    tr("Nicht trainiert: ", "Not trained: ") + missing.joinToString(", ") { muscleLabel(it) },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
     }

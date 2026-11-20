@@ -96,6 +96,20 @@ export function recordEvents(store) {
   return events.sort((a, b) => b.set.time - a.set.time);
 }
 
+/**
+ * Nächstes Workout nach dem zuletzt trainierten: das folgende in der Liste mit mindestens einer Übung
+ * (nach dem letzten wieder das erste). Noch nie trainiert oder Workout gelöscht → das erste.
+ */
+export function nextWorkoutAfter(workouts, lastId) {
+  const i = workouts.findIndex(w => w.id === lastId);
+  if (i < 0) return workouts[0] ?? null;
+  for (let k = 1; k <= workouts.length; k++) {
+    const w = workouts[(i + k) % workouts.length];
+    if (w.exercises.length) return w;
+  }
+  return workouts[i];
+}
+
 /** Wochen in Folge mit mind. einem Training (die laufende Woche zählt, wenn schon trainiert). */
 export function weekStreak(store) {
   const weeks = new Set(allSessions(store).map(t => startOfWeek(t.start)));

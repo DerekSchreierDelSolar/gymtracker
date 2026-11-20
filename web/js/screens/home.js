@@ -5,7 +5,7 @@ import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
 } from '../core.js';
-import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes } from '../stats.js';
+import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, nextWorkoutAfter } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, statBox, chartCard, horizontalBars, historyBars, lineChart,
@@ -145,7 +145,8 @@ function dashboardTab(onStartWorkout) {
   const streak = weekStreak(store);
   const goal = store.weeklyGoal;
   const lastSession = store.sessions.reduce((a, t) => (!a || t.start > a.start ? t : a), null);
-  const next = (lastSession && store.workout(lastSession.workoutId)) || store.workouts[0];
+  // „Weiter mit“: das Workout NACH dem zuletzt trainierten (wie nextWorkoutAfter in DashboardTab.kt)
+  const next = nextWorkoutAfter(store.workouts, lastSession?.workoutId);
 
   const volumes = weeklyVolumes(store, 8);
   // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
