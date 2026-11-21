@@ -151,6 +151,11 @@
             "Open a workout and pick its \"Training days\" (Mon–Sun) at the top. The home screen then shows it as \"Today\" or \"Next\". Android: ⋮ → Settings → turn on \"Workout reminder\" and choose a time – on planned days you get a notification if you haven't trained yet."]
     },
     {
+      "keys": ["zuruecksetzen", "fortschritt loeschen", "alles loeschen", "neu anfangen", "von vorne", "reset", "reset progress", "delete all", "start over"],
+      "a": ["⋮ → Einstellungen → ganz unten „Fortschritt zurücksetzen“: löscht alle Sätze, Trainings, Notizen und Gewichtseinträge. Übungen und Workouts bleiben. Danach kannst du es kurz rückgängig machen; sicherer ist vorher ⋮ → „Daten exportieren“.",
+            "⋮ → Settings → at the bottom \"Reset progress\": deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay. You can undo it right after; safer is ⋮ → \"Export data\" first."]
+    },
+    {
       "keys": ["automatisch", "automatisches backup", "auto backup", "ordner"],
       "a": ["Android: ⋮ → Einstellungen → „Automatisches Backup“, Ordner wählen. Dann sichert die App höchstens einmal täglich beim Verlassen; die letzten 7 Sicherungen bleiben. (Auf dem iPhone gibt es das nicht – dort bitte regelmäßig exportieren.)",
             "Android: ⋮ → Settings → \"Automatic backup\", choose a folder. The app then backs up at most once a day when you leave it; the last 7 backups are kept. (Not available on iPhone – export regularly there.)"]

@@ -133,6 +133,11 @@ function settingsDialog() {
       .map(([m, l]) => chip(l, store.themeMode === m, () => store.setTheme(m)))),
     h('b', { class: 'small-title' }, tr('Sprache', 'Language')),
     h('div', { class: 'chips' }, [['de', 'Deutsch'], ['en', 'English']].map(([l, label]) => chip(label, appLanguage === l, () => store.setLanguage(l)))),
+    // Fortschritt zurücksetzen (wie SettingsDialog in HomeScreen.kt): Nachfrage, danach „Rückgängig“
+    h('hr'),
+    h('b', { class: 'small-title' }, tr('Fortschritt', 'Progress')),
+    muted(tr('Löscht alle Sätze, Trainings, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.', 'Deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay.'), 'small'),
+    h('div', null, h('button', { class: 'btn outline danger-outline', onclick: resetDialog }, icon('delete', 18), tr('Fortschritt zurücksetzen', 'Reset progress'))),
   ], [{ label: 'OK', onClick: closeDialog }], closeDialog));
 }
 
@@ -419,3 +424,20 @@ function bodyTab() {
 
 /** „2026-11-21“ für <input type="date"> (Ortszeit) */
 const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+
+function resetDialog() {
+  openDialog(() => dialog(tr('Fortschritt zurücksetzen?', 'Reset progress?'),
+    h('p', null, tr(
+      `${plural(store.sets.length, 'Satz', 'Sätze')}, ${plural(store.sessions.length, 'Training', 'Trainings')} und ${plural(store.weights.length, 'Gewichtseintrag', 'Gewichtseinträge')} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.`,
+      `${plural(store.sets.length, 'set', 'sets')}, ${plural(store.sessions.length, 'workout', 'workouts')} and ${plural(store.weights.length, 'weight entry', 'weight entries')} will be deleted. Tip: back up first via ⋮ → "Export data".`)),
+    [
+      { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
+      {
+        label: tr('Zurücksetzen', 'Reset'), danger: true, onClick: () => {
+          const snap = store.resetProgress();
+          closeDialog();
+          undoToast(tr('Fortschritt zurückgesetzt', 'Progress reset'), () => store.restoreProgress(snap));
+        },
+      },
+    ], closeDialog));
+}

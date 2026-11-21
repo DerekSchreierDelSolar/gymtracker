@@ -5,6 +5,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -295,14 +297,16 @@ fun HomeScreen(
     }
 }
 
-/** Einstellungen: Design (System/Hell/Dunkel) und Sprache (Deutsch/English). */
+/** Einstellungen: Design, Sprache, Backup, Erinnerung und „Fortschritt zurücksetzen“. */
 @Composable
 fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
+    var confirmReset by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(tr("Einstellungen", "Settings")) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // scrollbar, damit auf kleinen Displays alles erreichbar bleibt
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(tr("Design", "Theme"), style = MaterialTheme.typography.titleSmall)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf(
@@ -332,10 +336,56 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
                 AutoBackupSettings(store)
                 Spacer(Modifier.height(8.dp))
                 ReminderSettings()
+                Spacer(Modifier.height(8.dp))
+                HorizontalDivider()
+                // Fortschritt zurücksetzen (rot, mit Nachfrage und danach „Rückgängig“)
+                Text(tr("Fortschritt", "Progress"), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    tr("Löscht alle Sätze, Trainings, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.",
+                        "Deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay."),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedButton(
+                    onClick = { confirmReset = true },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                ) {
+                    AppIcon(Ico.DELETE, Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(tr("Fortschritt zurücksetzen", "Reset progress"))
+                }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } }
     )
+
+    if (confirmReset) {
+        AlertDialog(
+            onDismissRequest = { confirmReset = false },
+            title = { Text(tr("Fortschritt zurücksetzen?", "Reset progress?")) },
+            text = {
+                Text(
+                    tr(
+                        "${plural(store.sets.size, "Satz", "Sätze")}, ${plural(store.sessions.size, "Training", "Trainings")} und ${plural(store.weights.size, "Gewichtseintrag", "Gewichtseinträge")} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.",
+                        "${plural(store.sets.size, "set", "sets")}, ${plural(store.sessions.size, "workout", "workouts")} and ${plural(store.weights.size, "weight entry", "weight entries")} will be deleted. Tip: back up first via ⋮ → \"Export data\"."
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val snap = store.resetProgress()
+                        confirmReset = false
+                        onDismiss()
+                        Undo.show(tr("Fortschritt zurückgesetzt", "Progress reset")) { store.restoreProgress(snap) }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) { Text(tr("Zurücksetzen", "Reset")) }
+            },
+            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text(tr("Abbrechen", "Cancel")) } }
+        )
+    }
 }
 
 /** Alle eigenen Übungen als Kacheln, gruppiert nach Kategorie. */

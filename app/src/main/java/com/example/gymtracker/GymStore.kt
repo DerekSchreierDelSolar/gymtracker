@@ -447,6 +447,34 @@ class GymStore(context: Context) {
     /** Aktuellen Stand sofort in die Datei schreiben. */
     fun saveNow() = save()
 
+    /** Gesicherter Stand vor dem Zurücksetzen (für „Rückgängig“) */
+    class ProgressSnapshot(
+        val sets: List<GymSet>, val sessions: List<TrainingSession>,
+        val weights: List<WeightEntry>, val notes: Map<String, String>
+    )
+
+    /**
+     * Fortschritt zurücksetzen: alle Sätze, Trainings, Notizen und Gewichtseinträge löschen.
+     * Übungen, Workouts (Ziele, Plan) und Einstellungen bleiben. Vorher wird die Datei nach
+     * gym_data_before_reset.json kopiert (wie beim Import). Gibt den alten Stand zurück.
+     */
+    fun resetProgress(): ProgressSnapshot {
+        val snap = ProgressSnapshot(sets.toList(), sessions.toList(), weights.toList(), notes.toMap())
+        if (file.exists()) runCatching { file.copyTo(File(file.parentFile, "gym_data_before_reset.json"), overwrite = true) }
+        sets.clear(); sessions.clear(); weights.clear(); notes.clear()
+        save()
+        return snap
+    }
+
+    /** „Rückgängig“ nach resetProgress() */
+    fun restoreProgress(s: ProgressSnapshot) {
+        sets.clear(); sets.addAll(s.sets)
+        sessions.clear(); sessions.addAll(s.sessions)
+        weights.clear(); weights.addAll(s.weights)
+        notes.clear(); notes.putAll(s.notes)
+        save()
+    }
+
     /** Kopie eines Workouts (gleiche Übungen, Reihenfolge und Ziele) mit Namenszusatz. */
     fun duplicateWorkout(id: Long): Workout? {
         val w = workout(id) ?: return null

@@ -49,6 +49,25 @@ class GymStore {
   }
   saveNow() { this.#save(); }
 
+  /**
+   * Fortschritt zurücksetzen (wie resetProgress in GymStore.kt): Sätze, Trainings, Notizen, Gewichte löschen;
+   * Übungen, Workouts und Einstellungen bleiben. Vorheriger Stand zusätzlich unter „gym_data_before_reset“.
+   */
+  resetProgress() {
+    const snap = { sets: this.sets, sessions: this.sessions, weights: this.weights, notes: this.notes };
+    const old = localStorage.getItem(KEY);
+    if (old) localStorage.setItem('gym_data_before_reset', old);
+    this.sets = []; this.sessions = []; this.weights = []; this.notes = {};
+    this.#save();
+    return snap;
+  }
+
+  /** „Rückgängig“ nach resetProgress() */
+  restoreProgress(s) {
+    Object.assign(this, { sets: s.sets, sessions: s.sessions, weights: s.weights, notes: s.notes });
+    this.#save();
+  }
+
   // ----- Laden / Speichern -----
 
   #readFrom(root) {
