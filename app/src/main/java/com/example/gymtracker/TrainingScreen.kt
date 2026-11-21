@@ -205,12 +205,8 @@ fun TrainingScreen(
                         FilterChip(
                             selected = i == index,
                             onClick = { onIndex(i) },
-                            label = {
-                                Text(
-                                    (if (done) "✓ " else "") +
-                                        if (goal == 0) "${exName(e)}  $count" else "${exName(e)}  $count/$goal"
-                                )
-                            }
+                            // nur Name (+ ✓), ohne Satzzähler – der steht auf der Seite der Übung
+                            label = { Text((if (done) "✓ " else "") + exName(e)) }
                         )
                     }
                 }

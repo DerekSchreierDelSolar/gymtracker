@@ -185,7 +185,7 @@ export function trainingScreen(w, onFinish) {
       h('div', { class: 'hscroll' }, w.exercises.map((e, i) => {
         const count = countOf(e), goal = store.targetFor(w, e);
         const done = goal === 0 ? count > 0 : count >= goal;
-        const el = chip((done ? '✓ ' : '') + exName(e) + '  ' + (goal === 0 ? count : `${count}/${goal}`), i === index, () => setIndex(i));
+        const el = chip((done ? '✓ ' : '') + exName(e), i === index, () => setIndex(i)); // nur Name (+ ✓), ohne Satzzähler
         if (i === index) el.dataset.autoscroll = '1';
         return el;
       }))),

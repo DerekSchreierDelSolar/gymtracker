@@ -3,7 +3,7 @@
 // (Updates landen ohne Zutun auf dem Handy), ohne Internet die zuletzt geladene.
 // Die Trainingsdaten selbst liegen im localStorage, nicht hier.
 
-const CACHE = 'gymtracker-v16';
+const CACHE = 'gymtracker-v17';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/core.js', './js/data.js', './js/store.js', './js/stats.js', './js/pictograms.js',
