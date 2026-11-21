@@ -35,6 +35,9 @@ object Bot {
     private var muscleWords: List<List<String>> = emptyList()
     private var howWords: List<List<String>> = emptyList()
     private var tipWords: List<List<String>> = emptyList()
+    /** Muskelgruppen für den Workout-Assistenten („Beine“, „Push“ …): Wortfolgen → Muskel-ID → Stufe */
+    private class WorkoutGroup(val words: List<List<String>>, val muscles: Map<String, Float>)
+    private var workoutGroups: List<WorkoutGroup> = emptyList()
 
     /** Verlauf (bleibt erhalten, solange die App läuft) */
     val history = mutableStateListOf<BotMessage>()
@@ -55,6 +58,12 @@ object Bot {
         muscleWords = phrases(o.getJSONArray("muscleWords"))
         howWords = phrases(o.getJSONArray("howWords"))
         tipWords = phrases(o.getJSONArray("tipWords"))
+        val g = o.optJSONArray("workoutGroups") ?: JSONArray()
+        workoutGroups = List(g.length()) { i ->
+            val e = g.getJSONObject(i)
+            val m = e.getJSONObject("muscles")
+            WorkoutGroup(phrases(e.getJSONArray("words")), m.keys().asSequence().associateWith { m.getDouble(it).toFloat() })
+        }
     }
 
     // ----- Text vergleichen -----
@@ -153,10 +162,17 @@ object Bot {
     fun ask(question: String) {
         if (question.isBlank()) return
         history.add(BotMessage(true, question.trim()))
-        if (wantsWorkout(tokens(question))) startWizard() else history.add(answer(question))
+        val words = splitCompounds(tokens(question))
+        if (wantsWorkout(words)) startWizard(presetMuscles(words)) else history.add(answer(question))
     }
 
     // ----- Workout-Assistent (WorkoutWizard.kt) -----
+
+    /** „Brustworkout“ → „brust workout“, „Ganzkörpertrainingsplan“ → „ganzkoerper trainingsplan“ */
+    private fun splitCompounds(words: List<String>): List<String> = words.flatMap { w ->
+        val i = listOf("workout", "training", "routine").map { w.indexOf(it) }.filter { it >= 3 }.minOrNull()
+        if (i == null) listOf(w) else listOf(w.substring(0, i), w.substring(i))
+    }
 
     /** „Erstelle mir ein Workout“, „Trainingsplan machen“, „create a workout“ … */
     private fun wantsWorkout(words: List<String>): Boolean {
@@ -165,13 +181,46 @@ object Bot {
         return verb && noun && words.none { it == "wie" || it == "how" } // „Wie erstelle ich ein Workout?“ = App-Frage
     }
 
-    private fun startWizard() {
+    /**
+     * Muskeln aus der Frage vorauswählen („Brust-Workout“ → Brust als Hauptfokus, „Beintraining“ → Beinmuskeln).
+     * Gruppen (bot.json „workoutGroups“) und Muskel-/Regionsbegriffe („targets“, Region → ganzer Muskel, Hauptfokus);
+     * längere Wortfolgen gewinnen und verbrauchen ihre Wörter („unterer Rücken“ ≠ „Rücken“), bei Gleichstand die Gruppe.
+     */
+    private fun presetMuscles(words: List<String>): Map<String, Float> {
+        class Hit(val start: Int, val phrase: List<String>, val muscles: Map<String, Float>, val group: Boolean)
+        val hits = mutableListOf<Hit>()
+        fun scan(phrases: List<List<String>>, muscles: Map<String, Float>, group: Boolean) {
+            for (p in phrases) for (i in 0..words.size - p.size)
+                if (p.isNotEmpty() && p.indices.all { k -> close(words[i + k], p[k]) }) hits += Hit(i, p, muscles, group)
+        }
+        workoutGroups.forEach { scan(it.words, it.muscles, true) }
+        targets.forEach { (key, ps) -> scan(ps, mapOf(muscleOfRegion(key) to 1f), false) }
+        val used = BooleanArray(words.size)
+        val accepted = mutableListOf<Hit>()
+        for (h in hits.sortedWith(compareByDescending<Hit> { it.phrase.size }.thenByDescending { it.phrase.sumOf { w -> w.length } }.thenByDescending { it.group })) {
+            val range = h.start until h.start + h.phrase.size
+            if (range.any { used[it] }) continue
+            range.forEach { used[it] = true }
+            accepted += h
+        }
+        // Reihenfolge wie in der Frage
+        val out = LinkedHashMap<String, Float>()
+        for (h in accepted.sortedBy { it.start }) for ((m, s) in h.muscles) if (m in MUSCLES) out[m] = maxOf(out[m] ?: 0f, s)
+        return out
+    }
+
+    private fun startWizard(preset: Map<String, Float> = emptyMap()) {
         WorkoutWizard.reset()
+        WorkoutWizard.muscles.putAll(preset)
+        val names = preset.entries.sortedByDescending { it.value }.joinToString(", ") { muscleLabel(it.key) }
         history.add(BotMessage(
             false,
-            tr(
+            if (preset.isEmpty()) tr(
                 "Gern! Welche Muskeln willst du trainieren? Tippe in der Figur oder unten: 1× = Hauptfokus (rot), 2× = mittel (orange), 3× = leicht (gelb), 4× = wieder aus.",
                 "Sure! Which muscles do you want to train? Tap the figure or the buttons: 1× = main focus (red), 2× = moderate (orange), 3× = light (yellow), 4× = off."
+            ) else tr(
+                "Gern! Ich habe schon markiert: $names. Passe die Auswahl bei Bedarf an – tippe in der Figur oder unten: 1× = Hauptfokus (rot), 2× = mittel (orange), 3× = leicht (gelb), 4× = wieder aus.",
+                "Sure! I've already selected: $names. Adjust if you like – tap the figure or the buttons: 1× = main focus (red), 2× = moderate (orange), 3× = light (yellow), 4× = off."
             ),
             widget = BotWidget.MUSCLES
         ))

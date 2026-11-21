@@ -180,13 +180,20 @@ let scrollDown = false;
 function ask(q) {
   if (!q.trim()) return;
   history.push({ bot: false, text: q.trim() });
-  if (wantsWorkout(tokens(q))) startWizard(); else history.push(answer(q));
+  const words = splitCompounds(tokens(q));
+  if (wantsWorkout(words)) startWizard(presetMuscles(words)); else history.push(answer(q));
   input = '';
   scrollDown = true;
   rerender();
 }
 
 // ----- Workout-Assistent (wizard.js, wie Bot.kt) -----
+
+/** „Brustworkout“ → „brust workout“, „Ganzkörpertrainingsplan“ → „ganzkoerper trainingsplan“ */
+const splitCompounds = words => words.flatMap(w => {
+  const i = ['workout', 'training', 'routine'].map(n => w.indexOf(n)).filter(i => i >= 3).sort((a, b) => a - b)[0];
+  return i == null ? [w] : [w.slice(0, i), w.slice(i)];
+});
 
 /** „Erstelle mir ein Workout“, „Trainingsplan machen“, „create a workout“ … */
 function wantsWorkout(words) {
@@ -197,12 +204,45 @@ function wantsWorkout(words) {
 
 const stageTitle = s => (s === 1 ? tr('Hauptfokus', 'Main focus') : s === 0.6 ? tr('Mittel', 'Moderate') : tr('Leicht', 'Light'));
 
-function startWizard() {
+const GROUPS = (BOT.workoutGroups ?? []).map(g => ({ words: g.words.map(tokens), muscles: g.muscles }));
+
+/**
+ * Muskeln aus der Frage vorauswählen (wie presetMuscles in Bot.kt): Gruppen („workoutGroups“) und Muskel-/Regionsbegriffe
+ * („targets“, Region → ganzer Muskel, Hauptfokus); längere Wortfolgen gewinnen und verbrauchen ihre Wörter, bei Gleichstand die Gruppe.
+ */
+function presetMuscles(words) {
+  const hits = [];
+  const scan = (phrases, muscles, group) => {
+    for (const p of phrases) for (let i = 0; i + p.length <= words.length; i++)
+      if (p.length && p.every((x, k) => close(words[i + k], x))) hits.push({ start: i, phrase: p, muscles, group });
+  };
+  for (const g of GROUPS) scan(g.words, g.muscles, true);
+  for (const [key, ps] of TARGETS) scan(ps, { [muscleOfRegion(key)]: 1 }, false);
+  const score = h => h.phrase.length * 10000 + h.phrase.join('').length * 2 + (h.group ? 1 : 0);
+  const used = new Set(), accepted = [], out = {};
+  for (const h of hits.sort((a, b) => score(b) - score(a))) {
+    const range = h.phrase.map((_, k) => h.start + k);
+    if (range.some(i => used.has(i))) continue;
+    range.forEach(i => used.add(i));
+    accepted.push(h);
+  }
+  // Reihenfolge wie in der Frage
+  for (const h of accepted.sort((a, b) => a.start - b.start))
+    for (const [m, s] of Object.entries(h.muscles)) if (MUSCLES[m]) out[m] = Math.max(out[m] ?? 0, s);
+  return out;
+}
+
+function startWizard(preset = {}) {
   wizard.reset();
+  Object.assign(wizard.muscles, preset);
+  const names = Object.entries(preset).sort((a, b) => b[1] - a[1]).map(([m]) => muscleLabel(m)).join(', ');
   history.push({
     bot: true, widget: 'MUSCLES',
-    text: tr('Gern! Welche Muskeln willst du trainieren? Tippe in der Figur oder unten: 1× = Hauptfokus (rot), 2× = mittel (orange), 3× = leicht (gelb), 4× = wieder aus.',
-      'Sure! Which muscles do you want to train? Tap the figure or the buttons: 1× = main focus (red), 2× = moderate (orange), 3× = light (yellow), 4× = off.'),
+    text: !names
+      ? tr('Gern! Welche Muskeln willst du trainieren? Tippe in der Figur oder unten: 1× = Hauptfokus (rot), 2× = mittel (orange), 3× = leicht (gelb), 4× = wieder aus.',
+        'Sure! Which muscles do you want to train? Tap the figure or the buttons: 1× = main focus (red), 2× = moderate (orange), 3× = light (yellow), 4× = off.')
+      : tr(`Gern! Ich habe schon markiert: ${names}. Passe die Auswahl bei Bedarf an – tippe in der Figur oder unten: 1× = Hauptfokus (rot), 2× = mittel (orange), 3× = leicht (gelb), 4× = wieder aus.`,
+        `Sure! I've already selected: ${names}. Adjust if you like – tap the figure or the buttons: 1× = main focus (red), 2× = moderate (orange), 3× = light (yellow), 4× = off.`),
   });
 }
 

@@ -62,8 +62,8 @@
     },
     {
       "keys": ["workout erstellen", "neues workout", "workout anlegen", "vorlage", "vorlagen", "template", "create workout", "new workout"],
-      "a": ["Im Tab „Workouts“ unten rechts auf „＋ Workout“ tippen. Du kannst bei null anfangen oder eine Vorlage nehmen. Übungen fügst du hinzu und ordnest sie per Ziehen. Oder sag mir hier „Erstelle mir ein Workout“ – dann wählst du Muskeln und Geräte und ich stelle es zusammen.",
-            "In the \"Workouts\" tab tap \"＋ Workout\" at the bottom right. Start from scratch or use a template. Add exercises and reorder them by dragging. Or tell me \"Create a workout for me\" – pick muscles and equipment and I'll put it together."]
+      "a": ["Im Tab „Workouts“ unten rechts auf „＋ Workout“ tippen. Du kannst bei null anfangen oder eine Vorlage nehmen. Übungen fügst du hinzu und ordnest sie per Ziehen. Oder sag mir hier „Erstelle mir ein Workout“ – dann wählst du Muskeln und Geräte und ich stelle es zusammen. Nennst du gleich Muskeln („Erstelle mir ein Brust-Workout“, „Beintraining erstellen“), sind sie schon markiert.",
+            "In the \"Workouts\" tab tap \"＋ Workout\" at the bottom right. Start from scratch or use a template. Add exercises and reorder them by dragging. Or tell me \"Create a workout for me\" – pick muscles and equipment and I'll put it together. Name muscles right away (\"Create a chest workout\", \"make a leg workout\") and they are already selected."]
     },
     {
       "keys": ["zielsaetze", "ziel saetze", "ziel", "target sets", "target", "optional"],
@@ -230,6 +230,17 @@
     "adductors": ["adduktoren", "innenschenkel", "adductors", "inner thigh"],
     "calves": ["wade", "waden", "calf", "calves"]
   },
+  "workoutGroups": [
+    { "words": ["beine", "bein", "beintag", "legs", "leg", "leg day"], "muscles": { "quads": 1, "hamstrings": 1, "glutes": 1, "calves": 0.6, "adductors": 0.3 } },
+    { "words": ["arme", "arm", "arms"], "muscles": { "biceps": 1, "triceps": 1, "forearms": 0.3 } },
+    { "words": ["ruecken", "back"], "muscles": { "lats": 1, "traps": 0.6, "lowerback": 0.3 } },
+    { "words": ["bauch", "bauchmuskeln", "core", "abs"], "muscles": { "abs": 1, "obliques": 0.6 } },
+    { "words": ["oberkoerper", "upper body"], "muscles": { "chest": 1, "lats": 1, "delts": 1, "biceps": 0.6, "triceps": 0.6, "traps": 0.3 } },
+    { "words": ["unterkoerper", "lower body"], "muscles": { "quads": 1, "hamstrings": 1, "glutes": 1, "calves": 0.6, "adductors": 0.3 } },
+    { "words": ["ganzkoerper", "full body", "whole body"], "muscles": { "chest": 1, "lats": 1, "quads": 1, "delts": 0.6, "hamstrings": 0.6, "glutes": 0.6, "abs": 0.3 } },
+    { "words": ["push", "druecken"], "muscles": { "chest": 1, "delts": 1, "triceps": 0.6 } },
+    { "words": ["pull", "ziehen"], "muscles": { "lats": 1, "biceps": 0.6, "traps": 0.6, "delts": 0.3 } }
+  ],
   "exerciseWords": ["uebung", "uebungen", "trainieren", "training fuer", "fuer", "exercise", "exercises", "train", "for", "workout fuer"],
   "muscleWords": ["muskel", "muskeln", "trainiert", "beansprucht", "welche muskeln", "muscles", "muscle", "works", "targets"],
   "howWords": ["wie", "ausfuehrung", "technik", "anleitung", "how", "technique", "form"],
