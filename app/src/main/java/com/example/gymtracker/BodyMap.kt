@@ -34,6 +34,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.graphics.asAndroidPath
 
 // ---------- Körperdiagramm: welche Muskeln eine Übung belastet ----------
 //
@@ -289,6 +292,27 @@ private class BodyPath(
     }
 }
 
+/**
+ * Muskel-ID an einem Punkt (Figur-Koordinaten) – oberste Muskelfläche zuerst. Zier-Muskeln ohne Heatmap
+ * zählen nicht. Region arbeitet mit ganzen Zahlen → Pfad 20-fach vergrößern, damit es genau genug ist.
+ */
+private fun muscleAt(paths: List<BodyPath>, x: Float, y: Float): String? {
+    val scale = 20f
+    val m = android.graphics.Matrix().apply { setScale(scale, scale) }
+    for (b in paths.asReversed()) {
+        val id = b.shape.id ?: continue
+        if (b.shape.fill != BodyFill.MUSCLE || id !in MUSCLES) continue
+        val ap = android.graphics.Path(b.path.asAndroidPath()).apply { transform(m) }
+        val r = android.graphics.RectF().also { ap.computeBounds(it, true) }
+        if (!r.contains(x * scale, y * scale)) continue
+        val region = android.graphics.Region().apply {
+            setPath(ap, android.graphics.Region(r.left.toInt() - 1, r.top.toInt() - 1, r.right.toInt() + 1, r.bottom.toInt() + 1))
+        }
+        if (region.contains((x * scale).toInt(), (y * scale).toInt())) return id
+    }
+    return null
+}
+
 private val bodyPaths: List<BodyPath> by lazy {
     val mirror = Matrix().apply {
         this[0, 0] = -1f            // x → −x
@@ -402,7 +426,7 @@ val LIGHT_COLOR = Color(0xFFF2C94C)
 
 /** Stufen der Belastung einer Region durch eine Übung: 1 = Hauptarbeit, 0,6 = mittel, 0,3 = leicht. */
 val LEVELS = listOf(1f, 0.6f, 0.3f)
-private fun stageOf(v: Float): Float = LEVELS.minBy { kotlin.math.abs(it - v) }
+fun stageOf(v: Float): Float = LEVELS.minBy { kotlin.math.abs(it - v) }
 fun levelColor(v: Float?): Color? = when {
     v == null || v <= 0f -> null
     v >= 0.8f -> PRIMARY_COLOR
@@ -454,7 +478,9 @@ fun BodyFigure(
     colorOf: (String) -> Color?,
     modifier: Modifier = Modifier,
     view: BodyView = BodyView.BOTH,
-    widthFraction: Float = 0.72f
+    widthFraction: Float = 0.72f,
+    /** Antippen eines Muskels (Muskel-ID, z. B. "chest"); null = Figur nicht antippbar */
+    onTapMuscle: ((String) -> Unit)? = null
 ) {
     // Hell/dunkel am tatsächlichen Hintergrund ablesen (App-Einstellung kann vom System abweichen)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
@@ -477,10 +503,19 @@ fun BodyFigure(
     }
 
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        // Antippen: Bildschirmpunkt in Figur-Koordinaten umrechnen, oberste Muskelfläche unter dem Finger suchen
+        val currentTap by rememberUpdatedState(onTapMuscle)
+        val tapModifier = if (onTapMuscle == null) Modifier else Modifier.pointerInput(view) {
+            detectTapGestures { pos ->
+                val s = size.width / totalWidth
+                muscleAt(paths, pos.x / s - shift - BODY_PAD, pos.y / s)?.let { currentTap?.invoke(it) }
+            }
+        }
         Canvas(
             Modifier
                 .fillMaxWidth(widthFraction)
                 .aspectRatio(totalWidth / (BODY_HEIGHT + 4f)) // + Platz für den Bodenschatten
+                .then(tapModifier)
         ) {
             val s = size.width / totalWidth
             scale(s, s, pivot = Offset.Zero) { translate(left = shift + BODY_PAD) {

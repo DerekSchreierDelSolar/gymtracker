@@ -16,8 +16,14 @@ data class BotMessage(
     val fromUser: Boolean,
     val text: String,
     val groups: List<Pair<String, List<String>>> = emptyList(),
-    val suggestions: List<String> = emptyList()
+    val suggestions: List<String> = emptyList(),
+    /** Schritt des Workout-Assistenten unter der Blase (null = keiner) */
+    val widget: BotWidget? = null,
+    /** Angelegtes Workout → Knopf „Workout öffnen“ */
+    val workoutId: Long? = null
 )
+
+enum class BotWidget { MUSCLES, EQUIPMENT }
 
 object Bot {
     private class Faq(val keys: List<List<String>>, val answer: WikiText)
@@ -129,23 +135,93 @@ object Bot {
             tr("Übungen für den unteren Rücken", "Exercises for the lower back")
         )
 
-    val suggestions: List<String> get() = pool.shuffled().take(5)
+    /** „Erstelle mir ein Workout“ immer zuerst, danach eine zufällige Auswahl */
+    val suggestions: List<String> get() = listOf(tr("Erstelle mir ein Workout", "Create a workout for me")) + pool.shuffled().take(4)
 
     /** Begrüßung; `recent` = Name der zuletzt trainierten Übung → passender erster Vorschlag. */
     fun greeting(recent: String? = null) = BotMessage(
         false,
         tr(
-            "Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert.",
-            "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works."
+            "Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert – oder sag „Erstelle mir ein Workout“.",
+            "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works – or say \"Create a workout for me\"."
         ),
-        suggestions = listOfNotNull(recent?.let { tr("Wie mache ich $it?", "How do I do $it?") }) + suggestions.take(if (recent != null) 4 else 5)
+        // „Erstelle mir ein Workout“ zuerst, dann die zuletzt trainierte Übung, dann Zufall
+        suggestions = suggestions.let { s -> s.take(1) + listOfNotNull(recent?.let { tr("Wie mache ich $it?", "How do I do $it?") }) + s.drop(1).take(if (recent != null) 3 else 4) }
     )
 
     /** Frage stellen: Frage und Antwort landen im Verlauf. */
     fun ask(question: String) {
         if (question.isBlank()) return
         history.add(BotMessage(true, question.trim()))
-        history.add(answer(question))
+        if (wantsWorkout(tokens(question))) startWizard() else history.add(answer(question))
+    }
+
+    // ----- Workout-Assistent (WorkoutWizard.kt) -----
+
+    /** „Erstelle mir ein Workout“, „Trainingsplan machen“, „create a workout“ … */
+    private fun wantsWorkout(words: List<String>): Boolean {
+        val verb = words.any { w -> listOf("erstell", "generier", "bau", "mach", "zusammenstell", "plan", "create", "build", "make", "generate").any { w.startsWith(it) } }
+        val noun = words.any { w -> listOf("workout", "training", "trainingsplan", "plan", "routine").any { w.startsWith(it) } }
+        return verb && noun && words.none { it == "wie" || it == "how" } // „Wie erstelle ich ein Workout?“ = App-Frage
+    }
+
+    private fun startWizard() {
+        WorkoutWizard.reset()
+        history.add(BotMessage(
+            false,
+            tr(
+                "Gern! Welche Muskeln willst du trainieren? Tippe in der Figur oder unten: 1× = Hauptfokus (rot), 2× = mittel (orange), 3× = leicht (gelb), 4× = wieder aus.",
+                "Sure! Which muscles do you want to train? Tap the figure or the buttons: 1× = main focus (red), 2× = moderate (orange), 3× = light (yellow), 4× = off."
+            ),
+            widget = BotWidget.MUSCLES
+        ))
+    }
+
+    /** Schritt-Nachricht „einfrieren“ (Knöpfe weg) und die Auswahl als eigene Antwort festhalten */
+    private fun closeStep(summary: String) {
+        val i = history.indexOfLast { it.widget != null }
+        if (i >= 0) history[i] = history[i].copy(widget = null)
+        history.add(BotMessage(true, summary))
+    }
+
+    fun wizardMusclesDone() {
+        val sel = WorkoutWizard.muscles
+        val summary = WIZARD_STAGES.mapNotNull { st ->
+            val names = sel.filterValues { it == st }.keys.map(::muscleLabel)
+            if (names.isEmpty()) null else wizardStageTitle(st) + ": " + names.joinToString(", ")
+        }.joinToString("\n")
+        closeStep(summary)
+        history.add(BotMessage(
+            false,
+            tr("Mit welchen Geräten? Wähle eins oder mehrere – ohne Auswahl nehme ich alle.", "Which equipment? Pick one or more – with none selected I'll use everything."),
+            widget = BotWidget.EQUIPMENT
+        ))
+    }
+
+    fun wizardCreate(store: GymStore) {
+        val eq = WorkoutWizard.equipment
+        closeStep(if (eq.isEmpty()) tr("Geräte: alle", "Equipment: any") else tr("Geräte: ", "Equipment: ") + eq.joinToString(", ") { it.label })
+        val picked = WorkoutWizard.pick(store)
+        if (picked.isEmpty()) {
+            history.add(BotMessage(
+                false,
+                tr("Dazu habe ich mit diesen Geräten keine passenden Übungen gefunden. Wähle bitte andere oder mehr Geräte.",
+                    "I couldn't find matching exercises with that equipment. Please pick other or more equipment."),
+                widget = BotWidget.EQUIPMENT
+            ))
+            return
+        }
+        val w = WorkoutWizard.create(store, picked) ?: return
+        history.add(BotMessage(
+            false,
+            tr("Fertig! Ich habe das Workout „${w.name}“ mit ${picked.size} Übungen angelegt (je 3 Ziel-Sätze):",
+                "Done! I created the workout \"${w.name}\" with ${picked.size} exercises (3 target sets each):") +
+                "\n" + picked.mapIndexed { i, e -> "${i + 1}. ${exName(e)}" }.joinToString("\n") +
+                "\n\n" + tr("Du kannst es jederzeit bearbeiten – Übungen tauschen, Ziel-Sätze ändern, Reihenfolge ziehen.",
+                    "You can edit it anytime – swap exercises, change target sets, drag to reorder."),
+            workoutId = w.id,
+            suggestions = listOf(tr("Erstelle mir ein Workout", "Create a workout for me"))
+        ))
     }
 
     fun answer(question: String): BotMessage {

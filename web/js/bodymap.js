@@ -168,7 +168,8 @@ function defsFor(id, view) {
 
 let figureId = 0;
 /** SVG-Text der Figur. colorOf(Muskel-ID) = Farbe oder null (neutral grau); view = BOTH/FRONT/BACK. */
-function svg(colorOf, view = 'BOTH') {
+/** tap = unsichtbare Ebene mit data-muscle je Muskel obendrauf (für den Workout-Assistenten zum Antippen) */
+function svg(colorOf, view = 'BOTH', tap = false) {
   const id = 'bf' + figureId++ + '-';
   const c = COLORS[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'];
   // Muskel/Zier-Muskel: Farbe seiner Region (bei Teilflächen erst neutral, die Teile kommen darüber)
@@ -226,7 +227,7 @@ function svg(colorOf, view = 'BOTH') {
   const ground = (view === 'BOTH' ? [BODY.width / 2, BODY.backOffset + BODY.width / 2] : [BODY.width / 2])
     .map(x => `<ellipse cx="${x}" cy="${BODY.height - 1}" rx="26" ry="3.2" fill="#3A2415" opacity=".13"/>`).join('');
   return `<svg viewBox="${-BODY.pad} 0 ${w} ${BODY.height + 4}" role="img" aria-label="${tr('Körperdiagramm', 'Body diagram')}">`
-    + `${defsFor(id, view)}${ground}<g filter="url(#${id}sh)" >${parts.join('')}</g></svg>`;
+    + `${defsFor(id, view)}${ground}<g filter="url(#${id}sh)" >${parts.join('')}</g>${tap ? tapLayer(view) : ''}</svg>`;
 }
 
 /** Figur (vorne + hinten) mit „Vorne/Hinten“-Beschriftung. */
@@ -408,4 +409,25 @@ export function muscleSideCard(view, levels, showList = false) {
     view === 'BOTH' ? bodyFigure(k => levelColor(levels[k])) : h('div', { class: 'side-figure', html: svg(k => levelColor(levels[k]), view) }),
     showList ? h('div', { class: 'side-list' },
       levelLabels(levels).map(([st, labels]) => group(levelTitle(st), labels, levelColor(st)))) : null);
+}
+
+/** Antippbare Muskelflächen (durchsichtig, oberste zuerst im DOM = zuletzt gezeichnet) */
+function tapLayer(view) {
+  const out = [];
+  for (const s of BODY_SHAPES) {
+    if (s.fill !== 'MUSCLE' || !s.id || !MUSCLES[s.id]) continue;
+    for (const [t] of placements(s, view)) out.push(`<path transform="${t}" d="${s.d}" data-muscle="${s.id}" fill="transparent" style="cursor:pointer"/>`);
+  }
+  return `<g class="tap-layer">${out.join('')}</g>`;
+}
+
+/** Figur (vorne + hinten) zum Antippen: onTap(muskelId) (wie BodyFigure mit onTapMuscle) */
+export function tappableFigure(colorOf, onTap) {
+  return [
+    h('div', {
+      class: 'muscle-figure tappable', html: svg(colorOf, 'BOTH', true),
+      onclick: e => { const id = e.target.closest?.('[data-muscle]')?.dataset.muscle; if (id) onTap(id); },
+    }),
+    h('div', { class: 'muscle-views muted' }, h('span', null, tr('Vorne', 'Front')), h('span', null, tr('Hinten', 'Back'))),
+  ];
 }

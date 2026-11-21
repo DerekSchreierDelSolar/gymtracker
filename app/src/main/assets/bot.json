@@ -62,8 +62,8 @@
     },
     {
       "keys": ["workout erstellen", "neues workout", "workout anlegen", "vorlage", "vorlagen", "template", "create workout", "new workout"],
-      "a": ["Im Tab „Workouts“ unten rechts auf „＋ Workout“ tippen. Du kannst bei null anfangen oder eine Vorlage nehmen. Übungen fügst du hinzu und ordnest sie per Ziehen.",
-            "In the \"Workouts\" tab tap \"＋ Workout\" at the bottom right. Start from scratch or use a template. Add exercises and reorder them by dragging."]
+      "a": ["Im Tab „Workouts“ unten rechts auf „＋ Workout“ tippen. Du kannst bei null anfangen oder eine Vorlage nehmen. Übungen fügst du hinzu und ordnest sie per Ziehen. Oder sag mir hier „Erstelle mir ein Workout“ – dann wählst du Muskeln und Geräte und ich stelle es zusammen.",
+            "In the \"Workouts\" tab tap \"＋ Workout\" at the bottom right. Start from scratch or use a template. Add exercises and reorder them by dragging. Or tell me \"Create a workout for me\" – pick muscles and equipment and I'll put it together."]
     },
     {
       "keys": ["zielsaetze", "ziel saetze", "ziel", "target sets", "target", "optional"],

@@ -4,12 +4,14 @@
 import { BOT } from './bot-data.js';
 import { WIKI } from './wiki-data.js';
 import { CATALOG } from './data.js';
-import { tr, isEnglish, isCardio } from './core.js';
-import { h, icon } from './ui.js';
-import { rerender } from './nav.js';
+import { tr, isEnglish, isCardio, exName, equipmentLabel } from './core.js';
+import { h, icon, chip } from './ui.js';
+import { rerender, go } from './nav.js';
 import { baseName, openWiki } from './wiki.js';
 import { screen } from './layout.js';
-import { levelsOf, levelLabels, levelTitle, regionLabel, muscleLabel, muscleOfRegion } from './bodymap.js';
+import { levelsOf, levelLabels, levelTitle, regionLabel, muscleLabel, muscleOfRegion, levelColor, tappableFigure } from './bodymap.js';
+import { MUSCLES } from './body-data.js';
+import { wizard, WIZARD_STAGES, equipmentChoices, pickExercises, createWizardWorkout } from './wizard.js';
 
 // ---------- Text vergleichen ----------
 
@@ -86,14 +88,15 @@ const pool = () => [
   tr('Übungen für den unteren Rücken', 'Exercises for the lower back'),
 ];
 
-const suggestions = () => pool().map(s => [Math.random(), s]).sort((a, b) => a[0] - b[0]).slice(0, 5).map(x => x[1]);
+// „Erstelle mir ein Workout“ immer zuerst, dann eine zufällige Auswahl (wie Bot.kt)
+const suggestions = () => [tr('Erstelle mir ein Workout', 'Create a workout for me'), ...pool().map(s => [Math.random(), s]).sort((a, b) => a[0] - b[0]).slice(0, 4).map(x => x[1])];
 
 /** Begrüßung; recent = zuletzt trainierte Übung (Grundübung) → passender erster Vorschlag */
 const greeting = recent => ({
   bot: true,
-  text: tr('Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert.',
-    "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works."),
-  suggestions: recent ? [tr(`Wie mache ich ${recent}?`, `How do I do ${recent}?`), ...suggestions().slice(0, 4)] : suggestions(),
+  text: tr('Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert – oder sag „Erstelle mir ein Workout“.',
+    "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works – or say \"Create a workout for me\"."),
+  suggestions: (s => recent ? [s[0], tr(`Wie mache ich ${recent}?`, `How do I do ${recent}?`), ...s.slice(1, 4)] : s)(suggestions()),
 });
 
 export function answer(question) {
@@ -176,11 +179,92 @@ let scrollDown = false;
 
 function ask(q) {
   if (!q.trim()) return;
-  history.push({ bot: false, text: q.trim() }, answer(q));
+  history.push({ bot: false, text: q.trim() });
+  if (wantsWorkout(tokens(q))) startWizard(); else history.push(answer(q));
   input = '';
   scrollDown = true;
   rerender();
 }
+
+// ----- Workout-Assistent (wizard.js, wie Bot.kt) -----
+
+/** „Erstelle mir ein Workout“, „Trainingsplan machen“, „create a workout“ … */
+function wantsWorkout(words) {
+  const verb = words.some(w => ['erstell', 'generier', 'bau', 'mach', 'zusammenstell', 'plan', 'create', 'build', 'make', 'generate'].some(p => w.startsWith(p)));
+  const noun = words.some(w => ['workout', 'training', 'trainingsplan', 'plan', 'routine'].some(p => w.startsWith(p)));
+  return verb && noun && !words.some(w => w === 'wie' || w === 'how'); // „Wie erstelle ich ein Workout?“ = App-Frage
+}
+
+const stageTitle = s => (s === 1 ? tr('Hauptfokus', 'Main focus') : s === 0.6 ? tr('Mittel', 'Moderate') : tr('Leicht', 'Light'));
+
+function startWizard() {
+  wizard.reset();
+  history.push({
+    bot: true, widget: 'MUSCLES',
+    text: tr('Gern! Welche Muskeln willst du trainieren? Tippe in der Figur oder unten: 1× = Hauptfokus (rot), 2× = mittel (orange), 3× = leicht (gelb), 4× = wieder aus.',
+      'Sure! Which muscles do you want to train? Tap the figure or the buttons: 1× = main focus (red), 2× = moderate (orange), 3× = light (yellow), 4× = off.'),
+  });
+}
+
+/** Schritt „einfrieren“ (Knöpfe weg) und die Auswahl als eigene Antwort festhalten */
+function closeStep(summary) {
+  for (let i = history.length - 1; i >= 0; i--) if (history[i].widget) { history[i] = { ...history[i], widget: null }; break; }
+  history.push({ bot: false, text: summary });
+}
+
+function musclesDone() {
+  closeStep(WIZARD_STAGES.map(st => {
+    const names = Object.entries(wizard.muscles).filter(([, s]) => s === st).map(([m]) => muscleLabel(m));
+    return names.length ? stageTitle(st) + ': ' + names.join(', ') : null;
+  }).filter(Boolean).join('\n'));
+  history.push({ bot: true, widget: 'EQUIPMENT', text: tr('Mit welchen Geräten? Wähle eins oder mehrere – ohne Auswahl nehme ich alle.', "Which equipment? Pick one or more – with none selected I'll use everything.") });
+  scrollDown = true;
+  rerender();
+}
+
+function wizardCreate(store) {
+  const eq = wizard.equipment;
+  closeStep(eq.length ? tr('Geräte: ', 'Equipment: ') + eq.map(equipmentLabel).join(', ') : tr('Geräte: alle', 'Equipment: any'));
+  const picked = pickExercises(store);
+  if (!picked.length) {
+    history.push({ bot: true, widget: 'EQUIPMENT', text: tr('Dazu habe ich mit diesen Geräten keine passenden Übungen gefunden. Wähle bitte andere oder mehr Geräte.', "I couldn't find matching exercises with that equipment. Please pick other or more equipment.") });
+  } else {
+    const w = createWizardWorkout(store, picked);
+    history.push({
+      bot: true, workoutId: w.id, suggestions: [tr('Erstelle mir ein Workout', 'Create a workout for me')],
+      text: tr(`Fertig! Ich habe das Workout „${w.name}“ mit ${picked.length} Übungen angelegt (je 3 Ziel-Sätze):`, `Done! I created the workout "${w.name}" with ${picked.length} exercises (3 target sets each):`)
+        + '\n' + picked.map((e, i) => `${i + 1}. ${exName(e)}`).join('\n') + '\n\n'
+        + tr('Du kannst es jederzeit bearbeiten – Übungen tauschen, Ziel-Sätze ändern, Reihenfolge ziehen.', 'You can edit it anytime – swap exercises, change target sets, drag to reorder.'),
+    });
+  }
+  scrollDown = true;
+  rerender();
+}
+
+/** Schritt unter der Blase; nur der letzte ist bedienbar */
+function wizardStep(m, active, store) {
+  if (m.widget === 'MUSCLES') {
+    const sel = wizard.muscles;
+    return h('div', { class: ['card pad-m wizard', !active && 'inactive'] },
+      tappableFigure(r => levelColor(sel[muscleOfRegion(r)]), id => { if (active) { wizard.tap(id); rerender(); } }),
+      h('div', { class: 'chips wrap' }, Object.keys(MUSCLES).map(id =>
+        chip(muscleLabel(id), sel[id] != null, () => { if (active) { wizard.tap(id); rerender(); } },
+          sel[id] != null ? `<i class="dot" style="background:${levelColor(sel[id])}"></i>` : null))),
+      active ? h('div', { class: 'wizard-actions' }, h('button', { class: 'btn', disabled: !Object.keys(sel).length, onclick: musclesDone }, tr('Weiter', 'Next'))) : null);
+  }
+  if (m.widget === 'EQUIPMENT') {
+    const sel = wizard.equipment;
+    const toggle = e => { const i = sel.indexOf(e); if (i >= 0) sel.splice(i, 1); else sel.push(e); rerender(); };
+    return h('div', { class: ['card pad-m wizard', !active && 'inactive'] },
+      h('div', { class: 'chips wrap' },
+        chip(tr('Egal (alle)', 'Any (all)'), !sel.length, () => { if (active) { sel.length = 0; rerender(); } }),
+        equipmentChoices().map(e => chip(equipmentLabel(e), sel.includes(e), () => { if (active) toggle(e); }))),
+      active ? h('div', { class: 'wizard-actions' }, h('button', { class: 'btn', onclick: () => wizardCreate(store) }, tr('Workout erstellen', 'Create workout'))) : null);
+  }
+  return null;
+}
+
+let wizardStore = null; // von botScreen gesetzt
 
 export function botTab(recent = null) {
   if (!history.length) history.push(greeting(recent));
@@ -189,13 +273,16 @@ export function botTab(recent = null) {
     scrollDown = false;
     setTimeout(() => { const m = document.querySelector('main.content'); if (m) m.scrollTop = m.scrollHeight; }, 0);
   }
-  return h('div', { class: 'chat' }, history.map(m =>
+  return h('div', { class: 'chat' }, history.map((m, i) => [
     h('div', { class: ['bubble', m.bot ? 'bot' : 'me'] },
       h('div', { class: 'bubble-text' }, m.text),
       (m.groups ?? []).map(([title, bases]) => [
         h('small', { class: 'bubble-group' }, title),
         h('div', { class: 'chips wrap' }, bases.map(b => h('button', { class: 'chip', onclick: () => openWiki(b) }, baseName(b)))),
-      ]))));
+      ])),
+    m.widget ? wizardStep(m, i === history.length - 1, wizardStore) : null,
+    m.workoutId != null ? h('div', null, h('button', { class: 'btn', onclick: () => go({ bot: false, workoutId: m.workoutId }) }, icon('list', 18), tr('Workout öffnen', 'Open workout'))) : null,
+  ]));
 }
 
 /** Leiste unten: Vorschläge der letzten Antwort + Eingabefeld */
@@ -217,6 +304,7 @@ export function botInput() {
 
 /** Bildschirm „Fragen“ (wie BotScreen in BotTab.kt): erster Vorschlag passt zur zuletzt trainierten Übung. */
 export function botScreen(store) {
+  wizardStore = store;
   const last = store.sets.reduce((a, s) => (!a || s.time > a.time ? s : a), null);
   const base = last ? CATALOG.find(c => c.name === last.exercise)?.base : null;
   const recent = base && WIKI[base] ? baseName(base) : null;

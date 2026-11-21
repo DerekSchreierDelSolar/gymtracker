@@ -144,7 +144,7 @@ fun GymApp(store: GymStore) {
         }
         showBot -> {
             BackHandler { showBot = false }
-            BotScreen(store, onBack = { showBot = false })
+            BotScreen(store, onBack = { showBot = false }, onOpenWorkout = { showBot = false; workoutId = it })
         }
         showWiki -> {
             BackHandler { showWiki = false }

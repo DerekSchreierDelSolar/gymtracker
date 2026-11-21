@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 /** „Fragen“ als eigener Bildschirm (erreichbar über ⋮ und das Wiki). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BotScreen(store: GymStore, onBack: () -> Unit) {
+fun BotScreen(store: GymStore, onBack: () -> Unit, onOpenWorkout: (Long) -> Unit = {}) {
     // Zuletzt trainierte Übung (Grundübung mit Wiki-Eintrag) → erster Vorschlag „Wie mache ich …?“
     val recent = store.sets.maxByOrNull { it.time }?.exercise
         ?.let { ex -> CATALOG.firstOrNull { it.name == ex }?.base }
@@ -31,7 +31,7 @@ fun BotScreen(store: GymStore, onBack: () -> Unit) {
             title = { Text(tr("Fragen", "Ask")) },
             navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
         )
-    }) { padding -> BotTab(Modifier.padding(padding).fillMaxSize(), recent) }
+    }) { padding -> BotTab(Modifier.padding(padding).fillMaxSize(), recent, store, onOpenWorkout) }
 }
 
 /**
@@ -41,13 +41,13 @@ fun BotScreen(store: GymStore, onBack: () -> Unit) {
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BotTab(modifier: Modifier, recent: String? = null) {
+fun BotTab(modifier: Modifier, recent: String? = null, store: GymStore? = null, onOpenWorkout: (Long) -> Unit = {}) {
     val messages = Bot.history
     if (messages.isEmpty()) messages.add(Bot.greeting(recent))
     var input by remember { mutableStateOf("") }
     var wiki by remember { mutableStateOf<String?>(null) }
     val list = rememberLazyListState()
-    // Neue Nachricht → nach unten scrollen
+    // Neue Nachricht → nach unten scrollen (zum Anfang der neuen Nachricht, damit lange Schritte lesbar bleiben)
     LaunchedEffect(messages.size) { list.animateScrollToItem(messages.lastIndex) }
 
     fun send(text: String) {
@@ -62,7 +62,28 @@ fun BotTab(modifier: Modifier, recent: String? = null) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            itemsIndexed(messages) { _, m -> Bubble(m, onExercise = { wiki = it }) }
+            itemsIndexed(messages) { i, m ->
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Bubble(m, onExercise = { wiki = it })
+                    // Workout-Assistent: nur der letzte Schritt ist bedienbar
+                    val active = i == messages.lastIndex
+                    if (m.widget != null) Card(Modifier.fillMaxWidth()) {
+                        Box(Modifier.padding(12.dp)) {
+                            when (m.widget) {
+                                BotWidget.MUSCLES -> WizardMuscleStep(active, onNext = { Bot.wizardMusclesDone() })
+                                BotWidget.EQUIPMENT -> WizardEquipmentStep(active, onCreate = { store?.let { Bot.wizardCreate(it) } })
+                            }
+                        }
+                    }
+                    m.workoutId?.let { id ->
+                        Button(onClick = { onOpenWorkout(id) }) {
+                            AppIcon(Ico.LIST, Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(tr("Workout öffnen", "Open workout"))
+                        }
+                    }
+                }
+            }
         }
         // Vorschläge der letzten Antwort
         val suggestions = messages.lastOrNull()?.suggestions.orEmpty()

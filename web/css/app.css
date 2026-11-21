@@ -573,3 +573,9 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .category-row { display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 8px; text-align: left; background: color-mix(in srgb, var(--tint) 14%, var(--card)); }
 .category-row .grow { display: flex; flex-direction: column; }
 .category-row b { font-size: 17px; }
+/* Workout-Assistent im Chat */
+.wizard { display: flex; flex-direction: column; gap: 10px; }
+.wizard.inactive { opacity: .7; }
+.wizard .muscle-figure, .wizard .muscle-views { width: 100%; }
+.wizard .chip .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.wizard-actions { display: flex; justify-content: flex-end; }
