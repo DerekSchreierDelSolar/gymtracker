@@ -6,6 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -109,18 +111,24 @@ fun CatalogScreen(
     onFilter: (ExerciseFilter) -> Unit,
     onBack: () -> Unit
 ) {
-    val visible = CATALOG.filter { filter.matches(it.name, it.group) }
+    // Erst Kategorien zeigen, nach Antippen deren Übungen. Mit Suche/Filter: direkt alle Treffer.
+    var openGroup by rememberSaveable { mutableStateOf<String?>(null) }
+    val group = openGroup?.let { runCatching { MuscleGroup.valueOf(it) }.getOrNull() }
+    val overview = group == null && !filter.isActive
+    if (group != null) BackHandler { openGroup = null }
+    val inGroup = { g: MuscleGroup -> group == null || g == group }
+    val visible = CATALOG.filter { inGroup(it.group) && filter.matches(it.name, it.group) }
     // Eigene Übungen = gespeicherte Übungen, die nicht im Katalog stehen (auch aus der Liste entfernte → wieder hinzufügbar)
     val customVisible = store.customNames
-        .filter { catalogGroup(it) == null && filter.matches(it, store.groupOf(it)) }
+        .filter { catalogGroup(it) == null && inGroup(store.groupOf(it)) && filter.matches(it, store.groupOf(it)) }
     val ui = rememberFilterUi(filter)
     var showCustom by remember { mutableStateOf(false) }
     if (showCustom) CustomExerciseDialog(store, onDismiss = { showCustom = false })
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(tr("Übungskatalog", "Exercise catalog")) },
-            navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
+            title = { Text(group?.label ?: tr("Übungskatalog", "Exercise catalog")) },
+            navigationIcon = { IconAction(Ico.BACK, onClick = { if (group != null) openGroup = null else onBack() }) },
             actions = {
                 IconAction(Ico.ADD, onClick = { showCustom = true })
                 FilterActions(ui, filter, onFilter)
@@ -140,6 +148,27 @@ fun CatalogScreen(
             )
             if (visible.isEmpty() && customVisible.isEmpty()) {
                 NoFilterResults(onReset = { onFilter(ExerciseFilter()) })
+                return@Column
+            }
+            // Übersicht: eine Zeile pro Kategorie (Anzahl Übungen, davon schon in deiner Liste)
+            if (overview) {
+                LazyColumn(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        Text(
+                            tr("Wähle eine Kategorie – oder suche oben direkt nach einer Übung.", "Pick a category – or search for an exercise at the top."),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    items(MuscleGroup.entries.filter { g -> visible.any { it.group == g } || customVisible.any { store.groupOf(it) == g } }, key = { it.name }) { g ->
+                        val names = visible.filter { it.group == g }.map { it.name } + customVisible.filter { store.groupOf(it) == g }
+                        CategoryRow(g, names.size, names.count { store.hasExercise(it) }, onClick = { openGroup = g.name })
+                    }
+                }
                 return@Column
             }
             LazyColumn(
@@ -198,7 +227,7 @@ fun CatalogScreen(
                     }
                 }
                 visible.groupBy { it.group }.forEach { (group, list) ->
-                    item(key = group.name) { GroupHeader(group) }
+                    if (openGroup == null) item(key = group.name) { GroupHeader(group) } // in einer Kategorie steht sie schon im Titel
                     items(list, key = { it.name }) { entry ->
                         val added = store.hasExercise(entry.name)
                         Row(

@@ -50,8 +50,11 @@ fun MuscleGroup.defaultMotion(): Motion = when (this) {
     MuscleGroup.BRUST -> Motion.BENCH_PRESS
     MuscleGroup.RUECKEN -> Motion.PULL_UP
     MuscleGroup.BEINE -> Motion.SQUAT
+    MuscleGroup.GLUTEUS -> Motion.HIP_THRUST
     MuscleGroup.SCHULTERN -> Motion.OVERHEAD_PRESS
-    MuscleGroup.ARME -> Motion.CURL
+    MuscleGroup.BIZEPS -> Motion.CURL
+    MuscleGroup.TRIZEPS -> Motion.PUSHDOWN
+    MuscleGroup.UNTERARM -> Motion.CURL
     MuscleGroup.BAUCH -> Motion.CRUNCH
     MuscleGroup.GANZKOERPER -> Motion.JUMP
     MuscleGroup.CARDIO -> Motion.RUN

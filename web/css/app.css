@@ -569,3 +569,7 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .btn.outline.danger-outline { color: var(--error); border-color: var(--error); display: inline-flex; align-items: center; gap: 6px; }
 /* Übungsseite beim Workout-Bearbeiten: beide Seiten nebeneinander, mittig und fast volle Breite */
 .side-card .muscle-figure, .side-card .muscle-views { width: 96%; margin-left: auto; margin-right: auto; }
+/* Kategorie-Übersicht beim Hinzufügen von Übungen */
+.category-row { display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 8px; text-align: left; background: color-mix(in srgb, var(--tint) 14%, var(--card)); }
+.category-row .grow { display: flex; flex-direction: column; }
+.category-row b { font-size: 17px; }

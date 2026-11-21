@@ -2,7 +2,7 @@
 // h(tag, props, ...kinder) baut DOM-Elemente – ähnlich wie React.createElement, nur direkt echte Elemente.
 // Die App zeichnet bei jeder Änderung den aktuellen Bildschirm neu (siehe app.js → render()).
 
-import { fmtW, completionColor, groupLabel, groupColor, tr } from './core.js';
+import { fmtW, completionColor, groupLabel, groupColor, tr, plural } from './core.js';
 
 export function h(tag, props, ...children) {
   const el = tag === 'svg' || props?.svg ? document.createElementNS('http://www.w3.org/2000/svg', tag) : document.createElement(tag);
@@ -206,4 +206,14 @@ export function undoToast(msg, undo) {
     h('button', { class: 'btn text', onclick: () => { close(); undo(); } }, tr('Rückgängig', 'Undo')));
   document.body.append(el);
   undoTimer = setTimeout(close, 8000);
+}
+
+/** Kategorie als große Zeile (wie CategoryRow in Components.kt): Symbol, Name, Anzahl + davon ausgewählt, Pfeil */
+export function categoryRow(groupKey, label, iconHtml, color, total, added, onClick) {
+  return h('button', { class: 'card category-row', style: `--tint:${color}`, onclick: onClick },
+    h('span', { html: iconHtml }),
+    h('div', { class: 'grow' }, h('b', null, label),
+      h('small', { class: added ? 'accent' : 'muted' }, plural(total, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) +
+        (added ? tr(` · ${added} ausgewählt`, ` · ${added} selected`) : ''))),
+    h('span', { class: 'muted' }, icon('chevron')));
 }

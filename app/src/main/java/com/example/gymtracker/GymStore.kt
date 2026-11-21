@@ -145,9 +145,14 @@ class GymStore(context: Context) {
             val ex = root.optJSONArray("exercises") ?: JSONArray()
             for (i in 0 until ex.length()) migrateName(ex.getString(i)).let { if (it !in exercises) exercises.add(it) }
             val g = root.optJSONObject("groups") ?: JSONObject()
+            val oldArms = mutableListOf<String>() // frühere Kategorie „ARME“ → nach den Muskeln aufteilen (unten)
             g.keys().forEach { key ->
+                val n = migrateName(key)
+                // Katalog-Übungen: Kategorie kommt immer aus dem Katalog (nicht speichern, sonst wirken alte Zuordnungen weiter)
+                if (catalogGroup(n) != null) return@forEach
+                if (g.getString(key) == "ARME") { oldArms += n; return@forEach }
                 runCatching { MuscleGroup.valueOf(g.getString(key)) }
-                    .onSuccess { groups[migrateName(key)] = it }
+                    .onSuccess { groups[n] = it }
             }
             // Eigene Übungen: Gerät und Zeit-Messung
             val eq = root.optJSONObject("customEquipment") ?: JSONObject()
@@ -164,6 +169,8 @@ class GymStore(context: Context) {
                 fun ids(a: JSONArray?) = if (a == null) emptyList() else List(a.length()) { a.getString(it) }.filter { it in MUSCLES }
                 CustomMeta.muscles[migrateName(key)] = MuscleSet(ids(o.optJSONArray("primary")), ids(o.optJSONArray("secondary")))
             }
+            // Eigene Übungen der früheren Kategorie „Arme“: nach dem Hauptmuskel aufteilen (sonst Bizeps)
+            for (n in oldArms) groups[n] = migrateArmGroup(CustomMeta.muscles[n])
             root.optJSONObject("settings")?.let { weeklyGoal = it.optInt("weeklyGoal", 3) }
             val wo = root.optJSONArray("workouts") ?: JSONArray()
             for (i in 0 until wo.length()) {
@@ -343,8 +350,9 @@ class GymStore(context: Context) {
     }
 
     /** Gespeicherte Gruppe, sonst aus dem Katalog, sonst „Sonstige“. */
+    /** Katalog-Übungen: Kategorie aus dem Katalog; eigene Übungen: gespeicherte Kategorie. */
     fun groupOf(name: String): MuscleGroup =
-        groups[name] ?: catalogGroup(name) ?: MuscleGroup.SONSTIGE
+        catalogGroup(name) ?: groups[name] ?: MuscleGroup.SONSTIGE
 
     /** Notiz einer Übung an einem Tag (dayKey), null = keine. */
     fun noteFor(exercise: String, day: Int): String? = notes["$exercise|$day"]

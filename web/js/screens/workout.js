@@ -10,11 +10,11 @@ import {
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
 import { exerciseIconHtml, muscleIconHtml, exerciseImageUrl } from '../pictograms.js';
-import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, undoToast } from '../ui.js';
+import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, undoToast, categoryRow } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
 
-import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
+import { filterActions, filterBar, matches, noFilterResults, filterActive } from '../filter.js';
 
 const sortedGroups = names => [...new Set(names.map(n => store.groupOf(n)))].sort((a, b) => GROUP_KEYS.indexOf(a) - GROUP_KEYS.indexOf(b));
 
@@ -240,8 +240,10 @@ const targetLabel = (target, g) => target === 0 ? 'optional' : isCardio(g) ? `${
  */
 export function workoutPickerScreen(w) {
   const all = [...CATALOG.map(c => c.name), ...store.customNames.filter(n => !catalogEntry(n))]; // inkl. aus der Liste entfernter
-  const visible = all.filter(n => matches(nav.pickFilter, n, store.groupOf(n)));
-  const inWorkout = w.exercises.filter(n => visible.includes(n));
+  // Erst Kategorien, dann deren Übungen (wie WorkoutPickerScreen in WorkoutScreens.kt); mit Suche/Filter direkt alle Treffer
+  const group = nav.pickGroup;
+  const overview = group == null && !filterActive(nav.pickFilter);
+  const visible = all.filter(n => (group == null || store.groupOf(n) === group) && matches(nav.pickFilter, n, store.groupOf(n)));
   const row = name => {
     const g = store.groupOf(name);
     return h('button', { class: 'pick-row', onclick: () => go({ pickDetail: name }) },
@@ -250,17 +252,31 @@ export function workoutPickerScreen(w) {
         w.exercises.includes(name) ? h('small', { class: 'accent pick-target' }, '✓ ' + targetLabel(store.targetFor(w, name), g)) : null),
       h('span', { class: 'muted' }, icon('chevron')));
   };
+  let content;
+  if (!visible.length) content = noFilterResults('pick');
+  else if (overview) {
+    content = h('div', { class: 'pad' },
+      w.exercises.length ? [h('h2', { class: 'section' }, tr('In diesem Workout', 'In this workout') + ` (${w.exercises.length})`), w.exercises.map(row)] : null,
+      h('h2', { class: 'section' }, tr('Übung hinzufügen', 'Add exercise')),
+      muted(tr('Wähle eine Kategorie – oder suche oben direkt nach einer Übung.', 'Pick a category – or search for an exercise at the top.'), 'small'),
+      h('div', { class: 'category-list' }, GROUP_KEYS.map(g => {
+        const names = visible.filter(n => store.groupOf(n) === g);
+        return names.length ? categoryRow(g, groupLabel(g), muscleIconHtml(g, 44), groupColor(g), names.length,
+          names.filter(n => w.exercises.includes(n)).length, () => go({ pickGroup: g })) : null;
+      })));
+  } else {
+    content = h('div', { class: 'pad' },
+      muted(tr('Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.', 'Tap an exercise for info, target sets and to add it.'), 'small'),
+      GROUP_KEYS.map(g => {
+        const names = visible.filter(n => store.groupOf(n) === g);
+        return names.length ? [group == null ? groupHeader(g) : null, names.map(row)] : null;
+      }));
+  }
   return screen({
-    title: tr('Übungen: ', 'Exercises: ') + w.name, back: true, key: 'pick-' + w.id,
+    title: group ? groupLabel(group) : tr('Übungen: ', 'Exercises: ') + w.name, back: true, key: 'pick-' + w.id + '-' + (group ?? ''),
     actions: filterActions('pick'),
     top: filterBar('pick', sortedGroups(all), EQUIPMENT_KEYS),
-    content: visible.length === 0 ? noFilterResults('pick') : h('div', { class: 'pad' },
-      muted(tr('Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.', 'Tap an exercise for info, target sets and to add it.'), 'small'),
-      inWorkout.length ? [h('h2', { class: 'section' }, tr('In diesem Workout', 'In this workout') + ` (${w.exercises.length})`), inWorkout.map(row)] : null,
-      GROUP_KEYS.map(g => {
-        const names = visible.filter(n => store.groupOf(n) === g && !w.exercises.includes(n));
-        return names.length ? [groupHeader(g), names.map(row)] : null;
-      })),
+    content,
   });
 }
 
@@ -301,15 +317,25 @@ export function workoutExercisePage(w, name) {
 
 export function catalogScreen() {
   const f = nav.catalogFilter;
-  const visible = CATALOG.filter(c => matches(f, c.name, c.group));
-  const custom = store.customNames.filter(n => matches(f, n, store.groupOf(n))); // inkl. aus der Liste entfernter → wieder hinzufügbar
+  // Erst Kategorien, dann deren Übungen (wie CatalogScreen.kt); mit Suche/Filter direkt alle Treffer
+  const group = nav.catalogGroup;
+  const overview = group == null && !filterActive(f);
+  const visible = CATALOG.filter(c => (group == null || c.group === group) && matches(f, c.name, c.group));
+  const custom = store.customNames.filter(n => (group == null || store.groupOf(n) === group) && matches(f, n, store.groupOf(n))); // inkl. aus der Liste entfernter → wieder hinzufügbar
   const byGroup = GROUP_KEYS.map(g => [g, visible.filter(c => c.group === g)]).filter(([, l]) => l.length);
 
-  return screen({
-    title: tr('Übungskatalog', 'Exercise catalog'), back: true, key: 'catalog',
-    actions: [iconBtn('add', customExerciseDialog, { label: tr('Eigene Übung', 'Custom exercise') }), ...filterActions('catalog')],
-    top: filterBar('catalog', GROUP_KEYS.filter(g => CATALOG.some(c => c.group === g)), EQUIPMENT_KEYS),
-    content: !visible.length && !custom.length ? noFilterResults('catalog') : h('div', { class: 'pad' },
+  let content;
+  if (!visible.length && !custom.length) content = noFilterResults('catalog');
+  else if (overview) {
+    content = h('div', { class: 'pad' },
+      muted(tr('Wähle eine Kategorie – oder suche oben direkt nach einer Übung.', 'Pick a category – or search for an exercise at the top.'), 'small'),
+      h('div', { class: 'category-list' }, GROUP_KEYS.map(g => {
+        const names = [...visible.filter(c => c.group === g).map(c => c.name), ...custom.filter(n => store.groupOf(n) === g)];
+        return names.length ? categoryRow(g, groupLabel(g), muscleIconHtml(g, 44), groupColor(g), names.length,
+          names.filter(n => store.hasExercise(n)).length, () => go({ catalogGroup: g })) : null;
+      })));
+  } else {
+    content = h('div', { class: 'pad' },
       muted(tr('Tippe auf eine Übung, um sie zu deiner Liste hinzuzufügen – nochmal tippen entfernt sie wieder. Fehlt etwas? Oben mit + eine eigene Übung anlegen.',
         'Tap an exercise to add it to your list – tap again to remove it. Missing one? Create your own with + at the top.'), 'small'),
       custom.length ? [
@@ -323,14 +349,21 @@ export function catalogScreen() {
             added ? h('span', { class: 'accent' }, icon('check')) : h('span', { class: 'add-mark' }, '+'));
         }),
       ] : null,
-      byGroup.map(([g, list]) => [groupHeader(g), list.map(c => {
+      byGroup.map(([g, list]) => [group == null ? groupHeader(g) : null, list.map(c => {
         const added = store.hasExercise(c.name);
         return h('div', { class: 'cat-row', role: 'button', onclick: () => (added ? removeAgain(c.name) : store.addExercise(c.name, c.group)) }, // nochmal tippen = entfernen
           h('span', { html: exerciseIconHtml(c.name, g, 40) }),
           h('div', { class: 'grow' }, h('span', null, exName(c.name)), h('small', { class: 'muted' }, equipmentLabel(c.equipment))),
           wikiButton(c.name),
           h('span', { class: ['add-mark', added && 'accent'] }, added ? '✓' : '+'));
-      })])),
+      })]));
+  }
+
+  return screen({
+    title: group ? groupLabel(group) : tr('Übungskatalog', 'Exercise catalog'), back: true, key: 'catalog-' + (group ?? ''),
+    actions: [iconBtn('add', customExerciseDialog, { label: tr('Eigene Übung', 'Custom exercise') }), ...filterActions('catalog')],
+    top: filterBar('catalog', GROUP_KEYS.filter(g => CATALOG.some(c => c.group === g)), EQUIPMENT_KEYS),
+    content,
   });
 }
 

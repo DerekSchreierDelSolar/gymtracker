@@ -59,8 +59,10 @@ setBackHandler(() => {
   }
   if (nav.exercise != null) { update({ exercise: null }); return true; }
   if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }
-  if (nav.pick) { update({ pick: false, pickDetail: null }); return true; }
+  if (nav.pickGroup != null) { update({ pickGroup: null }); return true; }
+  if (nav.pick) { update({ pick: false, pickDetail: null, pickGroup: null }); return true; }
   if (nav.workoutId != null) { update({ workoutId: null }); return true; }
+  if (nav.catalogGroup != null) { update({ catalogGroup: null }); return true; }
   if (nav.catalog) { update({ catalog: false }); return true; }
   if (nav.bot) { update({ bot: false }); return true; }
   if (nav.wiki) { update({ wiki: false, wikiQuery: '' }); return true; }

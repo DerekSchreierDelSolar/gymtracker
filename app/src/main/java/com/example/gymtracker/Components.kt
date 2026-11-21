@@ -2,6 +2,7 @@ package com.example.gymtracker
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.*
@@ -257,6 +258,38 @@ fun SegmentChip(label: String, selected: Boolean, onClick: () -> Unit, modifier:
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, maxLines = 1, softWrap = false)
+        }
+    }
+}
+
+/**
+ * Kategorie als große Zeile (beim Hinzufügen von Übungen: erst Kategorie wählen, dann Übung).
+ * total = Übungen der Kategorie, added = davon schon in der Liste bzw. im Workout.
+ */
+@Composable
+fun CategoryRow(group: MuscleGroup, total: Int, added: Int, onClick: () -> Unit) {
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = group.color.copy(alpha = 0.14f).compositeOver(MaterialTheme.colorScheme.surfaceContainerHighest)
+        )
+    ) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            MuscleIcon(group, Modifier.size(44.dp))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(group.label, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    plural(total, tr("Übung", "exercise"), tr("Übungen", "exercises")) +
+                        (if (added > 0) tr(" · $added ausgewählt", " · $added selected") else ""),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (added > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

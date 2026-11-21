@@ -64,8 +64,12 @@ enum class MuscleGroup(private val de: String, private val en: String, val color
     BRUST("Brust", "Chest", Color(0xFFE57373)),
     RUECKEN("Rücken", "Back", Color(0xFF64B5F6)),
     BEINE("Beine", "Legs", Color(0xFF81C784)),
+    GLUTEUS("Gluteus", "Glutes", Color(0xFFFF8A65)),
     SCHULTERN("Schultern", "Shoulders", Color(0xFFFFB74D)),
-    ARME("Arme", "Arms", Color(0xFFBA68C8)),
+    // früher eine Kategorie „Arme“ (ARME) – beim Laden alter Daten migriert, siehe migrateGroup()
+    BIZEPS("Bizeps", "Biceps", Color(0xFFBA68C8)),
+    TRIZEPS("Trizeps", "Triceps", Color(0xFF9575CD)),
+    UNTERARM("Unterarm", "Forearms", Color(0xFFA1887F)),
     BAUCH("Bauch", "Abs", Color(0xFF4DB6AC)),
     GANZKOERPER("Ganzkörper", "Full body", Color(0xFF7986CB)),
     CARDIO("Cardio", "Cardio", Color(0xFFF06292)),
@@ -234,3 +238,13 @@ fun JSONObject?.toIntMap(): Map<String, Int> {
 fun Map<String, Int>.toJson(): JSONObject = JSONObject().also { o -> forEach { (k, v) -> o.put(k, v) } }
 
 
+
+/**
+ * Frühere Kategorie „Arme“ (gespeichert als "ARME") → Bizeps, Trizeps oder Unterarm, je nach erstem
+ * Hauptmuskel einer eigenen Übung; ohne Muskelangabe Bizeps. Gilt auch beim Import alter Sicherungen.
+ */
+fun migrateArmGroup(muscles: MuscleSet?): MuscleGroup = when (muscles?.primary?.firstOrNull { it in setOf("biceps", "triceps", "forearms") }) {
+    "triceps" -> MuscleGroup.TRIZEPS
+    "forearms" -> MuscleGroup.UNTERARM
+    else -> MuscleGroup.BIZEPS
+}

@@ -5,7 +5,7 @@
 import { RENAMED_EXERCISES, TEMPLATES } from './data.js';
 import {
   CustomMeta, catalogGroup, isCardio, setAppLanguage, appLanguage, tr, dayKey, SET_TYPES, setTypeOf, isWork,
-  GROUP_KEYS, EQUIPMENT_KEYS,
+  GROUP_KEYS, EQUIPMENT_KEYS, migrateArmGroup,
 } from './core.js';
 
 const KEY = 'gym_data';
@@ -83,12 +83,19 @@ class GymStore {
     const names = x => arr(x).filter(n => typeof n === 'string').map(migrateName);
 
     for (const n of names(root.exercises)) if (!this.exercises.includes(n)) this.exercises.push(n);
-    for (const [k, g] of entries(root.groups)) if (GROUP_KEYS.includes(g)) this.groups[migrateName(k)] = g;
+    // Katalog-Übungen ignorieren (Kategorie kommt aus dem Katalog); frühere Kategorie „ARME“ unten nach Muskeln aufteilen
+    const oldArms = [];
+    for (const [k, g] of entries(root.groups)) {
+      const n = migrateName(k);
+      if (catalogGroup(n)) continue;
+      if (g === 'ARME') oldArms.push(n); else if (GROUP_KEYS.includes(g)) this.groups[n] = g;
+    }
     for (const [k, e] of entries(root.customEquipment)) if (EQUIPMENT_KEYS.includes(e)) CustomMeta.equipment[migrateName(k)] = e;
     for (const t of names(root.customTimed)) CustomMeta.timed.add(t);
     for (const [k, m] of entries(root.customMuscles)) {
       CustomMeta.muscles[migrateName(k)] = { primary: arr(m?.primary).map(String), secondary: arr(m?.secondary).map(String) };
     }
+    for (const n of oldArms) this.groups[n] = migrateArmGroup(CustomMeta.muscles[n]);
 
     this.workouts = objs(root.workouts).map(o => ({
       id: o.id, name: String(o.name ?? ''),
@@ -231,7 +238,8 @@ class GymStore {
   }
 
   /** Gespeicherte Gruppe, sonst aus dem Katalog, sonst „Sonstige“. */
-  groupOf(name) { return this.groups[name] ?? catalogGroup(name) ?? 'SONSTIGE'; }
+  /** Katalog-Übungen: Kategorie aus dem Katalog; eigene: gespeicherte (wie groupOf in GymStore.kt) */
+  groupOf(name) { return catalogGroup(name) ?? this.groups[name] ?? 'SONSTIGE'; }
 
   /** Notiz einer Übung an einem Tag (dayKey), null = keine. */
   noteFor(exercise, day) { return this.notes[exercise]?.[day] ?? null; }

@@ -19,6 +19,8 @@ export const nav = {
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
   pickDetail: null,      // beim Bearbeiten geöffnete Übung (Info + Ziel-Sätze + Hinzufügen)
+  pickGroup: null,       // beim Bearbeiten geöffnete Kategorie (null = Übersicht)
+  catalogGroup: null,    // im Katalog geöffnete Kategorie (null = Übersicht)
   trainingStart: null,   // laufendes Training (Startzeit)
   trainingIndex: 0,
   restEnd: null,         // Pausen-Timer: Endzeitpunkt (ms)

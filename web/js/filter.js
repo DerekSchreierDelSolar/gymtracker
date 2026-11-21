@@ -67,3 +67,4 @@ export function noFilterResults(key) {
     h('button', { class: 'btn text', onclick: () => { nav[key + 'Filter'] = emptyFilter(); rerender(); } },
       tr('Filter zurücksetzen', 'Reset filter')));
 }
+

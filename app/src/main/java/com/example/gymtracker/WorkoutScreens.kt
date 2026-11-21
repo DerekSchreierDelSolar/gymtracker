@@ -439,7 +439,7 @@ fun WorkoutExerciseRow(
 }
 
 /**
- * Workout bearbeiten: schlichte Liste aller Übungen – oben die des Workouts, darunter alle übrigen
+ * Workout bearbeiten: oben die Übungen des Workouts, darunter die Kategorien; Kategorie antippen → ihre Übungen
  * (Katalog + eigene). Antippen öffnet [WorkoutExercisePage] mit Info, Ziel-Sätzen und Hinzufügen/Entfernen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -449,9 +449,13 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
         store.customNames.filter { name -> CATALOG.none { it.name.equals(name, ignoreCase = true) } }
     var filter by remember { mutableStateOf(ExerciseFilter()) }
     val ui = rememberFilterUi(filter)
-    val visible = all.filter { filter.matches(it, store.groupOf(it)) }
     // Geöffnete Übung (null = Liste). rememberSaveable: übersteht Drehen; Zurück schließt erst die Seite.
     var detail by rememberSaveable { mutableStateOf<String?>(null) }
+    // Geöffnete Kategorie (null = Übersicht). Mit Suche/Filter: direkt alle Treffer.
+    var openGroup by rememberSaveable { mutableStateOf<String?>(null) }
+    val group = openGroup?.let { runCatching { MuscleGroup.valueOf(it) }.getOrNull() }
+    val overview = group == null && !filter.isActive
+    val visible = all.filter { (group == null || store.groupOf(it) == group) && filter.matches(it, store.groupOf(it)) }
     val listState = rememberLazyListState() // außerhalb des if → Scroll-Position bleibt beim Zurückkehren erhalten
 
     detail?.let { name ->
@@ -459,11 +463,12 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
         WorkoutExercisePage(store, workout, name, onBack = { detail = null })
         return
     }
+    if (group != null) BackHandler { openGroup = null }
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(tr("Übungen: ", "Exercises: ") + workout.name) },
-            navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
+            title = { Text(group?.label ?: (tr("Übungen: ", "Exercises: ") + workout.name)) },
+            navigationIcon = { IconAction(Ico.BACK, onClick = { if (group != null) openGroup = null else onBack() }) },
             actions = { FilterActions(ui, filter, { filter = it }) }
         )
     }) { padding ->
@@ -479,7 +484,6 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                 ui = ui
             )
             if (visible.isEmpty()) NoFilterResults(onReset = { filter = ExerciseFilter() })
-            val inWorkout = workout.exercises.filter { it in visible }
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -487,28 +491,49 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                     .fillMaxWidth(),
                 contentPadding = PaddingValues(16.dp)
             ) {
-                item {
-                    Text(
-                        tr("Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.", "Tap an exercise for info, target sets and to add it."),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                if (inWorkout.isNotEmpty()) {
-                    item(key = "h_in") {
+                if (overview) {
+                    // Übersicht: oben die Übungen des Workouts, darunter die Kategorien zum Hinzufügen
+                    if (workout.exercises.isNotEmpty()) {
+                        item(key = "h_in") {
+                            Text(
+                                tr("In diesem Workout", "In this workout") + " (${workout.exercises.size})",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                        items(workout.exercises, key = { "in_$it" }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
+                    }
+                    item(key = "h_add") {
+                        Column(Modifier.padding(top = if (workout.exercises.isEmpty()) 0.dp else 16.dp, bottom = 8.dp)) {
+                            Text(tr("Übung hinzufügen", "Add exercise"), style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                tr("Wähle eine Kategorie – oder suche oben direkt nach einer Übung.", "Pick a category – or search for an exercise at the top."),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    items(MuscleGroup.entries.filter { g -> visible.any { store.groupOf(it) == g } }, key = { "g_${it.name}" }) { g ->
+                        val names = visible.filter { store.groupOf(it) == g }
+                        Box(Modifier.padding(bottom = 8.dp)) {
+                            CategoryRow(g, names.size, names.count { it in workout.exercises }, onClick = { openGroup = g.name })
+                        }
+                    }
+                } else {
+                    item {
                         Text(
-                            tr("In diesem Workout", "In this workout") + " (${workout.exercises.size})",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(top = 14.dp, bottom = 4.dp)
+                            tr("Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.", "Tap an exercise for info, target sets and to add it."),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    items(inWorkout, key = { "in_$it" }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
-                }
-                MuscleGroup.entries.forEach { group ->
-                    val names = visible.filter { store.groupOf(it) == group && it !in workout.exercises }
-                    if (names.isEmpty()) return@forEach
-                    item(key = "h_${group.name}") { GroupHeader(group) }
-                    items(names, key = { it }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
+                    // Kategorie bzw. Suchtreffer: alle passenden Übungen (die des Workouts mit ✓ und Ziel)
+                    MuscleGroup.entries.forEach { g ->
+                        val names = visible.filter { store.groupOf(it) == g }
+                        if (names.isEmpty()) return@forEach
+                        if (group == null) item(key = "h_${g.name}") { GroupHeader(g) }
+                        items(names, key = { it }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
+                    }
                 }
             }
         }

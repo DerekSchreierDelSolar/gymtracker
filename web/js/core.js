@@ -19,8 +19,12 @@ export const MUSCLE_GROUPS = {
   BRUST: { de: 'Brust', en: 'Chest', color: '#E57373' },
   RUECKEN: { de: 'Rücken', en: 'Back', color: '#64B5F6' },
   BEINE: { de: 'Beine', en: 'Legs', color: '#81C784' },
+  GLUTEUS: { de: 'Gluteus', en: 'Glutes', color: '#FF8A65' },
   SCHULTERN: { de: 'Schultern', en: 'Shoulders', color: '#FFB74D' },
-  ARME: { de: 'Arme', en: 'Arms', color: '#BA68C8' },
+  // früher ARME „Arme“ – beim Laden migriert (migrateArmGroup)
+  BIZEPS: { de: 'Bizeps', en: 'Biceps', color: '#BA68C8' },
+  TRIZEPS: { de: 'Trizeps', en: 'Triceps', color: '#9575CD' },
+  UNTERARM: { de: 'Unterarm', en: 'Forearms', color: '#A1887F' },
   BAUCH: { de: 'Bauch', en: 'Abs', color: '#4DB6AC' },
   GANZKOERPER: { de: 'Ganzkörper', en: 'Full body', color: '#7986CB' },
   CARDIO: { de: 'Cardio', en: 'Cardio', color: '#F06292' },
@@ -188,3 +192,9 @@ export const weekdayDate = key => {
   const d = new Date(Math.floor(key / 10000), Math.floor(key / 100) % 100 - 1, key % 100);
   return d.toLocaleDateString(locale(), { weekday: 'long' }) + ', ' + fmtDate(d.getTime());
 };
+
+/** Frühere Kategorie „ARME“ → Bizeps/Trizeps/Unterarm nach erstem Hauptmuskel (wie migrateArmGroup in Model.kt) */
+export function migrateArmGroup(muscles) {
+  const m = (muscles?.primary ?? []).find(x => ['biceps', 'triceps', 'forearms'].includes(x));
+  return m === 'triceps' ? 'TRIZEPS' : m === 'forearms' ? 'UNTERARM' : 'BIZEPS';
+}
