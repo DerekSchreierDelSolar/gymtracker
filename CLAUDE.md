@@ -49,7 +49,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `Filter.kt` | `ExerciseFilter` (Kategorie/Gerät/Suche), `FilterUiState`, `FilterActions`, `FilterBar` |
 | `HomeScreen.kt` | Startseite: TopBar, ⋮-Menü (Export/Import/Einstellungen), NavigationBar, **HorizontalPager mit 6 Tabs**, `SettingsDialog`, `ExerciseGrid`, `TileGrid`, `ExerciseTile` |
 | `DashboardTab.kt` | Tab 0 „Start“: Wochenziel, Serie, Schnellstart, Muskel-Heatmap, Diagramme (Zeitraum-Umschalter), Rekorde |
-| `WorkoutScreens.kt` | Tab 2 Liste, `NewWorkoutDialog` (+Vorlagen), `WorkoutScreen` (Drag & Drop), `WorkoutPickerScreen` (Ziel-Sätze) |
+| `WorkoutScreens.kt` | Tab 2 Liste, `NewWorkoutDialog` (+Vorlagen), `WorkoutScreen` (Übungen als Liste `WorkoutExerciseRow`, Drag & Drop am Griff sofort bzw. Zeile gedrückt halten; Web: `exerciseRow`/`enableDrag` mit FLIP-Animation), `WorkoutPickerScreen` (Ziel-Sätze) |
 | `TrainingScreen.kt` | Trainingsmodus (Pager pro Übung, Name + Eingabe + heutige Sätze + Verlauf früherer Tage per `HistoryDayCard`), Titel „1/6 · Workout“ + Dauer; Seite: Name + ⓘ, `RecordLine`, drei `CircleStat` (Wdh.-Ziel per `repsGoal`, Pause: antippen = Länge ändern bzw. Countdown überspringen, Sätze dieser Übung), Eingabe, heutige Sätze, Verlauf; Vibration |
 | `SummaryScreen.kt` | Übersicht nach dem Training, `ComparisonLine`, `StatBox` |
 | `CalendarTab.kt` | Tab 3: Monatskalender mit Abschluss-Ringen, `dayKey()`, `CompletionRing` |

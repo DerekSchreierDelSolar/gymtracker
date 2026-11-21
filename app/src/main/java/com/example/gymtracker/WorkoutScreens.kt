@@ -5,8 +5,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
@@ -17,7 +19,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
-import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -127,7 +128,7 @@ fun NewWorkoutDialog(onDismiss: () -> Unit, onCreate: (String) -> Unit, onTempla
     )
 }
 
-/** Ein Workout: seine Übungen als Kacheln in der festgelegten Reihenfolge. */
+/** Ein Workout: seine Übungen als Liste in der festgelegten Reihenfolge (ziehen zum Umsortieren). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutScreen(
@@ -143,14 +144,48 @@ fun WorkoutScreen(
     var confirmDelete by remember { mutableStateOf(false) }
     val history = store.sessionsFor(workout.id)
 
-    // ----- Drag & Drop zum Umsortieren -----
-    val gridState = rememberLazyGridState()
-    var dragKey by remember { mutableStateOf<String?>(null) }   // gerade gezogene Übung
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }  // Verschiebung gegenüber ihrem Layout-Platz
+    // ----- Drag & Drop zum Umsortieren (Liste) -----
+    val listState = rememberLazyListState()
+    var dragKey by remember { mutableStateOf<String?>(null) }  // gerade gezogene Übung
+    var dragY by remember { mutableFloatStateOf(0f) }          // senkrechte Verschiebung gegenüber ihrem Listenplatz
     val haptic = LocalHapticFeedback.current
     // Die Gesten-Coroutine läuft länger als eine Recomposition – mit rememberUpdatedState
     // sieht sie trotzdem immer die aktuelle Reihenfolge.
     val currentExercises by rememberUpdatedState(workout.exercises)
+
+    fun startDrag(name: String) {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        dragKey = name
+        dragY = 0f
+    }
+
+    /** Finger bewegt: Zeile mitziehen; überdeckt sie den Nachbarn zur Hälfte → Plätze tauschen. */
+    fun dragBy(name: String, dy: Float) {
+        dragY += dy
+        val items = listState.layoutInfo.visibleItemsInfo
+        val cur = items.firstOrNull { it.key == name } ?: return
+        val idx = currentExercises.indexOf(name)
+        val neighbor = when {
+            dragY > 0 -> currentExercises.getOrNull(idx + 1)
+            dragY < 0 -> currentExercises.getOrNull(idx - 1)
+            else -> null
+        } ?: return
+        val t = items.firstOrNull { it.key == neighbor } ?: return
+        // Vorderkante der gezogenen Zeile (unten beim Ziehen nach unten, oben nach oben) über der Mitte des Nachbarn?
+        val edge = if (dragY > 0) cur.offset + cur.size + dragY else cur.offset + dragY
+        val passed = if (dragY > 0) edge > t.offset + t.size / 2f else edge < t.offset + t.size / 2f
+        if (!passed) return
+        store.moveInWorkout(workout.id, idx, currentExercises.indexOf(neighbor))
+        // Die Zeile springt im Layout an den neuen Platz – Verschiebung ausgleichen, damit sie unter dem Finger bleibt
+        val newOffset = if (dragY > 0) t.offset + t.size - cur.size else t.offset
+        dragY -= newOffset - cur.offset
+    }
+
+    fun endDrag() {
+        dragKey = null
+        dragY = 0f
+        store.saveNow()
+    }
 
     Scaffold(
         topBar = {
@@ -188,99 +223,76 @@ fun WorkoutScreen(
                 WorkoutDaysRow(store, workout)
             }
         } else {
-            TileGrid(modifier, gridState) {
-                // Volle Breite: Trainingstage (Plan)
-                item(span = { GridItemSpan(maxLineSpan) }) { WorkoutDaysRow(store, workout, Modifier.padding(bottom = 8.dp)) }
-                // Volle Breite: Hinweis zum Umsortieren (Start-Button ist jetzt der schwebende FAB)
-                item(span = { GridItemSpan(maxLineSpan) }) {
+            LazyColumn(
+                modifier,
+                state = listState,
+                // unten Platz für den schwebenden Start-Button
+                contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 96.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item { WorkoutDaysRow(store, workout, Modifier.padding(bottom = 8.dp)) }
+                item {
                     Text(
                         tr(
-                            "Tipp: Kachel gedrückt halten und ziehen, um die Reihenfolge zu ändern.",
-                            "Tip: long-press a tile and drag it to change the order."
+                            "Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.",
+                            "Tip: drag the handle on the right (or long-press a row) to change the order."
                         ),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 4.dp)
+                        modifier = Modifier.padding(horizontal = 4.dp)
                     )
                 }
-                gridItems(workout.exercises, key = { it }) { name ->
-                    val group = store.groupOf(name)
+                items(workout.exercises, key = { it }) { name ->
                     val dragging = name == dragKey
                     // Wichtig: die Modifier-Kette hat immer dieselbe Struktur (nur Werte ändern sich),
                     // sonst würde Compose den pointerInput-Knoten neu anlegen und die Geste abbrechen.
-                    val dragModifier = Modifier
-                        // Andere Kacheln gleiten animiert an ihren neuen Platz; die gezogene nicht
-                        .animateItem(
-                            placementSpec = if (dragging) null
-                            else spring(
-                                stiffness = Spring.StiffnessMediumLow,
-                                visibilityThreshold = IntOffset.VisibilityThreshold
-                            )
-                        )
-                        .zIndex(if (dragging) 1f else 0f)
-                        .graphicsLayer {
-                            if (dragging) {
-                                translationX = dragOffset.x
-                                translationY = dragOffset.y
-                                shadowElevation = 24f
-                            }
-                        }
-                        // Innerhalb von graphicsLayer: Koordinaten bewegen sich mit der Kachel mit
-                        .pointerInput(name) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    dragKey = name
-                                    dragOffset = Offset.Zero
-                                },
-                                onDrag = { change, amount ->
-                                    change.consume()
-                                    dragOffset += amount
-                                    // Liegt die Mitte der gezogenen Kachel über einer anderen Übung? → tauschen
-                                    val items = gridState.layoutInfo.visibleItemsInfo
-                                    val cur = items.firstOrNull { it.key == name } ?: return@detectDragGesturesAfterLongPress
-                                    val cx = cur.offset.x + dragOffset.x + cur.size.width / 2f
-                                    val cy = cur.offset.y + dragOffset.y + cur.size.height / 2f
-                                    val target = items.firstOrNull {
-                                        val k = it.key as? String
-                                        k != null && k != name && k in currentExercises &&
-                                            cx >= it.offset.x && cx <= it.offset.x + it.size.width &&
-                                            cy >= it.offset.y && cy <= it.offset.y + it.size.height
-                                    }
-                                    if (target != null) {
-                                        store.moveInWorkout(
-                                            workout.id,
-                                            currentExercises.indexOf(name),
-                                            currentExercises.indexOf(target.key as String)
-                                        )
-                                        // Die Kachel springt im Layout an den neuen Platz –
-                                        // Verschiebung ausgleichen, damit sie unter dem Finger bleibt
-                                        dragOffset += Offset(
-                                            (cur.offset.x - target.offset.x).toFloat(),
-                                            (cur.offset.y - target.offset.y).toFloat()
-                                        )
-                                    }
-                                },
-                                onDragEnd = { dragKey = null; dragOffset = Offset.Zero; store.saveNow() },
-                                onDragCancel = { dragKey = null; dragOffset = Offset.Zero; store.saveNow() }
-                            )
-                        }
-                    ExerciseTile(
-                        name, group, store.setsFor(name).firstOrNull(),
+                    WorkoutExerciseRow(
+                        store, workout, name,
                         onClick = { onOpen(name) },
-                        modifier = dragModifier
+                        modifier = Modifier
+                            // Andere Zeilen gleiten animiert an ihren neuen Platz; die gezogene folgt dem Finger
+                            .animateItem(
+                                placementSpec = if (dragging) null
+                                else spring(stiffness = Spring.StiffnessMediumLow, visibilityThreshold = IntOffset.VisibilityThreshold)
+                            )
+                            .zIndex(if (dragging) 1f else 0f)
+                            .graphicsLayer {
+                                if (dragging) {
+                                    translationY = dragY
+                                    scaleX = 1.02f; scaleY = 1.02f
+                                    shadowElevation = 24f
+                                }
+                            }
+                            // ganze Zeile: erst gedrückt halten, dann ziehen
+                            .pointerInput(name) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = { startDrag(name) },
+                                    onDrag = { change, amount -> change.consume(); dragBy(name, amount.y) },
+                                    onDragEnd = { endDrag() },
+                                    onDragCancel = { endDrag() }
+                                )
+                            },
+                        // Griff: sofort ziehen
+                        handleModifier = Modifier.pointerInput(name) {
+                            detectDragGestures(
+                                onDragStart = { startDrag(name) },
+                                onDrag = { change, amount -> change.consume(); dragBy(name, amount.y) },
+                                onDragEnd = { endDrag() },
+                                onDragCancel = { endDrag() }
+                            )
+                        }
                     )
                 }
                 // Bisherige Trainings dieses Workouts
                 if (history.isNotEmpty()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                    item {
                         Text(
                             tr("Letzte Trainings", "Recent sessions"),
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(top = 12.dp)
+                            modifier = Modifier.padding(top = 12.dp, start = 4.dp)
                         )
                     }
-                    gridItems(history, key = { "s_${it.id}" }, span = { GridItemSpan(maxLineSpan) }) { t ->
+                    items(history, key = { "s_${it.id}" }) { t ->
                         val stats = sessionStats(store, t)
                         Card(
                             Modifier
@@ -332,6 +344,52 @@ fun WorkoutScreen(
                 TextButton(onClick = { confirmDelete = false }) { Text(tr("Abbrechen", "Cancel")) }
             }
         )
+    }
+}
+
+/** Eine Übung im Workout als Listenzeile: Bild, Name, letzter Satz + Ziel-Sätze, rechts der Griff zum Ziehen. */
+@Composable
+fun WorkoutExerciseRow(
+    store: GymStore,
+    workout: Workout,
+    name: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    handleModifier: Modifier = Modifier
+) {
+    val group = store.groupOf(name)
+    val last = store.setsFor(name).firstOrNull()
+    val target = store.targetFor(workout, name)
+    Card(
+        modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(onClick = onClick),
+        // leicht in der Kategorie-Farbe getönt (wie die Kacheln)
+        colors = CardDefaults.cardColors(
+            containerColor = group.color.copy(alpha = 0.14f).compositeOver(MaterialTheme.colorScheme.surfaceContainerHighest)
+        )
+    ) {
+        Row(Modifier.padding(start = 12.dp, top = 10.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            ExerciseIcon(name, group, Modifier.size(44.dp))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(exName(name), style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(
+                    listOfNotNull(
+                        last?.let { fmtSet(it, group.isCardio) } ?: "–",
+                        if (target > 0) tr("Ziel ", "Goal ") + plural(target, tr("Satz", "set"), tr("Sätze", "sets")) else null
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
+            // Griff: große Tippfläche (48 dp), sofort ziehbar
+            Box(handleModifier.size(48.dp), contentAlignment = Alignment.Center) {
+                AppIcon(Ico.DRAG, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     }
 }
 

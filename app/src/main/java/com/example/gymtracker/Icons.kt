@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 // ---------- App-Icons (selbst gezeichnet, ohne Icon-Bibliothek) ----------
 
-enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME, INFO, BOOK, CHAT, SEND }
+enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME, INFO, BOOK, CHAT, SEND, DRAG }
 
 /**
  * Einfache Linien-Icons im 24×24-Raster (wie Material Symbols „outlined“).
@@ -97,6 +97,9 @@ fun AppIcon(icon: Ico, modifier: Modifier = Modifier.size(24.dp), tint: Color = 
             Ico.CHAT -> { // Sprechblase mit Spitze unten links und drei Punkten
                 l(5f, 5f, 19f, 5f, 21f, 7f, 21f, 15f, 19f, 17f, 10f, 17f, 6f, 20.5f, 6.5f, 17f, 5f, 17f, 3f, 15f, 3f, 7f, 5f, 5f)
                 dot(8f, 11f, 1.2f); dot(12f, 11f, 1.2f); dot(16f, 11f, 1.2f)
+            }
+            Ico.DRAG -> { // Griff zum Ziehen: 2 × 3 Punkte
+                for (y in listOf(6f, 12f, 18f)) { dot(9f, y, 1.7f); dot(15f, y, 1.7f) }
             }
             Ico.SEND -> { // Papierflieger
                 l(3f, 11f, 21f, 3f, 14f, 21f, 11f, 13f, 3f, 11f)

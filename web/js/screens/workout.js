@@ -6,14 +6,14 @@ import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import {
   tr, exName, fmtDate, fmtDateTime, fmtDuration, fmtW, plural, isCardio, isTimed, equipmentOf, catalogEntry,
-  catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel,
+  catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel, groupColor, fmtSet,
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
 import { exerciseIconHtml, muscleIconHtml } from '../pictograms.js';
 import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
-import { exerciseTile } from './exercise.js';
+
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
 const sortedGroups = names => [...new Set(names.map(n => store.groupOf(n)))].sort((a, b) => GROUP_KEYS.indexOf(a) - GROUP_KEYS.indexOf(b));
@@ -87,16 +87,13 @@ export function workoutScreen(w, onStart) {
       h('div', null, h('button', { class: 'btn', onclick: () => go({ pick: true }) }, tr('Übungen auswählen', 'Choose exercises'))),
       daysRow(w));
   } else {
-    const grid = h('div', { class: 'tile-grid' }, w.exercises.map(name =>
-      exerciseTile(name, store.groupOf(name), e => {
-        if (e.currentTarget.dataset.justDragged) return; // Klick nach dem Ziehen ignorieren
-        go({ exercise: name });
-      })));
-    enableDrag(grid, w);
+    const list = h('div', { class: 'ex-list' }, w.exercises.map(name => exerciseRow(w, name)));
+    enableDrag(list, w);
     content = h('div', { class: 'pad list-bottom' },
       daysRow(w),
-      muted(tr('Tipp: Kachel gedrückt halten und ziehen, um die Reihenfolge zu ändern.', 'Tip: long-press a tile and drag it to change the order.'), 'small'),
-      grid,
+      muted(tr('Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.',
+        'Tip: drag the handle on the right (or long-press a row) to change the order.'), 'small'),
+      list,
       history.length ? [
         h('h2', { class: 'section' }, tr('Letzte Trainings', 'Recent sessions')),
         h('div', { class: 'stack' }, history.map(t => {
@@ -125,66 +122,82 @@ export function workoutScreen(w, onStart) {
   });
 }
 
+/** Eine Übung im Workout als Listenzeile: Bild, Name, letzter Satz + Ziel-Sätze, Griff (wie WorkoutExerciseRow in WorkoutScreens.kt) */
+function exerciseRow(w, name) {
+  const g = store.groupOf(name), last = store.setsFor(name)[0], target = store.targetFor(w, name);
+  const sub = [last ? fmtSet(last, isCardio(g)) : '–',
+    target > 0 ? tr('Ziel ', 'Goal ') + plural(target, tr('Satz', 'set'), tr('Sätze', 'sets')) : null].filter(Boolean).join(' · ');
+  return h('button', {
+    class: 'ex-row', 'data-name': name, style: `--tint:${groupColor(g)}`,
+    onclick: e => {
+      if (e.currentTarget.dataset.justDragged || e.target.closest('.drag-handle')) return; // nach dem Ziehen / am Griff nicht öffnen
+      go({ exercise: name });
+    },
+  },
+  h('span', { html: exerciseIconHtml(name, g, 44) }),
+  h('div', { class: 'grow' }, h('b', null, exName(name)), h('small', null, sub)),
+  h('span', { class: 'drag-handle', 'aria-label': tr('Ziehen', 'Drag') }, icon('drag')));
+}
+
 /**
- * Drag & Drop: Kachel lange drücken (350 ms), dann ziehen. Während des Ziehens werden die
- * DOM-Elemente direkt umsortiert; erst beim Loslassen wird die neue Reihenfolge gespeichert.
+ * Drag & Drop in der Liste: am Griff sofort, sonst Zeile 350 ms gedrückt halten. Die Zeile folgt dem Finger
+ * senkrecht; überdeckt sie den Nachbarn zur Hälfte, tauschen beide im DOM die Plätze und der Nachbar gleitet
+ * animiert an seinen neuen Platz (FLIP). Erst beim Loslassen wird die neue Reihenfolge gespeichert.
  */
-function enableDrag(grid, workout) {
-  const tilesOf = () => [...grid.querySelectorAll('.tile[data-name]')];
-  for (const tile of tilesOf()) {
-    let timer = null, dragging = false, sx = 0, sy = 0, gx = 0, gy = 0;
-    const naturalRect = () => {
-      const t = tile.style.transform;
-      tile.style.transform = '';
-      const r = tile.getBoundingClientRect();
-      tile.style.transform = t;
-      return r;
+function enableDrag(list, workout) {
+  const rows = () => [...list.querySelectorAll('.ex-row')];
+  /** Nachbarzeile weich verschieben: alte Position merken, im DOM umhängen, Sprung per transform zurück und auf 0 animieren */
+  const slide = (el, move) => {
+    const before = el.offsetTop;
+    move();
+    el.style.transition = 'none';
+    el.style.transform = `translateY(${before - el.offsetTop}px)`;
+    void el.offsetHeight; // Layout erzwingen, damit der Startwert gilt
+    el.style.transition = 'transform .18s ease-out';
+    el.style.transform = '';
+  };
+  for (const row of rows()) {
+    let timer = null, dragging = false, sx = 0, sy = 0, base = 0, pointerId = null;
+    const begin = () => {
+      dragging = true;
+      base = row.offsetTop - sy; // Layout-Platz relativ zum Finger
+      row.classList.add('dragging');
+      navigator.vibrate?.(20);
+      try { row.setPointerCapture(pointerId); } catch { /* egal */ }
     };
     const end = () => {
       clearTimeout(timer); timer = null;
       if (!dragging) return;
       dragging = false;
-      tile.classList.remove('dragging'); grid.classList.remove('drag-active');
-      tile.style.transform = '';
-      workout.exercises.splice(0, workout.exercises.length, ...tilesOf().map(t => t.dataset.name));
-      tile.dataset.justDragged = '1';
-      setTimeout(() => { delete tile.dataset.justDragged; store.saveNow(); }, 60);
+      row.style.transition = 'transform .15s ease-out';
+      row.style.transform = '';
+      row.classList.remove('dragging');
+      workout.exercises.splice(0, workout.exercises.length, ...rows().map(r => r.dataset.name));
+      row.dataset.justDragged = '1';
+      setTimeout(() => { delete row.dataset.justDragged; store.saveNow(); }, 160);
     };
-    tile.addEventListener('pointerdown', e => {
-      sx = e.clientX; sy = e.clientY;
-      timer = setTimeout(() => {
-        dragging = true;
-        const r = tile.getBoundingClientRect();
-        gx = sx - r.left; gy = sy - r.top;
-        tile.classList.add('dragging'); grid.classList.add('drag-active');
-        navigator.vibrate?.(20);
-        try { tile.setPointerCapture(e.pointerId); } catch { /* egal */ }
-      }, 350);
+    row.addEventListener('pointerdown', e => {
+      sx = e.clientX; sy = e.clientY; pointerId = e.pointerId;
+      if (e.target.closest('.drag-handle')) { e.preventDefault(); begin(); return; }
+      timer = setTimeout(begin, 350);
     });
-    tile.addEventListener('pointermove', e => {
+    row.addEventListener('pointermove', e => {
       if (!dragging) {
         if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) { clearTimeout(timer); timer = null; }
         return;
       }
-      const cx = e.clientX, cy = e.clientY;
-      const tiles = tilesOf();
-      const target = tiles.find(t => {
-        if (t === tile) return false;
-        const r = t.getBoundingClientRect();
-        return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
-      });
-      if (target) {
-        if (tiles.indexOf(tile) < tiles.indexOf(target)) target.after(tile); else target.before(tile);
-      }
-      // Kachel bleibt unter dem Finger, auch wenn sie im Raster an einen neuen Platz gerückt ist
-      const n = naturalRect();
-      tile.style.transform = `translate(${cx - gx - n.left}px, ${cy - gy - n.top}px)`;
+      const top = base + e.clientY; // gewünschte sichtbare Oberkante
+      const next = row.nextElementSibling, prev = row.previousElementSibling;
+      if (next && top + row.offsetHeight > next.offsetTop + next.offsetHeight / 2) slide(next, () => row.before(next));
+      else if (prev && top < prev.offsetTop + prev.offsetHeight / 2) slide(prev, () => row.after(prev));
+      row.style.transition = 'none';
+      row.style.transform = `translateY(${top - row.offsetTop}px)`;
     });
-    tile.addEventListener('pointerup', end);
-    tile.addEventListener('pointercancel', end);
+    row.addEventListener('pointerup', end);
+    row.addEventListener('pointercancel', end);
     // Während des Ziehens nicht scrollen
-    tile.addEventListener('touchmove', e => { if (dragging) e.preventDefault(); }, { passive: false });
-    tile.addEventListener('contextmenu', e => e.preventDefault());
+    row.addEventListener('touchmove', e => { if (dragging) e.preventDefault(); }, { passive: false });
+    row.addEventListener('contextmenu', e => e.preventDefault());
   }
 }
 
