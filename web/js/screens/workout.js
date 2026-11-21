@@ -64,7 +64,7 @@ function daysRow(w) {
   return h('div', { class: 'plan-row' },
     h('b', { class: 'small-title' }, tr('Trainingstage', 'Training days')),
     muted(tr('Geplante Tage erscheinen auf der Startseite als „Heute dran“.', 'Planned days show up on the home screen as "Today".'), 'small'),
-    h('div', { class: 'chips wrap' }, [1, 2, 3, 4, 5, 6, 7].map(d =>
+    h('div', { class: 'day-chips' }, [1, 2, 3, 4, 5, 6, 7].map(d =>
       chip(weekdayShort(d), (w.days ?? []).includes(d), () => store.toggleDay(w.id, d)))));
 }
 
@@ -142,7 +142,8 @@ function exerciseRow(w, name) {
 /**
  * Drag & Drop in der Liste: am Griff sofort, sonst Zeile 350 ms gedrückt halten. Die Zeile folgt dem Finger
  * senkrecht; überdeckt sie den Nachbarn zur Hälfte, tauschen beide im DOM die Plätze und der Nachbar gleitet
- * animiert an seinen neuen Platz (FLIP). Erst beim Loslassen wird die neue Reihenfolge gespeichert.
+ * animiert an seinen neuen Platz (FLIP). Am Rand scrollt die Liste automatisch mit.
+ * Erst beim Loslassen wird die neue Reihenfolge gespeichert.
  */
 function enableDrag(list, workout) {
   const rows = () => [...list.querySelectorAll('.ex-row')];
@@ -156,14 +157,45 @@ function enableDrag(list, workout) {
     el.style.transition = 'transform .18s ease-out';
     el.style.transform = '';
   };
+  const scroller = () => list.closest('.content') ?? document.scrollingElement;
   for (const row of rows()) {
-    let timer = null, dragging = false, sx = 0, sy = 0, base = 0, pointerId = null;
+    let timer = null, dragging = false, sx = 0, sy = 0, lastY = 0, base = 0, scroll0 = 0, pointerId = null;
+    /** Zeile an den Finger setzen (inkl. bisher automatisch gescrollter Strecke) und ggf. mit Nachbarn tauschen */
+    const update = () => {
+      const top = base + lastY + (scroller().scrollTop - scroll0); // gewünschte Oberkante im Listen-Koordinatensystem
+      for (let i = 0; i < 20; i++) { // beim schnellen Auto-Scroll ggf. mehrere Plätze auf einmal
+        const next = row.nextElementSibling, prev = row.previousElementSibling;
+        if (next && top + row.offsetHeight > next.offsetTop + next.offsetHeight / 2) slide(next, () => row.before(next));
+        else if (prev && top < prev.offsetTop + prev.offsetHeight / 2) slide(prev, () => row.after(prev));
+        else break;
+      }
+      row.style.transition = 'none';
+      row.style.transform = `translateY(${top - row.offsetTop}px)`;
+    };
+    /** Auto-Scroll: Finger nahe am oberen/unteren Rand → Liste weiterschieben, je näher am Rand, desto schneller */
+    const autoScroll = () => {
+      if (!dragging) return;
+      const sc = scroller(), r = sc.getBoundingClientRect(), zone = 80;
+      const bottom = r.bottom - 72; // der schwebende Start-Button verdeckt den unteren Rand
+      let v = 0;
+      if (lastY < r.top + zone) v = -Math.min(1, (r.top + zone - lastY) / zone) * 14;
+      else if (lastY > bottom - zone) v = Math.min(1, (lastY - bottom + zone) / zone) * 14;
+      if (v) {
+        const before = sc.scrollTop;
+        sc.scrollTop += v;
+        if (sc.scrollTop !== before) update();
+      }
+      requestAnimationFrame(autoScroll);
+    };
     const begin = () => {
       dragging = true;
+      lastY = sy;
       base = row.offsetTop - sy; // Layout-Platz relativ zum Finger
+      scroll0 = scroller().scrollTop;
       row.classList.add('dragging');
       navigator.vibrate?.(20);
       try { row.setPointerCapture(pointerId); } catch { /* egal */ }
+      requestAnimationFrame(autoScroll);
     };
     const end = () => {
       clearTimeout(timer); timer = null;
@@ -186,16 +218,12 @@ function enableDrag(list, workout) {
         if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) { clearTimeout(timer); timer = null; }
         return;
       }
-      const top = base + e.clientY; // gewünschte sichtbare Oberkante
-      const next = row.nextElementSibling, prev = row.previousElementSibling;
-      if (next && top + row.offsetHeight > next.offsetTop + next.offsetHeight / 2) slide(next, () => row.before(next));
-      else if (prev && top < prev.offsetTop + prev.offsetHeight / 2) slide(prev, () => row.after(prev));
-      row.style.transition = 'none';
-      row.style.transform = `translateY(${top - row.offsetTop}px)`;
+      lastY = e.clientY;
+      update();
     });
     row.addEventListener('pointerup', end);
     row.addEventListener('pointercancel', end);
-    // Während des Ziehens nicht scrollen
+    // Während des Ziehens nicht (von Hand) scrollen
     row.addEventListener('touchmove', e => { if (dragging) e.preventDefault(); }, { passive: false });
     row.addEventListener('contextmenu', e => e.preventDefault());
   }

@@ -12,12 +12,16 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.util.Calendar
 
@@ -71,7 +75,6 @@ fun planPick(store: GymStore): PlanPick? {
 }
 
 /** Trainingstage eines Workouts als Chips Mo–So (antippen = an/aus). */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WorkoutDaysRow(store: GymStore, workout: Workout, modifier: Modifier = Modifier) {
     Column(modifier) {
@@ -82,9 +85,23 @@ fun WorkoutDaysRow(store: GymStore, workout: Workout, modifier: Modifier = Modif
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(6.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // 7 gleich breite Buttons über die volle Breite (weight = wie flex: 1 in CSS)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             (1..7).forEach { d ->
-                FilterChip(selected = d in workout.days, onClick = { store.toggleDay(workout.id, d) }, label = { Text(weekdayShort(d)) })
+                // Eigener schlanker Chip (FilterChip hat zu viel Innenabstand für 7 nebeneinander)
+                val selected = d in workout.days
+                Surface(
+                    onClick = { store.toggleDay(workout.id, d) },
+                    modifier = Modifier.weight(1f).height(36.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                    contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(weekdayShort(d), style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, maxLines = 1, softWrap = false)
+                    }
+                }
             }
         }
     }

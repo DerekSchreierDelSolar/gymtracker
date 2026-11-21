@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -175,7 +177,13 @@ fun WorkoutScreen(
         val edge = if (dragY > 0) cur.offset + cur.size + dragY else cur.offset + dragY
         val passed = if (dragY > 0) edge > t.offset + t.size / 2f else edge < t.offset + t.size / 2f
         if (!passed) return
+        // LazyColumn hält ihre Position am obersten sichtbaren Eintrag (per key) fest. Wird der getauscht,
+        // würde die Liste ihm hinterherscrollen – daher die aktuelle Position ausdrücklich beibehalten.
+        val firstIndex = listState.firstVisibleItemIndex
+        val firstOffset = listState.firstVisibleItemScrollOffset
+        val firstKey = items.firstOrNull()?.key
         store.moveInWorkout(workout.id, idx, currentExercises.indexOf(neighbor))
+        if (firstKey == name || firstKey == neighbor) listState.requestScrollToItem(firstIndex, firstOffset)
         // Die Zeile springt im Layout an den neuen Platz – Verschiebung ausgleichen, damit sie unter dem Finger bleibt
         val newOffset = if (dragY > 0) t.offset + t.size - cur.size else t.offset
         dragY -= newOffset - cur.offset
@@ -185,6 +193,37 @@ fun WorkoutScreen(
         dragKey = null
         dragY = 0f
         store.saveNow()
+    }
+
+    // Auto-Scroll: liegt die gezogene Zeile am oberen/unteren Rand, schiebt eine Schleife (einmal pro Bild)
+    // die Liste weiter – je tiefer im Randbereich, desto schneller. LaunchedEffect startet die Schleife,
+    // sobald gezogen wird, und bricht sie ab, wenn dragKey wieder null ist.
+    val density = LocalDensity.current
+    LaunchedEffect(dragKey) {
+        val name = dragKey ?: return@LaunchedEffect
+        val zone = with(density) { 72.dp.toPx() }
+        val fab = with(density) { 72.dp.toPx() }   // der schwebende Start-Button verdeckt den unteren Rand
+        val maxSpeed = with(density) { 6.dp.toPx() } // Pixel pro Bild
+        while (true) {
+            withFrameNanos { }
+            val info = listState.layoutInfo
+            val cur = info.visibleItemsInfo.firstOrNull { it.key == name } ?: continue
+            val top = cur.offset + dragY
+            val bottom = top + cur.size
+            val start = info.viewportStartOffset.toFloat()
+            val end = info.viewportEndOffset - fab
+            val speed = when {
+                top < start + zone -> -maxSpeed * ((start + zone - top) / zone).coerceAtMost(1f)
+                bottom > end - zone -> maxSpeed * ((bottom - end + zone) / zone).coerceAtMost(1f)
+                else -> 0f
+            }
+            if (speed == 0f) continue
+            val scrolled = listState.scrollBy(speed)
+            if (scrolled != 0f) {
+                // Inhalt ist um `scrolled` gewandert – Zeile bleibt unter dem Finger, ggf. mit Nachbarn tauschen
+                dragBy(name, scrolled)
+            }
+        }
     }
 
     Scaffold(
