@@ -343,7 +343,7 @@ fun WorkoutScreen(
 @Composable
 fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
     val all = CATALOG.map { it.name } +
-        store.exercises.filter { name -> CATALOG.none { it.name.equals(name, ignoreCase = true) } }
+        store.customNames.filter { name -> CATALOG.none { it.name.equals(name, ignoreCase = true) } }
     var filter by remember { mutableStateOf(ExerciseFilter()) }
     val ui = rememberFilterUi(filter)
     val visible = all.filter { filter.matches(it, store.groupOf(it)) }

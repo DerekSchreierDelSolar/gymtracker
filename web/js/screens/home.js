@@ -257,8 +257,23 @@ function exerciseGrid() {
   return h('div', { class: 'pad list-bottom' }, GROUP_KEYS.map(g => {
     const names = visible.filter(n => store.groupOf(n) === g);
     if (!names.length) return null;
-    return [groupHeader(g), h('div', { class: 'tile-grid' }, names.map(n => exerciseTile(n, g, () => go({ exercise: n }))))];
+    return [groupHeader(g), h('div', { class: 'tile-grid' },
+      names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { onLongPress: () => removeDialog(n) })))];
   }));
+}
+
+/** Gedrückt halten → aus „Meine Übungen“ entfernen; Workouts und Verlauf bleiben (wie ExerciseGrid in HomeScreen.kt) */
+function removeDialog(name) {
+  const inWorkouts = store.workouts.filter(w => w.exercises.includes(name));
+  const q = n => tr(`„${n}“`, `"${n}"`);
+  const text = tr('Die Übung verschwindet aus deinen Übungen. Dein Verlauf bleibt erhalten', 'The exercise disappears from your exercises. Your history is kept') +
+    (inWorkouts.length ? (inWorkouts.length === 1 ? tr(', ebenso im Workout ', ', and it stays in the workout ')
+      : tr(', ebenso in den Workouts ', ', and it stays in the workouts ')) + inWorkouts.map(w => q(w.name)).join(', ') : '') +
+    tr('. Über den Katalog kannst du sie jederzeit wieder hinzufügen.', '. You can add it again from the catalog at any time.');
+  openDialog(() => dialog(tr(`„${exName(name)}“ entfernen?`, `Remove "${exName(name)}"?`), h('p', null, text), [
+    { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
+    { label: tr('Entfernen', 'Remove'), onClick: () => { closeDialog(); store.removeFromList(name); } },
+  ], closeDialog));
 }
 
 // ---------- Tab 3: Kalender ----------

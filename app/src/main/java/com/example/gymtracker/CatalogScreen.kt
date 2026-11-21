@@ -110,8 +110,8 @@ fun CatalogScreen(
     onBack: () -> Unit
 ) {
     val visible = CATALOG.filter { filter.matches(it.name, it.group) }
-    // Eigene Übungen = gespeicherte Übungen, die nicht im Katalog stehen
-    val customVisible = store.exercises
+    // Eigene Übungen = gespeicherte Übungen, die nicht im Katalog stehen (auch aus der Liste entfernte → wieder hinzufügbar)
+    val customVisible = store.customNames
         .filter { catalogGroup(it) == null && filter.matches(it, store.groupOf(it)) }
     val ui = rememberFilterUi(filter)
     var showCustom by remember { mutableStateOf(false) }
@@ -170,7 +170,14 @@ fun CatalogScreen(
                     }
                     items(customVisible, key = { "custom_$it" }) { name ->
                         val g = store.groupOf(name)
-                        Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        val added = store.hasExercise(name)
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable(enabled = !added) { store.addExercise(name) } // Kategorie bleibt gespeichert
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             ExerciseIcon(name, g, Modifier.size(40.dp))
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
@@ -185,7 +192,8 @@ fun CatalogScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            AppIcon(Ico.CHECK, tint = MaterialTheme.colorScheme.primary)
+                            if (added) AppIcon(Ico.CHECK, tint = MaterialTheme.colorScheme.primary)
+                            else Text("+", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }

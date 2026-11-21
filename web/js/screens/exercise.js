@@ -19,13 +19,29 @@ import { screen } from '../layout.js';
 /** Kompakte Kachel: Symbol, Name (2 Zeilen), letzter Eintrag. */
 export function exerciseTile(name, group, onClick, extra = {}) {
   const last = store.setsFor(name)[0];
-  return h('button', {
-    class: ['tile', extra.cls], onclick: onClick, 'data-name': name,
+  const tile = h('button', {
+    class: ['tile', extra.cls], 'data-name': name,
+    onclick: e => { if (tile.dataset.longPressed) delete tile.dataset.longPressed; else onClick(e); }, // nach langem Drücken kein Öffnen
     style: `--tint:${groupColor(group)}`,
   },
   h('span', { html: exerciseIconHtml(name, group, 44) }),
   h('span', { class: 'tile-name', lang: tr('de', 'en') }, exName(name)),
   h('small', null, last ? fmtSet(last, isCardio(group)) : '–'));
+  if (extra.onLongPress) onLongPress(tile, extra.onLongPress);
+  return tile;
+}
+
+/** Gedrückt halten (0,5 s, ohne zu wischen) → fn; der Klick danach öffnet nichts (siehe exerciseTile; wie combinedClickable). */
+function onLongPress(el, fn) {
+  let timer = null, x = 0, y = 0;
+  const cancel = () => { clearTimeout(timer); timer = null; };
+  el.addEventListener('pointerdown', e => {
+    delete el.dataset.longPressed; x = e.clientX; y = e.clientY;
+    timer = setTimeout(() => { el.dataset.longPressed = '1'; navigator.vibrate?.(20); fn(); }, 500);
+  });
+  el.addEventListener('pointermove', e => { if (timer && Math.hypot(e.clientX - x, e.clientY - y) > 10) cancel(); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => el.addEventListener(t, cancel));
+  el.addEventListener('contextmenu', e => e.preventDefault());
 }
 
 // ---------- Vorschlag ----------

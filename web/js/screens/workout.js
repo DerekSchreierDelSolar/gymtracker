@@ -191,7 +191,7 @@ function enableDrag(grid, workout) {
 // ---------- Übungen fürs Workout auswählen ----------
 
 export function workoutPickerScreen(w) {
-  const all = [...CATALOG.map(c => c.name), ...store.exercises.filter(n => !catalogEntry(n))];
+  const all = [...CATALOG.map(c => c.name), ...store.customNames.filter(n => !catalogEntry(n))]; // inkl. aus der Liste entfernter
   const visible = all.filter(n => matches(nav.pickFilter, n, store.groupOf(n)));
   return screen({
     title: tr('Übungen: ', 'Exercises: ') + w.name, back: true, key: 'pick-' + w.id,
@@ -224,7 +224,7 @@ export function workoutPickerScreen(w) {
 export function catalogScreen() {
   const f = nav.catalogFilter;
   const visible = CATALOG.filter(c => matches(f, c.name, c.group));
-  const custom = store.exercises.filter(n => !catalogGroup(n) && matches(f, n, store.groupOf(n)));
+  const custom = store.customNames.filter(n => matches(f, n, store.groupOf(n))); // inkl. aus der Liste entfernter → wieder hinzufügbar
   const byGroup = GROUP_KEYS.map(g => [g, visible.filter(c => c.group === g)]).filter(([, l]) => l.length);
 
   return screen({
@@ -237,12 +237,12 @@ export function catalogScreen() {
       custom.length ? [
         h('h2', { class: 'section' }, tr('Eigene Übungen', 'Custom exercises')),
         custom.map(n => {
-          const g = store.groupOf(n);
-          return h('div', { class: 'cat-row' },
+          const g = store.groupOf(n), added = store.hasExercise(n);
+          return h('div', { class: 'cat-row', role: 'button', onclick: added ? null : () => store.addExercise(n) },
             h('span', { html: exerciseIconHtml(n, g, 40) }),
             h('div', { class: 'grow' }, h('span', null, n),
               h('small', { class: 'muted' }, [groupLabel(g), equipmentOf(n) && equipmentLabel(equipmentOf(n)), isTimed(n) && tr('Zeit', 'Time')].filter(Boolean).join(' · '))),
-            h('span', { class: 'accent' }, icon('check')));
+            added ? h('span', { class: 'accent' }, icon('check')) : h('span', { class: 'add-mark' }, '+'));
         }),
       ] : null,
       byGroup.map(([g, list]) => [groupHeader(g), list.map(c => {

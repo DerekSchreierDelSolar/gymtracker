@@ -16,6 +16,11 @@
             "Just tap a logged set to change weight, reps and set type, or to delete it (tap delete twice)."]
     },
     {
+      "keys": ["uebung entfernen", "uebung loeschen", "entfernen", "ausblenden", "remove exercise", "delete exercise", "remove", "hide"],
+      "a": ["Im Tab „Übungen“ eine Kachel gedrückt halten → „Entfernen“: Die Übung verschwindet aus deiner Liste, bleibt aber in deinen Workouts, und der Verlauf bleibt erhalten. Über den Katalog kannst du sie wieder hinzufügen. Ganz löschen (mit allen Sätzen) geht in der Übung oben über das Papierkorb-Symbol.",
+            "In the \"Exercises\" tab long-press a tile → \"Remove\": the exercise disappears from your list but stays in your workouts, and your history is kept. Add it again from the catalog. To delete it completely (with all sets), open the exercise and use the trash icon at the top."]
+    },
+    {
       "keys": ["notiz", "notizen", "note", "notes", "kommentar"],
       "a": ["Unter der Eingabe steht „📝 Notiz für heute hinzufügen“. Die Notiz gilt für diese Übung an diesem Tag und erscheint im Verlauf beim Datum – z. B. „Schulter zwickt“ oder „Sitz Stufe 4“.",
             "Below the input there's \"📝 Add a note for today\". The note belongs to this exercise and day and shows up in the history, e.g. \"shoulder twinge\" or \"seat level 4\"."]

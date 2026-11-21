@@ -344,6 +344,21 @@ class GymStore(context: Context) {
         save()
     }
 
+    /**
+     * Übung nur aus „Meine Übungen“ (Tab Übungen) entfernen. Verlauf, Notizen, Kategorie und alle Workouts
+     * behalten sie – über den Katalog lässt sie sich wieder hinzufügen. (deleteExercise löscht dagegen alles.)
+     */
+    fun removeFromList(name: String) {
+        exercises.remove(name)
+        save()
+    }
+
+    /** Eigene Übungen (nicht im Katalog): in der Liste, in einem Workout oder mit Verlauf – auch aus der Liste entfernte. */
+    val customNames: List<String>
+        get() = (exercises + workouts.flatMap { it.exercises } + sets.map { it.exercise })
+            .distinct().filter { catalogGroup(it) == null }
+
+    /** Übung komplett löschen: auch Verlauf, Notizen und aus allen Workouts. */
     fun deleteExercise(name: String) {
         exercises.remove(name)
         notes.keys.filter { it.substringBeforeLast('|') == name }.forEach { notes.remove(it) }

@@ -5,6 +5,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.draw.clip
 import java.util.Calendar
 import androidx.compose.foundation.layout.*
@@ -359,6 +362,7 @@ fun ExerciseGrid(
     val groups = store.exercises.map { store.groupOf(it) }.distinct().sortedBy { it.ordinal }
     val equipment = store.exercises.mapNotNull { equipmentOf(it) }.distinct().sortedBy { it.ordinal }
     val visible = store.exercises.filter { filter.matches(it, store.groupOf(it)) }
+    var removing by remember { mutableStateOf<String?>(null) } // Übung, deren Entfernen gerade gefragt wird
 
     Column(modifier) {
         FilterBar(filter, onFilter, groups, equipment, ui)
@@ -377,10 +381,37 @@ fun ExerciseGrid(
                     GroupHeader(group)
                 }
                 gridItems(names, key = { it }) { name ->
-                    ExerciseTile(name, group, store.setsFor(name).firstOrNull(), onClick = { onOpen(name) })
+                    ExerciseTile(
+                        name, group, store.setsFor(name).firstOrNull(),
+                        onClick = { onOpen(name) },
+                        onLongClick = { removing = name }
+                    )
                 }
             }
         }
+    }
+
+    // Gedrückt halten → aus „Meine Übungen“ entfernen (Workouts und Verlauf bleiben)
+    removing?.let { name ->
+        val inWorkouts = store.workouts.filter { name in it.exercises }
+        AlertDialog(
+            onDismissRequest = { removing = null },
+            title = { Text(tr("„${exName(name)}“ entfernen?", "Remove \"${exName(name)}\"?")) },
+            text = {
+                Text(
+                    tr("Die Übung verschwindet aus deinen Übungen. Dein Verlauf bleibt erhalten", "The exercise disappears from your exercises. Your history is kept") +
+                        (if (inWorkouts.isEmpty()) "" else
+                            (if (inWorkouts.size == 1) tr(", ebenso im Workout ", ", and it stays in the workout ")
+                            else tr(", ebenso in den Workouts ", ", and it stays in the workouts ")) +
+                                inWorkouts.joinToString(", ") { tr("„${it.name}“", "\"${it.name}\"") }) +
+                        tr(". Über den Katalog kannst du sie jederzeit wieder hinzufügen.", ". You can add it again from the catalog at any time.")
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { store.removeFromList(name); removing = null }) { Text(tr("Entfernen", "Remove")) }
+            },
+            dismissButton = { TextButton(onClick = { removing = null }) { Text(tr("Abbrechen", "Cancel")) } }
+        )
     }
 }
 
@@ -414,14 +445,24 @@ fun ExerciseTile(
     group: MuscleGroup,
     last: GymSet?,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Gedrückt halten (null = nicht belegt, z. B. im Workout, wo langes Drücken das Ziehen startet) */
+    onLongClick: (() -> Unit)? = null
 ) {
+    val haptic = LocalHapticFeedback.current
     // Kachel leicht in der Kategorie-Farbe getönt
     Card(
         modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .clickable(onClick = onClick),
+            .then(
+                // combinedClickable = Tippen + langes Drücken (wie onclick + contextmenu im Web)
+                if (onLongClick == null) Modifier.clickable(onClick = onClick)
+                else Modifier.combinedClickable(onClick = onClick, onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
+                })
+            ),
         colors = CardDefaults.cardColors(
             containerColor = group.color.copy(alpha = 0.14f)
                 .compositeOver(MaterialTheme.colorScheme.surfaceContainerHighest)

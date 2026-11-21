@@ -83,6 +83,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
   Rekorde, 1RM, Fortschritt, 💡-Vorschlag, Wdh.-Ziel, Vergleich „letztes Mal“. Neue Auswertungen immer entsprechend filtern
   (`work()`/`top()` bzw. `isWork`/`isTop` in core.js). Satzliste: `setLabels()` (Arbeitssätze 1., 2. …, Aufwärmen „A“).
 - Eigene Übungen: Gruppe in `GymStore.groups`, Gerät/Zeit in globalem `CustomMeta`.
+- „Meine Übungen“ (`exercises`) ist nur die Liste im Tab Übungen: `removeFromList()` (Kachel gedrückt halten) entfernt nur dort – Workouts, Sätze, Notizen, Gruppe bleiben; `deleteExercise()` (Papierkorb in der Übung) löscht alles. Eigene Übungen für Katalog/Auswahl daher über `customNames` (Liste + Workouts + Sätze), nicht `exercises`.
 - `TrainingSession` speichert nur Start/Ende + Kopie von Name/Übungen/Zielen; die Sätze sind
   alle `sets` der Übungen im Zeitraum. **Negative Session-ID = „freies Training“** (Sätze ohne
   Workout, pro Tag virtuell berechnet, `freeOnly`-Filter gegen Doppelzählung).

@@ -205,6 +205,19 @@ class GymStore {
     this.#save();
   }
 
+  /** Nur aus „Meine Übungen“ entfernen: Verlauf, Notizen, Kategorie und Workouts bleiben (wie removeFromList in GymStore.kt). */
+  removeFromList(name) {
+    this.exercises = this.exercises.filter(e => e !== name);
+    this.#save();
+  }
+
+  /** Eigene Übungen (nicht im Katalog): in der Liste, in einem Workout oder mit Verlauf – auch aus der Liste entfernte. */
+  get customNames() {
+    return [...new Set([...this.exercises, ...this.workouts.flatMap(w => w.exercises), ...this.sets.map(s => s.exercise)])]
+      .filter(n => !catalogGroup(n));
+  }
+
+  /** Übung komplett löschen: auch Verlauf, Notizen und aus allen Workouts. */
   deleteExercise(name) {
     delete this.notes[name];
     this.exercises = this.exercises.filter(e => e !== name);
