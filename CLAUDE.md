@@ -42,7 +42,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `GymStore.kt` | Gesamter Zustand + Laden/Speichern (atomar via .tmp), Import/Export, alle Mutationen |
 | `AutoBackup.kt` | Automatisches Backup: Ordner per SAF (`OpenDocumentTree`, Berechtigung persistent), beim Verlassen der App (`onStop`) höchstens 1×/Tag `gymtracker-auto-JJJJ-MM-TT.json`, die 7 neuesten bleiben; Einstellungen in SharedPreferences (gerätegebunden, nicht im Export); `AutoBackupSettings` im Einstellungen-Dialog |
 | `Model.kt` | `GymSet`, `MuscleGroup`, `Equipment`, `Workout`, `TrainingSession`, `CustomMeta`, `TEMPLATES`, `fmtSet`, `oneRepMax`, `isTimed` |
-| `Catalog.kt` | `CATALOG` (177 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
+| `Catalog.kt` | `CATALOG` (207 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
 | `I18n.kt` | `appLanguage`, `tr()`, `appLocale()` |
 | `Format.kt` | `fmtW`, `fmtDate`, `fmtDateTime`, `fmtDuration`, `plural` |
 | `Stats.kt` | `ExerciseResult`, `SessionStats`, `sessionStats()`, `estimateKcal()`, `allSessions()` |
@@ -77,7 +77,9 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 
 ## Datenmodell & wichtige Konventionen
 - **Übungsnamen sind Schlüssel** (deutscher Katalog-Name). Anzeige immer über `exName(name)` (übersetzt).
-  Katalog-Namen haben die Form „Grundübung (Gerät)“ (`CatalogExercise.base` = Grundübung).
+  Katalog-Namen haben die Form „Grundübung (Gerät)“ (`CatalogExercise.base` = Grundübung); einseitige Varianten
+  „Grundübung (Gerät, einarmig/einbeinig)“ mit derselben Grundübung (gleiche Muskeln, Wiki, Bild). Listen sind alphabetisch
+  (`sortedByName` in I18n.kt / `sortByName` in core.js; einseitige Variante direkt unter der normalen).
   Umbenennen nur mit Eintrag alt → neu in `RENAMED_EXERCISES` (Catalog.kt); `readFrom()` wendet
   `migrateName()` auf alle gespeicherten Namen an (auch bei Import alter Backups). Einträge nie löschen.
 - `GymSet.reps` ist je nach Übung: Wiederholungen | **Minuten** (Cardio, `group.isCardio`) | **Sekunden** (`isTimed(name)`).

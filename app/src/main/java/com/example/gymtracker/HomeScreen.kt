@@ -436,7 +436,7 @@ fun ExerciseGrid(
             }
             // Eine Überschrift pro Kategorie, in der Reihenfolge des enums
             MuscleGroup.entries.forEach { group ->
-                val names = visible.filter { store.groupOf(it) == group }
+                val names = visible.filter { store.groupOf(it) == group }.sortedByName { exName(it) } // alphabetisch
                 if (names.isEmpty()) return@forEach
 
                 // Überschrift über die ganze Zeile (alle Spalten)

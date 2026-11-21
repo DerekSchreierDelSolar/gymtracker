@@ -2,7 +2,7 @@
 
 import { store } from '../store.js';
 import {
-  tr, exName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, plural, isCardio, isEnglish, groupLabel,
+  tr, exName, sortByName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
 } from '../core.js';
 import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, nextWorkoutAfter, planPick } from '../stats.js';
@@ -265,7 +265,7 @@ function exerciseGrid() {
   return h('div', { class: 'pad list-bottom' },
     muted(tr('Tippen = öffnen · gedrückt halten = aus der Liste entfernen', 'Tap = open · long-press = remove from list'), 'small'),
     GROUP_KEYS.map(g => {
-    const names = visible.filter(n => store.groupOf(n) === g);
+    const names = sortByName(visible.filter(n => store.groupOf(n) === g), exName); // alphabetisch
     if (!names.length) return null;
     return [groupHeader(g), h('div', { class: 'tile-grid' },
       names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { onLongPress: () => removeExercise(n) })))];

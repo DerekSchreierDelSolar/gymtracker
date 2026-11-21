@@ -198,3 +198,12 @@ export function migrateArmGroup(muscles) {
   const m = (muscles?.primary ?? []).find(x => ['biceps', 'triceps', 'forearms'].includes(x));
   return m === 'triceps' ? 'TRIZEPS' : m === 'forearms' ? 'UNTERARM' : 'BIZEPS';
 }
+
+/** Alphabetisch nach Anzeigenamen (wie sortedByName in I18n.kt): Umlaute wie Grundbuchstaben, Groß/klein egal */
+export function sortByName(list, name = x => x) {
+  const lang = appLanguage === 'en' ? 'en' : 'de';
+  // Einseitige Variante direkt unter der normalen: „Bizepscurls (Kurzhantel)“ vor „… (Kurzhantel, einarmig)“
+  const key = x => name(x).replace(/, (einarmig|einbeinig)\)/i, ')');
+  const one = x => (key(x) === name(x) ? 0 : 1); // 1 = einseitige Variante
+  return [...list].sort((a, b) => key(a).localeCompare(key(b), lang, { sensitivity: 'base' }) || one(a) - one(b));
+}

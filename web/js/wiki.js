@@ -2,7 +2,7 @@
 
 import { WIKI } from './wiki-data.js';
 import { CATALOG } from './data.js';
-import { tr, exName, isEnglish, GROUP_KEYS, equipmentLabel } from './core.js';
+import { tr, exName, sortByName, isEnglish, GROUP_KEYS, equipmentLabel } from './core.js';
 import { exerciseIconHtml } from './pictograms.js';
 import { h, icon, iconBtn, groupHeader, muted } from './ui.js';
 import { nav, update, openDialog, closeDialog } from './nav.js';
@@ -96,7 +96,7 @@ export function wikiScreen() {
     seen.add(c.base);
     if (!q || CATALOG.some(v => v.base === c.base && (v.name.toLowerCase().includes(q) || v.en.toLowerCase().includes(q)))) bases.push(c);
   }
-  const byGroup = GROUP_KEYS.map(g => [g, bases.filter(c => c.group === g)]).filter(([, l]) => l.length);
+  const byGroup = GROUP_KEYS.map(g => [g, sortByName(bases.filter(c => c.group === g), c => baseName(c.base))]).filter(([, l]) => l.length);
 
   return screen({
     title: tr('Übungs-Wiki', 'Exercise wiki'), back: true, key: 'wiki',

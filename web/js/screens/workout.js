@@ -5,7 +5,7 @@ import { musclePicker, musclesOf, muscleSideCard, levelsOf } from '../bodymap.js
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import {
-  tr, exName, fmtDate, fmtDateTime, fmtDuration, fmtW, plural, isCardio, isTimed, equipmentOf, catalogEntry,
+  tr, exName, sortByName, fmtDate, fmtDateTime, fmtDuration, fmtW, plural, isCardio, isTimed, equipmentOf, catalogEntry,
   catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel, groupColor, fmtSet,
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
@@ -268,7 +268,7 @@ export function workoutPickerScreen(w) {
     content = h('div', { class: 'pad' },
       muted(tr('Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.', 'Tap an exercise for info, target sets and to add it.'), 'small'),
       GROUP_KEYS.map(g => {
-        const names = visible.filter(n => store.groupOf(n) === g);
+        const names = sortByName(visible.filter(n => store.groupOf(n) === g), exName); // alphabetisch
         return names.length ? [group == null ? groupHeader(g) : null, names.map(row)] : null;
       }));
   }
@@ -321,8 +321,8 @@ export function catalogScreen() {
   const group = nav.catalogGroup;
   const overview = group == null && !filterActive(f);
   const visible = CATALOG.filter(c => (group == null || c.group === group) && matches(f, c.name, c.group));
-  const custom = store.customNames.filter(n => (group == null || store.groupOf(n) === group) && matches(f, n, store.groupOf(n))); // inkl. aus der Liste entfernter → wieder hinzufügbar
-  const byGroup = GROUP_KEYS.map(g => [g, visible.filter(c => c.group === g)]).filter(([, l]) => l.length);
+  const custom = sortByName(store.customNames.filter(n => (group == null || store.groupOf(n) === group) && matches(f, n, store.groupOf(n)))); // inkl. aus der Liste entfernter → wieder hinzufügbar
+  const byGroup = GROUP_KEYS.map(g => [g, sortByName(visible.filter(c => c.group === g), c => exName(c.name))]).filter(([, l]) => l.length);
 
   let content;
   if (!visible.length && !custom.length) content = noFilterResults('catalog');

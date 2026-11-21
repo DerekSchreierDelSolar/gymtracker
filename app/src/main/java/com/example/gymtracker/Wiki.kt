@@ -244,7 +244,7 @@ fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
-            visible.groupBy { it.group }.forEach { (group, list) ->
+            visible.sortedByName { baseName(it.base) }.groupBy { it.group }.toSortedMap().forEach { (group, list) -> // alphabetisch je Kategorie
                 item(key = group.name) { GroupHeader(group) }
                 items(list, key = { it.base }) { c ->
                     val entry = Wiki.entries.getValue(c.base)

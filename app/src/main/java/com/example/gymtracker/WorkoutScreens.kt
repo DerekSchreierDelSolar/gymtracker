@@ -529,7 +529,7 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                     }
                     // Kategorie bzw. Suchtreffer: alle passenden Übungen (die des Workouts mit ✓ und Ziel)
                     MuscleGroup.entries.forEach { g ->
-                        val names = visible.filter { store.groupOf(it) == g }
+                        val names = visible.filter { store.groupOf(it) == g }.sortedByName { exName(it) } // alphabetisch
                         if (names.isEmpty()) return@forEach
                         if (group == null) item(key = "h_${g.name}") { GroupHeader(g) }
                         items(names, key = { it }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }

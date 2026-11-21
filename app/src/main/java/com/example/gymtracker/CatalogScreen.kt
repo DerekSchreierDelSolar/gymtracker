@@ -117,10 +117,11 @@ fun CatalogScreen(
     val overview = group == null && !filter.isActive
     if (group != null) BackHandler { openGroup = null }
     val inGroup = { g: MuscleGroup -> group == null || g == group }
-    val visible = CATALOG.filter { inGroup(it.group) && filter.matches(it.name, it.group) }
+    val visible = CATALOG.filter { inGroup(it.group) && filter.matches(it.name, it.group) }.sortedByName { exName(it.name) } // alphabetisch
     // Eigene Übungen = gespeicherte Übungen, die nicht im Katalog stehen (auch aus der Liste entfernte → wieder hinzufügbar)
     val customVisible = store.customNames
         .filter { catalogGroup(it) == null && inGroup(store.groupOf(it)) && filter.matches(it, store.groupOf(it)) }
+        .sortedByName { it }
     val ui = rememberFilterUi(filter)
     var showCustom by remember { mutableStateOf(false) }
     if (showCustom) CustomExerciseDialog(store, onDismiss = { showCustom = false })
@@ -226,7 +227,7 @@ fun CatalogScreen(
                         }
                     }
                 }
-                visible.groupBy { it.group }.forEach { (group, list) ->
+                visible.groupBy { it.group }.toSortedMap().forEach { (group, list) -> // Kategorien in enum-Reihenfolge
                     if (openGroup == null) item(key = group.name) { GroupHeader(group) } // in einer Kategorie steht sie schon im Titel
                     items(list, key = { it.name }) { entry ->
                         val added = store.hasExercise(entry.name)
