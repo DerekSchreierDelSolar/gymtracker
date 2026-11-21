@@ -22,6 +22,7 @@ export const nav = {
   pickGroup: null,       // beim Bearbeiten geöffnete Kategorie (null = Übersicht)
   catalogGroup: null,    // im Katalog geöffnete Kategorie (null = Übersicht)
   trainingStart: null,   // laufendes Training (Startzeit)
+  swaps: {},             // nur für das laufende Training getauscht: Original → Alternative
   trainingIndex: 0,
   restEnd: null,         // Pausen-Timer: Endzeitpunkt (ms)
   restTotal: 0,
@@ -47,8 +48,8 @@ try {
 function persistTraining() {
   if (nav.trainingStart == null) localStorage.removeItem(TRAINING_KEY);
   else {
-    const { workoutId, trainingStart, trainingIndex, restEnd, restTotal } = nav;
-    localStorage.setItem(TRAINING_KEY, JSON.stringify({ workoutId, trainingStart, trainingIndex, restEnd, restTotal }));
+    const { workoutId, trainingStart, trainingIndex, restEnd, restTotal, swaps } = nav;
+    localStorage.setItem(TRAINING_KEY, JSON.stringify({ workoutId, trainingStart, trainingIndex, restEnd, restTotal, swaps }));
   }
 }
 

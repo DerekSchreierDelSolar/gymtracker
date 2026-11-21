@@ -63,6 +63,10 @@ fun TrainingScreen(
     start: Long,
     index: Int,
     onIndex: (Int) -> Unit,
+    /** Übung nur für dieses Training tauschen (angezeigte Übung → neue) */
+    onSwap: (String, String) -> Unit = { _, _ -> },
+    /** Original-Übung, falls die angezeigte eine Alternative ist */
+    originalOf: (String) -> String? = { null },
     onFinish: () -> Unit
 ) {
     var confirmEnd by remember { mutableStateOf(false) }
@@ -247,7 +251,9 @@ fun TrainingScreen(
                     name = workout.exercises[page],
                     now = now, restEnd = restEnd, restTotal = restTotal,
                     onSkipRest = { restEnd = null; RestTimer.cancel(context) },
-                    onAdded = { startRest() }
+                    onAdded = { startRest() },
+                    onSwap = { to -> onSwap(workout.exercises[page], to) },
+                    original = originalOf(workout.exercises[page])
                 )
             }
         }
@@ -295,7 +301,11 @@ fun TrainingExercisePage(
     restEnd: Long?,
     restTotal: Long,
     onSkipRest: () -> Unit,
-    onAdded: () -> Unit
+    onAdded: () -> Unit,
+    /** Für heute durch eine ähnliche Übung ersetzen */
+    onSwap: (String) -> Unit = {},
+    /** Original, falls diese Seite schon eine Alternative zeigt */
+    original: String? = null
 ) {
     val group = store.groupOf(name)
     val cardio = group.isCardio
@@ -306,6 +316,8 @@ fun TrainingExercisePage(
     // Frühere Trainings dieser Übung (vor diesem Training), nach Tag gruppiert, neuester zuerst
     val previousDays = store.setsFor(name).filter { it.time < start }.groupBy { fmtDate(it.time) }
     val resting = restEnd != null && restEnd > now
+    var showAlternatives by remember { mutableStateOf(false) }
+    if (showAlternatives) AlternativesSheet(store, workout, start, name, original, onPick = { showAlternatives = false; onSwap(it) }, onDismiss = { showAlternatives = false })
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -317,7 +329,14 @@ fun TrainingExercisePage(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(exName(name), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                 WikiButton(name)
+                // ⇄ = für heute eine ähnliche Übung machen (Workout bleibt unverändert)
+                IconAction(Ico.SWAP, onClick = { showAlternatives = true }, tint = MaterialTheme.colorScheme.primary)
             }
+            if (original != null) Text(
+                tr("Heute statt „${exName(original)}“", "Today instead of \"${exName(original)}\""),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
         // Motivierende Zeile mit dem Rekord (wie in den Übungsdetails)
@@ -583,5 +602,86 @@ fun vibrate(context: Context) {
     } else {
         @Suppress("DEPRECATION")
         vibrator.vibrate(pattern, -1)
+    }
+}
+
+/**
+ * Blatt „Alternative für heute“: ähnliche Übungen (gleiche Muskeln) mit Übereinstimmung in %,
+ * ⓘ öffnet das Wiki. Ist schon getauscht, steht oben „Zurück zu …“.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AlternativesSheet(
+    store: GymStore,
+    workout: Workout,
+    start: Long,
+    name: String,
+    original: String?,
+    onPick: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    // Übungen, die schon im Training sind, nicht anbieten (außer dem Original zum Zurücktauschen)
+    val list = remember(name) { similarExercises(store, original ?: name, exclude = workout.exercises + listOfNotNull(original)) }
+        .filter { it.first != name }
+    val hasSets = store.setsBetween(name, start, Long.MAX_VALUE).isNotEmpty()
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        LazyColumn(
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            item {
+                Text(tr("Alternative für heute", "Alternative for today"), style = MaterialTheme.typography.titleLarge)
+                Text(
+                    tr("Gleiche Muskeln wie „${exName(original ?: name)}“. Gilt nur für dieses Training – dein Workout bleibt gleich.",
+                        "Same muscles as \"${exName(original ?: name)}\". Only for this session – your workout stays the same."),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (hasSets) Text(
+                    tr("Deine Sätze von heute bei „${exName(name)}“ bleiben gespeichert.", "Today's sets for \"${exName(name)}\" stay saved."),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            if (original != null) item {
+                OutlinedButton(onClick = { onPick(original) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(tr("Zurück zu „${exName(original)}“", "Back to \"${exName(original)}\""))
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+            if (list.isEmpty()) item {
+                Text(
+                    tr("Keine ähnlichen Übungen gefunden (für diese Übung sind keine Muskeln hinterlegt).",
+                        "No similar exercises found (no muscles are set for this exercise)."),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            items(list, key = { it.first }) { (alt, percent) ->
+                val g = store.groupOf(alt)
+                val last = store.setsFor(alt).firstOrNull()
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.medium)
+                        .clickable { onPick(alt) }
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ExerciseIcon(alt, g, Modifier.size(40.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(exName(alt))
+                        Text(
+                            tr("$percent % ähnlich", "$percent % similar") + (last?.let { " · " + tr("zuletzt ", "last ") + fmtSet(it, g.isCardio) } ?: ""),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    WikiButton(alt)
+                }
+            }
+        }
     }
 }

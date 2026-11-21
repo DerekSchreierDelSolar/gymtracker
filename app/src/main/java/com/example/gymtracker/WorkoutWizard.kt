@@ -43,7 +43,7 @@ object WorkoutWizard {
     val equipmentChoices: List<Equipment> get() = Equipment.entries.filter { it != Equipment.CARDIO_GERAET }
 
     /** Beitrag einer Übung je Muskel: Hauptmuskel 1, Hilfsmuskel 0,3 (stärkste Region zählt) */
-    private fun contribution(name: String): Map<String, Float> {
+    fun contribution(name: String): Map<String, Float> {
         val levels = musclesOf(name)?.levels() ?: return emptyMap()
         val out = HashMap<String, Float>()
         for ((region, v) in levels) {
@@ -172,4 +172,39 @@ fun wizardStageTitle(stage: Float): String = when (stage) {
     1f -> tr("Hauptfokus", "Main focus")
     0.6f -> tr("Mittel", "Moderate")
     else -> tr("Leicht", "Light")
+}
+
+/**
+ * Ähnliche Übungen (Alternative im Training): gleiche Muskeln, verglichen über die Muskel-Beiträge
+ * (Kosinus-Ähnlichkeit, Hauptmuskeln zählen voll, Hilfsmuskeln wenig). Gleiche Grundübung (andere Geräte-Variante)
+ * und gleiche Kategorie bekommen einen kleinen Bonus. `exclude` = schon im Training enthaltene Übungen.
+ * Kandidaten: Katalog + eigene Übungen mit Muskelangaben; Cardio nur für Cardio.
+ */
+fun similarExercises(store: GymStore, name: String, exclude: Collection<String>, limit: Int = 10): List<Pair<String, Int>> {
+    val me = WorkoutWizard.contribution(name)
+    if (me.isEmpty()) return emptyList()
+    val myGroup = store.groupOf(name)
+    val myBase = CATALOG.firstOrNull { it.name == name }?.base
+    fun norm(v: Map<String, Float>) = kotlin.math.sqrt(v.values.sumOf { (it * it).toDouble() }).toFloat()
+    val meNorm = norm(me)
+    val pool = CATALOG.map { it.name } + store.customNames.filter { catalogGroup(it) == null }
+    return pool.asSequence()
+        .filter { it != name && it !in exclude && store.groupOf(it).isCardio == myGroup.isCardio }
+        .mapNotNull { other ->
+            val v = WorkoutWizard.contribution(other)
+            if (v.isEmpty()) return@mapNotNull null
+            val dot = me.entries.sumOf { (m, w) -> (w * (v[m] ?: 0f)).toDouble() }.toFloat()
+            val sim = dot / (meNorm * norm(v)) // angezeigt: reine Muskel-Übereinstimmung
+            var rank = sim                     // Reihenfolge: zusätzlich gleiche Grundübung / Kategorie bevorzugen
+            if (myBase != null && CATALOG.firstOrNull { it.name == other }?.base == myBase) rank += 0.08f
+            if (store.groupOf(other) == myGroup) rank += 0.04f
+            Triple(other, sim, rank)
+        }
+        .filter { it.second >= 0.55f }
+        .sortedByDescending { it.third }
+        // höchstens 2 Varianten je Grundübung, damit verschiedene Übungen zur Auswahl stehen
+        .let { seq -> val seen = HashMap<String, Int>(); seq.filter { t -> val b = CATALOG.firstOrNull { it.name == t.first }?.base ?: return@filter true; val n = (seen[b] ?: 0) + 1; seen[b] = n; n <= 2 } }
+        .take(limit)
+        .map { (n, s, _) -> n to Math.round(s.coerceAtMost(1f) * 100) }
+        .toList()
 }

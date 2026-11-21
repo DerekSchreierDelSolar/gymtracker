@@ -86,6 +86,8 @@ fun GymApp(store: GymStore) {
     // Laufendes Training: Startzeit (null = kein Training) und aktuelle Übung
     var trainingStart by rememberSaveable { mutableStateOf<Long?>(null) }
     var trainingIndex by rememberSaveable { mutableIntStateOf(0) }
+    // Tausch nur für das laufende Training: Original → Alternative (HashMap ist Serializable → rememberSaveable)
+    var swaps by rememberSaveable { mutableStateOf<Map<String, String>>(HashMap()) }
     // Geöffnete Trainings-Übersicht
     var summaryId by rememberSaveable { mutableStateOf<Long?>(null) }
     // Kalender: angezeigter Monat und gewählter Tag. Hier oben gespeichert, damit sie erhalten
@@ -107,17 +109,28 @@ fun GymApp(store: GymStore) {
             BackHandler { summaryId = null }
             SummaryScreen(store, summary, onDone = { summaryId = null })
         }
-        workout != null && start != null -> TrainingScreen(
-            store, workout, start,
-            index = trainingIndex.coerceIn(0, (workout.exercises.size - 1).coerceAtLeast(0)),
-            onIndex = { trainingIndex = it },
-            onFinish = {
-                val t = store.finishTraining(workout, start)
-                trainingStart = null
-                trainingIndex = 0
-                summaryId = t?.id
-            }
-        )
+        workout != null && start != null -> {
+            // Nur für dieses Training getauschte Übungen (Original → Alternative); das Workout selbst bleibt unverändert
+            val session = sessionWorkout(workout, swaps)
+            TrainingScreen(
+                store, session, start,
+                index = trainingIndex.coerceIn(0, (session.exercises.size - 1).coerceAtLeast(0)),
+                onIndex = { trainingIndex = it },
+                onSwap = { from, to -> swaps = swapTo(swaps, workout, from, to) },
+                originalOf = { e -> swaps.entries.firstOrNull { it.value == e }?.key },
+                onFinish = {
+                    // Übungen, die vor dem Tausch schon Sätze hatten, gehören trotzdem zum Training
+                    val withSets = session.copy(exercises = session.exercises + swaps.keys.filter { o ->
+                        o !in session.exercises && store.setsBetween(o, start, Long.MAX_VALUE).isNotEmpty()
+                    })
+                    val t = store.finishTraining(withSets, start)
+                    trainingStart = null
+                    trainingIndex = 0
+                    swaps = HashMap()
+                    summaryId = t?.id
+                }
+            )
+        }
         ex != null -> {
             BackHandler { current = null }
             ExerciseDetailScreen(store, ex, onBack = { current = null })
@@ -133,7 +146,7 @@ fun GymApp(store: GymStore) {
                 onBack = { workoutId = null },
                 onOpen = { current = it },
                 onEdit = { pickForWorkout = true },
-                onStart = { trainingStart = System.currentTimeMillis(); trainingIndex = 0 },
+                onStart = { trainingStart = System.currentTimeMillis(); trainingIndex = 0; swaps = HashMap() },
                 onOpenSession = { summaryId = it },
                 onDuplicate = { store.duplicateWorkout(workout.id)?.let { workoutId = it.id } }
             )
@@ -171,6 +184,7 @@ fun GymApp(store: GymStore) {
             onStartWorkout = { id ->
                 workoutId = id
                 trainingStart = System.currentTimeMillis()
+                swaps = HashMap()
                 trainingIndex = 0
             }
         )
@@ -178,3 +192,20 @@ fun GymApp(store: GymStore) {
 }
 
 
+
+/** Workout für das laufende Training: getauschte Übungen ersetzt, Ziel-Sätze von der Original-Übung übernommen. */
+fun sessionWorkout(w: Workout, swaps: Map<String, String>): Workout {
+    if (swaps.isEmpty()) return w
+    return w.copy(
+        exercises = w.exercises.map { swaps[it] ?: it },
+        targets = w.targets.mapKeys { (k, _) -> swaps[k] ?: k }
+    )
+}
+
+/** Tausch eintragen: `from` ist die angezeigte Übung (Original oder schon eine Alternative); to == Original = zurück */
+fun swapTo(swaps: Map<String, String>, w: Workout, from: String, to: String): Map<String, String> {
+    val original = swaps.entries.firstOrNull { it.value == from }?.key ?: from
+    val out = HashMap(swaps)
+    if (to == original) out.remove(original) else if (original in w.exercises) out[original] = to
+    return out
+}

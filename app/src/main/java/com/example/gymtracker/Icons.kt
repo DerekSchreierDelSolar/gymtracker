@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 // ---------- App-Icons (selbst gezeichnet, ohne Icon-Bibliothek) ----------
 
-enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME, INFO, BOOK, CHAT, SEND, DRAG, UPLOAD, DOWNLOAD }
+enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME, INFO, BOOK, CHAT, SEND, DRAG, UPLOAD, DOWNLOAD, SWAP }
 
 /**
  * Einfache Linien-Icons im 24×24-Raster (wie Material Symbols „outlined“).
@@ -98,6 +98,7 @@ fun AppIcon(icon: Ico, modifier: Modifier = Modifier.size(24.dp), tint: Color = 
                 l(5f, 5f, 19f, 5f, 21f, 7f, 21f, 15f, 19f, 17f, 10f, 17f, 6f, 20.5f, 6.5f, 17f, 5f, 17f, 3f, 15f, 3f, 7f, 5f, 5f)
                 dot(8f, 11f, 1.2f); dot(12f, 11f, 1.2f); dot(16f, 11f, 1.2f)
             }
+            Ico.SWAP -> { l(4f, 8f, 18f, 8f); l(14f, 4f, 18f, 8f, 14f, 12f); l(20f, 16f, 6f, 16f); l(10f, 12f, 6f, 16f, 10f, 20f) } // Tauschen: Pfeil rechts oben, links unten
             Ico.UPLOAD -> { l(4f, 15f, 4f, 20f, 20f, 20f, 20f, 15f); l(12f, 15f, 12f, 4f); l(7f, 9f, 12f, 4f, 17f, 9f) } // Export: Pfeil aus der Ablage
             Ico.DOWNLOAD -> { l(4f, 15f, 4f, 20f, 20f, 20f, 20f, 15f); l(12f, 4f, 12f, 15f); l(7f, 10f, 12f, 15f, 17f, 10f) } // Import: Pfeil in die Ablage
             Ico.DRAG -> { // Griff zum Ziehen: 2 × 3 Punkte

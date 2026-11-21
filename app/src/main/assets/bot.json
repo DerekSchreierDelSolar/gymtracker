@@ -156,6 +156,11 @@
             "⋮ → Settings → at the bottom \"Reset progress\": deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay. You can undo it right after; safer is ⋮ → \"Export data\" first."]
     },
     {
+      "keys": ["alternative", "austauschen", "tauschen", "ersetzen", "andere uebung", "besetzt", "swap", "replace", "substitute"],
+      "a": ["Im Training neben dem Übungsnamen auf ⇄ tippen: Du bekommst ähnliche Übungen (gleiche Muskeln, mit % Übereinstimmung) und kannst eine für heute nehmen. Das gilt nur für dieses Training – dein Workout bleibt unverändert. Über ⇄ kommst du auch wieder zurück zur Original-Übung.",
+            "In workout mode tap ⇄ next to the exercise name: you get similar exercises (same muscles, with % match) and can pick one for today. It only applies to this session – your workout stays unchanged. ⇄ also takes you back to the original."]
+    },
+    {
       "keys": ["automatisch", "automatisches backup", "auto backup", "ordner"],
       "a": ["Android: ⋮ → Einstellungen → „Automatisches Backup“, Ordner wählen. Dann sichert die App höchstens einmal täglich beim Verlassen; die letzten 7 Sicherungen bleiben. (Auf dem iPhone gibt es das nicht – dort bitte regelmäßig exportieren.)",
             "Android: ⋮ → Settings → \"Automatic backup\", choose a folder. The app then backs up at most once a day when you leave it; the last 7 backups are kept. (Not available on iPhone – export regularly there.)"]

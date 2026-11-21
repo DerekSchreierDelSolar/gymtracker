@@ -20,7 +20,7 @@ export const wizard = {
 export const equipmentChoices = () => EQUIPMENT_KEYS.filter(e => e !== 'CARDIO_GERAET');
 
 /** Beitrag einer Übung je Muskel: Hauptmuskel 1, Hilfsmuskel 0,3 (stärkste Region zählt) */
-function contribution(name) {
+export function contribution(name) {
   const m = musclesOf(name);
   if (!m) return {};
   const out = {};
@@ -82,4 +82,36 @@ export function createWizardWorkout(store, exercises) {
   if (!w) return null;
   for (const e of exercises) { store.toggleInWorkout(w.id, e); store.setTarget(w.id, e, 3); }
   return store.workout(w.id);
+}
+
+/**
+ * Ähnliche Übungen für die Alternative im Training (wie similarExercises in WorkoutWizard.kt):
+ * Kosinus-Ähnlichkeit der Muskel-Beiträge; angezeigt wird die reine Übereinstimmung, für die Reihenfolge
+ * zählen gleiche Grundübung (+0,08) und gleiche Kategorie (+0,04) etwas mehr. Ergebnis: [[Name, Prozent], …]
+ */
+export function similarExercises(store, name, exclude, limit = 10) {
+  const me = contribution(name);
+  const keys = Object.keys(me);
+  if (!keys.length) return [];
+  const norm = v => Math.sqrt(Object.values(v).reduce((a, x) => a + x * x, 0));
+  const meNorm = norm(me), myGroup = store.groupOf(name);
+  const myBase = CATALOG.find(c => c.name === name)?.base;
+  const pool = [...CATALOG.map(c => c.name), ...store.customNames.filter(n => !CATALOG.some(c => c.name === n))];
+  return pool
+    .filter(o => o !== name && !exclude.includes(o) && isCardio(store.groupOf(o)) === isCardio(myGroup))
+    .map(o => {
+      const v = contribution(o);
+      if (!Object.keys(v).length) return null;
+      const sim = keys.reduce((a, m) => a + me[m] * (v[m] ?? 0), 0) / (meNorm * norm(v));
+      let rank = sim;
+      if (myBase && CATALOG.find(c => c.name === o)?.base === myBase) rank += 0.08;
+      if (store.groupOf(o) === myGroup) rank += 0.04;
+      return [o, sim, rank];
+    })
+    .filter(x => x && x[1] >= 0.55)
+    .sort((a, b) => b[2] - a[2])
+    // höchstens 2 Varianten je Grundübung, damit verschiedene Übungen zur Auswahl stehen
+    .filter((x, _, arr) => { const b = CATALOG.find(c => c.name === x[0])?.base; return !b || arr.filter(y => CATALOG.find(c => c.name === y[0])?.base === b).indexOf(x) < 2; })
+    .slice(0, limit)
+    .map(([o, s]) => [o, Math.round(Math.min(1, s) * 100)]);
 }

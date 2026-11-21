@@ -579,3 +579,4 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .wizard .muscle-figure, .wizard .muscle-views { width: 100%; }
 .wizard .chip .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 .wizard-actions { display: flex; justify-content: flex-end; }
+.swap-note { font-weight: 600; margin-top: -6px; }

@@ -1,6 +1,7 @@
 // Trainingsmodus und Trainingsübersicht – entspricht TrainingScreen.kt und SummaryScreen.kt.
 
 import { wikiButton } from '../wiki.js';
+import { similarExercises } from '../wizard.js';
 import { heatCard, regionScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
@@ -10,7 +11,7 @@ import {
 import { sessionStats } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import {
-  h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, percentRing, onTick, muted,
+  h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, percentRing, onTick, muted, icon, iconBtn,
 } from '../ui.js';
 import { nav, update, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
@@ -224,7 +225,10 @@ function exercisePage(w, start, name) {
 
   return [
     // Übungsname, rechts ⓘ fürs Wiki
-    h('div', { class: 'training-title' }, h('h2', { class: 'grow training-name' }, exName(name)), wikiButton(name)),
+    // ⓘ fürs Wiki, ⇄ = für heute eine ähnliche Übung (Workout bleibt unverändert)
+    h('div', { class: 'training-title' }, h('h2', { class: 'grow training-name' }, exName(name)), wikiButton(name),
+      iconBtn('swap', () => alternativesSheet(w, start, name), { label: tr('Alternative', 'Alternative'), cls: 'accent' })),
+    originalOf(name) ? h('div', { class: 'accent swap-note' }, tr(`Heute statt „${exName(originalOf(name))}“`, `Today instead of "${exName(originalOf(name))}"`)) : null,
     recordLine(store.setsFor(name), cardio, timed),
     h('div', { class: 'circle-row' }, reps, restCircle(), sets),
     setInput(name, startRest),
@@ -327,3 +331,41 @@ function comparisonLine(r) {
 }
 
 export { keepScreenOn };
+
+// ---------- Alternative für heute (wie AlternativesSheet in TrainingScreen.kt) ----------
+
+/** Original-Übung, falls `name` im laufenden Training eine Alternative ist */
+const originalOf = name => Object.entries(nav.swaps ?? {}).find(([, v]) => v === name)?.[0] ?? null;
+
+/** Tausch eintragen: zurück zum Original entfernt den Eintrag */
+function swapTo(from, to) {
+  const original = originalOf(from) ?? from;
+  const swaps = { ...(nav.swaps ?? {}) };
+  if (to === original) delete swaps[original]; else swaps[original] = to;
+  update({ swaps });
+}
+
+function alternativesSheet(w, start, name) {
+  const original = originalOf(name);
+  const base = original ?? name;
+  const list = similarExercises(store, base, [...w.exercises, ...(original ? [original] : [])]).filter(([n]) => n !== name);
+  const hasSets = store.setsBetween(name, start, Infinity).length > 0;
+  const pick = to => { closeDialog(); swapTo(name, to); };
+  openDialog(() => h('div', { class: 'dialog-backdrop sheet-backdrop', onclick: e => { if (e.target === e.currentTarget) closeDialog(); } },
+    h('div', { class: 'sheet', role: 'dialog' },
+      h('div', { class: 'sheet-handle', onclick: closeDialog }),
+      h('div', { class: 'sheet-body' },
+        h('h2', null, tr('Alternative für heute', 'Alternative for today')),
+        muted(tr(`Gleiche Muskeln wie „${exName(base)}“. Gilt nur für dieses Training – dein Workout bleibt gleich.`,
+          `Same muscles as "${exName(base)}". Only for this session – your workout stays the same.`), 'small'),
+        hasSets ? muted(tr(`Deine Sätze von heute bei „${exName(name)}“ bleiben gespeichert.`, `Today's sets for "${exName(name)}" stay saved.`), 'small') : null,
+        original ? h('button', { class: 'btn outline', onclick: () => pick(original) }, tr(`Zurück zu „${exName(original)}“`, `Back to "${exName(original)}"`)) : null,
+        list.length ? list.map(([alt, pct]) => {
+          const g = store.groupOf(alt), last = store.setsFor(alt)[0];
+          return h('div', { class: 'cat-row', role: 'button', onclick: () => pick(alt) },
+            h('span', { html: exerciseIconHtml(alt, g, 40) }),
+            h('div', { class: 'grow' }, h('span', null, exName(alt)),
+              h('small', { class: 'muted' }, tr(`${pct} % ähnlich`, `${pct} % similar`) + (last ? ' · ' + tr('zuletzt ', 'last ') + fmtSet(last, isCardio(g)) : ''))),
+            wikiButton(alt));
+        }) : muted(tr('Keine ähnlichen Übungen gefunden (für diese Übung sind keine Muskeln hinterlegt).', 'No similar exercises found (no muscles are set for this exercise).'))))));
+}

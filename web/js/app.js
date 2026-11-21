@@ -17,14 +17,17 @@ const root = document.getElementById('app');
 
 function startTraining(workoutId) {
   unlockAudio(); // im Tipp-Ereignis: erlaubt später den Pausen-Ton
-  go({ workoutId, trainingStart: Date.now(), trainingIndex: 0, restEnd: null, pick: false, exercise: null });
+  go({ workoutId, trainingStart: Date.now(), trainingIndex: 0, restEnd: null, pick: false, exercise: null, swaps: {} });
 }
 
 function finishTraining() {
   const w = store.workout(nav.workoutId);
-  const t = w ? store.finishTraining(w, nav.trainingStart) : null;
+  // Getauschte Übungen speichern; Originale, die vor dem Tausch schon Sätze hatten, gehören trotzdem dazu
+  const s = w ? sessionWorkout(w, nav.swaps) : null;
+  if (s) s.exercises.push(...Object.keys(nav.swaps ?? {}).filter(o => !s.exercises.includes(o) && store.setsBetween(o, nav.trainingStart, Infinity).length));
+  const t = s ? store.finishTraining(s, nav.trainingStart) : null;
   keepScreenOn(false);
-  update({ trainingStart: null, trainingIndex: 0, restEnd: null, summaryId: t?.id ?? null });
+  update({ trainingStart: null, trainingIndex: 0, restEnd: null, swaps: {}, summaryId: t?.id ?? null });
 }
 
 // ---------- Welcher Bildschirm? ----------
@@ -36,7 +39,7 @@ function currentScreen() {
     : nav.summaryId < 0 ? store.freeSession(-nav.summaryId) : store.session(nav.summaryId);
 
   if (summary) return summaryScreen(summary, goBack);
-  if (workout && nav.trainingStart != null) return trainingScreen(workout, finishTraining);
+  if (workout && nav.trainingStart != null) return trainingScreen(sessionWorkout(workout, nav.swaps), finishTraining, workout);
   if (nav.trainingStart != null) update({ trainingStart: null }); // Workout wurde gelöscht
   if (nav.exercise != null) return exerciseDetailScreen(nav.exercise);
   if (workout && nav.pick && nav.pickDetail != null) return workoutExercisePage(workout, nav.pickDetail);
@@ -137,3 +140,13 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 navigator.storage?.persist?.();
 
 render();
+
+/** Workout fürs laufende Training: getauschte Übungen ersetzt, Ziele übernommen (wie sessionWorkout in MainActivity.kt) */
+function sessionWorkout(w, swaps = {}) {
+  if (!Object.keys(swaps).length) return w;
+  return {
+    ...w,
+    exercises: w.exercises.map(e => swaps[e] ?? e),
+    targets: Object.fromEntries(Object.entries(w.targets).map(([k, v]) => [swaps[k] ?? k, v])),
+  };
+}
