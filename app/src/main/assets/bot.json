@@ -67,8 +67,8 @@
     },
     {
       "keys": ["zielsaetze", "ziel saetze", "ziel", "target sets", "target", "optional"],
-      "a": ["Im Workout kannst du pro Übung Ziel-Sätze festlegen. 0 bedeutet „optional“. Der Prozentwert eines Trainings sagt, wie viele Ziel-Sätze du geschafft hast (mehr als das Ziel zählt nicht extra).",
-            "In a workout you can set target sets per exercise. 0 means \"optional\". A session's percentage shows how many target sets you completed (extra sets don't count beyond the target)."]
+      "a": ["Im Workout kannst du pro Übung Ziel-Sätze festlegen: Workout öffnen → Stift oben → Übung antippen → unten mit − / + einstellen. 0 bedeutet „optional“. Der Prozentwert eines Trainings sagt, wie viele Ziel-Sätze du geschafft hast (mehr als das Ziel zählt nicht extra).",
+            "In a workout you can set target sets per exercise: open the workout → pencil at the top → tap an exercise → adjust with − / + at the bottom. 0 means \"optional\". A session's percentage shows how many target sets you completed (extra sets don't count beyond the target)."]
     },
     {
       "keys": ["weiter mit", "naechstes workout", "reihenfolge", "continue with", "next workout"],

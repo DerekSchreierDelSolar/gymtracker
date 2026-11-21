@@ -1,6 +1,10 @@
 package com.example.gymtracker
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -433,8 +437,8 @@ fun WorkoutExerciseRow(
 }
 
 /**
- * Übungen für ein Workout an- und abhaken.
- * Zur Auswahl stehen alle Katalog-Übungen plus eigene Übungen, die nicht im Katalog sind.
+ * Workout bearbeiten: schlichte Liste aller Übungen – oben die des Workouts, darunter alle übrigen
+ * (Katalog + eigene). Antippen öffnet [WorkoutExercisePage] mit Info, Ziel-Sätzen und Hinzufügen/Entfernen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -444,6 +448,15 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
     var filter by remember { mutableStateOf(ExerciseFilter()) }
     val ui = rememberFilterUi(filter)
     val visible = all.filter { filter.matches(it, store.groupOf(it)) }
+    // Geöffnete Übung (null = Liste). rememberSaveable: übersteht Drehen; Zurück schließt erst die Seite.
+    var detail by rememberSaveable { mutableStateOf<String?>(null) }
+    val listState = rememberLazyListState() // außerhalb des if → Scroll-Position bleibt beim Zurückkehren erhalten
+
+    detail?.let { name ->
+        BackHandler { detail = null }
+        WorkoutExercisePage(store, workout, name, onBack = { detail = null })
+        return
+    }
 
     Scaffold(topBar = {
         TopAppBar(
@@ -464,7 +477,9 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                 ui = ui
             )
             if (visible.isEmpty()) NoFilterResults(onReset = { filter = ExerciseFilter() })
+            val inWorkout = workout.exercises.filter { it in visible }
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
@@ -472,58 +487,160 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
             ) {
                 item {
                     Text(
-                        plural(workout.exercises.size, tr("Übung", "exercise"), tr("Übungen", "exercises")) +
-                            tr(" ausgewählt", " selected")
+                        tr("Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.", "Tap an exercise for info, target sets and to add it."),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                if (inWorkout.isNotEmpty()) {
+                    item(key = "h_in") {
+                        Text(
+                            tr("In diesem Workout", "In this workout") + " (${workout.exercises.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = 14.dp, bottom = 4.dp)
+                        )
+                    }
+                    items(inWorkout, key = { "in_$it" }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
+                }
                 MuscleGroup.entries.forEach { group ->
-                    val names = visible.filter { store.groupOf(it) == group }
+                    val names = visible.filter { store.groupOf(it) == group && it !in workout.exercises }
                     if (names.isEmpty()) return@forEach
                     item(key = "h_${group.name}") { GroupHeader(group) }
-                    items(names, key = { it }) { name ->
-                        val checked = name in workout.exercises
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable { store.toggleInWorkout(workout.id, name) }
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            ExerciseIcon(name, group, Modifier.size(36.dp))
-                            Spacer(Modifier.width(12.dp))
-                            Text(exName(name), modifier = Modifier.weight(1f))
-                            // ⓘ = Anleitung/Muskeln aus dem Wiki (eigener Klick, schaltet die Zeile nicht um)
-                            WikiButton(name)
-                            // Ziel-Sätze nur für angehakte Übungen. Die Buttons haben eigene Klicks,
-                            // deshalb schalten sie die Zeile nicht um.
-                            if (checked) {
-                                val target = store.targetFor(workout, name)
-                                TextButton(
+                    items(names, key = { it }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
+                }
+            }
+        }
+    }
+}
+
+/** Zeile der Auswahlliste: Bild, Name, bei Übungen im Workout das Ziel („✓ 3 Sätze“), Pfeil. */
+@Composable
+private fun PickerRow(store: GymStore, workout: Workout, name: String, onClick: () -> Unit) {
+    val group = store.groupOf(name)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(onClick = onClick)
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ExerciseIcon(name, group, Modifier.size(40.dp))
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(exName(name))
+            if (name in workout.exercises) Text(
+                "✓ " + targetLabel(store.targetFor(workout, name), group),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** „optional“ / „3 Sätze“ / bei Cardio „2×“ */
+private fun targetLabel(target: Int, group: MuscleGroup): String = when {
+    target == 0 -> tr("optional", "optional")
+    group.isCardio -> "${target}×"
+    else -> plural(target, tr("Satz", "set"), tr("Sätze", "sets"))
+}
+
+/**
+ * Übung beim Bearbeiten eines Workouts: wie der Reiter „Info“ der Übungsdetails (Bild im Hintergrund,
+ * Muskeln vorne/hinten, Anleitung), unten eine feste Leiste: „Zum Workout hinzufügen“ bzw. Ziel-Sätze + Entfernen.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WorkoutExercisePage(store: GymStore, workout: Workout, name: String, onBack: () -> Unit) {
+    val group = store.groupOf(name)
+    val added = name in workout.exercises
+    val target = store.targetFor(workout, name)
+    val img = hasExerciseImage(name)
+    val muscles = musclesOf(name)
+
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        ExerciseBackdrop(name)
+        Scaffold(
+            containerColor = if (img) Color.Transparent else MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            topBar = {
+                TopAppBar(
+                    colors = if (img) TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent, scrolledContainerColor = Color.Transparent)
+                    else TopAppBarDefaults.topAppBarColors(),
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            ExerciseIcon(name, group, Modifier.size(32.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(exName(name), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    },
+                    navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
+                )
+            },
+            bottomBar = {
+                // Feste Leiste: Ziel-Sätze bzw. Hinzufügen
+                Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
+                    Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp)) {
+                        if (added) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(tr("Ziel-Sätze", "Target sets"), style = MaterialTheme.typography.titleSmall)
+                                    Text(
+                                        tr("0 = optional", "0 = optional"),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                FilledTonalButton(
                                     onClick = { store.setTarget(workout.id, name, target - 1) },
                                     enabled = target > 0,
                                     contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier.size(36.dp)
+                                    modifier = Modifier.size(48.dp)
                                 ) { Text("−", style = MaterialTheme.typography.titleLarge) }
                                 Text(
-                                    when {
-                                        target == 0 -> "optional"
-                                        group.isCardio -> "${target}×"
-                                        else -> plural(target, tr("Satz", "set"), tr("Sätze", "sets"))
-                                    },
-                                    style = MaterialTheme.typography.labelLarge,
+                                    targetLabel(target, group),
+                                    style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Center,
-                                    modifier = Modifier.width(56.dp)
+                                    modifier = Modifier.width(88.dp)
                                 )
-                                TextButton(
+                                FilledTonalButton(
                                     onClick = { store.setTarget(workout.id, name, target + 1) },
                                     enabled = target < 20,
                                     contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier.size(36.dp)
+                                    modifier = Modifier.size(48.dp)
                                 ) { Text("+", style = MaterialTheme.typography.titleLarge) }
                             }
-                            // onCheckedChange = null: Klick wird von der ganzen Zeile behandelt
-                            Checkbox(checked = checked, onCheckedChange = null)
+                            TextButton(
+                                onClick = { store.toggleInWorkout(workout.id, name) },
+                                modifier = Modifier.align(Alignment.End)
+                            ) { Text(tr("Aus dem Workout entfernen", "Remove from workout"), color = MaterialTheme.colorScheme.error) }
+                        } else {
+                            Button(onClick = { store.toggleInWorkout(workout.id, name) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                                AppIcon(Ico.ADD)
+                                Spacer(Modifier.width(8.dp))
+                                Text(tr("Zum Workout hinzufügen", "Add to workout"))
+                            }
                         }
+                    }
+                }
+            }
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // wie der Reiter „Info“ in ExerciseDetailScreen
+                if (muscles != null) {
+                    item { MuscleSideCard(BodyView.FRONT, muscles.levels(), colors = glassCardColors()) }
+                    item { MuscleSideCard(BodyView.BACK, muscles.levels(), showList = true, colors = glassCardColors()) }
+                } else item {
+                    Text(tr("Noch keine Muskeln festgelegt.", "No muscles set yet."), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (wikiFor(name) != null) item {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        WikiContent(name, showHeader = false, showMuscles = false)
                     }
                 }
             }

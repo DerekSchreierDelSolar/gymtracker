@@ -528,3 +528,13 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 /* Trainingstage: 7 gleich breite Buttons über die volle Breite */
 .day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 .day-chips .chip { justify-content: center; padding: 0; min-width: 0; }
+
+/* ---------- Workout bearbeiten: Liste + Übungsseite mit fester Leiste ---------- */
+.pick-row .grow { display: flex; flex-direction: column; text-align: left; }
+.pick-target { font-weight: 600; }
+.pick-bar { padding: 12px 16px; display: flex; flex-direction: column; }
+.pick-bar-row { display: flex; align-items: center; gap: 8px; }
+.pick-bar .step.tonal { width: 48px; height: 48px; background: var(--container-high); }
+.pick-bar .step-value.wide { width: 88px; font-size: 16px; }
+.pick-bar .btn.wide { width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.pick-remove { align-self: flex-end; }

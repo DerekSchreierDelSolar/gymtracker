@@ -6,7 +6,7 @@ import { tickers } from './ui.js';
 import { nav, update, setRenderer, setBackHandler, go, goBack, closeDialog } from './nav.js';
 import { homeScreen } from './screens/home.js';
 import { exerciseDetailScreen } from './screens/exercise.js';
-import { workoutScreen, workoutPickerScreen, catalogScreen } from './screens/workout.js';
+import { workoutScreen, workoutPickerScreen, workoutExercisePage, catalogScreen } from './screens/workout.js';
 import { wikiScreen } from './wiki.js';
 import { trainingScreen, summaryScreen, confirmEndTraining, keepScreenOn, unlockAudio } from './screens/training.js';
 
@@ -38,6 +38,7 @@ function currentScreen() {
   if (workout && nav.trainingStart != null) return trainingScreen(workout, finishTraining);
   if (nav.trainingStart != null) update({ trainingStart: null }); // Workout wurde gelöscht
   if (nav.exercise != null) return exerciseDetailScreen(nav.exercise);
+  if (workout && nav.pick && nav.pickDetail != null) return workoutExercisePage(workout, nav.pickDetail);
   if (workout && nav.pick) return workoutPickerScreen(workout);
   if (workout) return workoutScreen(workout, () => startTraining(workout.id));
   if (nav.catalog) return catalogScreen();
@@ -55,7 +56,8 @@ setBackHandler(() => {
     if (w) { confirmEndTraining(w, finishTraining); return false; }
   }
   if (nav.exercise != null) { update({ exercise: null }); return true; }
-  if (nav.pick) { update({ pick: false }); return true; }
+  if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }
+  if (nav.pick) { update({ pick: false, pickDetail: null }); return true; }
   if (nav.workoutId != null) { update({ workoutId: null }); return true; }
   if (nav.catalog) { update({ catalog: false }); return true; }
   if (nav.wiki) { update({ wiki: false, wikiQuery: '' }); return true; }

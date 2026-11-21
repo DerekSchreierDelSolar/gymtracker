@@ -17,6 +17,7 @@ export const nav = {
   statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
+  pickDetail: null,      // beim Bearbeiten geöffnete Übung (Info + Ziel-Sätze + Hinzufügen)
   trainingStart: null,   // laufendes Training (Startzeit)
   trainingIndex: 0,
   restEnd: null,         // Pausen-Timer: Endzeitpunkt (ms)

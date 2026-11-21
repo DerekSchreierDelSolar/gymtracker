@@ -1,7 +1,7 @@
 // Workouts, Übungsauswahl, Katalog – entspricht WorkoutScreens.kt und CatalogScreen.kt.
 
-import { wikiButton } from '../wiki.js';
-import { musclePicker } from '../bodymap.js';
+import { wikiButton, wikiFor, wikiContent } from '../wiki.js';
+import { musclePicker, musclesOf, muscleSideCard, levelsOf } from '../bodymap.js';
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import {
@@ -9,7 +9,7 @@ import {
   catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel, groupColor, fmtSet,
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
-import { exerciseIconHtml, muscleIconHtml } from '../pictograms.js';
+import { exerciseIconHtml, muscleIconHtml, exerciseImageUrl } from '../pictograms.js';
 import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
@@ -231,33 +231,65 @@ function enableDrag(list, workout) {
 
 // ---------- Übungen fürs Workout auswählen ----------
 
+/** „optional“ / „3 Sätze“ / bei Cardio „2×“ */
+const targetLabel = (target, g) => target === 0 ? 'optional' : isCardio(g) ? `${target}×` : plural(target, tr('Satz', 'set'), tr('Sätze', 'sets'));
+
+/**
+ * Workout bearbeiten: schlichte Liste – oben die Übungen des Workouts, darunter alle übrigen.
+ * Antippen öffnet workoutExercisePage (wie WorkoutPickerScreen in WorkoutScreens.kt).
+ */
 export function workoutPickerScreen(w) {
   const all = [...CATALOG.map(c => c.name), ...store.customNames.filter(n => !catalogEntry(n))]; // inkl. aus der Liste entfernter
   const visible = all.filter(n => matches(nav.pickFilter, n, store.groupOf(n)));
+  const inWorkout = w.exercises.filter(n => visible.includes(n));
+  const row = name => {
+    const g = store.groupOf(name);
+    return h('button', { class: 'pick-row', onclick: () => go({ pickDetail: name }) },
+      h('span', { html: exerciseIconHtml(name, g, 40) }),
+      h('span', { class: 'grow' }, h('span', null, exName(name)),
+        w.exercises.includes(name) ? h('small', { class: 'accent pick-target' }, '✓ ' + targetLabel(store.targetFor(w, name), g)) : null),
+      h('span', { class: 'muted' }, icon('chevron')));
+  };
   return screen({
     title: tr('Übungen: ', 'Exercises: ') + w.name, back: true, key: 'pick-' + w.id,
     actions: filterActions('pick'),
     top: filterBar('pick', sortedGroups(all), EQUIPMENT_KEYS),
     content: visible.length === 0 ? noFilterResults('pick') : h('div', { class: 'pad' },
-      h('p', null, plural(w.exercises.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) + tr(' ausgewählt', ' selected')),
+      muted(tr('Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.', 'Tap an exercise for info, target sets and to add it.'), 'small'),
+      inWorkout.length ? [h('h2', { class: 'section' }, tr('In diesem Workout', 'In this workout') + ` (${w.exercises.length})`), inWorkout.map(row)] : null,
       GROUP_KEYS.map(g => {
-        const names = visible.filter(n => store.groupOf(n) === g);
-        if (!names.length) return null;
-        return [groupHeader(g), names.map(name => {
-          const checked = w.exercises.includes(name);
-          const target = store.targetFor(w, name);
-          const step = d => e => { e.stopPropagation(); store.setTarget(w.id, name, target + d); };
-          return h('div', { class: 'pick-row', onclick: () => store.toggleInWorkout(w.id, name) },
-            h('span', { html: exerciseIconHtml(name, g, 36) }),
-            h('span', { class: 'grow' }, exName(name)),
-            wikiButton(name), // ⓘ = Anleitung (stoppt den Klick, schaltet die Zeile nicht um)
-            checked ? h('span', { class: 'stepper' },
-              h('button', { class: 'step', onclick: step(-1), disabled: target <= 0 }, '−'),
-              h('span', { class: 'step-value' }, target === 0 ? 'optional' : isCardio(g) ? `${target}×` : plural(target, tr('Satz', 'set'), tr('Sätze', 'sets'))),
-              h('button', { class: 'step', onclick: step(1), disabled: target >= 20 }, '+')) : null,
-            h('span', { class: ['checkbox', checked && 'checked'] }, checked ? icon('check', 18) : null));
-        })];
+        const names = visible.filter(n => store.groupOf(n) === g && !w.exercises.includes(n));
+        return names.length ? [groupHeader(g), names.map(row)] : null;
       })),
+  });
+}
+
+/**
+ * Übung beim Bearbeiten eines Workouts: wie der Reiter „Info“ der Übungsdetails; unten eine feste Leiste
+ * mit „Zum Workout hinzufügen“ bzw. Ziel-Sätzen + Entfernen (wie WorkoutExercisePage in WorkoutScreens.kt).
+ */
+export function workoutExercisePage(w, name) {
+  const g = store.groupOf(name), added = w.exercises.includes(name), target = store.targetFor(w, name);
+  const m = musclesOf(name);
+  const bar = added
+    ? h('div', { class: 'pick-bar' },
+      h('div', { class: 'pick-bar-row' },
+        h('div', { class: 'grow' }, h('b', null, tr('Ziel-Sätze', 'Target sets')), muted('0 = optional', 'small')),
+        h('span', { class: 'stepper' },
+          h('button', { class: 'step tonal', onclick: () => store.setTarget(w.id, name, target - 1), disabled: target <= 0 }, '−'),
+          h('span', { class: 'step-value wide' }, targetLabel(target, g)),
+          h('button', { class: 'step tonal', onclick: () => store.setTarget(w.id, name, target + 1), disabled: target >= 20 }, '+'))),
+      h('button', { class: 'btn text danger pick-remove', onclick: () => store.toggleInWorkout(w.id, name) }, tr('Aus dem Workout entfernen', 'Remove from workout')))
+    : h('div', { class: 'pick-bar' },
+      h('button', { class: 'btn wide', onclick: () => store.toggleInWorkout(w.id, name) }, icon('add'), tr('Zum Workout hinzufügen', 'Add to workout')));
+  return screen({
+    title: exName(name), back: true, key: `pickex-${name}`, backdrop: exerciseImageUrl(name),
+    titleIcon: exerciseIconHtml(name, g, 32),
+    content: h('div', { class: 'stack pad' },
+      m ? [muscleSideCard('FRONT', levelsOf(m)), muscleSideCard('BACK', levelsOf(m), true)]
+        : muted(tr('Noch keine Muskeln festgelegt.', 'No muscles set yet.')),
+      wikiFor(name) ? h('div', { class: 'wiki-inline' }, wikiContent(name, { header: false, muscles: false })) : null),
+    bottom: h('div', { class: 'bottom-area' }, bar),
   });
 }
 
