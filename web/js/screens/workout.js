@@ -10,7 +10,7 @@ import {
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
 import { exerciseIconHtml, muscleIconHtml, exerciseImageUrl } from '../pictograms.js';
-import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast } from '../ui.js';
+import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, undoToast } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
 
@@ -290,7 +290,7 @@ export function workoutExercisePage(w, name) {
     title: exName(name), back: true, key: `pickex-${name}`, backdrop: exerciseImageUrl(name),
     titleIcon: exerciseIconHtml(name, g, 32),
     content: h('div', { class: 'stack pad' },
-      m ? [muscleSideCard('FRONT', levelsOf(m)), muscleSideCard('BACK', levelsOf(m), true)]
+      m ? muscleSideCard('BOTH', levelsOf(m), true) // Vorder- und Rückseite nebeneinander
         : muted(tr('Noch keine Muskeln festgelegt.', 'No muscles set yet.')),
       wikiFor(name) ? h('div', { class: 'wiki-inline' }, wikiContent(name, { header: false, muscles: false })) : null),
     bottom: h('div', { class: 'bottom-area' }, bar),
@@ -310,13 +310,13 @@ export function catalogScreen() {
     actions: [iconBtn('add', customExerciseDialog, { label: tr('Eigene Übung', 'Custom exercise') }), ...filterActions('catalog')],
     top: filterBar('catalog', GROUP_KEYS.filter(g => CATALOG.some(c => c.group === g)), EQUIPMENT_KEYS),
     content: !visible.length && !custom.length ? noFilterResults('catalog') : h('div', { class: 'pad' },
-      muted(tr('Tippe auf eine Übung, um sie zu deiner Liste hinzuzufügen. Fehlt etwas? Oben mit + eine eigene Übung anlegen.',
-        'Tap an exercise to add it to your list. Missing one? Create your own with + at the top.'), 'small'),
+      muted(tr('Tippe auf eine Übung, um sie zu deiner Liste hinzuzufügen – nochmal tippen entfernt sie wieder. Fehlt etwas? Oben mit + eine eigene Übung anlegen.',
+        'Tap an exercise to add it to your list – tap again to remove it. Missing one? Create your own with + at the top.'), 'small'),
       custom.length ? [
         h('h2', { class: 'section' }, tr('Eigene Übungen', 'Custom exercises')),
         custom.map(n => {
           const g = store.groupOf(n), added = store.hasExercise(n);
-          return h('div', { class: 'cat-row', role: 'button', onclick: added ? null : () => store.addExercise(n) },
+          return h('div', { class: 'cat-row', role: 'button', onclick: () => (added ? removeAgain(n) : store.addExercise(n)) },
             h('span', { html: exerciseIconHtml(n, g, 40) }),
             h('div', { class: 'grow' }, h('span', null, n),
               h('small', { class: 'muted' }, [groupLabel(g), equipmentOf(n) && equipmentLabel(equipmentOf(n)), isTimed(n) && tr('Zeit', 'Time')].filter(Boolean).join(' · '))),
@@ -325,7 +325,7 @@ export function catalogScreen() {
       ] : null,
       byGroup.map(([g, list]) => [groupHeader(g), list.map(c => {
         const added = store.hasExercise(c.name);
-        return h('div', { class: 'cat-row', role: 'button', onclick: added ? null : () => store.addExercise(c.name, c.group) },
+        return h('div', { class: 'cat-row', role: 'button', onclick: () => (added ? removeAgain(c.name) : store.addExercise(c.name, c.group)) }, // nochmal tippen = entfernen
           h('span', { html: exerciseIconHtml(c.name, g, 40) }),
           h('div', { class: 'grow' }, h('span', null, exName(c.name)), h('small', { class: 'muted' }, equipmentLabel(c.equipment))),
           wikiButton(c.name),
@@ -360,4 +360,11 @@ export function customExerciseDialog() {
       },
     ], closeDialog);
   });
+}
+
+/** ✓ im Katalog antippen: wieder aus „Meine Übungen“ entfernen, mit „Rückgängig“ (wie removeAgain in CatalogScreen.kt) */
+function removeAgain(name) {
+  const index = store.removeFromList(name);
+  undoToast(tr(`„${exName(name)}“ entfernt – bleibt in Workouts und Verlauf`, `"${exName(name)}" removed – stays in workouts and history`),
+    () => store.restoreToList(name, index));
 }

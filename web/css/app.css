@@ -567,3 +567,5 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .date-row { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 500; }
 .date-row input { font: inherit; color: var(--text); color-scheme: light dark; background: transparent; border: 1px solid var(--outline-variant); border-radius: 8px; padding: 6px 8px; }
 .btn.outline.danger-outline { color: var(--error); border-color: var(--error); display: inline-flex; align-items: center; gap: 6px; }
+/* Übungsseite beim Workout-Bearbeiten: beide Seiten nebeneinander, mittig und fast volle Breite */
+.side-card .muscle-figure, .side-card .muscle-views { width: 96%; margin-left: auto; margin-right: auto; }

@@ -639,8 +639,8 @@ fun WorkoutExercisePage(store: GymStore, workout: Workout, name: String, onBack:
             ) {
                 // wie der Reiter „Info“ in ExerciseDetailScreen
                 if (muscles != null) {
-                    item { MuscleSideCard(BodyView.FRONT, muscles.levels(), colors = glassCardColors()) }
-                    item { MuscleSideCard(BodyView.BACK, muscles.levels(), showList = true, colors = glassCardColors()) }
+                    // Vorder- und Rückseite nebeneinander, darunter die Muskelliste
+                    item { MuscleSideCard(BodyView.BOTH, muscles.levels(), showList = true, colors = glassCardColors()) }
                 } else item {
                     Text(tr("Noch keine Muskeln festgelegt.", "No muscles set yet."), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

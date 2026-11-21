@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 // ---------- Körperdiagramm: welche Muskeln eine Übung belastet ----------
@@ -844,13 +845,18 @@ fun MuscleSideCard(
         Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    if (view == BodyView.FRONT) tr("Vorderseite", "Front") else tr("Rückseite", "Back"),
+                    when (view) {
+                        BodyView.FRONT -> tr("Vorderseite", "Front")
+                        BodyView.BACK -> tr("Rückseite", "Back")
+                        else -> tr("Beanspruchte Muskeln", "Muscles worked")
+                    },
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
             }
             Spacer(Modifier.height(8.dp))
-            BodyFigure({ key -> levelColor(levels[key]) }, view = view, widthFraction = 0.62f)
+            // BOTH = Vorder- und Rückseite nebeneinander (fast volle Breite, beschriftet „Vorne/Hinten“), sonst eine Seite mittig groß
+            BodyFigure({ key -> levelColor(levels[key]) }, view = view, widthFraction = if (view == BodyView.BOTH) 0.96f else 0.62f)
             if (showList) {
                 Spacer(Modifier.height(16.dp))
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {

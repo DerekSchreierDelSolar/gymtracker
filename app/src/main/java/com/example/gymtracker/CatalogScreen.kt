@@ -152,8 +152,8 @@ fun CatalogScreen(
                 item {
                     Text(
                         tr(
-                            "Tippe auf eine Übung, um sie zu deiner Liste hinzuzufügen. Fehlt etwas? Oben mit + eine eigene Übung anlegen.",
-                            "Tap an exercise to add it to your list. Missing one? Create your own with + at the top."
+                            "Tippe auf eine Übung, um sie zu deiner Liste hinzuzufügen – nochmal tippen entfernt sie wieder. Fehlt etwas? Oben mit + eine eigene Übung anlegen.",
+                            "Tap an exercise to add it to your list – tap again to remove it. Missing one? Create your own with + at the top."
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -174,7 +174,7 @@ fun CatalogScreen(
                         Row(
                             Modifier
                                 .fillMaxWidth()
-                                .clickable(enabled = !added) { store.addExercise(name) } // Kategorie bleibt gespeichert
+                                .clickable { if (added) removeAgain(store, name) else store.addExercise(name) } // Kategorie bleibt gespeichert
                                 .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -204,7 +204,8 @@ fun CatalogScreen(
                         Row(
                             Modifier
                                 .fillMaxWidth()
-                                .clickable(enabled = !added) { store.addExercise(entry.name, entry.group) }
+                                // antippen = hinzufügen, nochmal antippen (✓) = wieder aus der Liste entfernen
+                                .clickable { if (added) removeAgain(store, entry.name) else store.addExercise(entry.name, entry.group) }
                                 .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -234,3 +235,11 @@ fun CatalogScreen(
 }
 
 
+
+/** ✓ im Katalog antippen: wieder aus „Meine Übungen“ entfernen (Workouts und Verlauf bleiben), mit „Rückgängig“. */
+private fun removeAgain(store: GymStore, name: String) {
+    val index = store.removeFromList(name)
+    Undo.show(tr("„${exName(name)}“ entfernt – bleibt in Workouts und Verlauf", "\"${exName(name)}\" removed – stays in workouts and history")) {
+        store.restoreToList(name, index)
+    }
+}

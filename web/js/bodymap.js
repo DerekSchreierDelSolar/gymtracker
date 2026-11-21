@@ -403,8 +403,9 @@ export function muscleSideCard(view, levels, showList = false) {
     h('div', { class: 'side-names' }, labels.join(', ')));
   return h('div', { class: 'card pad-m glass side-card' },
     h('div', { class: 'side-head' },
-      h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : tr('Rückseite', 'Back'))),
-    h('div', { class: 'side-figure', html: svg(k => levelColor(levels[k]), view) }),
+      h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : view === 'BACK' ? tr('Rückseite', 'Back') : tr('Beanspruchte Muskeln', 'Muscles worked'))),
+    // BOTH = Vorder- und Rückseite nebeneinander mit „Vorne/Hinten“ (wie MuscleSideCard in BodyMap.kt)
+    view === 'BOTH' ? bodyFigure(k => levelColor(levels[k])) : h('div', { class: 'side-figure', html: svg(k => levelColor(levels[k]), view) }),
     showList ? h('div', { class: 'side-list' },
       levelLabels(levels).map(([st, labels]) => group(levelTitle(st), labels, levelColor(st)))) : null);
 }
