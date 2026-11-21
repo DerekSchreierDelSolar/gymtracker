@@ -19,6 +19,7 @@ export const nav = {
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
   pickDetail: null,      // beim Bearbeiten geöffnete Übung (Info + Ziel-Sätze + Hinzufügen)
+  editInTraining: null,  // Workout wird während des Trainings bearbeitet (Wert = vorher angezeigte Übung)
   pickGroup: null,       // beim Bearbeiten geöffnete Kategorie (null = Übersicht)
   catalogGroup: null,    // im Katalog geöffnete Kategorie (null = Übersicht)
   trainingStart: null,   // laufendes Training (Startzeit)

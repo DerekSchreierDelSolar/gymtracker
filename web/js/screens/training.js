@@ -13,7 +13,7 @@ import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import {
   h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, percentRing, onTick, muted, icon, iconBtn,
 } from '../ui.js';
-import { nav, update, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
+import { nav, update, go, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
 import { setInput, setRows, historyDayCard, recordLine, noteButton } from './exercise.js';
 
@@ -181,7 +181,11 @@ export function trainingScreen(w, onFinish) {
 
   return screen({
     title: `${index + 1}/${n} · ${w.name}`, subtitle: clock, key: 'training-' + index,
-    actions: [h('button', { class: 'btn text', onclick: endDialog }, tr('Beenden', 'Finish'))],
+    actions: [
+      // Workout während des Trainings anpassen – Training läuft weiter
+      iconBtn('edit', () => go({ editInTraining: name ?? '', pickGroup: null, pickDetail: null }), { label: tr('Workout bearbeiten', 'Edit workout') }),
+      h('button', { class: 'btn text', onclick: endDialog }, tr('Beenden', 'Finish')),
+    ],
     top: h('div', { class: 'training-head' },
       h('div', { class: 'hscroll' }, w.exercises.map((e, i) => {
         const count = countOf(e), goal = store.targetFor(w, e);

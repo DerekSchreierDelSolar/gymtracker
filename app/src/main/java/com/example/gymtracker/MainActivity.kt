@@ -88,6 +88,8 @@ fun GymApp(store: GymStore) {
     var trainingIndex by rememberSaveable { mutableIntStateOf(0) }
     // Tausch nur für das laufende Training: Original → Alternative (HashMap ist Serializable → rememberSaveable)
     var swaps by rememberSaveable { mutableStateOf<Map<String, String>>(HashMap()) }
+    // Während des Trainings: Workout bearbeiten offen? Wert = Übung, die im Training gerade angezeigt war
+    var editInTraining by rememberSaveable { mutableStateOf<String?>(null) }
     // Geöffnete Trainings-Übersicht
     var summaryId by rememberSaveable { mutableStateOf<Long?>(null) }
     // Kalender: angezeigter Monat und gewählter Tag. Hier oben gespeichert, damit sie erhalten
@@ -109,6 +111,17 @@ fun GymApp(store: GymStore) {
             BackHandler { summaryId = null }
             SummaryScreen(store, summary, onDone = { summaryId = null })
         }
+        // Workout während des laufenden Trainings bearbeiten (Training läuft weiter, Zurück = zurück ins Training)
+        workout != null && start != null && editInTraining != null -> {
+            val backToTraining = {
+                // wieder auf die Übung, die vorher offen war (Index kann sich durch Hinzufügen/Entfernen verschoben haben)
+                val i = sessionWorkout(workout, swaps).exercises.indexOf(editInTraining)
+                if (i >= 0) trainingIndex = i
+                editInTraining = null
+            }
+            BackHandler { backToTraining() }
+            WorkoutPickerScreen(store, workout, onBack = backToTraining)
+        }
         workout != null && start != null -> {
             // Nur für dieses Training getauschte Übungen (Original → Alternative); das Workout selbst bleibt unverändert
             val session = sessionWorkout(workout, swaps)
@@ -118,6 +131,7 @@ fun GymApp(store: GymStore) {
                 onIndex = { trainingIndex = it },
                 onSwap = { from, to -> swaps = swapTo(swaps, workout, from, to) },
                 originalOf = { e -> swaps.entries.firstOrNull { it.value == e }?.key },
+                onEdit = { editInTraining = session.exercises.getOrNull(trainingIndex) ?: "" },
                 onFinish = {
                     // Übungen, die vor dem Tausch schon Sätze hatten, gehören trotzdem zum Training
                     val withSets = session.copy(exercises = session.exercises + swaps.keys.filter { o ->

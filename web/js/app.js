@@ -39,6 +39,10 @@ function currentScreen() {
     : nav.summaryId < 0 ? store.freeSession(-nav.summaryId) : store.session(nav.summaryId);
 
   if (summary) return summaryScreen(summary, goBack);
+  // Während des Trainings das Workout bearbeiten (wie editInTraining in GymApp): Training läuft weiter
+  if (workout && nav.trainingStart != null && nav.editInTraining != null) {
+    return nav.pickDetail != null ? workoutExercisePage(workout, nav.pickDetail) : workoutPickerScreen(workout);
+  }
   if (workout && nav.trainingStart != null) return trainingScreen(sessionWorkout(workout, nav.swaps), finishTraining, workout);
   if (nav.trainingStart != null) update({ trainingStart: null }); // Workout wurde gelöscht
   if (nav.exercise != null) return exerciseDetailScreen(nav.exercise);
@@ -56,6 +60,12 @@ setBackHandler(() => {
   if (nav.dialog) { closeDialog(); return false; }
   if (nav.menuOpen) { update({ menuOpen: false }); return false; }
   if (nav.summaryId != null) { update({ summaryId: null }); return true; }
+  if (nav.trainingStart != null && nav.editInTraining != null) {
+    if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }
+    if (nav.pickGroup != null) { update({ pickGroup: null }); return true; }
+    backToTraining();
+    return true;
+  }
   if (nav.trainingStart != null) {
     const w = store.workout(nav.workoutId);
     if (w) { confirmEndTraining(w, finishTraining); return false; }
@@ -149,4 +159,11 @@ function sessionWorkout(w, swaps = {}) {
     exercises: w.exercises.map(e => swaps[e] ?? e),
     targets: Object.fromEntries(Object.entries(w.targets).map(([k, v]) => [swaps[k] ?? k, v])),
   };
+}
+
+/** Bearbeiten beenden: wieder ins Training, auf die vorher angezeigte Übung (Index kann sich verschoben haben) */
+function backToTraining() {
+  const w = store.workout(nav.workoutId);
+  const i = w ? sessionWorkout(w, nav.swaps).exercises.indexOf(nav.editInTraining) : -1;
+  update({ editInTraining: null, pickGroup: null, pickDetail: null, ...(i >= 0 ? { trainingIndex: i } : {}) });
 }

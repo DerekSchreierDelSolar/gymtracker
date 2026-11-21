@@ -67,6 +67,8 @@ fun TrainingScreen(
     onSwap: (String, String) -> Unit = { _, _ -> },
     /** Original-Übung, falls die angezeigte eine Alternative ist */
     originalOf: (String) -> String? = { null },
+    /** Workout bearbeiten, ohne das Training zu beenden */
+    onEdit: () -> Unit = {},
     onFinish: () -> Unit
 ) {
     var confirmEnd by remember { mutableStateOf(false) }
@@ -177,7 +179,11 @@ fun TrainingScreen(
                         )
                     }
                 },
-                actions = { TextButton(onClick = { confirmEnd = true }) { Text(tr("Beenden", "Finish")) } }
+                actions = {
+                    // Workout während des Trainings anpassen (Übungen hinzufügen/entfernen, Ziel-Sätze) – Training läuft weiter
+                    IconAction(Ico.EDIT, onClick = onEdit)
+                    TextButton(onClick = { confirmEnd = true }) { Text(tr("Beenden", "Finish")) }
+                }
             )
         },
         bottomBar = {

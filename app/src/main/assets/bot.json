@@ -156,6 +156,11 @@
             "⋮ → Settings → at the bottom \"Reset progress\": deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay. You can undo it right after; safer is ⋮ → \"Export data\" first."]
     },
     {
+      "keys": ["workout aendern", "workout anpassen", "waehrend training", "uebung hinzufuegen training", "edit workout", "during workout", "change workout"],
+      "a": ["Während eines Trainings oben auf den Stift tippen: Du kannst Übungen hinzufügen, entfernen oder die Ziel-Sätze ändern – das Training läuft dabei weiter. Mit Zurück landest du wieder bei der Übung, bei der du warst. Die Änderungen gelten dauerhaft fürs Workout (für nur heute: ⇄ neben dem Übungsnamen).",
+            "During a workout tap the pencil at the top: add or remove exercises or change target sets – the session keeps running. Back takes you to the exercise you were on. Changes are saved to the workout (for today only: ⇄ next to the exercise name)."]
+    },
+    {
       "keys": ["alternative", "austauschen", "tauschen", "ersetzen", "andere uebung", "besetzt", "swap", "replace", "substitute"],
       "a": ["Im Training neben dem Übungsnamen auf ⇄ tippen: Du bekommst ähnliche Übungen (gleiche Muskeln, mit % Übereinstimmung) und kannst eine für heute nehmen. Das gilt nur für dieses Training – dein Workout bleibt unverändert. Über ⇄ kommst du auch wieder zurück zur Original-Übung.",
             "In workout mode tap ⇄ next to the exercise name: you get similar exercises (same muscles, with % match) and can pick one for today. It only applies to this session – your workout stays unchanged. ⇄ also takes you back to the original."]
