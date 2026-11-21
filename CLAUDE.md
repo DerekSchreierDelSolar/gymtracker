@@ -152,5 +152,7 @@ Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen
 - **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
   Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
   Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
+- **Play-Store-Veröffentlichung** (besprochen 22.11.2026, nicht umgesetzt): Anforderungen und To-dos in `docs/play-store.md`
+  (u. a. Package-Name statt `com.example`, `.aab`, Datenschutzerklärung, 12 Tester × 14 Tage, Bildrechte).
 - **Genauere kcal** (besprochen 19.11.2026, zurückgestellt): korrigierte MET-Methode mit Grundumsatz nach Mifflin-St-Jeor
   → optionale Einstellungen Geschlecht, Geburtsjahr, Größe; ohne Angaben weiter einfache MET-Formel.
