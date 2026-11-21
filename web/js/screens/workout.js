@@ -250,6 +250,7 @@ export function workoutPickerScreen(w) {
           return h('div', { class: 'pick-row', onclick: () => store.toggleInWorkout(w.id, name) },
             h('span', { html: exerciseIconHtml(name, g, 36) }),
             h('span', { class: 'grow' }, exName(name)),
+            wikiButton(name), // ⓘ = Anleitung (stoppt den Klick, schaltet die Zeile nicht um)
             checked ? h('span', { class: 'stepper' },
               h('button', { class: 'step', onclick: step(-1), disabled: target <= 0 }, '−'),
               h('span', { class: 'step-value' }, target === 0 ? 'optional' : isCardio(g) ? `${target}×` : plural(target, tr('Satz', 'set'), tr('Sätze', 'sets'))),

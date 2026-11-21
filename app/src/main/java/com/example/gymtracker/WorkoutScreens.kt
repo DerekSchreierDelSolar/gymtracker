@@ -492,6 +492,8 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                             ExerciseIcon(name, group, Modifier.size(36.dp))
                             Spacer(Modifier.width(12.dp))
                             Text(exName(name), modifier = Modifier.weight(1f))
+                            // ⓘ = Anleitung/Muskeln aus dem Wiki (eigener Klick, schaltet die Zeile nicht um)
+                            WikiButton(name)
                             // Ziel-Sätze nur für angehakte Übungen. Die Buttons haben eigene Klicks,
                             // deshalb schalten sie die Zeile nicht um.
                             if (checked) {
