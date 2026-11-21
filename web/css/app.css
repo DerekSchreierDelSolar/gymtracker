@@ -510,3 +510,7 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .chat-input input:focus { outline: 2px solid var(--primary); border-color: transparent; }
 .chat-send { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; flex: none; }
 .bottom-nav .nav-item span:last-child { white-space: nowrap; }
+
+/* ---------- Trainingsplan ---------- */
+.plan-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.plan-days { display: block; font-weight: 600; }

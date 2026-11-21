@@ -59,6 +59,12 @@ fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onN
                 Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(w.name, style = MaterialTheme.typography.titleLarge)
+                        // Trainingstage laut Plan, z. B. „📅 Mo · Do“
+                        if (w.days.isNotEmpty()) Text(
+                            "📅 " + daysLabel(w.days),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                         val lastTraining = store.sessionsFor(w.id).firstOrNull()
                         Text(
                             plural(w.exercises.size, tr("Übung", "exercise"), tr("Übungen", "exercises")) +
@@ -178,9 +184,13 @@ fun WorkoutScreen(
                 Text(tr("Dieses Workout hat noch keine Übungen.", "This workout has no exercises yet."))
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = onEdit) { Text(tr("Übungen auswählen", "Choose exercises")) }
+                Spacer(Modifier.height(16.dp))
+                WorkoutDaysRow(store, workout)
             }
         } else {
             TileGrid(modifier, gridState) {
+                // Volle Breite: Trainingstage (Plan)
+                item(span = { GridItemSpan(maxLineSpan) }) { WorkoutDaysRow(store, workout, Modifier.padding(bottom = 8.dp)) }
                 // Volle Breite: Hinweis zum Umsortieren (Start-Button ist jetzt der schwebende FAB)
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(

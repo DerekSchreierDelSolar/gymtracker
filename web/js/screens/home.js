@@ -5,7 +5,7 @@ import {
   tr, exName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
 } from '../core.js';
-import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, nextWorkoutAfter } from '../stats.js';
+import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, nextWorkoutAfter, planPick } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, statBox, chartCard, horizontalBars, historyBars, lineChart,
@@ -148,8 +148,10 @@ function dashboardTab(onStartWorkout) {
   const streak = weekStreak(store);
   const goal = store.weeklyGoal;
   const lastSession = store.sessions.reduce((a, t) => (!a || t.start > a.start ? t : a), null);
-  // „Weiter mit“: das Workout NACH dem zuletzt trainierten (wie nextWorkoutAfter in DashboardTab.kt)
-  const next = nextWorkoutAfter(store.workouts, lastSession?.workoutId);
+  // Schnellstart: mit Trainingsplan „Heute dran“ bzw. das nächste geplante Workout, sonst „Weiter mit“
+  // = das Workout NACH dem zuletzt trainierten (wie DashboardTab.kt)
+  const pick = planPick(store);
+  const next = pick?.workout ?? nextWorkoutAfter(store.workouts, lastSession?.workoutId);
 
   const volumes = weeklyVolumes(store, 8);
   // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
@@ -181,7 +183,7 @@ function dashboardTab(onStartWorkout) {
 
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
       h('div', { class: 'grow' },
-        h('small', null, tr('Weiter mit', 'Continue with')),
+        h('small', null, pick?.title ?? tr('Weiter mit', 'Continue with')),
         h('h2', null, next.name),
         h('small', null, plural(next.exercises.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) +
           (store.sessionsFor(next.id)[0] ? tr(' · zuletzt ', ' · last ') + fmtDate(store.sessionsFor(next.id)[0].start) : ''))),

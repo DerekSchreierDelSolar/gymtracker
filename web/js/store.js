@@ -70,6 +70,8 @@ class GymStore {
       id: o.id, name: o.name,
       exercises: arr(o.exercises).map(migrateName),
       targets: intMap(o.targets),
+      // Trainingstage laut Plan: 1 = Montag … 7 = Sonntag (wie Workout.days)
+      days: arr(o.days).map(Number).filter(d => d >= 1 && d <= 7),
     }));
     const s = obj(root.settings);
     this.weeklyGoal = s.weeklyGoal ?? 3;
@@ -104,7 +106,7 @@ class GymStore {
       customEquipment: CustomMeta.equipment,
       customTimed: [...CustomMeta.timed],
       customMuscles: CustomMeta.muscles,
-      workouts: this.workouts,
+      workouts: this.workouts.map(({ days, ...w }) => (days?.length ? { ...w, days } : w)),
       sessions: this.sessions,
       weights: this.weights,
       notes: this.notes,
@@ -234,6 +236,15 @@ class GymStore {
   /** Ziel-Sätze einer Übung im Workout (Standard 0 = optional). */
   targetFor(w, exercise) { return w.targets[exercise] ?? 0; }
 
+  /** Trainingstag (1 = Mo … 7 = So) im Plan an-/abwählen */
+  toggleDay(workoutId, day) {
+    const w = this.workout(workoutId);
+    if (!w) return;
+    const days = w.days ?? [];
+    w.days = days.includes(day) ? days.filter(d => d !== day) : [...days, day].sort();
+    this.#save();
+  }
+
   setTarget(workoutId, exercise, target) {
     const w = this.workout(workoutId);
     if (!w) return;
@@ -252,7 +263,7 @@ class GymStore {
   duplicateWorkout(id) {
     const w = this.workout(id);
     if (!w) return null;
-    const copy = { id: Date.now(), name: w.name + tr(' (Kopie)', ' (copy)'), exercises: [...w.exercises], targets: { ...w.targets } };
+    const copy = { id: Date.now(), name: w.name + tr(' (Kopie)', ' (copy)'), exercises: [...w.exercises], targets: { ...w.targets }, days: [] }; // Plan-Tage nicht doppelt belegen
     this.workouts.push(copy);
     this.#save();
     return copy;

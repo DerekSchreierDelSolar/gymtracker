@@ -163,7 +163,9 @@ data class Workout(
     val name: String,
     val exercises: List<String>,
     /** Ziel-Sätze pro Übung; fehlt ein Eintrag, gilt der Standard (siehe defaultTarget) */
-    val targets: Map<String, Int> = emptyMap()
+    val targets: Map<String, Int> = emptyMap(),
+    /** Trainingstage laut Plan: 1 = Montag … 7 = Sonntag (leer = ohne festen Tag) */
+    val days: Set<Int> = emptySet()
 )
 
 /**

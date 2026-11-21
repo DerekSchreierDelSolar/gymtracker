@@ -110,6 +110,37 @@ export function nextWorkoutAfter(workouts, lastId) {
   return workouts[i];
 }
 
+// ---------- Trainingsplan (wie Plan.kt) ----------
+
+/** Wochentag 1 = Montag … 7 = Sonntag */
+export const weekdayOf = (t = Date.now()) => ((new Date(t).getDay() + 6) % 7) + 1;
+export const weekdayShort = d => tr(['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][d - 1], ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][d - 1]);
+const weekdayLong = d => tr(['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'][d - 1],
+  ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][d - 1]);
+export const daysLabel = days => [...days].sort().map(weekdayShort).join(' · ');
+
+/** Heute geplantes Workout, das heute noch nicht trainiert wurde */
+export function dueToday(store) {
+  const today = weekdayOf(), key = dayKey(Date.now());
+  const done = new Set(store.sessions.filter(t => dayKey(t.start) === key).map(t => t.workoutId));
+  return store.workouts.find(w => (w.days ?? []).includes(today) && w.exercises.length && !done.has(w.id)) ?? null;
+}
+
+/** Vorschlag laut Plan: { workout, title } („Heute dran“, „Morgen dran“, „Als Nächstes · Mittwoch“) oder null */
+export function planPick(store) {
+  const planned = store.workouts.filter(w => (w.days ?? []).length && w.exercises.length);
+  if (!planned.length) return null;
+  const due = dueToday(store);
+  if (due) return { workout: due, title: tr('Heute dran', 'Today') };
+  const today = weekdayOf();
+  for (let k = 1; k <= 7; k++) {
+    const d = ((today - 1 + k) % 7) + 1;
+    const w = planned.find(p => p.days.includes(d));
+    if (w) return { workout: w, title: k === 1 ? tr('Morgen dran', 'Tomorrow') : tr('Als Nächstes · ', 'Next · ') + weekdayLong(d) };
+  }
+  return null;
+}
+
 /** Wochen in Folge mit mind. einem Training (die laufende Woche zählt, wenn schon trainiert). */
 export function weekStreak(store) {
   const weeks = new Set(allSessions(store).map(t => startOfWeek(t.start)));

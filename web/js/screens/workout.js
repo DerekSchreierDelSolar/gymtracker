@@ -8,7 +8,7 @@ import {
   tr, exName, fmtDate, fmtDateTime, fmtDuration, fmtW, plural, isCardio, isTimed, equipmentOf, catalogEntry,
   catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel,
 } from '../core.js';
-import { sessionStats } from '../stats.js';
+import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
 import { exerciseIconHtml, muscleIconHtml } from '../pictograms.js';
 import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
@@ -32,6 +32,8 @@ export function workoutList() {
     return h('button', { class: 'card workout-card', onclick: () => go({ workoutId: w.id }) },
       h('div', { class: 'grow' },
         h('h2', null, w.name),
+        // Trainingstage laut Plan, z. B. „📅 Mo · Do“
+        w.days?.length ? h('small', { class: 'accent plan-days' }, '📅 ' + daysLabel(w.days)) : null,
         h('small', { class: 'muted' }, plural(w.exercises.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) +
           (last ? tr(' · zuletzt ', ' · last ') + fmtDate(last.start) : '')),
         w.exercises.length ? h('div', { class: 'icon-row', html: sortedGroups(w.exercises).map(g => muscleIconHtml(g, 28)).join('') }) : null),
@@ -57,6 +59,15 @@ export function newWorkoutDialog() {
   ], closeDialog));
 }
 
+/** Trainingstage Mo–So als Chips (wie WorkoutDaysRow in Plan.kt) */
+function daysRow(w) {
+  return h('div', { class: 'plan-row' },
+    h('b', { class: 'small-title' }, tr('Trainingstage', 'Training days')),
+    muted(tr('Geplante Tage erscheinen auf der Startseite als „Heute dran“.', 'Planned days show up on the home screen as "Today".'), 'small'),
+    h('div', { class: 'chips wrap' }, [1, 2, 3, 4, 5, 6, 7].map(d =>
+      chip(weekdayShort(d), (w.days ?? []).includes(d), () => store.toggleDay(w.id, d)))));
+}
+
 // ---------- Ein Workout ----------
 
 export function workoutScreen(w, onStart) {
@@ -73,7 +84,8 @@ export function workoutScreen(w, onStart) {
   if (!w.exercises.length) {
     content = h('div', { class: 'pad stack' },
       h('p', null, tr('Dieses Workout hat noch keine Übungen.', 'This workout has no exercises yet.')),
-      h('div', null, h('button', { class: 'btn', onclick: () => go({ pick: true }) }, tr('Übungen auswählen', 'Choose exercises'))));
+      h('div', null, h('button', { class: 'btn', onclick: () => go({ pick: true }) }, tr('Übungen auswählen', 'Choose exercises'))),
+      daysRow(w));
   } else {
     const grid = h('div', { class: 'tile-grid' }, w.exercises.map(name =>
       exerciseTile(name, store.groupOf(name), e => {
@@ -82,6 +94,7 @@ export function workoutScreen(w, onStart) {
       })));
     enableDrag(grid, w);
     content = h('div', { class: 'pad list-bottom' },
+      daysRow(w),
       muted(tr('Tipp: Kachel gedrückt halten und ziehen, um die Reihenfolge zu ändern.', 'Tip: long-press a tile and drag it to change the order.'), 'small'),
       grid,
       history.length ? [

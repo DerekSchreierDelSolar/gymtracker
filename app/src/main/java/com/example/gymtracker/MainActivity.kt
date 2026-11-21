@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
         AutoBackup.load(applicationContext)
         Wiki.load(applicationContext)
         Bot.load(applicationContext)
+        Reminder.schedule(applicationContext) // Erinnerung (falls an) nach Update/Neuinstallation sicher planen
         ExerciseImages.load(applicationContext)
         setContent {
             // Gewähltes Design; "system" folgt der Einstellung des Handys

@@ -56,6 +56,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `BodyTab.kt` | Tab 4: Körpergewicht, Wochen-kcal, `startOfWeek()` |
 | `ExerciseDetail.kt` | `SetInput` (inkl. Stoppuhr), `SetRow`/`EditSetDialog`, `ExerciseDetailScreen` mit Reitern Training (`RecordLine`, Verlauf neueste zuerst, Satz antippen = bearbeiten)/Fortschritt/Info (`MuscleSideCard` Vorder-/Rückseite, Figur mittig groß, Muskelliste nur in der letzten Karte + Wiki), `glassCardColors()`, `ExerciseProgress` (Rekord, Zuwachs, Kennzahl + Tage/Wochen/Monate) |
 | `CatalogScreen.kt` | Katalog + `CustomExerciseDialog` |
+| `Plan.kt` | Trainingsplan: `Workout.days` (1 = Mo … 7 = So, im JSON `days` nur wenn nicht leer), `weekdayOf`, `dueToday`, `planPick` (Startseite „Heute dran“/„Morgen dran“/„Als Nächstes · Tag“, sonst „Weiter mit“), `WorkoutDaysRow` (Chips im Workout); `Reminder` (AlarmManager inexakt, SharedPreferences gerätegebunden, `ReminderReceiver` auch nach Neustart), `ReminderSettings` im Einstellungen-Dialog. Web: `planPick` etc. in stats.js, Erinnerung nur Android |
 | `Progression.kt` | 💡 Gewichts-Vorschlag (doppelte Progression) |
 | `Bot.kt` | Fragen-Bot ohne KI: lädt `assets/bot.json` (`Bot.load`), `Bot.answer(frage)` → Übung (Ausführung/Tipps/Muskeln aus dem Wiki), Muskel/Region (passende Übungen nach Stufe) oder feste App-Frage; Wörter-Vergleich mit Tippfehler-Toleranz (Levenshtein), `Bot.history` = Verlauf |
 | `BotTab.kt` | Tab 5 „Fragen“: Chat-Blasen, Übungs-Chips öffnen `WikiSheet`, Vorschläge, Eingabefeld |
@@ -133,8 +134,8 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
 
 ## Ideen-Backlog (vom Nutzer noch nicht umgesetzt)
 Ernährungstagebuch, Körpermaße, Fortschrittsfotos,
-Supersätze, Trainingsplan mit Wochentagen + Erinnerung, Pausen-Timer als Benachrichtigung
-(Foreground Service), Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen pro Übung + Tag: umgesetzt in 1.2, `notes` im JSON = { Übung: { dayKey: Text } }. Satz-Typen: umgesetzt nach 1.2.)
+Supersätze, Pausen-Timer als Benachrichtigung
+(Foreground Service), Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen pro Übung + Tag: umgesetzt in 1.2, `notes` im JSON = { Übung: { dayKey: Text } }. Satz-Typen: umgesetzt nach 1.2. Trainingsplan mit Wochentagen + Erinnerung: umgesetzt nach 1.5, Erinnerung nur Android.)
 - **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
   Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
   Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.

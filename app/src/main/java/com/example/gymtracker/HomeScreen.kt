@@ -328,6 +328,8 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
                 }
                 Spacer(Modifier.height(8.dp))
                 AutoBackupSettings(store)
+                Spacer(Modifier.height(8.dp))
+                ReminderSettings()
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } }

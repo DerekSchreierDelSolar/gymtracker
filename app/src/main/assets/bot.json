@@ -56,7 +56,7 @@
             "The 💡 suggestion uses double progression: first more reps, then more weight. Once you did at least 2 sets of 8+ reps at your top weight last time, it suggests going heavier (+2.5 kg, +2 kg for dumbbells)."]
     },
     {
-      "keys": ["workout erstellen", "neues workout", "workout anlegen", "vorlage", "vorlagen", "template", "create workout", "new workout", "trainingsplan"],
+      "keys": ["workout erstellen", "neues workout", "workout anlegen", "vorlage", "vorlagen", "template", "create workout", "new workout"],
       "a": ["Im Tab „Workouts“ unten rechts auf „＋ Workout“ tippen. Du kannst bei null anfangen oder eine Vorlage nehmen. Übungen fügst du hinzu und ordnest sie per Ziehen.",
             "In the \"Workouts\" tab tap \"＋ Workout\" at the bottom right. Start from scratch or use a template. Add exercises and reorder them by dragging."]
     },
@@ -139,6 +139,11 @@
       "keys": ["export", "exportieren", "import", "importieren", "sichern", "sicherung", "backup", "datei"],
       "a": ["Oben rechts ⋮ → „Daten exportieren“ speichert alles als Datei; „Daten importieren“ lädt eine Sicherung (vorher siehst du, was drin ist). So kannst du sichern oder aufs neue Handy umziehen.",
             "Top right ⋮ → \"Export data\" saves everything to a file; \"Import data\" loads a backup (you see what's in it first). Use it to back up or move to a new phone."]
+    },
+    {
+      "keys": ["trainingsplan", "plan", "wochentag", "wochentage", "trainingstage", "erinnerung", "benachrichtigung", "heute dran", "schedule", "weekday", "training days", "reminder", "notification"],
+      "a": ["Öffne ein Workout und wähle oben die „Trainingstage“ (Mo–So). Auf der Startseite steht es dann als „Heute dran“ bzw. „Als Nächstes“. Android: ⋮ → Einstellungen → „Trainings-Erinnerung“ einschalten und Uhrzeit wählen – an geplanten Tagen kommt eine Benachrichtigung, wenn du noch nicht trainiert hast.",
+            "Open a workout and pick its \"Training days\" (Mon–Sun) at the top. The home screen then shows it as \"Today\" or \"Next\". Android: ⋮ → Settings → turn on \"Workout reminder\" and choose a time – on planned days you get a notification if you haven't trained yet."]
     },
     {
       "keys": ["automatisch", "automatisches backup", "auto backup", "ordner"],

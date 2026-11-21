@@ -162,7 +162,8 @@ class GymStore(context: Context) {
                         id = o.getLong("id"),
                         name = o.getString("name"),
                         exercises = (0 until list.length()).map { migrateName(list.getString(it)) },
-                        targets = o.optJSONObject("targets").toIntMap().mapKeys { migrateName(it.key) }
+                        targets = o.optJSONObject("targets").toIntMap().mapKeys { migrateName(it.key) },
+                        days = o.optJSONArray("days")?.let { d -> (0 until d.length()).map { d.getInt(it) }.filter { it in 1..7 }.toSet() }.orEmpty()
                     )
                 )
             }
@@ -240,6 +241,7 @@ class GymStore(context: Context) {
             o.put("name", w.name)
             o.put("exercises", JSONArray(w.exercises))
             o.put("targets", w.targets.toJson())
+            if (w.days.isNotEmpty()) o.put("days", JSONArray(w.days.sorted()))
             wo.put(o)
         }
         root.put("workouts", wo)
@@ -386,6 +388,15 @@ class GymStore(context: Context) {
         save()
     }
 
+    /** Trainingstag (1 = Mo … 7 = So) im Plan des Workouts an-/abwählen. */
+    fun toggleDay(workoutId: Long, day: Int) {
+        val i = workouts.indexOfFirst { it.id == workoutId }
+        if (i < 0) return
+        val w = workouts[i]
+        workouts[i] = w.copy(days = if (day in w.days) w.days - day else w.days + day)
+        save()
+    }
+
     /** Übung im Workout von Position `from` nach `to` verschieben (für Drag & Drop). */
     fun moveInWorkout(workoutId: Long, from: Int, to: Int) {
         val i = workouts.indexOfFirst { it.id == workoutId }
@@ -403,7 +414,7 @@ class GymStore(context: Context) {
     /** Kopie eines Workouts (gleiche Übungen, Reihenfolge und Ziele) mit Namenszusatz. */
     fun duplicateWorkout(id: Long): Workout? {
         val w = workout(id) ?: return null
-        val copy = w.copy(id = System.currentTimeMillis(), name = w.name + tr(" (Kopie)", " (copy)"))
+        val copy = w.copy(id = System.currentTimeMillis(), name = w.name + tr(" (Kopie)", " (copy)"), days = emptySet()) // Plan-Tage nicht doppelt belegen
         workouts.add(copy)
         save()
         return copy

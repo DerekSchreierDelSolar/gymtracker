@@ -92,9 +92,12 @@ fun DashboardTab(
     // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
     var period by rememberSaveable { mutableStateOf(StatPeriod.WEEK) }
 
-    // „Weiter mit“: das Workout NACH dem zuletzt trainierten (Reihenfolge der Workout-Liste, am Ende wieder vorn)
+    // Schnellstart: mit Trainingsplan „Heute dran“ bzw. das nächste geplante Workout, sonst „Weiter mit“
+    // = das Workout NACH dem zuletzt trainierten (Reihenfolge der Workout-Liste, am Ende wieder vorn)
     val lastSession = store.sessions.maxByOrNull { it.start }
-    val nextWorkout = nextWorkoutAfter(store.workouts, lastSession?.workoutId)
+    val pick = planPick(store)
+    val nextWorkout = pick?.workout ?: nextWorkoutAfter(store.workouts, lastSession?.workoutId)
+    val nextTitle = pick?.title ?: tr("Weiter mit", "Continue with")
 
     LazyColumn(
         modifier = modifier,
@@ -146,7 +149,7 @@ fun DashboardTab(
                 ) {
                     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text(tr("Weiter mit", "Continue with"), style = MaterialTheme.typography.labelLarge,
+                            Text(nextTitle, style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer)
                             Text(nextWorkout.name, style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer)
