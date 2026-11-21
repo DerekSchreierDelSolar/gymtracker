@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -205,6 +206,8 @@ private fun WikiLine(bullet: String, text: String, bulletColor: androidx.compose
 fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
     var query by remember { mutableStateOf("") }
     var open by remember { mutableStateOf<String?>(null) }
+    var musclesMode by rememberSaveable { mutableStateOf(false) } // Reiter „Muskeln“ statt „Übungen“
+    var openMuscle by remember { mutableStateOf<String?>(null) }
     // Grundübungen in Katalog-Reihenfolge, gruppiert
     val bases = CATALOG.distinctBy { it.base }.filter { Wiki.entries.containsKey(it.base) }
     val q = query.trim()
@@ -214,7 +217,7 @@ fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(tr("Übungs-Wiki", "Exercise wiki")) },
+            title = { Text(tr("Wiki", "Wiki")) },
             actions = { IconAction(Ico.CHAT, onClick = onAsk) }, // Frage an den Bot stellen
             navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
         )
@@ -227,15 +230,25 @@ fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             item {
+                Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SegmentChip(tr("Übungen", "Exercises"), !musclesMode, { musclesMode = false; query = "" }, Modifier.weight(1f))
+                    SegmentChip(tr("Muskeln", "Muscles"), musclesMode, { musclesMode = true; query = "" }, Modifier.weight(1f))
+                }
+            }
+            item {
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text(tr("Übung suchen", "Search exercise")) },
+                    placeholder = { Text(if (musclesMode) tr("Muskel suchen", "Search muscle") else tr("Übung suchen", "Search exercise")) },
                     leadingIcon = { AppIcon(Ico.SEARCH) },
                     trailingIcon = { if (query.isNotEmpty()) IconAction(Ico.CLOSE, onClick = { query = "" }) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+            if (musclesMode) {
+                muscleWikiItems(query) { openMuscle = it }
+                return@LazyColumn
             }
             if (visible.isEmpty()) item {
                 Text(
@@ -272,4 +285,5 @@ fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
         }
     }
     open?.let { WikiSheet(it, onDismiss = { open = null }) }
+    openMuscle?.let { MuscleSheet(it, onDismiss = { openMuscle = null }) }
 }

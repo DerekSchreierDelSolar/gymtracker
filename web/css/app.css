@@ -380,6 +380,7 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .wiki-list.warn { list-style: none; padding-left: 0; }
 .wiki-list.warn li { display: flex; gap: 10px; }
 .wiki-list.warn li::before { content: '⚠'; color: var(--error); flex: none; width: 18px; }
+/* Muskel-Wiki */.wiki-tabs { margin-bottom: 10px; }.muscle-wiki-figure { margin: 8px 0 4px; display: flex; flex-direction: column; align-items: center; }.muscle-wiki-figure .center, p.center { text-align: center; }.muscle-fact { margin: 4px 0; }.muscle-fact b { display: block; font-size: 14px; }.muscle-fact p { margin: 2px 0 0; line-height: 1.4; }.wiki-list.bullets { list-style: none; padding-left: 0; }.wiki-list.bullets li { display: flex; gap: 10px; }.wiki-list.bullets li::before { content: '•'; color: var(--primary); flex: none; width: 18px; }.wiki-list.bullets.warn li::before { content: '⚠'; color: var(--error); }.wiki-list.bullets.stretch li::before { content: '↔'; }.wiki-list.bullets.facts li::before { content: '💡'; }
 .wiki-note p { margin-top: 2px; line-height: 1.4; }
 .wiki-disclaimer { margin-top: 14px; }
 .wiki-search { margin: 0 0 4px; }

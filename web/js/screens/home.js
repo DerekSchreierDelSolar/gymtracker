@@ -62,7 +62,7 @@ function menu() {
     h('div', { class: 'menu-backdrop', onclick: close }),
     h('div', { class: 'menu' },
       h('button', { onclick: () => { close(); settingsDialog(); } }, icon('settings', 20), tr('Einstellungen', 'Settings')),
-      h('button', { onclick: () => { close(); go({ wiki: true }); } }, icon('book', 20), tr('Übungs-Wiki', 'Exercise wiki')),
+      h('button', { onclick: () => { close(); go({ wiki: true }); } }, icon('book', 20), tr('Wiki', 'Wiki')),
       h('button', { onclick: () => { close(); go({ bot: true }); } }, icon('chat', 20), tr('Fragen', 'Ask')),
       h('hr'),
       h('button', { onclick: () => { close(); exportData(); } }, icon('download', 20), tr('Daten exportieren', 'Export data')),

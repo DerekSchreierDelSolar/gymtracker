@@ -35,6 +35,8 @@ object Bot {
     private var muscleWords: List<List<String>> = emptyList()
     private var howWords: List<List<String>> = emptyList()
     private var tipWords: List<List<String>> = emptyList()
+    /** Fragen zum Muskel selbst (Muskel-Wiki): Abschnitt → Wortfolgen (anatomy, function, problems, stretch, general) */
+    private var anatomyWords: Map<String, List<List<String>>> = emptyMap()
     /** Muskelgruppen für den Workout-Assistenten („Beine“, „Push“ …): Wortfolgen → Muskel-ID → Stufe */
     private class WorkoutGroup(val words: List<List<String>>, val muscles: Map<String, Float>)
     private var workoutGroups: List<WorkoutGroup> = emptyList()
@@ -58,6 +60,7 @@ object Bot {
         muscleWords = phrases(o.getJSONArray("muscleWords"))
         howWords = phrases(o.getJSONArray("howWords"))
         tipWords = phrases(o.getJSONArray("tipWords"))
+        anatomyWords = o.optJSONObject("anatomyWords")?.let { a -> a.keys().asSequence().associateWith { phrases(a.getJSONArray(it)) } }.orEmpty()
         val g = o.optJSONArray("workoutGroups") ?: JSONArray()
         // Ungültige Einträge überspringen statt den ganzen Bot scheitern zu lassen (Prüfung in gen-data.mjs läuft nur fürs Web)
         workoutGroups = (0 until g.length()).mapNotNull { i ->
@@ -144,7 +147,10 @@ object Bot {
             tr("Übungen für Waden", "Exercises for calves"),
             tr("Wie funktioniert der Gewichts-Vorschlag?", "How does the weight suggestion work?"),
             tr("Was bedeutet optional?", "What does optional mean?"),
-            tr("Übungen für den unteren Rücken", "Exercises for the lower back")
+            tr("Übungen für den unteren Rücken", "Exercises for the lower back"),
+            tr("Was macht der Latissimus?", "What does the lat do?"),
+            tr("Wie dehne ich die Waden?", "How do I stretch my calves?"),
+            tr("Verletzungen am Beinbeuger", "Hamstring injuries")
         )
 
     /** „Erstelle mir ein Workout“ immer zuerst, danach eine zufällige Auswahl */
@@ -311,7 +317,12 @@ object Bot {
         val faqHit = faq.map { f -> f to f.keys.filter { has(words, it) }.sumOf { it.size } }.maxByOrNull { it.second }
             ?.takeIf { it.second > 0 }?.first
         val asksHow = hasAny(words, howWords) || hasAny(words, tipWords) || hasAny(words, muscleWords)
+        // Frage zum Muskel selbst („Was macht der Latissimus?“, „Wie dehne ich die Waden?“) → Muskel-Wiki
+        val anatomy = anatomyWords.filterValues { hasAny(words, it) }.keys
         return when {
+            target != null && anatomy.isNotEmpty() && !hasAny(words, exerciseWords) && muscleOfRegion(target.first) in MuscleWiki.entries &&
+                (ex == null || ex.second.all { w -> target.second.any { close(it, w) } }) ->
+                muscleAnswer(muscleOfRegion(target.first), anatomy)
             // „Übungen für Beinbeuger“: Muskel gemeint, obwohl es auch eine Übung „Beinbeuger“ gibt
             target != null && ex != null && hasAny(words, exerciseWords) && ex.second.all { w -> target.second.any { close(it, w) } } ->
                 targetAnswer(target.first)
@@ -354,6 +365,39 @@ object Bot {
             sb.append("\n\n").append(tr("Hinweis ($k): ", "Note ($k): ")).append(v.text)
         }
         return BotMessage(false, sb.toString(), groups = listOf(tr("Im Wiki öffnen", "Open in wiki") to listOf(base)))
+    }
+
+    /**
+     * Infos aus dem Muskel-Wiki. sections = erkannte Fragearten; nur „general“ → alles,
+     * sonst nur die gefragten Teile (z. B. nur Dehnen).
+     */
+    private fun muscleAnswer(id: String, sections: Set<String>): BotMessage {
+        val m = MuscleWiki.entries.getValue(id)
+        val specific = sections - "general"
+        fun show(s: String) = specific.isEmpty() || s in specific
+        val sb = StringBuilder(muscleLabel(id)).append(" · ").append(m.latin)
+        if (specific.isEmpty()) sb.append("\n\n").append(m.parts.text)
+        if (show("anatomy")) sb.append("\n\n")
+            .append(tr("Ursprung: ", "Origin: ")).append(m.origin.text)
+            .append("\n").append(tr("Ansatz: ", "Insertion: ")).append(m.insertion.text)
+            .append("\n").append(tr("Nerv: ", "Nerve: ")).append(m.nerve.text)
+        if (show("function") && m.function.isNotEmpty()) {
+            sb.append("\n\n").append(tr("Funktion:", "Function:"))
+            m.function.forEach { sb.append("\n• ").append(it.text) }
+        }
+        if (show("problems") && m.problems.isNotEmpty()) {
+            sb.append("\n\n").append(tr("Häufige Beschwerden:", "Common problems:"))
+            m.problems.forEach { sb.append("\n⚠ ").append(it.text) }
+        }
+        if (show("stretch") && m.stretch.isNotEmpty()) {
+            sb.append("\n\n").append(tr("Dehnen:", "Stretching:"))
+            m.stretch.forEach { sb.append("\n• ").append(it.text) }
+        }
+        sb.append("\n\n").append(tr("Mehr im Wiki unter „Muskeln“. Keine Diagnose – bei starken oder anhaltenden Beschwerden ärztlich abklären.",
+            "More in the wiki under \"Muscles\". Not a diagnosis – see a doctor for severe or persistent problems."))
+        val main = mainExercisesFor(id)
+        return BotMessage(false, sb.toString(),
+            groups = listOfNotNull((tr("🔴 Übungen dafür", "🔴 Exercises for it") to main.take(15)).takeIf { main.isNotEmpty() }))
     }
 
     /** Übungen, bei denen eine Region bzw. ein Muskel Hauptarbeit leistet (und unterstützend mitarbeitet) */

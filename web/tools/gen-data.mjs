@@ -2,7 +2,7 @@
 // So gibt es Katalog, Vorlagen, MET-Werte, Umbenennungen und Piktogramme nur EINMAL (im Kotlin-Code).
 //
 // Aufruf (im Projektordner):   node web/tools/gen-data.mjs
-// Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt / assets/wiki/*.json erneut ausführen.
+// Nach jeder Änderung an Catalog.kt / Model.kt / Pictograms.kt / assets/wiki/*.json / assets/muscles.json erneut ausführen.
 // Erzeugt zusätzlich web/js/wiki-data.js (Übungs-Wiki), web/js/body-data.js (Körperdiagramm)
 // und kopiert die Übungsbilder nach web/img/exercises/ (Liste in web/js/image-data.js).
 
@@ -171,6 +171,23 @@ writeFileSync(join(root, 'web/js/body-data.js'),
   `export const BODY = { width: ${bodyConst('BODY_WIDTH')}, height: ${bodyConst('BODY_HEIGHT')}, backOffset: ${bodyConst('BACK_OFFSET')}, pad: ${bodyConst('BODY_PAD')} };\n` +
   `export const BODY_SHAPES = [\n${bodyShapes.map(s => '  ' + JSON.stringify(s)).join(',\n')}\n];\n`);
 console.log(`body-data.js: ${bodyShapes.length} Formen, ${Object.keys(muscles).length} Muskeln`);
+
+// ----- Muskel-Wiki: app/src/main/assets/muscles.json → web/js/muscle-data.js -----
+const muscleInfo = JSON.parse(readFileSync(join(root, 'app/src/main/assets/muscles.json'), 'utf8'));
+const isPair = a => Array.isArray(a) && a.length === 2 && a.every(x => typeof x === 'string');
+for (const [id, m] of Object.entries(muscleInfo)) {
+  if (!muscles[id]) throw new Error('muscles.json: unbekannte Muskel-ID ' + id);
+  if (typeof m.latin !== 'string') throw new Error('muscles.json: latin fehlt bei ' + id);
+  for (const k of ['parts', 'origin', 'insertion', 'nerve']) if (!isPair(m[k])) throw new Error(`muscles.json: ${k} = [de, en] fehlt bei ${id}`);
+  if (m.everyday && !isPair(m.everyday)) throw new Error('muscles.json: everyday bei ' + id);
+  for (const k of ['function', 'problems', 'stretch', 'facts']) if (m[k] && !(Array.isArray(m[k]) && m[k].every(isPair))) throw new Error(`muscles.json: ${k} bei ${id}`);
+}
+const noInfo = Object.keys(muscles).filter(id => !muscleInfo[id]);
+if (noInfo.length) console.warn('Muskel-Wiki fehlt für: ' + noInfo.join(', '));
+writeFileSync(join(root, 'web/js/muscle-data.js'),
+  `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus app/src/main/assets/muscles.json – nicht von Hand ändern!\n` +
+  `export const MUSCLE_INFO = ${JSON.stringify(muscleInfo)};\n`);
+console.log(`muscle-data.js: ${Object.keys(muscleInfo).length} Muskeln`);
 
 // ----- Fragen-Bot: app/src/main/assets/bot.json → web/js/bot-data.js -----
 const bot = JSON.parse(readFileSync(join(root, 'app/src/main/assets/bot.json'), 'utf8'));

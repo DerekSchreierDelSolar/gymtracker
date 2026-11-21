@@ -91,6 +91,11 @@
             "The exercise wiki explains technique, tips and muscles. Find it in the \"Exercises\" tab (book icon), via ⓘ next to an exercise or in the \"Info\" tab – or just ask me, e.g. \"How do I deadlift?\"."]
     },
     {
+      "keys": ["muskel wiki", "muskelwiki", "muskel lexikon", "anatomie", "medizinische infos", "muscle wiki", "anatomy", "medical info"],
+      "a": ["Im Wiki gibt es oben den Reiter „Muskeln“: zu jedem Muskel Lateinname, Ursprung, Ansatz, Nerv, Funktion, Bedeutung im Alltag, häufige Beschwerden und Verletzungen, Dehnübungen und die passenden Übungen. Muskel in der Figur antippen oder aus der Liste wählen – oder frag mich, z. B. „Was macht der Latissimus?“ oder „Wie dehne ich die Waden?“. Die Infos ersetzen keinen ärztlichen Rat.",
+            "The wiki has a \"Muscles\" tab at the top: for every muscle its Latin name, origin, insertion, nerve, function, role in everyday life, common problems and injuries, stretches and matching exercises. Tap a muscle on the figure or pick one from the list – or ask me, e.g. \"What does the lat do?\" or \"How do I stretch my calves?\". This is not medical advice."]
+    },
+    {
       "keys": ["heatmap", "trainierte muskeln", "muskelkarte", "prozent", "trained muscles", "percent"],
       "a": ["Die Heatmap auf der Startseite zeigt, welche Muskeln du im gewählten Zeitraum (letztes Training, 7 Tage, 30 Tage, alle) trainiert hast. Je röter, desto mehr – in Prozent vom am meisten trainierten Muskel. Hauptarbeit zählt 1 Satz, mittel ½, leicht ¼; Aufwärmsätze nicht.",
             "The heatmap on the home screen shows which muscles you trained in the chosen period (last workout, 7 days, 30 days, all). The redder, the more – as a percentage of your most-trained muscle. Main work counts 1 set, moderate ½, light ¼; warm-up sets don't count."]
@@ -244,5 +249,12 @@
   "exerciseWords": ["uebung", "uebungen", "trainieren", "training fuer", "fuer", "exercise", "exercises", "train", "for", "workout fuer"],
   "muscleWords": ["muskel", "muskeln", "trainiert", "beansprucht", "welche muskeln", "muscles", "muscle", "works", "targets"],
   "howWords": ["wie", "ausfuehrung", "technik", "anleitung", "how", "technique", "form"],
-  "tipWords": ["tipp", "tipps", "fehler", "achten", "tips", "mistakes"]
+  "tipWords": ["tipp", "tipps", "fehler", "achten", "tips", "mistakes"],
+  "anatomyWords": {
+    "anatomy": ["ursprung", "ansatz", "ansatzpunkt", "nerv", "nerven", "innervation", "innerviert", "anatomie", "latein", "lateinisch", "origin", "insertion", "nerve", "anatomy", "latin"],
+    "function": ["funktion", "aufgabe", "was macht", "wofuer", "function", "what does"],
+    "problems": ["verletzung", "verletzungen", "zerrung", "riss", "schmerz", "schmerzen", "beschwerden", "krampf", "injury", "injuries", "strain", "tear", "pain", "cramp"],
+    "stretch": ["dehnen", "dehne", "dehnung", "dehnuebung", "stretch", "stretching"],
+    "general": ["was ist", "wo ist", "wo liegt", "medizinisch", "medizinische", "what is", "where is", "medical"]
+  }
 }

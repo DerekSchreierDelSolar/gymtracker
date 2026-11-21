@@ -139,7 +139,7 @@ fun HomeScreen(
                                 onClick = { menuOpen = false; showSettings = true }
                             )
                             DropdownMenuItem(
-                                text = { Text(tr("Übungs-Wiki", "Exercise wiki")) },
+                                text = { Text(tr("Wiki", "Wiki")) },
                                 leadingIcon = { AppIcon(Ico.BOOK) },
                                 onClick = { menuOpen = false; onWiki() }
                             )

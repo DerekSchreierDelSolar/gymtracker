@@ -1,13 +1,15 @@
 // Übungs-Wiki – entspricht Wiki.kt. Inhalte: wiki-data.js (erzeugt aus app/src/main/assets/wiki/*.json).
 
 import { WIKI } from './wiki-data.js';
+import { MUSCLE_INFO } from './muscle-data.js';
+import { MUSCLES } from './body-data.js';
 import { CATALOG } from './data.js';
-import { tr, exName, sortByName, isEnglish, GROUP_KEYS, equipmentLabel } from './core.js';
+import { tr, exName, sortByName, isEnglish, isCardio, GROUP_KEYS, equipmentLabel } from './core.js';
 import { exerciseIconHtml } from './pictograms.js';
-import { h, icon, iconBtn, groupHeader, muted } from './ui.js';
+import { h, icon, iconBtn, groupHeader, muted, chip } from './ui.js';
 import { nav, update, openDialog, closeDialog } from './nav.js';
 import { screen } from './layout.js';
-import { muscleMap, musclesOf, levelsOf } from './bodymap.js';
+import { muscleMap, musclesOf, levelsOf, bodyFigure, tappableFigure, muscleLabel, muscleOfRegion, PRIMARY_COLOR } from './bodymap.js';
 
 /** [de, en] → aktuelle Sprache */
 const t = pair => (isEnglish() ? pair[1] : pair[0]);
@@ -86,8 +88,76 @@ export function wikiContent(name, { header, muscles }) {
   ];
 }
 
-/** Wiki-Übersicht: alle Grundübungen nach Muskelgruppe, mit Suche. */
+
+// ---------- Muskel-Wiki (entspricht MuscleWiki.kt), Inhalte: muscle-data.js aus assets/muscles.json ----------
+
+/** Grundübungen (ohne Cardio), bei denen der Muskel Hauptarbeit leistet – alphabetisch */
+export function mainExercisesFor(muscle) {
+  const bases = Object.keys(WIKI).filter(b => CATALOG.some(c => c.base === b && !isCardio(c.group)))
+    .filter(b => { const m = musclesOf(b); return m && Object.entries(levelsOf(m)).some(([k, v]) => muscleOfRegion(k) === muscle && v >= 0.8); });
+  return sortByName(bases, baseName);
+}
+
+export const openMuscle = id => { if (MUSCLE_INFO[id]) openDialog(() => muscleSheet(id)); };
+
+function muscleSheet(id) {
+  return h('div', { class: 'dialog-backdrop sheet-backdrop', onclick: e => { if (e.target === e.currentTarget) closeDialog(); } },
+    h('div', { class: 'sheet', role: 'dialog' },
+      h('div', { class: 'sheet-handle', onclick: closeDialog }),
+      h('div', { class: 'sheet-body' }, muscleContent(id))));
+}
+
+function muscleContent(id) {
+  const m = MUSCLE_INFO[id];
+  const fact = (label, text) => h('div', { class: 'muscle-fact' }, h('b', { class: 'accent' }, label), h('p', null, text));
+  const list = (title, items, cls = '') => items?.length ? [h('h3', null, title), h('ul', { class: 'wiki-list bullets ' + cls }, items.map(p => h('li', null, t(p))))] : null;
+  const exercises = mainExercisesFor(id);
+  return [
+    h('div', null, h('h2', null, muscleLabel(id)), h('p', { class: 'accent' }, m.latin)),
+    h('div', { class: 'muscle-map' }, bodyFigure(k => (muscleOfRegion(k) === id ? PRIMARY_COLOR : null))),
+    h('p', null, t(m.parts)),
+    h('h3', null, tr('Anatomie', 'Anatomy')),
+    fact(tr('Ursprung', 'Origin'), t(m.origin)),
+    fact(tr('Ansatz', 'Insertion'), t(m.insertion)),
+    fact(tr('Nerv', 'Nerve'), t(m.nerve)),
+    list(tr('Funktion', 'Function'), m.function),
+    m.everyday ? [h('h3', null, tr('Im Alltag', 'In everyday life')), h('p', null, t(m.everyday))] : null,
+    list(tr('Häufige Beschwerden & Verletzungen', 'Common problems & injuries'), m.problems, 'warn'),
+    list(tr('Dehnen', 'Stretching'), m.stretch, 'stretch'),
+    list(tr('Wissenswertes', 'Good to know'), m.facts, 'facts'),
+    exercises.length ? [
+      h('h3', null, tr('Übungen (Hauptarbeit)', 'Exercises (main work)')),
+      exercises.map(b => {
+        const c = CATALOG.find(x => x.base === b);
+        return h('button', { class: 'cat-row', onclick: () => openWiki(b) },
+          h('span', { html: exerciseIconHtml(c.name, c.group, 36) }),
+          h('div', { class: 'grow' }, h('span', null, baseName(b))),
+          h('span', { class: 'muted' }, icon('chevron')));
+      }),
+    ] : null,
+    muted(tr('Allgemeine Informationen, keine Diagnose und kein Ersatz für ärztlichen Rat. Bei starken oder anhaltenden Schmerzen, Taubheit oder Lähmungen ärztlich abklären.',
+      'General information, not a diagnosis or a substitute for medical advice. See a doctor for severe or persistent pain, numbness or weakness.'), 'small wiki-disclaimer'),
+  ];
+}
+
+/** Reiter „Muskeln“: antippbare Figur (ohne Suche) + Liste */
+function muscleList(query) {
+  const q = query.trim().toLowerCase();
+  const ids = sortByName(Object.keys(MUSCLE_INFO).filter(id => MUSCLES[id] && (!q ||
+    [MUSCLES[id].de, MUSCLES[id].en, MUSCLE_INFO[id].latin, ...MUSCLE_INFO[id].parts].some(s => s.toLowerCase().includes(q)))), muscleLabel);
+  return [
+    q ? null : h('div', { class: 'muscle-wiki-figure' }, tappableFigure(() => null, openMuscle),
+      muted(tr('Muskel antippen oder aus der Liste wählen', 'Tap a muscle or pick one from the list'), 'small center')),
+    ids.length ? null : muted(tr('Kein Muskel gefunden.', 'No muscle found.')),
+    ids.map(id => h('button', { class: 'cat-row', onclick: () => openMuscle(id) },
+      h('div', { class: 'grow' }, h('span', null, muscleLabel(id)), h('small', { class: 'muted' }, MUSCLE_INFO[id].latin)),
+      h('span', { class: 'muted' }, icon('chevron')))),
+  ];
+}
+
+/** Wiki-Übersicht: Reiter Übungen (alle Grundübungen nach Muskelgruppe) / Muskeln, mit Suche. */
 export function wikiScreen() {
+  const muscles = nav.wikiMuscles;
   const q = nav.wikiQuery.trim().toLowerCase();
   const bases = [];
   const seen = new Set();
@@ -99,21 +169,27 @@ export function wikiScreen() {
   const byGroup = GROUP_KEYS.map(g => [g, sortByName(bases.filter(c => c.group === g), c => baseName(c.base))]).filter(([, l]) => l.length);
 
   return screen({
-    title: tr('Übungs-Wiki', 'Exercise wiki'), back: true, key: 'wiki',
+    title: tr('Wiki', 'Wiki'), back: true, key: 'wiki',
     actions: [iconBtn('chat', () => update({ bot: true }), { label: tr('Fragen', 'Ask') })], // Frage an den Bot
     content: h('div', { class: 'pad' },
+      h('div', { class: 'segments wiki-tabs' },
+        chip(tr('Übungen', 'Exercises'), !muscles, () => update({ wikiMuscles: false, wikiQuery: '' })),
+        chip(tr('Muskeln', 'Muscles'), muscles, () => update({ wikiMuscles: true, wikiQuery: '' }))),
       h('label', { class: 'search wiki-search' }, icon('search', 20),
         h('input', {
-          id: 'wiki-search', type: 'search', value: nav.wikiQuery, placeholder: tr('Übung suchen', 'Search exercise'),
+          id: 'wiki-search', type: 'search', value: nav.wikiQuery,
+          placeholder: muscles ? tr('Muskel suchen', 'Search muscle') : tr('Übung suchen', 'Search exercise'),
           autocomplete: 'off', enterkeyhint: 'search',
           oninput: e => update({ wikiQuery: e.target.value }),
           onkeydown: e => { if (e.key === 'Enter') e.target.blur(); },
         })),
-      byGroup.length ? null : muted(tr('Keine Übung gefunden.', 'No exercise found.')),
-      byGroup.map(([g, list]) => [groupHeader(g), list.map(c =>
-        h('button', { class: 'cat-row', onclick: () => openWiki(c.base) },
-          h('span', { html: exerciseIconHtml(c.name, g, 40) }),
-          h('div', { class: 'grow' }, h('span', null, baseName(c.base)), h('small', { class: 'muted' }, t(WIKI[c.base].muscles))),
-          h('span', { class: 'muted' }, icon('chevron'))))])),
+      muscles ? muscleList(nav.wikiQuery) : [
+        byGroup.length ? null : muted(tr('Keine Übung gefunden.', 'No exercise found.')),
+        byGroup.map(([g, list]) => [groupHeader(g), list.map(c =>
+          h('button', { class: 'cat-row', onclick: () => openWiki(c.base) },
+            h('span', { html: exerciseIconHtml(c.name, g, 40) }),
+            h('div', { class: 'grow' }, h('span', null, baseName(c.base)), h('small', { class: 'muted' }, t(WIKI[c.base].muscles))),
+            h('span', { class: 'muted' }, icon('chevron'))))]),
+      ]),
   });
 }

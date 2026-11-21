@@ -7,7 +7,8 @@ import { CATALOG } from './data.js';
 import { tr, isEnglish, isCardio, exName, equipmentLabel } from './core.js';
 import { h, icon, chip } from './ui.js';
 import { rerender, go } from './nav.js';
-import { baseName, openWiki } from './wiki.js';
+import { baseName, openWiki, mainExercisesFor } from './wiki.js';
+import { MUSCLE_INFO } from './muscle-data.js';
 import { screen } from './layout.js';
 import { levelsOf, levelLabels, levelTitle, regionLabel, muscleLabel, muscleOfRegion, levelColor, tappableFigure } from './bodymap.js';
 import { MUSCLES } from './body-data.js';
@@ -47,6 +48,8 @@ const hasAny = (words, list) => list.some(p => has(words, p));
 const FAQ = BOT.faq.map(f => ({ keys: f.keys.map(tokens), a: f.a }));
 const TARGETS = Object.entries(BOT.targets).map(([k, list]) => [k, list.map(tokens)]);
 const W = Object.fromEntries(['exerciseWords', 'muscleWords', 'howWords', 'tipWords'].map(k => [k, BOT[k].map(tokens)]));
+/** Fragen zum Muskel selbst (Muskel-Wiki): Abschnitt → Wortfolgen (anatomy, function, problems, stretch, general) */
+const ANATOMY = Object.entries(BOT.anatomyWords ?? {}).map(([k, list]) => [k, list.map(tokens)]);
 
 // ---------- Übungen und Muskeln erkennen ----------
 
@@ -86,6 +89,9 @@ const pool = () => [
   tr('Wie funktioniert der Gewichts-Vorschlag?', 'How does the weight suggestion work?'),
   tr('Was bedeutet optional?', 'What does optional mean?'),
   tr('Übungen für den unteren Rücken', 'Exercises for the lower back'),
+  tr('Was macht der Latissimus?', 'What does the lat do?'),
+  tr('Wie dehne ich die Waden?', 'How do I stretch my calves?'),
+  tr('Verletzungen am Beinbeuger', 'Hamstring injuries'),
 ];
 
 // „Erstelle mir ein Workout“ immer zuerst, dann eine zufällige Auswahl (wie Bot.kt)
@@ -109,6 +115,10 @@ export function answer(question) {
     if (score > faqScore) { faqScore = score; faqHit = f; }
   }
   const asksHow = hasAny(words, W.howWords) || hasAny(words, W.tipWords) || hasAny(words, W.muscleWords);
+  // Frage zum Muskel selbst („Was macht der Latissimus?“, „Wie dehne ich die Waden?“) → Muskel-Wiki (wie Bot.kt)
+  const anatomy = new Set(ANATOMY.filter(([, list]) => hasAny(words, list)).map(([k]) => k));
+  if (target && anatomy.size && !hasAny(words, W.exerciseWords) && MUSCLE_INFO[muscleOfRegion(target.key)] &&
+    (!ex || ex.phrase.every(w => target.phrase.some(p => close(p, w))))) return muscleAnswer(muscleOfRegion(target.key), anatomy);
   // „Übungen für Beinbeuger“: Muskel gemeint, obwohl es auch eine Übung „Beinbeuger“ gibt
   if (target && ex && hasAny(words, W.exerciseWords) && ex.phrase.every(w => target.phrase.some(p => close(p, w)))) return targetAnswer(target.key);
   // „Bankdrücken eintragen“ → App-Funktion, „Wie mache ich Bankdrücken?“ → Übung
@@ -139,6 +149,25 @@ function exerciseAnswer(base, words) {
   const variant = Object.entries(e.variants ?? {}).find(([k]) => has(words, tokens(k.split('/')[0])));
   if (variant) text += '\n\n' + tr(`Hinweis (${variant[0]}): `, `Note (${variant[0]}): `) + t(variant[1]);
   return { bot: true, text, groups: [[tr('Im Wiki öffnen', 'Open in wiki'), [base]]] };
+}
+
+/** Infos aus dem Muskel-Wiki; nur „general“ → alles, sonst nur die gefragten Teile (wie Bot.kt) */
+function muscleAnswer(id, sections) {
+  const m = MUSCLE_INFO[id];
+  const specific = [...sections].filter(s => s !== 'general');
+  const show = s => !specific.length || specific.includes(s);
+  const NL = '\n';
+  let text = `${muscleLabel(id)} · ${m.latin}`;
+  if (!specific.length) text += NL + NL + t(m.parts);
+  if (show('anatomy')) text += NL + NL + tr('Ursprung: ', 'Origin: ') + t(m.origin) +
+    NL + tr('Ansatz: ', 'Insertion: ') + t(m.insertion) + NL + tr('Nerv: ', 'Nerve: ') + t(m.nerve);
+  if (show('function') && m.function?.length) text += NL + NL + tr('Funktion:', 'Function:') + m.function.map(x => NL + '• ' + t(x)).join('');
+  if (show('problems') && m.problems?.length) text += NL + NL + tr('Häufige Beschwerden:', 'Common problems:') + m.problems.map(x => NL + '⚠ ' + t(x)).join('');
+  if (show('stretch') && m.stretch?.length) text += NL + NL + tr('Dehnen:', 'Stretching:') + m.stretch.map(x => NL + '• ' + t(x)).join('');
+  text += NL + NL + tr('Mehr im Wiki unter „Muskeln“. Keine Diagnose – bei starken oder anhaltenden Beschwerden ärztlich abklären.',
+    'More in the wiki under "Muscles". Not a diagnosis – see a doctor for severe or persistent problems.');
+  const main = mainExercisesFor(id);
+  return { bot: true, text, groups: main.length ? [[tr('🔴 Übungen dafür', '🔴 Exercises for it'), main.slice(0, 15)]] : [] };
 }
 
 /** Übungen, bei denen eine Region bzw. ein Muskel Hauptarbeit leistet (und unterstützend mitarbeitet) */

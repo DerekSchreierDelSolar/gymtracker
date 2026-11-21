@@ -15,6 +15,7 @@ export const nav = {
   wiki: false,           // Übungs-Wiki geöffnet
   bot: false,            // Bildschirm „Fragen“ geöffnet
   wikiQuery: '',
+  wikiMuscles: false,    // Wiki: Reiter „Muskeln“ statt „Übungen“
   statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
