@@ -27,11 +27,14 @@ fun startOfWeek(t: Long = System.currentTimeMillis()): Long {
     return c.timeInMillis
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BodyTab(store: GymStore, modifier: Modifier) {
     val focus = LocalFocusManager.current
     val last = store.weights.lastOrNull()
-    var input by remember { mutableStateOf(last?.let { fmtW(it.kg) } ?: "") }
+    var input by remember { mutableStateOf("") }
+    var day by remember { mutableStateOf<Long?>(null) }   // gewählter Tag fürs Nachtragen (null = heute)
+    var pickDay by remember { mutableStateOf(false) }
 
     // Verbrauch dieser Woche über alle Trainings (inkl. freier Trainings)
     val weekSessions = allSessions(store).filter { it.start >= startOfWeek() }
@@ -70,35 +73,43 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
             }
         }
 
-        // Eingabe
+        // Eingabe: Feld leer (letzter Wert nur als Platzhalter → kein versehentlicher Doppel-Eintrag),
+        // darunter das Datum (Standard heute, antippen = vergessenen Tag nachtragen)
         item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    value = input,
-                    onValueChange = { input = it },
-                    label = { Text(tr("Gewicht in kg", "Weight in kg")) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(Modifier.width(8.dp))
-                Button(onClick = {
-                    val kg = input.replace(',', '.').toDoubleOrNull()
-                    // Plausibilitätsprüfung gegen Tippfehler (z. B. 824 statt 82,4)
-                    if (kg != null && kg in 20.0..400.0) {
-                        store.addWeight(kg)
-                        focus.clearFocus()
-                    }
-                }) { Text(tr("Eintragen", "Log")) }
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = input,
+                        onValueChange = { input = it },
+                        label = { Text(tr("Gewicht in kg", "Weight in kg")) },
+                        placeholder = { last?.let { Text(fmtW(it.kg)) } },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Button(onClick = {
+                        val kg = input.replace(',', '.').toDoubleOrNull()
+                        // Plausibilitätsprüfung gegen Tippfehler (z. B. 824 statt 82,4)
+                        if (kg != null && kg in 20.0..400.0) {
+                            store.addWeight(kg, day ?: System.currentTimeMillis())
+                            input = ""
+                            day = null
+                            focus.clearFocus()
+                        }
+                    }) { Text(tr("Eintragen", "Log")) }
+                }
+                TextButton(onClick = { pickDay = true }) {
+                    AppIcon(Ico.CALENDAR, Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(day?.let { tr("Für ", "For ") + fmtDate(it) } ?: tr("Für heute · anderes Datum wählen", "For today · pick another date"))
+                }
             }
         }
 
-        // Kalorien diese Woche
+        // Kalorien diese Woche (dezent, damit das Gewicht im Vordergrund bleibt)
         item {
-            Card(
-                Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-            ) {
+            Card(Modifier.fillMaxWidth()) {
                 Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("🔥", style = MaterialTheme.typography.headlineMedium)
                     Spacer(Modifier.width(12.dp))
@@ -146,7 +157,10 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(fmtDate(w.time), modifier = Modifier.weight(1f))
                     Text("${fmtW(w.kg)} kg", style = MaterialTheme.typography.titleSmall)
-                    IconAction(Ico.DELETE, onClick = { store.deleteWeight(w) },
+                    IconAction(Ico.DELETE, onClick = {
+                        store.deleteWeight(w)
+                        Undo.show(tr("Eintrag gelöscht", "Entry deleted")) { store.restoreWeight(w) }
+                    },
                         tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -162,6 +176,33 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+
+    // Datum wählen (Material-Kalender). Er liefert Mitternacht in UTC → als 12:00 Ortszeit speichern,
+    // damit der Tag in jeder Zeitzone stimmt. Zukunft ist nicht wählbar.
+    if (pickDay) {
+        val state = rememberDatePickerState(
+            initialSelectedDateMillis = System.currentTimeMillis(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis <= System.currentTimeMillis()
+            }
+        )
+        DatePickerDialog(
+            onDismissRequest = { pickDay = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    state.selectedDateMillis?.let { utc ->
+                        val u = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC")).apply { timeInMillis = utc }
+                        day = Calendar.getInstance().apply {
+                            set(u.get(Calendar.YEAR), u.get(Calendar.MONTH), u.get(Calendar.DAY_OF_MONTH), 12, 0, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }.timeInMillis.takeIf { dayKey(it) != dayKey(System.currentTimeMillis()) } // heute = null
+                    }
+                    pickDay = false
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = { pickDay = false }) { Text(tr("Abbrechen", "Cancel")) } }
+        ) { DatePicker(state) }
     }
 }
 

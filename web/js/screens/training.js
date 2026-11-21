@@ -103,7 +103,7 @@ function repsGoal(name, before) {
   const top = Math.max(...last.map(s => s.weight));
   const atTop = last.filter(s => s.weight === top);
   const heavier = top > 0 && atTop.length >= 2 && Math.min(...atTop.map(s => s.reps)) >= 8;
-  return [String(heavier ? 8 : Math.max(...atTop.map(s => s.reps)) + 1), tr('Wiederholungen', 'Reps')];
+  return [String(heavier ? 8 : Math.max(...atTop.map(s => s.reps)) + 1), tr('Wdh.-Ziel', 'Rep goal')];
 }
 
 const REST_OPTIONS = [0, 60, 90, 120, 180];
@@ -185,7 +185,8 @@ export function trainingScreen(w, onFinish) {
       h('div', { class: 'hscroll' }, w.exercises.map((e, i) => {
         const count = countOf(e), goal = store.targetFor(w, e);
         const done = goal === 0 ? count > 0 : count >= goal;
-        const el = chip((done ? '✓ ' : '') + exName(e), i === index, () => setIndex(i)); // nur Name (+ ✓), ohne Satzzähler
+        // ✓ = Ziel erreicht, • = angefangen (mind. ein Satz), sonst nur der Name (wie TrainingScreen.kt)
+        const el = chip((done ? '✓ ' : count > 0 ? '• ' : '') + exName(e), i === index, () => setIndex(i));
         if (i === index) el.dataset.autoscroll = '1';
         return el;
       }))),
@@ -216,7 +217,7 @@ function exercisePage(w, start, name) {
   const reached = target > 0 && done >= target;
   const goal = repsGoal(name, start);
   const reps = circleStat(false, null);
-  reps.set(1, goal?.[0] ?? '–', goal?.[1] ?? tr('Wiederholungen', 'Reps'), 'var(--primary)');
+  reps.set(1, goal?.[0] ?? '–', goal?.[1] ?? tr('Wdh.-Ziel', 'Rep goal'), 'var(--primary)');
   const sets = circleStat(false, null);
   sets.set(target > 0 ? done / target : done ? 1 : 0, target > 0 ? `${done}/${target}` : String(done),
     reached ? tr('Ziel erreicht ✓', 'Goal reached ✓') : tr('Sätze erledigt', 'Sets done'), reached ? completionColor(1) : '#E88A93');

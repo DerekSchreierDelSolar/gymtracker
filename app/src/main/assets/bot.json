@@ -12,13 +12,13 @@
     },
     {
       "keys": ["bearbeiten", "aendern", "loeschen", "korrigieren", "falsch eingetragen", "edit", "delete", "wrong"],
-      "a": ["Einen eingetragenen Satz einfach antippen: Dann kannst du Gewicht, Wiederholungen und Satz-Typ ändern oder ihn löschen (Löschen zweimal tippen).",
-            "Just tap a logged set to change weight, reps and set type, or to delete it (tap delete twice)."]
+      "a": ["Einen eingetragenen Satz einfach antippen: Dann kannst du Gewicht, Wiederholungen und Satz-Typ ändern oder ihn löschen – unten erscheint dann kurz „Rückgängig“.",
+            "Just tap a logged set to change weight, reps and set type, or to delete it – a short \"Undo\" bar appears at the bottom."]
     },
     {
       "keys": ["uebung entfernen", "uebung loeschen", "entfernen", "ausblenden", "remove exercise", "delete exercise", "remove", "hide"],
-      "a": ["Im Tab „Übungen“ eine Kachel gedrückt halten → „Entfernen“: Die Übung verschwindet aus deiner Liste, bleibt aber in deinen Workouts, und der Verlauf bleibt erhalten. Über den Katalog kannst du sie wieder hinzufügen. Ganz löschen (mit allen Sätzen) geht in der Übung oben über das Papierkorb-Symbol.",
-            "In the \"Exercises\" tab long-press a tile → \"Remove\": the exercise disappears from your list but stays in your workouts, and your history is kept. Add it again from the catalog. To delete it completely (with all sets), open the exercise and use the trash icon at the top."]
+      "a": ["Im Tab „Übungen“ eine Kachel gedrückt halten: Die Übung verschwindet sofort (unten „Rückgängig“) aus deiner Liste, bleibt aber in deinen Workouts, und der Verlauf bleibt erhalten. Über den Katalog kannst du sie wieder hinzufügen. Ganz löschen (mit allen Sätzen) geht in der Übung oben über das Papierkorb-Symbol.",
+            "In the \"Exercises\" tab long-press a tile: the exercise disappears right away (\"Undo\" at the bottom) from your list but stays in your workouts, and your history is kept. Add it again from the catalog. To delete it completely (with all sets), open the exercise and use the trash icon at the top."]
     },
     {
       "keys": ["notiz", "notizen", "note", "notes", "kommentar"],
@@ -42,8 +42,8 @@
     },
     {
       "keys": ["pause", "pausentimer", "pausenzeit", "rest", "rest timer", "countdown"],
-      "a": ["Nach jedem Satz startet die Pause automatisch (mittlerer Kreis im Training). Antippen ändert die Länge: aus, 1, 1,5, 2 oder 3 Minuten; während des Countdowns überspringt ein Tipp die Pause. Am Ende vibriert das Handy (iPhone: Ton).",
-            "The rest timer starts automatically after each set (middle circle in workout mode). Tap it to change the length: off, 1, 1.5, 2 or 3 minutes; during the countdown a tap skips it. At the end the phone vibrates (iPhone: sound)."]
+      "a": ["Nach jedem Satz startet die Pause automatisch (mittlerer Kreis im Training). Antippen ändert die Länge: aus, 1, 1,5, 2 oder 3 Minuten; während des Countdowns überspringt ein Tipp die Pause. Am Ende vibriert das Handy (iPhone: Ton). Android zeigt die Pause zusätzlich als Benachrichtigung mit Countdown und meldet „Pause vorbei“, auch wenn die App im Hintergrund ist.",
+            "The rest timer starts automatically after each set (middle circle in workout mode). Tap it to change the length: off, 1, 1.5, 2 or 3 minutes; during the countdown a tap skips it. At the end the phone vibrates (iPhone: sound). On Android the rest also shows as a notification with a countdown and \"Rest over\" arrives even when the app is in the background."]
     },
     {
       "keys": ["kreise", "kreis", "wiederholungsziel", "ziel wiederholungen", "rep goal", "circles"],

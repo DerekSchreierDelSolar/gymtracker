@@ -538,3 +538,31 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .pick-bar .step-value.wide { width: 88px; font-size: 16px; }
 .pick-bar .btn.wide { width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .pick-remove { align-self: flex-end; }
+
+/* ---------- UX-Runde: Rückgängig, Achse, Segment-Knöpfe, Kalender-Plan, kompakter FAB ---------- */
+#undo-bar {
+  position: fixed; left: 16px; right: 16px; bottom: calc(100px + env(safe-area-inset-bottom)); z-index: 45;
+  display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 16px; border-radius: 12px;
+  background: #313033; color: #f4eff4; box-shadow: 0 6px 20px rgba(0, 0, 0, .3); font-size: 15px;
+  animation: undo-in .2s ease-out;
+}
+#undo-bar .btn.text { color: #c4c0ff; flex: none; }
+@keyframes undo-in { from { opacity: 0; transform: translateY(16px); } }
+.linechart-body { display: flex; gap: 6px; }
+.linechart-axis { display: flex; flex-direction: column; justify-content: space-between; text-align: right; padding: 8px 0; }
+.linechart-axis small { color: var(--muted); font-size: 11px; line-height: 1; }
+.segments { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+.segments .chip { justify-content: center; padding: 0 4px; min-width: 0; }
+.day .plan-dot { position: absolute; bottom: 6px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; }
+.plan-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; }
+.plan-dot.planned { background: var(--primary); }
+.plan-dot.missed { background: color-mix(in srgb, var(--error) 60%, transparent); }
+.legend .info-btn { margin-left: auto; }
+.fab.compact span:last-child { display: none; }
+.fab.compact { padding: 0; width: 56px; justify-content: center; }
+.step-row { display: grid; gap: 8px; margin-top: 4px; }
+.step-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.step-row .step-btn { display: flex; align-items: center; justify-content: center; height: 36px; border-radius: 18px; background: var(--container-high); font-weight: 600; font-size: 14px; }
+.step-row .step-btn:active { filter: brightness(.9); }
+.date-row { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 500; }
+.date-row input { font: inherit; color: var(--text); color-scheme: light dark; background: transparent; border: 1px solid var(--outline-variant); border-radius: 8px; padding: 6px 8px; }

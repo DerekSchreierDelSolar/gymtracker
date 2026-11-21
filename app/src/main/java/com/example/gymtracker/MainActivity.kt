@@ -9,6 +9,7 @@ import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.gymtracker.ui.theme.GymTrackerTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Modifier
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,14 +48,25 @@ class MainActivity : ComponentActivity() {
             // Theme aus ui/theme/Theme.kt (vom Projekt-Template). dynamicColor = false:
             // feste App-Farben statt Farben aus dem Hintergrundbild (Android 12+).
             GymTrackerTheme(darkTheme = dark, dynamicColor = false) {
-                GymApp(store)
+                // Box: „Rückgängig“-Leiste liegt über allen Bildschirmen
+                Box(Modifier.fillMaxSize()) {
+                    GymApp(store)
+                    UndoBar()
+                }
             }
         }
+    }
+
+    /** App sichtbar? (für den Pausen-Timer, siehe RestTimer) */
+    override fun onStart() {
+        super.onStart()
+        RestTimer.appVisible = true
     }
 
     /** App geht in den Hintergrund (auch beim Wechsel zu einer anderen App): ggf. automatisch sichern. */
     override fun onStop() {
         super.onStop()
+        RestTimer.appVisible = false // Pausen-Ende dann per Benachrichtigung melden
         AutoBackup.runIfDue(applicationContext, store)
     }
 }
@@ -67,6 +79,7 @@ fun GymApp(store: GymStore) {
     var current by rememberSaveable { mutableStateOf<String?>(null) }
     var showCatalog by rememberSaveable { mutableStateOf(false) }
     var showWiki by rememberSaveable { mutableStateOf(false) }
+    var showBot by rememberSaveable { mutableStateOf(false) }   // „Fragen“ (früher ein Tab, jetzt über ⋮ / Wiki)
     var workoutId by rememberSaveable { mutableStateOf<Long?>(null) }
     var pickForWorkout by rememberSaveable { mutableStateOf(false) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -129,9 +142,13 @@ fun GymApp(store: GymStore) {
             BackHandler { showCatalog = false }
             CatalogScreen(store, catalogFilter, onFilter = { catalogFilter = it }, onBack = { showCatalog = false })
         }
+        showBot -> {
+            BackHandler { showBot = false }
+            BotScreen(store, onBack = { showBot = false })
+        }
         showWiki -> {
             BackHandler { showWiki = false }
-            WikiScreen(onBack = { showWiki = false })
+            WikiScreen(onBack = { showWiki = false }, onAsk = { showBot = true })
         }
         else -> HomeScreen(
             store,
@@ -140,6 +157,7 @@ fun GymApp(store: GymStore) {
             onOpen = { current = it },
             onCatalog = { showCatalog = true },
             onWiki = { showWiki = true },
+            onBot = { showBot = true },
             onOpenWorkout = { workoutId = it },
             onCreatedWorkout = { workoutId = it; pickForWorkout = true },
             calMonth = calMonth,

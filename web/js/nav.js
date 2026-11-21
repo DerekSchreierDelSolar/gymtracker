@@ -13,6 +13,7 @@ export const nav = {
   exercise: null,        // geöffnete Übung
   catalog: false,
   wiki: false,           // Übungs-Wiki geöffnet
+  bot: false,            // Bildschirm „Fragen“ geöffnet
   wikiQuery: '',
   statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite
   workoutId: null,

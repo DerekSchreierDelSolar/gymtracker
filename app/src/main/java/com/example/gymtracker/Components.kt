@@ -185,7 +185,7 @@ fun ProgressChart(values: List<Double>, title: String, unit: String, colors: Car
 
 /**
  * Liniendiagramm: 2 dp Linie, kleine Punkte mit Hintergrund-Ring, dezente Hilfslinien.
- * Beschriftet ist nur der letzte (aktuelle) Wert.
+ * Links die Werte der drei Hilfslinien (Achse), oben rechts der letzte (aktuelle) Wert.
  */
 @Composable
 fun LineChart(values: List<Double>, unit: String) {
@@ -193,42 +193,70 @@ fun LineChart(values: List<Double>, unit: String) {
     val color = MaterialTheme.colorScheme.primary
     val grid = MaterialTheme.colorScheme.outlineVariant
     val surface = MaterialTheme.colorScheme.surfaceContainerHighest
+    val min = values.min()
+    val max = values.max()
+    // Etwas Luft oben/unten, damit eine fast flache Linie nicht am Rand klebt
+    val span = (max - min).takeIf { it > 0 } ?: 1.0
+    val lo = min - span * 0.1
+    val hi = max + span * 0.1
     Column {
         Text(
             "${fmtW(values.last())} $unit",
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.align(Alignment.End)
         )
-        Canvas(
-            Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .padding(vertical = 8.dp)
-        ) {
-            val pad = 6.dp.toPx()
-            val min = values.min()
-            val max = values.max()
-            // Etwas Luft oben/unten, damit eine fast flache Linie nicht am Rand klebt
-            val span = (max - min).takeIf { it > 0 } ?: 1.0
-            val lo = min - span * 0.1
-            val hi = max + span * 0.1
-            val usableH = size.height - 2 * pad
-            // Drei dezente horizontale Hilfslinien
-            for (k in 0..2) {
-                val y = pad + usableH * k / 2f
-                drawLine(grid, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
+        Row(Modifier.height(140.dp).padding(vertical = 8.dp)) {
+            // Achse: Werte auf Höhe der Hilfslinien (oben, Mitte, unten)
+            Column(
+                Modifier.fillMaxHeight().padding(end = 6.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.End
+            ) {
+                listOf(hi, (hi + lo) / 2, lo).forEach {
+                    Text(fmtW(Math.round(it * 10) / 10.0), style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
-            val stepX = (size.width - 2 * pad) / (values.size - 1)
-            val points = values.mapIndexed { i, v ->
-                Offset(pad + i * stepX, (pad + usableH - (v - lo) / (hi - lo) * usableH).toFloat())
-            }
-            points.zipWithNext { a, b -> drawLine(color, a, b, 2.dp.toPx(), StrokeCap.Round) }
-            points.forEachIndexed { i, pt ->
-                val r = if (i == points.lastIndex) 5.dp.toPx() else 3.5.dp.toPx()
-                drawCircle(surface, r + 2.dp.toPx(), pt) // Ring in Hintergrundfarbe trennt Punkt von Linie
-                drawCircle(color, r, pt)
+            Canvas(Modifier.weight(1f).fillMaxHeight()) {
+                val pad = 6.dp.toPx()
+                val usableH = size.height - 2 * pad
+                // Drei dezente horizontale Hilfslinien
+                for (k in 0..2) {
+                    val y = pad + usableH * k / 2f
+                    drawLine(grid, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
+                }
+                val stepX = (size.width - 2 * pad) / (values.size - 1)
+                val points = values.mapIndexed { i, v ->
+                    Offset(pad + i * stepX, (pad + usableH - (v - lo) / (hi - lo) * usableH).toFloat())
+                }
+                points.zipWithNext { a, b -> drawLine(color, a, b, 2.dp.toPx(), StrokeCap.Round) }
+                points.forEachIndexed { i, pt ->
+                    val r = if (i == points.lastIndex) 5.dp.toPx() else 3.5.dp.toPx()
+                    drawCircle(surface, r + 2.dp.toPx(), pt) // Ring in Hintergrundfarbe trennt Punkt von Linie
+                    drawCircle(color, r, pt)
+                }
             }
         }
     }
 }
 
+
+/**
+ * Schlanker Auswahl-Button für Reihen gleich breiter Optionen (Trainingstage, Zeitraum):
+ * in einer Row mit Modifier.weight(1f) aufrufen → alle zusammen nutzen die volle Breite.
+ */
+@Composable
+fun SegmentChip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(36.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+        contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, maxLines = 1, softWrap = false)
+        }
+    }
+}

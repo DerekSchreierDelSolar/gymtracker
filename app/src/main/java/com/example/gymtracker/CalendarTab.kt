@@ -99,6 +99,18 @@ fun CalendarTab(
     val allSessions = allSessions(store)
     val statsBySession = allSessions.associate { it.id to sessionStats(store, it) }
     val sessionsByDay = allSessions.groupBy { dayKey(it.start) }
+    // Trainingsplan: Wochentage (1 = Mo … 7 = So) mit geplantem Workout → Punkt im Kalender
+    val plannedDays = store.workouts.filter { it.exercises.isNotEmpty() }.flatMap { it.days }.toSet()
+    val weekStartKey = dayKey(startOfWeek())
+    fun planMark(key: Int, day: Int): PlanMark {
+        val weekday = (offset + day - 1) % 7 + 1 // Spalte im Raster, 1 = Montag
+        if (weekday !in plannedDays) return PlanMark.NONE
+        return when {
+            key >= todayKey -> PlanMark.PLANNED
+            key >= weekStartKey -> PlanMark.MISSED // verpasst nur in der laufenden Woche (der Plan kann neu sein)
+            else -> PlanMark.NONE
+        }
+    }
 
     LazyColumn(
         modifier = modifier,
@@ -158,7 +170,8 @@ fun CalendarTab(
                                         completion = best,
                                         isToday = key == todayKey,
                                         isSelected = key == selectedDay,
-                                        onClick = { onSelectDay(key) }
+                                        onClick = { onSelectDay(key) },
+                                        plan = planMark(key, day)
                                     )
                                 }
                             }
@@ -239,8 +252,9 @@ fun CalendarTab(
             }
         }
 
-        // Legende
+        // Legende (Erklärung zum Prozentwert hinter ⓘ)
         item {
+            var info by remember { mutableStateOf(false) }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -249,13 +263,19 @@ fun CalendarTab(
                 listOf(1f to "100 %", 0.5f to "≥ 50 %", 0.25f to "< 50 %").forEach { (p, label) ->
                     CompletionRing(p, Modifier.size(16.dp))
                     Text(label, style = MaterialTheme.typography.labelSmall)
-                    Spacer(Modifier.width(6.dp))
+                    Spacer(Modifier.width(2.dp))
                 }
+                if (plannedDays.isNotEmpty()) {
+                    PlanDot(PlanMark.PLANNED); Text(tr("geplant", "planned"), style = MaterialTheme.typography.labelSmall)
+                    PlanDot(PlanMark.MISSED); Text(tr("verpasst", "missed"), style = MaterialTheme.typography.labelSmall)
+                }
+                Spacer(Modifier.weight(1f))
+                IconAction(Ico.INFO, onClick = { info = !info }, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(
+            if (info) Text(
                 tr(
-                    "Prozent = erledigte Ziel-Sätze. Sätze ohne gestartetes Workout zählen als freies Training mit 100 %.",
-                    "Percent = target sets done. Sets logged without starting a workout count as a free workout with 100 %."
+                    "Prozent = erledigte Ziel-Sätze. Sätze ohne gestartetes Workout zählen als freies Training mit 100 %. Punkte = Trainingstage laut Plan (verpasst nur in der laufenden Woche).",
+                    "Percent = target sets done. Sets logged without starting a workout count as a free workout with 100 %. Dots = planned training days (missed only in the current week)."
                 ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -264,13 +284,28 @@ fun CalendarTab(
     }
 }
 
+/** Markierung eines Kalendertags laut Trainingsplan */
+enum class PlanMark { NONE, PLANNED, MISSED }
+
+@Composable
+fun PlanDot(mark: PlanMark, modifier: Modifier = Modifier) {
+    if (mark == PlanMark.NONE) return
+    Box(
+        modifier
+            .size(6.dp)
+            .clip(CircleShape)
+            .background(if (mark == PlanMark.PLANNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+    )
+}
+
 @Composable
 fun DayCell(
     day: Int,
     completion: Float?,
     isToday: Boolean,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    plan: PlanMark = PlanMark.NONE
 ) {
     Box(
         Modifier
@@ -288,6 +323,8 @@ fun DayCell(
             fontWeight = if (isToday || completion != null) FontWeight.Bold else FontWeight.Normal,
             color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
         )
+        // Plan-Punkt unter der Zahl (nur ohne Training an dem Tag)
+        if (completion == null) PlanDot(plan, Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp))
     }
 }
 

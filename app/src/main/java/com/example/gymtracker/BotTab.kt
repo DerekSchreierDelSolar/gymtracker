@@ -17,15 +17,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
+/** „Fragen“ als eigener Bildschirm (erreichbar über ⋮ und das Wiki). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BotScreen(store: GymStore, onBack: () -> Unit) {
+    // Zuletzt trainierte Übung (Grundübung mit Wiki-Eintrag) → erster Vorschlag „Wie mache ich …?“
+    val recent = store.sets.maxByOrNull { it.time }?.exercise
+        ?.let { ex -> CATALOG.firstOrNull { it.name == ex }?.base }
+        ?.takeIf { Wiki.entries.containsKey(it) }
+        ?.let { baseName(it) }
+    Scaffold(topBar = {
+        TopAppBar(
+            title = { Text(tr("Fragen", "Ask")) },
+            navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
+        )
+    }) { padding -> BotTab(Modifier.padding(padding).fillMaxSize(), recent) }
+}
+
 /**
- * Tab „Fragen“: Chat mit dem Bot (Bot.kt). Antworten mit Übungen zeigen Chips, die das Wiki-Blatt öffnen.
+ * Tab „Fragen“: Chat mit dem Bot
+ * (Inhalt des Bildschirms BotScreen) (Bot.kt). Antworten mit Übungen zeigen Chips, die das Wiki-Blatt öffnen.
  * Unten Vorschläge der letzten Bot-Antwort und das Eingabefeld.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BotTab(modifier: Modifier) {
+fun BotTab(modifier: Modifier, recent: String? = null) {
     val messages = Bot.history
-    if (messages.isEmpty()) messages.add(Bot.greeting())
+    if (messages.isEmpty()) messages.add(Bot.greeting(recent))
     var input by remember { mutableStateOf("") }
     var wiki by remember { mutableStateOf<String?>(null) }
     val list = rememberLazyListState()

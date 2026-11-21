@@ -249,7 +249,9 @@ fun WorkoutScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     onClick = onStart,
                     icon = { AppIcon(Ico.PLAY) },
-                    text = { Text(tr("Training starten", "Start workout")) }
+                    text = { Text(tr("Training starten", "Start workout")) },
+                    // beim Scrollen nur noch das Symbol → verdeckt keinen Text
+                    expanded = listState.firstVisibleItemIndex == 0
                 )
             }
         }
@@ -616,7 +618,11 @@ fun WorkoutExercisePage(store: GymStore, workout: Workout, name: String, onBack:
                                 modifier = Modifier.align(Alignment.End)
                             ) { Text(tr("Aus dem Workout entfernen", "Remove from workout"), color = MaterialTheme.colorScheme.error) }
                         } else {
-                            Button(onClick = { store.toggleInWorkout(workout.id, name) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                            Button(onClick = {
+                                store.toggleInWorkout(workout.id, name)
+                                // Standard-Ziel beim Hinzufügen: 3 Sätze (Cardio 1×) – lässt sich direkt danach ändern
+                                store.setTarget(workout.id, name, if (group.isCardio) 1 else 3)
+                            }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                                 AppIcon(Ico.ADD)
                                 Spacer(Modifier.width(8.dp))
                                 Text(tr("Zum Workout hinzufügen", "Add to workout"))

@@ -350,7 +350,8 @@ export function muscleHeatCard(sets, period, onPeriod) {
     score: regionScore(periodFilter(period, sets)),
     showSets: false,
     empty: tr('Keine Trainings in diesem Zeitraum.', 'No workouts in this period.'),
-    header: h('div', { class: 'chips hscroll-chips' }, STAT_PERIODS.map(p => chip(periodLabel(p), p === period, () => onPeriod(p)))),
+    // 4 gleich breite Knöpfe über die volle Breite, kurze Beschriftung (wie MuscleHeatCard in BodyMap.kt)
+    header: h('div', { class: 'segments' }, STAT_PERIODS.map(p => chip(p === 'LAST' ? tr('Zuletzt', 'Latest') : periodLabel(p), p === period, () => onPeriod(p)))),
   });
 }
 

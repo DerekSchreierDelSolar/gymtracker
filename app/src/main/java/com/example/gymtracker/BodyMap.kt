@@ -703,6 +703,8 @@ enum class StatPeriod(private val de: String, private val en: String) {
     ALL("Alle", "All");
 
     val label: String get() = tr(de, en)
+    /** Kurzform für die Knopfreihe („Zuletzt“ statt „Letztes Training“) */
+    val shortLabel: String get() = if (this == LAST) tr("Zuletzt", "Latest") else label
 
     /** Sätze in diesem Zeitraum. „Letztes Training“ = alle Sätze des letzten Trainingstags. */
     fun filter(sets: List<GymSet>): List<GymSet> {
@@ -726,9 +728,10 @@ fun MuscleHeatCard(store: GymStore, period: StatPeriod, onPeriod: (StatPeriod) -
         showSets = false,
         empty = tr("Keine Trainings in diesem Zeitraum.", "No workouts in this period.")
     ) {
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // 4 gleich breite Buttons über die volle Breite (kurze Beschriftung, damit alle passen)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             StatPeriod.entries.forEach { p ->
-                FilterChip(selected = p == period, onClick = { onPeriod(p) }, label = { Text(p.label) })
+                SegmentChip(p.shortLabel, p == period, onClick = { onPeriod(p) }, modifier = Modifier.weight(1f))
             }
         }
     }

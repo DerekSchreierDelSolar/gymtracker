@@ -2,7 +2,7 @@
 // h(tag, props, ...kinder) baut DOM-Elemente – ähnlich wie React.createElement, nur direkt echte Elemente.
 // Die App zeichnet bei jeder Änderung den aktuellen Bildschirm neu (siehe app.js → render()).
 
-import { fmtW, completionColor, groupLabel, groupColor } from './core.js';
+import { fmtW, completionColor, groupLabel, groupColor, tr } from './core.js';
 
 export function h(tag, props, ...children) {
   const el = tag === 'svg' || props?.svg ? document.createElementNS('http://www.w3.org/2000/svg', tag) : document.createElement(tag);
@@ -63,7 +63,7 @@ export const icon = (name, size = 24) => h('span', {
 });
 /** Runder Icon-Button (Kopfzeile). */
 export const iconBtn = (name, onClick, extra = {}) =>
-  h('button', { class: ['icon-btn', extra.active && 'active'], onclick: onClick, 'aria-label': extra.label ?? name, id: extra.id },
+  h('button', { class: ['icon-btn', extra.active && 'active', extra.cls], onclick: onClick, 'aria-label': extra.label ?? name, id: extra.id },
     icon(name), extra.badge ? h('span', { class: 'badge' }, extra.badge) : null);
 
 // ---------- Kleine Komponenten ----------
@@ -132,9 +132,13 @@ export function lineChart(values, unit) {
     const r = i === pts.length - 1 ? 5 : 3.5;
     return `<circle cx="${p[0]}" cy="${p[1]}" r="${r + 2}" class="dot-bg"/><circle cx="${p[0]}" cy="${p[1]}" r="${r}" class="dot"/>`;
   }).join('');
+  // Achse links: Werte auf Höhe der drei Hilfslinien (wie LineChart in Components.kt)
+  const axis = [hi, (hi + lo) / 2, lo].map(v => h('small', null, fmtW(Math.round(v * 10) / 10)));
   return h('div', { class: 'linechart' },
     h('div', { class: 'vbars-value' }, `${fmtW(values[values.length - 1])} ${unit}`),
-    h('div', { html: `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${path}${dots}</svg>` }));
+    h('div', { class: 'linechart-body' },
+      h('div', { class: 'linechart-axis' }, axis),
+      h('div', { class: 'grow', html: `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${path}${dots}</svg>` })));
 }
 
 export const progressChart = (values, title, unit) =>
@@ -186,4 +190,20 @@ export function toast(msg) {
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/**
+ * „Gelöscht – Rückgängig“ (wie UndoBar in Undo.kt): sofort löschen, 8 s lang eine Leiste mit „Rückgängig“.
+ * Liegt außerhalb von #app, übersteht also das Neuzeichnen des Bildschirms.
+ */
+let undoTimer = null;
+export function undoToast(msg, undo) {
+  document.getElementById('undo-bar')?.remove();
+  clearTimeout(undoTimer);
+  const close = () => { clearTimeout(undoTimer); el.remove(); };
+  const el = h('div', { id: 'undo-bar', role: 'status' },
+    h('span', { class: 'grow' }, msg),
+    h('button', { class: 'btn text', onclick: () => { close(); undo(); } }, tr('Rückgängig', 'Undo')));
+  document.body.append(el);
+  undoTimer = setTimeout(close, 8000);
 }

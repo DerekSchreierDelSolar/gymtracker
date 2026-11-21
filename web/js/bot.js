@@ -8,6 +8,7 @@ import { tr, isEnglish, isCardio } from './core.js';
 import { h, icon } from './ui.js';
 import { rerender } from './nav.js';
 import { baseName, openWiki } from './wiki.js';
+import { screen } from './layout.js';
 import { levelsOf, levelLabels, levelTitle, regionLabel, muscleLabel, muscleOfRegion } from './bodymap.js';
 
 // ---------- Text vergleichen ----------
@@ -70,20 +71,29 @@ const t = pair => (isEnglish() ? pair[1] : pair[0]);
 
 // ---------- Antworten ----------
 
-const suggestions = () => [
+/** Vorschlags-Pool; gezeigt wird jeweils eine zufällige Auswahl (wie Bot.kt) */
+const pool = () => [
   tr('Wie mache ich Kreuzheben?', 'How do I deadlift?'),
   tr('Übungen für obere Brust', 'Exercises for upper chest'),
   tr('Was ist ein Drop-Satz?', 'What is a drop set?'),
   tr('Wie mache ich ein Backup?', 'How do I back up?'),
   tr('Welche Muskeln trainiert Rudern sitzend?', 'Which muscles does seated row work?'),
   tr('Übungen für hintere Schulter', 'Exercises for rear delts'),
+  tr('Wie plane ich Trainingstage?', 'How do I plan training days?'),
+  tr('Übungen für Waden', 'Exercises for calves'),
+  tr('Wie funktioniert der Gewichts-Vorschlag?', 'How does the weight suggestion work?'),
+  tr('Was bedeutet optional?', 'What does optional mean?'),
+  tr('Übungen für den unteren Rücken', 'Exercises for the lower back'),
 ];
 
-const greeting = () => ({
+const suggestions = () => pool().map(s => [Math.random(), s]).sort((a, b) => a[0] - b[0]).slice(0, 5).map(x => x[1]);
+
+/** Begrüßung; recent = zuletzt trainierte Übung (Grundübung) → passender erster Vorschlag */
+const greeting = recent => ({
   bot: true,
   text: tr('Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert.',
     "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works."),
-  suggestions: suggestions(),
+  suggestions: recent ? [tr(`Wie mache ich ${recent}?`, `How do I do ${recent}?`), ...suggestions().slice(0, 4)] : suggestions(),
 });
 
 export function answer(question) {
@@ -157,7 +167,7 @@ function targetAnswer(key) {
   };
 }
 
-// ---------- Tab „Fragen“ ----------
+// ---------- Bildschirm „Fragen“ (über ⋮ und das Wiki; früher ein Tab) ----------
 
 /** Verlauf (bleibt erhalten, solange die Seite offen ist) */
 const history = [];
@@ -172,8 +182,8 @@ function ask(q) {
   rerender();
 }
 
-export function botTab() {
-  if (!history.length) history.push(greeting());
+export function botTab(recent = null) {
+  if (!history.length) history.push(greeting(recent));
   // Nach einer neuen Antwort ans Ende scrollen (nach dem Neuaufbau des Bildschirms)
   if (scrollDown) {
     scrollDown = false;
@@ -203,4 +213,16 @@ export function botInput() {
         onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); send(); } },
       }),
       h('button', { class: 'chat-send', onclick: send, 'aria-label': tr('Senden', 'Send') }, icon('send'))));
+}
+
+/** Bildschirm „Fragen“ (wie BotScreen in BotTab.kt): erster Vorschlag passt zur zuletzt trainierten Übung. */
+export function botScreen(store) {
+  const last = store.sets.reduce((a, s) => (!a || s.time > a.time ? s : a), null);
+  const base = last ? CATALOG.find(c => c.name === last.exercise)?.base : null;
+  const recent = base && WIKI[base] ? baseName(base) : null;
+  return screen({
+    title: tr('Fragen', 'Ask'), back: true, key: 'bot',
+    content: h('div', { class: 'pad' }, botTab(recent)),
+    bottom: botInput(),
+  });
 }

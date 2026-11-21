@@ -1,4 +1,4 @@
-// Startseite mit 6 Tabs – entspricht HomeScreen.kt, DashboardTab.kt, CalendarTab.kt, BodyTab.kt.
+// Startseite mit 5 Tabs – entspricht HomeScreen.kt, DashboardTab.kt, CalendarTab.kt, BodyTab.kt („Fragen“ ist ein eigener Bildschirm).
 
 import { store } from '../store.js';
 import {
@@ -9,7 +9,7 @@ import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, nex
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, statBox, chartCard, horizontalBars, historyBars, lineChart,
-  percentRing, ring, muted, toast, groupHeader,
+  percentRing, ring, muted, toast, groupHeader, undoToast,
 } from '../ui.js';
 import { nav, go, update, rerender, openDialog, closeDialog, onSwipe } from '../nav.js';
 import { screen, fab } from '../layout.js';
@@ -17,7 +17,7 @@ import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
-import { botTab, botInput } from '../bot.js';
+
 
 const TABS = () => [
   ['home', tr('Start', 'Home'), tr('Übersicht', 'Overview')],
@@ -25,18 +25,17 @@ const TABS = () => [
   ['list', 'Workouts', 'Workouts'],
   ['calendar', tr('Kalender', 'Calendar'), tr('Kalender', 'Calendar')],
   ['body', tr('Körper', 'Body'), tr('Körper', 'Body')],
-  ['chat', tr('Fragen', 'Ask'), tr('Fragen', 'Ask')],
 ];
 
 export function homeScreen(onStartWorkout) {
-  const tab = nav.tab;
-  const setTab = i => { if (i >= 0 && i < 6) update({ tab: i, menuOpen: false }); };
-  const content = [dashboardTab, exerciseGrid, workoutList, calendarTab, bodyTab, botTab][tab](onStartWorkout);
+  const tab = Math.min(nav.tab, 4); // früher gab es Tab 5 („Fragen“) – alte gespeicherte Zustände abfangen
+  const setTab = i => { if (i >= 0 && i < 5) update({ tab: i, menuOpen: false }); };
+  const content = [dashboardTab, exerciseGrid, workoutList, calendarTab, bodyTab][tab](onStartWorkout);
   const wrap = h('div', { class: 'tab-page' }, content);
   onSwipe(wrap, () => setTab(tab + 1), () => setTab(tab - 1));
 
   return screen({
-    title: TABS()[tab][2], subtitle: 'GymTracker', large: true, key: 'tab-' + tab,
+    title: TABS()[tab][2], large: true, key: 'tab-' + tab, // nur der Bereichsname (ohne App-Namen darunter)
     actions: [
       tab === 1 && store.exercises.length ? filterActions('list') : null,
       tab === 1 ? iconBtn('book', () => go({ wiki: true }), { label: tr('Übungs-Wiki', 'Exercise wiki') }) : null,
@@ -48,10 +47,10 @@ export function homeScreen(onStartWorkout) {
     content: wrap,
     fab: tab === 1 ? fab(tr('Übung', 'Exercise'), 'add', () => go({ catalog: true }))
       : tab === 2 ? fab('Workout', 'add', newWorkoutDialog) : null,
-    // Tab „Fragen“: Eingabeleiste über der Navigation
-    bottom: [tab === 5 ? botInput() : null, h('nav', { class: 'bottom-nav' }, TABS().map(([ico, label], i) =>
+
+    bottom: h('nav', { class: 'bottom-nav' }, TABS().map(([ico, label], i) =>
       h('button', { class: ['nav-item', i === tab && 'selected'], onclick: () => setTab(i) },
-        h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label))))],
+        h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label)))),
   });
 }
 
@@ -64,6 +63,7 @@ function menu() {
     h('div', { class: 'menu' },
       h('button', { onclick: () => { close(); settingsDialog(); } }, icon('settings', 20), tr('Einstellungen', 'Settings')),
       h('button', { onclick: () => { close(); go({ wiki: true }); } }, icon('book', 20), tr('Übungs-Wiki', 'Exercise wiki')),
+      h('button', { onclick: () => { close(); go({ bot: true }); } }, icon('chat', 20), tr('Fragen', 'Ask')),
       h('hr'),
       h('button', { onclick: () => { close(); exportData(); } }, icon('download', 20), tr('Daten exportieren', 'Export data')),
       h('button', { onclick: () => { close(); importData(); } }, icon('upload', 20), tr('Daten importieren', 'Import data')),
@@ -176,10 +176,13 @@ function dashboardTab(onStartWorkout) {
       percentRing(Math.min(1, weekSessions.length / goal), 84),
       h('div', { class: 'grow' },
         h('small', { class: 'muted' }, tr('Diese Woche', 'This week')),
-        h('h2', null, tr(`${weekSessions.length} von ${goal} Trainings`, `${weekSessions.length} of ${goal} workouts`)),
+        // Ziel erreicht/übertroffen → „5 Trainings ✓“ statt „5 von 3“ (wie DashboardTab.kt)
+        h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Training', 'workout'), tr('Trainings', 'workouts')) + ' ✓'
+          : tr(`${weekSessions.length} von ${goal} Trainings`, `${weekSessions.length} of ${goal} workouts`)),
         h('span', null, streak > 0 ? '🔥 ' + tr(`${plural(streak, 'Woche', 'Wochen')} in Folge`, `${plural(streak, 'week', 'weeks')} in a row`)
           : tr('Starte deine Serie!', 'Start your streak!')),
-        h('small', { class: 'muted' }, tr('Tippen, um das Ziel zu ändern', 'Tap to change goal')))),
+        h('small', { class: 'muted' }, weekSessions.length >= goal ? tr(`Ziel ${goal}/Woche · tippen zum Ändern`, `Goal ${goal}/week · tap to change`)
+          : tr('Tippen, um das Ziel zu ändern', 'Tap to change goal')))),
 
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
       h('div', { class: 'grow' },
@@ -193,8 +196,8 @@ function dashboardTab(onStartWorkout) {
       }, icon('play', 28)) : null)
       : h('div', { class: 'card pad-m' },
         h('h2', null, tr('Willkommen! 👋', 'Welcome! 👋')),
-        h('p', null, tr('Leg dein erstes Workout an – z. B. aus einer Vorlage.', 'Create your first workout – e.g. from a template.')),
-        h('button', { class: 'btn', onclick: () => update({ tab: 2 }) }, tr('Zu den Workouts', 'Go to workouts'))),
+        h('p', null, tr("So geht's: 1. Workout aus einer Vorlage anlegen · 2. Training starten · 3. Sätze eintragen.", 'How it works: 1. Create a workout from a template · 2. Start training · 3. Log your sets.')),
+        h('button', { class: 'btn', onclick: newWorkoutDialog }, tr('Vorlage wählen', 'Choose a template'))),
 
     backupDue ? h('div', { class: 'card hint' }, h('span', { class: 'hint-emoji' }, '💾'),
       h('div', { class: 'grow' }, h('b', null, tr('Backup machen', 'Make a backup')),
@@ -254,29 +257,26 @@ function exerciseGrid() {
   }
   const visible = store.exercises.filter(n => matches(nav.listFilter, n, store.groupOf(n)));
   if (!visible.length) return noFilterResults('list');
-  return h('div', { class: 'pad list-bottom' }, GROUP_KEYS.map(g => {
+  return h('div', { class: 'pad list-bottom' },
+    muted(tr('Tippen = öffnen · gedrückt halten = aus der Liste entfernen', 'Tap = open · long-press = remove from list'), 'small'),
+    GROUP_KEYS.map(g => {
     const names = visible.filter(n => store.groupOf(n) === g);
     if (!names.length) return null;
     return [groupHeader(g), h('div', { class: 'tile-grid' },
-      names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { onLongPress: () => removeDialog(n) })))];
+      names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { onLongPress: () => removeExercise(n) })))];
   }));
 }
 
-/** Gedrückt halten → aus „Meine Übungen“ entfernen; Workouts und Verlauf bleiben (wie ExerciseGrid in HomeScreen.kt) */
-function removeDialog(name) {
-  const inWorkouts = store.workouts.filter(w => w.exercises.includes(name));
-  const q = n => tr(`„${n}“`, `"${n}"`);
-  const text = tr('Die Übung verschwindet aus deinen Übungen. Dein Verlauf bleibt erhalten', 'The exercise disappears from your exercises. Your history is kept') +
-    (inWorkouts.length ? (inWorkouts.length === 1 ? tr(', ebenso im Workout ', ', and it stays in the workout ')
-      : tr(', ebenso in den Workouts ', ', and it stays in the workouts ')) + inWorkouts.map(w => q(w.name)).join(', ') : '') +
-    tr('. Über den Katalog kannst du sie jederzeit wieder hinzufügen.', '. You can add it again from the catalog at any time.');
-  openDialog(() => dialog(tr(`„${exName(name)}“ entfernen?`, `Remove "${exName(name)}"?`), h('p', null, text), [
-    { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
-    { label: tr('Entfernen', 'Remove'), onClick: () => { closeDialog(); store.removeFromList(name); } },
-  ], closeDialog));
+/** Gedrückt halten → sofort aus „Meine Übungen“ entfernen, mit „Rückgängig“ (wie ExerciseGrid in HomeScreen.kt) */
+function removeExercise(name) {
+  const index = store.removeFromList(name);
+  undoToast(tr(`„${exName(name)}“ entfernt – bleibt in Workouts und Verlauf`, `"${exName(name)}" removed – stays in workouts and history`),
+    () => store.restoreToList(name, index));
 }
 
 // ---------- Tab 3: Kalender ----------
+
+let calInfo = false; // Erklärung zur Legende aufgeklappt
 
 function calendarTab() {
   const month = nav.calMonth;
@@ -293,6 +293,13 @@ function calendarTab() {
     byDay.get(k).push(t);
   }
 
+  // Trainingsplan: Wochentage mit geplantem Workout → Punkt; verpasst nur in der laufenden Woche (wie CalendarTab.kt)
+  const planned = new Set(store.workouts.filter(w => w.exercises.length).flatMap(w => w.days ?? []));
+  const weekStartKey = dayKey(startOfWeek());
+  const planMark = (key, day) => {
+    if (!planned.has(((offset + day - 1) % 7) + 1)) return null;
+    return key >= todayKey ? 'planned' : key >= weekStartKey ? 'missed' : null;
+  };
   const cells = [];
   const rows = Math.ceil((offset + daysInMonth) / 7);
   for (let i = 0; i < rows * 7; i++) {
@@ -304,7 +311,8 @@ function calendarTab() {
     cells.push(h('button', {
       class: ['day', key === nav.calDay && 'selected', key === todayKey && 'today', best != null && 'has'],
       onclick: () => update({ calDay: key }),
-    }, best != null ? ring(best, 40, { stroke: 0.1 }) : null, h('span', null, String(day))));
+    }, best != null ? ring(best, 40, { stroke: 0.1 }) : null, h('span', null, String(day)),
+    best == null && planMark(key, day) ? h('i', { class: ['plan-dot', planMark(key, day)] }) : null));
   }
 
   const monthSessions = sessions.filter(t => Math.floor(dayKey(t.start) / 100) === year * 100 + m + 1);
@@ -341,20 +349,22 @@ function calendarTab() {
             plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) + (s.kcal != null ? ` · 🔥 ${s.kcal} kcal` : ''))),
         icon('chevron'));
     }),
-    h('div', { class: 'legend' }, [[1, '100 %'], [0.5, '≥ 50 %'], [0.25, '< 50 %']].map(([p, l]) => [ring(p, 16), h('small', null, l)])),
-    muted(tr('Prozent = erledigte Ziel-Sätze. Sätze ohne gestartetes Workout zählen als freies Training mit 100 %.',
-      'Percent = target sets done. Sets logged without starting a workout count as a free workout with 100 %.'), 'small'));
+    h('div', { class: 'legend' }, [[1, '100 %'], [0.5, '≥ 50 %'], [0.25, '< 50 %']].map(([p, l]) => [ring(p, 16), h('small', null, l)]),
+      planned.size ? [h('i', { class: 'plan-dot planned' }), h('small', null, tr('geplant', 'planned')), h('i', { class: 'plan-dot missed' }), h('small', null, tr('verpasst', 'missed'))] : null,
+      iconBtn('info', () => { calInfo = !calInfo; rerender(); }, { label: tr('Erklärung', 'Explanation'), cls: 'info-btn' })),
+    calInfo ? muted(tr('Prozent = erledigte Ziel-Sätze. Sätze ohne gestartetes Workout zählen als freies Training mit 100 %. Punkte = Trainingstage laut Plan (verpasst nur in der laufenden Woche).',
+      'Percent = target sets done. Sets logged without starting a workout count as a free workout with 100 %. Dots = planned training days (missed only in the current week).'), 'small') : null);
 }
 
 // ---------- Tab 4: Körper ----------
 
-const bodyInput = { value: null };
+// Eingabe leer lassen (letzter Wert nur in der Beschriftung → kein versehentlicher Doppel-Eintrag); date = Nachtragen
+const bodyInput = { value: '', date: '' };
 
 function bodyTab() {
   const weights = store.weights;
   const last = weights[weights.length - 1];
   const first = weights[0];
-  if (bodyInput.value == null) bodyInput.value = last ? fmtW(last.kg) : '';
   const weekSessions = allSessions(store).filter(t => t.start >= startOfWeek());
   const weekKcal = weekSessions.reduce((a, t) => a + (sessionStats(store, t).kcal ?? 0), 0);
   const shown = weights.slice(-30);
@@ -362,7 +372,13 @@ function bodyTab() {
   const add = () => {
     const kg = parseNum(bodyInput.value);
     // Plausibilitätsprüfung gegen Tippfehler (z. B. 824 statt 82,4)
-    if (kg != null && kg >= 20 && kg <= 400) { store.addWeight(kg); document.activeElement?.blur(); }
+    if (kg != null && kg >= 20 && kg <= 400) {
+      // gewählter Tag 12:00 Ortszeit (Tag stimmt in jeder Zeitzone), sonst jetzt
+      const t = bodyInput.date && bodyInput.date !== isoDay(Date.now()) ? new Date(bodyInput.date + 'T12:00').getTime() : Date.now();
+      store.addWeight(kg, t);
+      bodyInput.value = ''; bodyInput.date = '';
+      document.activeElement?.blur();
+    }
     else toast(tr('Bitte ein Gewicht zwischen 20 und 400 kg eingeben.', 'Please enter a weight between 20 and 400 kg.'));
   };
 
@@ -373,9 +389,13 @@ function bodyTab() {
       first && last && weights.length >= 2
         ? muted(`${last.kg - first.kg >= 0 ? '+' : '−'}${fmtW(Math.abs(last.kg - first.kg))} kg ` + tr('seit ', 'since ') + fmtDate(first.time)) : null),
     h('div', { class: 'row' },
-      textField({ id: 'body-kg', label: tr('Gewicht in kg', 'Weight in kg'), value: bodyInput.value, inputmode: 'decimal', oninput: v => { bodyInput.value = v; }, onenter: add }),
+      textField({ id: 'body-kg', label: tr('Gewicht in kg', 'Weight in kg') + (last ? tr(' · zuletzt ', ' · last ') + fmtW(last.kg) : ''), value: bodyInput.value, inputmode: 'decimal', oninput: v => { bodyInput.value = v; }, onenter: add }),
       h('button', { class: 'btn', onclick: add }, tr('Eintragen', 'Log'))),
-    h('div', { class: 'card hint amber' }, h('span', { class: 'hint-emoji' }, '🔥'),
+    // Datum (leer = heute); natives Datumsfeld, Zukunft gesperrt
+    h('label', { class: 'date-row' }, icon('calendar', 18), h('span', null, tr('Datum', 'Date')),
+      h('input', { id: 'body-date', type: 'date', value: bodyInput.date || isoDay(Date.now()), max: isoDay(Date.now()), oninput: e => { bodyInput.date = e.target.value; } })),
+    // dezent (wie die übrigen Karten), damit das Gewicht im Vordergrund bleibt
+    h('div', { class: 'card row-card' }, h('span', { class: 'hint-emoji' }, '🔥'),
       h('div', { class: 'grow' }, h('small', null, tr('Diese Woche', 'This week')),
         h('b', null, last == null
           ? tr('Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.', 'Log your weight and the app will estimate calories burned.')
@@ -388,10 +408,14 @@ function bodyTab() {
     weights.length ? [h('h2', { class: 'section' }, tr('Einträge', 'Entries')),
       weights.slice().reverse().slice(0, 20).map(w => h('div', { class: 'set-row' },
         h('span', { class: 'grow' }, fmtDate(w.time)), h('b', null, `${fmtW(w.kg)} kg`),
-        iconBtn('delete', () => store.deleteWeight(w), { label: tr('Löschen', 'Delete') })))] : null,
+        iconBtn('delete', () => {
+          store.deleteWeight(w);
+          undoToast(tr('Eintrag gelöscht', 'Entry deleted'), () => store.restoreWeight(w));
+        }, { label: tr('Löschen', 'Delete') })))] : null,
     muted(tr('Der Verbrauch ist eine Schätzung nach der MET-Methode (Körpergewicht × Dauer × Intensität der Übung). Cardio wird über die eingetragenen Minuten gerechnet, Krafttraining über die Trainingsdauer.',
       'Calories are estimated with the MET method (body weight × duration × exercise intensity). Cardio uses the logged minutes, strength training the workout duration.'), 'small'));
 }
 
-// Nach einem neuen Gewichtseintrag das Feld mit dem neuen Wert vorbelegen
-store.subscribe(() => { const l = store.weights[store.weights.length - 1]; if (l && document.activeElement?.id !== 'body-kg') bodyInput.value = fmtW(l.kg); });
+
+/** „2026-11-21“ für <input type="date"> (Ortszeit) */
+const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };

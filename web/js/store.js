@@ -226,7 +226,16 @@ class GymStore {
 
   /** Nur aus „Meine Übungen“ entfernen: Verlauf, Notizen, Kategorie und Workouts bleiben (wie removeFromList in GymStore.kt). */
   removeFromList(name) {
+    const index = this.exercises.indexOf(name);
     this.exercises = this.exercises.filter(e => e !== name);
+    this.#save();
+    return index;
+  }
+
+  /** Aus der Liste entfernte Übung an ihren alten Platz zurück („Rückgängig“) */
+  restoreToList(name, index) {
+    if (this.hasExercise(name)) return;
+    this.exercises.splice(Math.max(0, Math.min(index, this.exercises.length)), 0, name);
     this.#save();
   }
 
@@ -351,6 +360,12 @@ class GymStore {
     this.#save();
   }
 
+  /** Gelöschten Satz zurückholen („Rückgängig“) */
+  restoreSet(set) {
+    if (!this.sets.some(s => s.id === set.id)) this.sets.push(set);
+    this.#save();
+  }
+
   deleteSet(set) {
     this.sets = this.sets.filter(s => s.id !== set.id);
     this.#save();
@@ -423,7 +438,10 @@ class GymStore {
 
   // ----- Körpergewicht -----
 
-  addWeight(kg) { this.weights.push({ time: Date.now(), kg }); this.#save(); }
+  /** time = gewählter Tag (Nachtragen); Liste bleibt nach Zeit sortiert */
+  addWeight(kg, time = Date.now()) { this.weights.push({ time, kg }); this.weights.sort((a, b) => a.time - b.time); this.#save(); }
+  /** Gelöschten Eintrag zurückholen („Rückgängig“) */
+  restoreWeight(entry) { this.weights.push(entry); this.weights.sort((a, b) => a.time - b.time); this.#save(); }
   deleteWeight(entry) { this.weights = this.weights.filter(w => w !== entry); this.#save(); }
 
   /** Gewicht zum Zeitpunkt t: letzter Eintrag davor, sonst der erste; null = nie eingetragen. */

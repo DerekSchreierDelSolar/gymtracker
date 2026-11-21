@@ -202,7 +202,7 @@ private fun WikiLine(bullet: String, text: String, bulletColor: androidx.compose
 /** Wiki-Übersicht: alle Grundübungen nach Muskelgruppe, mit Suche. Tippen öffnet das Wiki-Blatt. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WikiScreen(onBack: () -> Unit) {
+fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
     var query by remember { mutableStateOf("") }
     var open by remember { mutableStateOf<String?>(null) }
     // Grundübungen in Katalog-Reihenfolge, gruppiert
@@ -215,6 +215,7 @@ fun WikiScreen(onBack: () -> Unit) {
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(tr("Übungs-Wiki", "Exercise wiki")) },
+            actions = { IconAction(Ico.CHAT, onClick = onAsk) }, // Frage an den Bot stellen
             navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
         )
     }) { padding ->

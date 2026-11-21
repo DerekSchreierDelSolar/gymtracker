@@ -38,6 +38,7 @@ fun SetInput(
     onAdded: () -> Unit = {},
     weightOverride: Double? = null
 ) {
+    Column { // Stoppuhr, Eingabezeile und −/+ untereinander
     val cardio = store.groupOf(exercise).isCardio
     val timed = isTimed(exercise)
     val lastSet = store.setsFor(exercise).firstOrNull()
@@ -154,6 +155,38 @@ fun SetInput(
             Text("+", style = MaterialTheme.typography.headlineMedium)
         }
     }
+    // Schnell ändern ohne Tastatur: −/+ unter den Feldern (Gewicht ±2,5 kg; Wdh. ±1, Minuten ±1, Sekunden ±5)
+    val showWeight = !cardio && (!timed || equipmentOf(exercise) != Equipment.KOERPER)
+    Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        if (!cardio) Spacer(Modifier.width(64.dp + 8.dp)) // unter dem Satz-Typ-Knopf
+        if (showWeight) {
+            StepButtons(Modifier.weight(1f), "2,5") { d ->
+                val v = (weightText.replace(',', '.').toDoubleOrNull() ?: 0.0) + d * 2.5
+                weightText = fmtW(v.coerceAtLeast(0.0))
+            }
+            Spacer(Modifier.width(8.dp))
+        }
+        StepButtons(Modifier.weight(1f), if (timed) "5" else "1") { d ->
+            val v = (repsText.trim().toIntOrNull() ?: 0) + d * (if (timed) 5 else 1)
+            repsText = v.coerceAtLeast(1).toString()
+        }
+        Spacer(Modifier.width(56.dp + 8.dp)) // unter dem ＋
+    }
+    }
+}
+
+/** Zwei kleine Knöpfe „− x“ / „+ x“; onStep(−1 oder +1). */
+@Composable
+private fun StepButtons(modifier: Modifier, step: String, onStep: (Int) -> Unit) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        listOf(-1 to "−", 1 to "+").forEach { (d, sign) ->
+            FilledTonalButton(
+                onClick = { onStep(d) },
+                modifier = Modifier.weight(1f).height(36.dp),
+                contentPadding = PaddingValues(0.dp)
+            ) { Text("$sign$step", style = MaterialTheme.typography.labelLarge, maxLines = 1) }
+        }
+    }
 }
 
 // ---------- Einzelner Satz: Zeile + Bearbeiten-Dialog ----------
@@ -226,14 +259,17 @@ fun SetRow(store: GymStore, set: GymSet, label: String, cardio: Boolean) {
             cardio = cardio,
             onDismiss = { editing = false },
             onSave = { w, r, t -> store.updateSet(set, w, r, t); editing = false },
-            onDelete = { store.deleteSet(set); editing = false }
+            onDelete = {
+                store.deleteSet(set)
+                editing = false
+                Undo.show(tr("Satz gelöscht", "Set deleted")) { store.restoreSet(set) }
+            }
         )
     }
 }
 
 /**
- * Dialog zum Ändern eines Satzes. „Löschen“ fragt beim ersten Tippen nach
- * („Wirklich löschen?“) – erst der zweite Tipp löscht.
+ * Dialog zum Ändern eines Satzes. „Löschen“ löscht sofort; unten erscheint „Rückgängig“ (Undo.kt).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -247,7 +283,6 @@ fun EditSetDialog(
     var weightText by remember { mutableStateOf(fmtW(set.weight)) }
     var repsText by remember { mutableStateOf(set.reps.toString()) }
     var type by remember { mutableStateOf(set.type) }
-    var confirmDelete by remember { mutableStateOf(false) }
 
     val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull()
     val r = repsText.trim().toIntOrNull()
@@ -299,17 +334,14 @@ fun EditSetDialog(
                         }
                     }
                 }
-                // Löschen: rot und zweistufig
+                // Löschen: rot, sofort (mit „Rückgängig“ in der Leiste unten)
                 TextButton(
-                    onClick = { if (confirmDelete) onDelete() else confirmDelete = true },
+                    onClick = onDelete,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     AppIcon(Ico.DELETE, Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text(
-                        if (confirmDelete) tr("Wirklich löschen? Nochmal tippen", "Really delete? Tap again")
-                        else tr("Eintrag löschen", "Delete entry")
-                    )
+                    Text(tr("Eintrag löschen", "Delete entry"))
                 }
             }
         },

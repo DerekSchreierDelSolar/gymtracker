@@ -64,7 +64,7 @@ function daysRow(w) {
   return h('div', { class: 'plan-row' },
     h('b', { class: 'small-title' }, tr('Trainingstage', 'Training days')),
     muted(tr('Geplante Tage erscheinen auf der Startseite als „Heute dran“.', 'Planned days show up on the home screen as "Today".'), 'small'),
-    h('div', { class: 'day-chips' }, [1, 2, 3, 4, 5, 6, 7].map(d =>
+    h('div', { class: 'segments' }, [1, 2, 3, 4, 5, 6, 7].map(d =>
       chip(weekdayShort(d), (w.days ?? []).includes(d), () => store.toggleDay(w.id, d)))));
 }
 
@@ -281,7 +281,11 @@ export function workoutExercisePage(w, name) {
           h('button', { class: 'step tonal', onclick: () => store.setTarget(w.id, name, target + 1), disabled: target >= 20 }, '+'))),
       h('button', { class: 'btn text danger pick-remove', onclick: () => store.toggleInWorkout(w.id, name) }, tr('Aus dem Workout entfernen', 'Remove from workout')))
     : h('div', { class: 'pick-bar' },
-      h('button', { class: 'btn wide', onclick: () => store.toggleInWorkout(w.id, name) }, icon('add'), tr('Zum Workout hinzufügen', 'Add to workout')));
+      h('button', {
+        class: 'btn wide',
+        // Standard-Ziel beim Hinzufügen: 3 Sätze (Cardio 1×) – lässt sich direkt danach ändern
+        onclick: () => { store.toggleInWorkout(w.id, name); store.setTarget(w.id, name, isCardio(g) ? 1 : 3); },
+      }, icon('add'), tr('Zum Workout hinzufügen', 'Add to workout')));
   return screen({
     title: exName(name), back: true, key: `pickex-${name}`, backdrop: exerciseImageUrl(name),
     titleIcon: exerciseIconHtml(name, g, 32),

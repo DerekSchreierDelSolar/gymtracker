@@ -8,6 +8,7 @@ import { homeScreen } from './screens/home.js';
 import { exerciseDetailScreen } from './screens/exercise.js';
 import { workoutScreen, workoutPickerScreen, workoutExercisePage, catalogScreen } from './screens/workout.js';
 import { wikiScreen } from './wiki.js';
+import { botScreen } from './bot.js';
 import { trainingScreen, summaryScreen, confirmEndTraining, keepScreenOn, unlockAudio } from './screens/training.js';
 
 const root = document.getElementById('app');
@@ -42,6 +43,7 @@ function currentScreen() {
   if (workout && nav.pick) return workoutPickerScreen(workout);
   if (workout) return workoutScreen(workout, () => startTraining(workout.id));
   if (nav.catalog) return catalogScreen();
+  if (nav.bot) return botScreen(store);
   if (nav.wiki) return wikiScreen();
   return homeScreen(startTraining);
 }
@@ -60,6 +62,7 @@ setBackHandler(() => {
   if (nav.pick) { update({ pick: false, pickDetail: null }); return true; }
   if (nav.workoutId != null) { update({ workoutId: null }); return true; }
   if (nav.catalog) { update({ catalog: false }); return true; }
+  if (nav.bot) { update({ bot: false }); return true; }
   if (nav.wiki) { update({ wiki: false, wikiQuery: '' }); return true; }
   return true;
 });

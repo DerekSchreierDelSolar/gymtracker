@@ -1,6 +1,10 @@
 package com.example.gymtracker
 
 import android.content.Context
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import android.os.Build
 import android.media.AudioAttributes
 import android.os.VibrationAttributes
@@ -88,12 +92,28 @@ fun TrainingScreen(
     var restEnd by rememberSaveable { mutableStateOf<Long?>(null) }
     var restTotal by rememberSaveable { mutableLongStateOf(0L) }
     val context = LocalContext.current
-    // Startet bei jeder Änderung von restEnd neu (z. B. +15 s) und wartet bis zum Ende der Pause
+    // Startet bei jeder Änderung von restEnd neu (z. B. +15 s) und wartet bis zum Ende der Pause.
+    // Parallel zeigt RestTimer den Countdown als Benachrichtigung (sichtbar, wenn das Handy in der Tasche ist).
     LaunchedEffect(restEnd) {
         val end = restEnd ?: return@LaunchedEffect
+        RestTimer.show(context, end, workout.exercises.getOrElse(index) { "" })
         delay((end - System.currentTimeMillis()).coerceAtLeast(0))
         vibrate(context)
+        RestTimer.done(context) // im Hintergrund: „Pause vorbei“
         restEnd = null
+    }
+    // Training verlassen → Countdown-Benachrichtigung entfernen
+    DisposableEffect(Unit) { onDispose { RestTimer.cancel(context) } }
+    // Ab Android 13 einmalig um Erlaubnis für Benachrichtigungen bitten (für den Pausen-Timer)
+    val askNotify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("rest", Context.MODE_PRIVATE)
+        if (Build.VERSION.SDK_INT >= 33 && !prefs.getBoolean("asked", false) &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            prefs.edit().putBoolean("asked", true).apply()
+            askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
     // Countdown-Ticks: bei 3, 2 und 1 Sekunde(n) Rest kurz vibrieren
     val restSecondsLeft = restEnd?.let { ((it - now + 999) / 1000).toInt() }
@@ -109,6 +129,7 @@ fun TrainingScreen(
         val end = restEnd ?: return
         val newEnd = end + deltaMs
         if (newEnd <= System.currentTimeMillis()) {
+            RestTimer.cancel(context)
             restEnd = null
         } else {
             restEnd = newEnd
@@ -206,7 +227,8 @@ fun TrainingScreen(
                             selected = i == index,
                             onClick = { onIndex(i) },
                             // nur Name (+ ✓), ohne Satzzähler – der steht auf der Seite der Übung
-                            label = { Text((if (done) "✓ " else "") + exName(e)) }
+                            // ✓ = Ziel erreicht, • = angefangen (mind. ein Satz), sonst nur der Name
+                            label = { Text((if (done) "✓ " else if (count > 0) "• " else "") + exName(e)) }
                         )
                     }
                 }
@@ -224,7 +246,7 @@ fun TrainingScreen(
                     store, workout, start,
                     name = workout.exercises[page],
                     now = now, restEnd = restEnd, restTotal = restTotal,
-                    onSkipRest = { restEnd = null },
+                    onSkipRest = { restEnd = null; RestTimer.cancel(context) },
                     onAdded = { startRest() }
                 )
             }
@@ -310,7 +332,7 @@ fun TrainingExercisePage(
                     progress = 1f,
                     color = MaterialTheme.colorScheme.primary,
                     value = goal?.first ?: "–",
-                    label = goal?.second ?: tr("Wiederholungen", "Reps")
+                    label = goal?.second ?: tr("Wdh.-Ziel", "Rep goal")
                 )
                 if (resting) {
                     CircleStat(
@@ -388,7 +410,7 @@ fun repsGoal(store: GymStore, name: String, before: Long): Pair<String, String>?
     val top = last.maxOf { it.weight }
     val atTop = last.filter { it.weight == top }
     val heavier = top > 0 && atTop.size >= 2 && atTop.minOf { it.reps } >= 8
-    return "${if (heavier) 8 else atTop.maxOf { it.reps } + 1}" to tr("Wiederholungen", "Reps")
+    return "${if (heavier) 8 else atTop.maxOf { it.reps } + 1}" to tr("Wdh.-Ziel", "Rep goal") // eindeutig: Ziel für heute
 }
 
 /**

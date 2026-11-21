@@ -9,6 +9,13 @@ import { goBack } from './nav.js';
  * fab: schwebender Button · bottom: feste Leiste unten · key: für Scroll-Position merken
  */
 export function screen({ title, subtitle, titleIcon, back = false, onBack = goBack, actions = [], top, content, fab, bottom, key, large = false, backdrop = null }) {
+  const main = h('main', { class: 'content', 'data-scroll': key ?? title }, content);
+  // Schwebender Button: beim Scrollen nur noch das Symbol → verdeckt keinen Text (wie ExtendedFloatingActionButton expanded)
+  if (fab instanceof Element) {
+    const sync = () => fab.classList.toggle('compact', main.scrollTop > 40);
+    main.addEventListener('scroll', sync, { passive: true });
+    requestAnimationFrame(sync); // nach dem Wiederherstellen der Scroll-Position
+  }
   return h('div', { class: 'screen' },
     // backdrop = Bild-URL: durchsichtiges Hintergrundbild hinter allem (Übungsdetail, Training)
     backdrop ? h('div', { class: 'screen-backdrop', style: `background-image:url("${backdrop}")` }) : null,
@@ -18,7 +25,7 @@ export function screen({ title, subtitle, titleIcon, back = false, onBack = goBa
       h('div', { class: 'title' }, h('h1', null, title), subtitle ? h('small', null, subtitle) : null),
       h('div', { class: 'actions' }, actions)),
     top ?? null,
-    h('main', { class: 'content', 'data-scroll': key ?? title }, content),
+    main,
     fab ?? null,
     bottom ?? null);
 }

@@ -10,7 +10,7 @@ import {
 } from '../core.js';
 import { progressionSuggestion } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
-import { h, icon, iconBtn, chip, dialog, textField, progressChart, onTick, muted } from '../ui.js';
+import { h, icon, iconBtn, chip, dialog, textField, progressChart, onTick, muted, undoToast } from '../ui.js';
 import { nav, rerender, openDialog, closeDialog, goBack } from '../nav.js';
 import { screen } from '../layout.js';
 
@@ -131,7 +131,9 @@ export function setInput(name, onAdded = () => {}) {
         id: idBase + '-r', label: cardio ? tr('Minuten', 'Minutes') : timed ? tr('Sekunden', 'Seconds') : tr('Wdh.', 'Reps'),
         value: st.reps, inputmode: 'numeric', oninput: v => { st.reps = v; }, onenter: add,
       }),
-      h('button', { class: 'btn plus', onclick: add, 'aria-label': cardio ? tr('Eintragen', 'Log') : tr('Satz hinzufügen', 'Add set') }, '+')));
+      h('button', { class: 'btn plus', onclick: add, 'aria-label': cardio ? tr('Eintragen', 'Log') : tr('Satz hinzufügen', 'Add set') }, '+')),
+    // Schnell ändern ohne Tastatur: −/+ unter den Feldern (Gewicht ±2,5 kg; Wdh./Minuten ±1, Sekunden ±5) – wie SetInput in ExerciseDetail.kt
+    stepRow(cardio, showWeight, timed, st));
 }
 
 // ---------- Satz-Zeile + Bearbeiten ----------
@@ -179,7 +181,7 @@ export function recordLine(allSets, cardio, timed) {
 }
 
 export function editSetDialog(set, cardio) {
-  const st = { weight: fmtW(set.weight), reps: String(set.reps), type: setTypeOf(set), confirmDelete: false };
+  const st = { weight: fmtW(set.weight), reps: String(set.reps), type: setTypeOf(set) };
   openDialog(() => {
     const w = cardio ? 0 : parseNum(st.weight);
     const r = parseIntStrict(st.reps);
@@ -197,8 +199,9 @@ export function editSetDialog(set, cardio) {
         SET_TYPES.map(t => chip(setTypeLabel(t), st.type === t, () => { st.type = t; rerender(); }))),
       h('button', {
         class: 'btn text danger',
-        onclick: () => { if (st.confirmDelete) { store.deleteSet(set); closeDialog(); } else { st.confirmDelete = true; rerender(); } },
-      }, icon('delete', 18), st.confirmDelete ? tr('Wirklich löschen? Nochmal tippen', 'Really delete? Tap again') : tr('Eintrag löschen', 'Delete entry')),
+        // sofort löschen, unten „Rückgängig“ (wie EditSetDialog in ExerciseDetail.kt)
+        onclick: () => { store.deleteSet(set); closeDialog(); undoToast(tr('Satz gelöscht', 'Set deleted'), () => store.restoreSet(set)); },
+      }, icon('delete', 18), tr('Eintrag löschen', 'Delete entry')),
     ], [
       { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
       { label: tr('Speichern', 'Save'), disabled: !valid, onClick: () => { store.updateSet(set, w, r, st.type); closeDialog(); } },
@@ -370,3 +373,16 @@ export function noteButton(name) {
     h('span', null, '📝'), h('span', null, note ?? tr('Notiz für heute hinzufügen', 'Add a note for today')));
 }
 
+
+/** Reihe −/+ unter den Eingabefeldern; Spalten passend zu Typ-Knopf, kg, Wdh. und ＋ (siehe CSS .step-row) */
+function stepRow(cardio, showWeight, timed, st) {
+  const btn = (label, fn) => h('button', { class: 'step-btn', onclick: () => { fn(); rerender(); } }, label);
+  const repStep = timed ? 5 : 1;
+  const cols = [cardio ? null : '64px', showWeight ? '1fr' : null, '1fr', '56px'].filter(Boolean).join(' ');
+  const pair = (step, change) => h('div', { class: 'step-pair' }, btn('−' + step, () => change(-1)), btn('+' + step, () => change(1)));
+  return h('div', { class: 'step-row', style: `grid-template-columns:${cols}` },
+    cardio ? null : h('span'),
+    showWeight ? pair('2,5', d => { st.weight = fmtW(Math.max(0, (parseNum(st.weight) ?? 0) + d * 2.5)); }) : null,
+    pair(String(repStep), d => { st.reps = String(Math.max(1, (parseIntStrict(st.reps) ?? 0) + d * repStep)); }),
+    h('span'));
+}

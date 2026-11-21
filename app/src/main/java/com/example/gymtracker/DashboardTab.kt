@@ -80,7 +80,8 @@ fun DashboardTab(
     onStartWorkout: (Long) -> Unit,
     onOpenWorkout: (Long) -> Unit,
     onOpenSession: (Long) -> Unit,
-    onGoTo: (Int) -> Unit
+    onGoTo: (Int) -> Unit,
+    onNewWorkout: () -> Unit = { onGoTo(2) }
 ) {
     val sessions = allSessions(store)
     val weekStart = startOfWeek()
@@ -119,7 +120,9 @@ fun DashboardTab(
                         Text(tr("Diese Woche", "This week"), style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
-                            tr("${weekSessions.size} von $goal Trainings", "${weekSessions.size} of $goal workouts"),
+                            // Ziel erreicht/übertroffen → nicht „5 von 3“, sondern „5 Trainings ✓“ (Ziel steht darunter)
+                            if (weekSessions.size >= goal) plural(weekSessions.size, tr("Training", "workout"), tr("Trainings", "workouts")) + " ✓"
+                            else tr("${weekSessions.size} von $goal Trainings", "${weekSessions.size} of $goal workouts"),
                             style = MaterialTheme.typography.titleLarge
                         )
                         Text(
@@ -129,7 +132,9 @@ fun DashboardTab(
                             ) else tr("Starte deine Serie!", "Start your streak!"),
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        Text(tr("Tippen, um das Ziel zu ändern", "Tap to change goal"),
+                        Text(
+                            if (weekSessions.size >= goal) tr("Ziel $goal/Woche · tippen zum Ändern", "Goal $goal/week · tap to change")
+                            else tr("Tippen, um das Ziel zu ändern", "Tap to change goal"),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -174,12 +179,13 @@ fun DashboardTab(
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
                         Text(tr("Willkommen! 👋", "Welcome! 👋"), style = MaterialTheme.typography.titleLarge)
+                        Spacer(Modifier.height(4.dp))
                         Text(
-                            tr("Leg dein erstes Workout an – z. B. aus einer Vorlage.", "Create your first workout – e.g. from a template."),
+                            tr("So geht's: 1. Workout aus einer Vorlage anlegen · 2. Training starten · 3. Sätze eintragen.", "How it works: 1. Create a workout from a template · 2. Start training · 3. Log your sets."),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(Modifier.height(8.dp))
-                        Button(onClick = { onGoTo(2) }) { Text(tr("Zu den Workouts", "Go to workouts")) }
+                        Button(onClick = onNewWorkout) { Text(tr("Vorlage wählen", "Choose a template")) }
                     }
                 }
             }

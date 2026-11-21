@@ -47,6 +47,7 @@ fun HomeScreen(
     onOpen: (String) -> Unit,
     onCatalog: () -> Unit,
     onWiki: () -> Unit,
+    onBot: () -> Unit,
     onOpenWorkout: (Long) -> Unit,
     onCreatedWorkout: (Long) -> Unit,
     calMonth: Int,
@@ -62,8 +63,8 @@ fun HomeScreen(
     var showSettings by remember { mutableStateOf(false) }
     val listUi = rememberFilterUi(listFilter)
 
-    // Pager für die fünf Hauptbereiche, synchron mit `tab`
-    val pagerState = rememberPagerState(initialPage = tab) { 6 }
+    // Pager für die fünf Hauptbereiche, synchron mit `tab` („Fragen“ ist jetzt ein eigener Bildschirm im ⋮-Menü)
+    val pagerState = rememberPagerState(initialPage = tab.coerceAtMost(4)) { 5 }
     val currentOnTab by rememberUpdatedState(onTab)
     LaunchedEffect(tab) {
         if (pagerState.currentPage != tab) pagerState.animateScrollToPage(tab)
@@ -109,24 +110,17 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            when (tab) {
-                                0 -> tr("Übersicht", "Overview")
-                                1 -> tr("Übungen", "Exercises")
-                                2 -> "Workouts"
-                                3 -> tr("Kalender", "Calendar")
-                                4 -> tr("Körper", "Body")
-                                else -> tr("Fragen", "Ask")
-                            },
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                        Text(
-                            "GymTracker",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    // Nur der Bereichsname (der App-Name stand vorher darunter und kostete Platz)
+                    Text(
+                        when (tab) {
+                            0 -> tr("Übersicht", "Overview")
+                            1 -> tr("Übungen", "Exercises")
+                            2 -> "Workouts"
+                            3 -> tr("Kalender", "Calendar")
+                            else -> tr("Körper", "Body")
+                        },
+                        style = MaterialTheme.typography.headlineSmall
+                    )
                 },
                 actions = {
                     // Suche + Filter nur im Übungen-Bereich (und nur, wenn es Übungen gibt)
@@ -147,9 +141,15 @@ fun HomeScreen(
                                 leadingIcon = { AppIcon(Ico.BOOK) },
                                 onClick = { menuOpen = false; onWiki() }
                             )
+                            DropdownMenuItem(
+                                text = { Text(tr("Fragen", "Ask")) },
+                                leadingIcon = { AppIcon(Ico.CHAT) },
+                                onClick = { menuOpen = false; onBot() }
+                            )
                             HorizontalDivider()
                             DropdownMenuItem(
                                 text = { Text(tr("Daten exportieren", "Export data")) },
+                                leadingIcon = { AppIcon(Ico.UPLOAD) },
                                 onClick = {
                                     menuOpen = false
                                     val date = SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(Date())
@@ -158,6 +158,7 @@ fun HomeScreen(
                             )
                             DropdownMenuItem(
                                 text = { Text(tr("Daten importieren", "Import data")) },
+                                leadingIcon = { AppIcon(Ico.DOWNLOAD) },
                                 onClick = {
                                     menuOpen = false
                                     // */*: manche Dateimanager kennzeichnen .json nicht als application/json
@@ -188,8 +189,7 @@ fun HomeScreen(
                     Triple(Ico.DUMBBELL, tr("Übungen", "Exercises"), 1),
                     Triple(Ico.LIST, "Workouts", 2),
                     Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 3),
-                    Triple(Ico.BODY, tr("Körper", "Body"), 4),
-                    Triple(Ico.CHAT, tr("Fragen", "Ask"), 5)
+                    Triple(Ico.BODY, tr("Körper", "Body"), 4)
                 ).forEach { (icon, label, i) ->
                     NavigationBarItem(
                         selected = tab == i,
@@ -237,12 +237,11 @@ fun HomeScreen(
         ) { page ->
             val modifier = Modifier.fillMaxSize()
             when (page) {
-                0 -> DashboardTab(store, modifier, onStartWorkout, onOpenWorkout, onOpenSession, onGoTo = onTab)
+                0 -> DashboardTab(store, modifier, onStartWorkout, onOpenWorkout, onOpenSession, onGoTo = onTab, onNewWorkout = { showNewWorkout = true })
                 1 -> ExerciseGrid(store, modifier, listFilter, onListFilter, listUi, onOpen, onCatalog)
                 2 -> WorkoutList(store, modifier, onOpenWorkout, onNew = { showNewWorkout = true })
                 3 -> CalendarTab(store, modifier, calMonth, onCalMonth, calDay, onCalDay, onOpenSession)
-                4 -> BodyTab(store, modifier)
-                else -> BotTab(modifier)
+                else -> BodyTab(store, modifier)
             }
         }
     }
@@ -362,7 +361,13 @@ fun ExerciseGrid(
     val groups = store.exercises.map { store.groupOf(it) }.distinct().sortedBy { it.ordinal }
     val equipment = store.exercises.mapNotNull { equipmentOf(it) }.distinct().sortedBy { it.ordinal }
     val visible = store.exercises.filter { filter.matches(it, store.groupOf(it)) }
-    var removing by remember { mutableStateOf<String?>(null) } // Übung, deren Entfernen gerade gefragt wird
+    // Gedrückt halten → sofort aus „Meine Übungen“ entfernen (Workouts und Verlauf bleiben), mit „Rückgängig“
+    fun remove(name: String) {
+        val index = store.removeFromList(name)
+        Undo.show(tr("„${exName(name)}“ entfernt – bleibt in Workouts und Verlauf", "\"${exName(name)}\" removed – stays in workouts and history")) {
+            store.restoreToList(name, index)
+        }
+    }
 
     Column(modifier) {
         FilterBar(filter, onFilter, groups, equipment, ui)
@@ -371,6 +376,14 @@ fun ExerciseGrid(
             return@Column
         }
         TileGrid(Modifier.weight(1f).fillMaxWidth()) {
+            // Hinweis auf die sonst unsichtbaren Gesten
+            item(key = "hint", span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    tr("Tippen = öffnen · gedrückt halten = aus der Liste entfernen", "Tap = open · long-press = remove from list"),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             // Eine Überschrift pro Kategorie, in der Reihenfolge des enums
             MuscleGroup.entries.forEach { group ->
                 val names = visible.filter { store.groupOf(it) == group }
@@ -384,34 +397,11 @@ fun ExerciseGrid(
                     ExerciseTile(
                         name, group, store.setsFor(name).firstOrNull(),
                         onClick = { onOpen(name) },
-                        onLongClick = { removing = name }
+                        onLongClick = { remove(name) }
                     )
                 }
             }
         }
-    }
-
-    // Gedrückt halten → aus „Meine Übungen“ entfernen (Workouts und Verlauf bleiben)
-    removing?.let { name ->
-        val inWorkouts = store.workouts.filter { name in it.exercises }
-        AlertDialog(
-            onDismissRequest = { removing = null },
-            title = { Text(tr("„${exName(name)}“ entfernen?", "Remove \"${exName(name)}\"?")) },
-            text = {
-                Text(
-                    tr("Die Übung verschwindet aus deinen Übungen. Dein Verlauf bleibt erhalten", "The exercise disappears from your exercises. Your history is kept") +
-                        (if (inWorkouts.isEmpty()) "" else
-                            (if (inWorkouts.size == 1) tr(", ebenso im Workout ", ", and it stays in the workout ")
-                            else tr(", ebenso in den Workouts ", ", and it stays in the workouts ")) +
-                                inWorkouts.joinToString(", ") { tr("„${it.name}“", "\"${it.name}\"") }) +
-                        tr(". Über den Katalog kannst du sie jederzeit wieder hinzufügen.", ". You can add it again from the catalog at any time.")
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { store.removeFromList(name); removing = null }) { Text(tr("Entfernen", "Remove")) }
-            },
-            dismissButton = { TextButton(onClick = { removing = null }) { Text(tr("Abbrechen", "Cancel")) } }
-        )
     }
 }
 

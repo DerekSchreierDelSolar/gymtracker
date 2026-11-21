@@ -113,23 +113,32 @@ object Bot {
 
     // ----- Antworten -----
 
-    val suggestions: List<String>
+    /** Vorschlags-Pool; angezeigt wird jeweils eine zufällige Auswahl (wechselt bei jedem Öffnen). */
+    private val pool: List<String>
         get() = listOf(
             tr("Wie mache ich Kreuzheben?", "How do I deadlift?"),
             tr("Übungen für obere Brust", "Exercises for upper chest"),
             tr("Was ist ein Drop-Satz?", "What is a drop set?"),
             tr("Wie mache ich ein Backup?", "How do I back up?"),
             tr("Welche Muskeln trainiert Rudern sitzend?", "Which muscles does seated row work?"),
-            tr("Übungen für hintere Schulter", "Exercises for rear delts")
+            tr("Übungen für hintere Schulter", "Exercises for rear delts"),
+            tr("Wie plane ich Trainingstage?", "How do I plan training days?"),
+            tr("Übungen für Waden", "Exercises for calves"),
+            tr("Wie funktioniert der Gewichts-Vorschlag?", "How does the weight suggestion work?"),
+            tr("Was bedeutet optional?", "What does optional mean?"),
+            tr("Übungen für den unteren Rücken", "Exercises for the lower back")
         )
 
-    fun greeting() = BotMessage(
+    val suggestions: List<String> get() = pool.shuffled().take(5)
+
+    /** Begrüßung; `recent` = Name der zuletzt trainierten Übung → passender erster Vorschlag. */
+    fun greeting(recent: String? = null) = BotMessage(
         false,
         tr(
             "Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert.",
             "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works."
         ),
-        suggestions = suggestions
+        suggestions = listOfNotNull(recent?.let { tr("Wie mache ich $it?", "How do I do $it?") }) + suggestions.take(if (recent != null) 4 else 5)
     )
 
     /** Frage stellen: Frage und Antwort landen im Verlauf. */

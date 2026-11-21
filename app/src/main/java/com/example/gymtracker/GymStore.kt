@@ -360,8 +360,17 @@ class GymStore(context: Context) {
      * Übung nur aus „Meine Übungen“ (Tab Übungen) entfernen. Verlauf, Notizen, Kategorie und alle Workouts
      * behalten sie – über den Katalog lässt sie sich wieder hinzufügen. (deleteExercise löscht dagegen alles.)
      */
-    fun removeFromList(name: String) {
+    fun removeFromList(name: String): Int {
+        val index = exercises.indexOf(name)
         exercises.remove(name)
+        save()
+        return index
+    }
+
+    /** Aus der Liste entfernte Übung an ihren alten Platz zurück („Rückgängig“). */
+    fun restoreToList(name: String, index: Int) {
+        if (hasExercise(name)) return
+        exercises.add(index.coerceIn(0, exercises.size), name)
         save()
     }
 
@@ -500,6 +509,12 @@ class GymStore(context: Context) {
         save()
     }
 
+    /** Gelöschten Satz zurückholen („Rückgängig“). */
+    fun restoreSet(set: GymSet) {
+        if (sets.none { it.id == set.id }) sets.add(set)
+        save()
+    }
+
     fun deleteSet(set: GymSet) {
         sets.remove(set)
         save()
@@ -557,8 +572,17 @@ class GymStore(context: Context) {
 
     // ----- Körpergewicht -----
 
-    fun addWeight(kg: Double) {
-        weights.add(WeightEntry(System.currentTimeMillis(), kg))
+    /** Gewicht eintragen; `time` = gewählter Tag (Nachtragen), Liste bleibt nach Zeit sortiert. */
+    fun addWeight(kg: Double, time: Long = System.currentTimeMillis()) {
+        weights.add(WeightEntry(time, kg))
+        weights.sortBy { it.time }
+        save()
+    }
+
+    /** Gelöschten Eintrag zurückholen („Rückgängig“). */
+    fun restoreWeight(entry: WeightEntry) {
+        weights.add(entry)
+        weights.sortBy { it.time }
         save()
     }
 

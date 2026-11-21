@@ -100,6 +100,7 @@ export function wikiScreen() {
 
   return screen({
     title: tr('Übungs-Wiki', 'Exercise wiki'), back: true, key: 'wiki',
+    actions: [iconBtn('chat', () => update({ bot: true }), { label: tr('Fragen', 'Ask') })], // Frage an den Bot
     content: h('div', { class: 'pad' },
       h('label', { class: 'search wiki-search' }, icon('search', 20),
         h('input', {
