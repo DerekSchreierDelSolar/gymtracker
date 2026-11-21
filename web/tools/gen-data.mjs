@@ -176,6 +176,7 @@ console.log(`body-data.js: ${bodyShapes.length} Formen, ${Object.keys(muscles).l
 const bot = JSON.parse(readFileSync(join(root, 'app/src/main/assets/bot.json'), 'utf8'));
 for (const k of Object.keys(bot.targets)) if (!regionKeys.has(k) && !muscles[k]) throw new Error('bot.json: unbekannte Region/Muskel ' + k);
 for (const f of bot.faq) if (f.a?.length !== 2 || !f.keys?.length) throw new Error('bot.json: Eintrag braucht keys und a = [de, en]');
+for (const g of bot.workoutGroups ?? []) if (!Array.isArray(g.words) || !g.words.length || !g.muscles) throw new Error('bot.json workoutGroups: Eintrag braucht words und muscles');
 for (const g of bot.workoutGroups ?? []) for (const [m, s] of Object.entries(g.muscles)) if (!muscles[m] || ![1, 0.6, 0.3].includes(s)) throw new Error('bot.json workoutGroups: unbekannter Muskel/Stufe ' + m + ' ' + s);
 writeFileSync(join(root, 'web/js/bot-data.js'),
   `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus app/src/main/assets/bot.json – nicht von Hand ändern!\n` +

@@ -59,10 +59,13 @@ object Bot {
         howWords = phrases(o.getJSONArray("howWords"))
         tipWords = phrases(o.getJSONArray("tipWords"))
         val g = o.optJSONArray("workoutGroups") ?: JSONArray()
-        workoutGroups = List(g.length()) { i ->
-            val e = g.getJSONObject(i)
-            val m = e.getJSONObject("muscles")
-            WorkoutGroup(phrases(e.getJSONArray("words")), m.keys().asSequence().associateWith { m.getDouble(it).toFloat() })
+        // Ungültige Einträge überspringen statt den ganzen Bot scheitern zu lassen (Prüfung in gen-data.mjs läuft nur fürs Web)
+        workoutGroups = (0 until g.length()).mapNotNull { i ->
+            val e = g.optJSONObject(i) ?: return@mapNotNull null
+            val w = e.optJSONArray("words") ?: return@mapNotNull null
+            val m = e.optJSONObject("muscles") ?: return@mapNotNull null
+            val muscles = m.keys().asSequence().mapNotNull { k -> m.optDouble(k).takeIf { !it.isNaN() }?.let { k to it.toFloat() } }.toMap()
+            WorkoutGroup(List(w.length()) { tokens(w.optString(it)) }.filter { it.isNotEmpty() }, muscles)
         }
     }
 
@@ -168,10 +171,31 @@ object Bot {
 
     // ----- Workout-Assistent (WorkoutWizard.kt) -----
 
-    /** „Brustworkout“ → „brust workout“, „Ganzkörpertrainingsplan“ → „ganzkoerper trainingsplan“ */
+    /** Einzelwörter, die eine Muskelgruppe/einen Muskel bezeichnen („brust“, „bein“ …) – für splitCompounds */
+    private val muscleWordSet: Set<String> by lazy {
+        (workoutGroups.flatMap { it.words } + targets.values.flatten()).filter { it.size == 1 }.map { it[0] }.toSet()
+    }
+
+    /**
+     * „Brustworkout“ → „brust workout“, „Ganzkörpertrainingsplan“ → „ganzkoerper trainingsplan“ – nur wenn der
+     * vordere Teil ein Muskel-/Gruppenwort ist („Krafttraining“ bleibt ganz, sonst würde jede Frage dazu den Assistenten starten).
+     */
     private fun splitCompounds(words: List<String>): List<String> = words.flatMap { w ->
         val i = listOf("workout", "training", "routine").map { w.indexOf(it) }.filter { it >= 3 }.minOrNull()
-        if (i == null) listOf(w) else listOf(w.substring(0, i), w.substring(i))
+        if (i == null || w.substring(0, i) !in muscleWordSet) listOf(w) else listOf(w.substring(0, i), w.substring(i))
+    }
+
+    /** Wörter, nach denen ein Muskel ausdrücklich nicht gemeint ist („ohne Beine“) */
+    private val NEGATIONS = setOf("ohne", "kein", "keine", "keinen", "nicht", "no", "without", "not", "except")
+
+    /**
+     * Wortvergleich für die Vorauswahl: 0 = gleich, 1 = Tippfehler, null = anders. Tippfehler erst ab 7 Buchstaben,
+     * damit Alltagswörter nicht treffen („beide“ ≠ „beine“, „brauch“ ≠ „bauch“).
+     */
+    private fun presetDistance(a: String, b: String): Int? = when {
+        a == b -> 0
+        minOf(a.length, b.length) >= 7 && close(a, b) -> 1
+        else -> null
     }
 
     /** „Erstelle mir ein Workout“, „Trainingsplan machen“, „create a workout“ … */
@@ -184,24 +208,31 @@ object Bot {
     /**
      * Muskeln aus der Frage vorauswählen („Brust-Workout“ → Brust als Hauptfokus, „Beintraining“ → Beinmuskeln).
      * Gruppen (bot.json „workoutGroups“) und Muskel-/Regionsbegriffe („targets“, Region → ganzer Muskel, Hauptfokus);
-     * längere Wortfolgen gewinnen und verbrauchen ihre Wörter („unterer Rücken“ ≠ „Rücken“), bei Gleichstand die Gruppe.
+     * längere Wortfolgen gewinnen und verbrauchen ihre Wörter („unterer Rücken“ ≠ „Rücken“), dann exakte vor Tippfehler-Treffern
+     * („ruecken“ ≠ „druecken“), dann längere Wörter, bei Gleichstand die Gruppe. Verneinte Treffer („ohne Beine“) verbrauchen
+     * ihre Wörter, wählen aber nichts aus.
      */
     private fun presetMuscles(words: List<String>): Map<String, Float> {
-        class Hit(val start: Int, val phrase: List<String>, val muscles: Map<String, Float>, val group: Boolean)
+        class Hit(val start: Int, val phrase: List<String>, val typos: Int, val muscles: Map<String, Float>, val group: Boolean)
         val hits = mutableListOf<Hit>()
         fun scan(phrases: List<List<String>>, muscles: Map<String, Float>, group: Boolean) {
-            for (p in phrases) for (i in 0..words.size - p.size)
-                if (p.isNotEmpty() && p.indices.all { k -> close(words[i + k], p[k]) }) hits += Hit(i, p, muscles, group)
+            for (p in phrases) for (i in 0..words.size - p.size) {
+                if (p.isEmpty()) continue
+                val d = p.indices.map { k -> presetDistance(words[i + k], p[k]) }
+                if (d.all { it != null }) hits += Hit(i, p, d.sumOf { it!! }, muscles, group)
+            }
         }
         workoutGroups.forEach { scan(it.words, it.muscles, true) }
         targets.forEach { (key, ps) -> scan(ps, mapOf(muscleOfRegion(key) to 1f), false) }
         val used = BooleanArray(words.size)
         val accepted = mutableListOf<Hit>()
-        for (h in hits.sortedWith(compareByDescending<Hit> { it.phrase.size }.thenByDescending { it.phrase.sumOf { w -> w.length } }.thenByDescending { it.group })) {
+        val order = compareByDescending<Hit> { it.phrase.size }.thenBy { it.typos }
+            .thenByDescending { it.phrase.sumOf { w -> w.length } }.thenByDescending { it.group }
+        for (h in hits.sortedWith(order)) {
             val range = h.start until h.start + h.phrase.size
             if (range.any { used[it] }) continue
             range.forEach { used[it] = true }
-            accepted += h
+            if (h.start == 0 || words[h.start - 1] !in NEGATIONS) accepted += h
         }
         // Reihenfolge wie in der Frage
         val out = LinkedHashMap<String, Float>()

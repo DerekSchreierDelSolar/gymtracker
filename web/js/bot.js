@@ -189,10 +189,13 @@ function ask(q) {
 
 // ----- Workout-Assistent (wizard.js, wie Bot.kt) -----
 
-/** „Brustworkout“ → „brust workout“, „Ganzkörpertrainingsplan“ → „ganzkoerper trainingsplan“ */
+/**
+ * „Brustworkout“ → „brust workout“, „Ganzkörpertrainingsplan“ → „ganzkoerper trainingsplan“ – nur wenn der vordere Teil
+ * ein Muskel-/Gruppenwort ist („Krafttraining“ bleibt ganz, sonst würde jede Frage dazu den Assistenten starten).
+ */
 const splitCompounds = words => words.flatMap(w => {
   const i = ['workout', 'training', 'routine'].map(n => w.indexOf(n)).filter(i => i >= 3).sort((a, b) => a - b)[0];
-  return i == null ? [w] : [w.slice(0, i), w.slice(i)];
+  return i == null || !muscleWordSet().has(w.slice(0, i)) ? [w] : [w.slice(0, i), w.slice(i)];
 });
 
 /** „Erstelle mir ein Workout“, „Trainingsplan machen“, „create a workout“ … */
@@ -204,27 +207,44 @@ function wantsWorkout(words) {
 
 const stageTitle = s => (s === 1 ? tr('Hauptfokus', 'Main focus') : s === 0.6 ? tr('Mittel', 'Moderate') : tr('Leicht', 'Light'));
 
-const GROUPS = (BOT.workoutGroups ?? []).map(g => ({ words: g.words.map(tokens), muscles: g.muscles }));
+// Ungültige Einträge überspringen (wie Bot.load)
+const GROUPS = (BOT.workoutGroups ?? [])
+  .filter(g => Array.isArray(g?.words) && g.muscles && typeof g.muscles === 'object')
+  .map(g => ({ words: g.words.filter(w => typeof w === 'string').map(tokens).filter(p => p.length), muscles: g.muscles }));
+
+/** Einzelwörter, die eine Muskelgruppe/einen Muskel bezeichnen („brust“, „bein“ …) – für splitCompounds */
+let muscleWords = null;
+const muscleWordSet = () => (muscleWords ??= new Set([...GROUPS.flatMap(g => g.words), ...TARGETS.flatMap(([, ps]) => ps)].filter(p => p.length === 1).map(p => p[0])));
+
+/** Wörter, nach denen ein Muskel ausdrücklich nicht gemeint ist („ohne Beine“) */
+const NEGATIONS = new Set(['ohne', 'kein', 'keine', 'keinen', 'nicht', 'no', 'without', 'not', 'except']);
+
+/** Wortvergleich für die Vorauswahl: 0 = gleich, 1 = Tippfehler (erst ab 7 Buchstaben: „beide“ ≠ „beine“), null = anders */
+const presetDistance = (a, b) => (a === b ? 0 : Math.min(a.length, b.length) >= 7 && close(a, b) ? 1 : null);
 
 /**
  * Muskeln aus der Frage vorauswählen (wie presetMuscles in Bot.kt): Gruppen („workoutGroups“) und Muskel-/Regionsbegriffe
- * („targets“, Region → ganzer Muskel, Hauptfokus); längere Wortfolgen gewinnen und verbrauchen ihre Wörter, bei Gleichstand die Gruppe.
+ * („targets“, Region → ganzer Muskel, Hauptfokus); längere Wortfolgen gewinnen und verbrauchen ihre Wörter, dann exakte vor Tippfehler-Treffern
+ * („ruecken“ ≠ „druecken“), dann längere Wörter, bei Gleichstand die Gruppe. Verneinte Treffer („ohne Beine“) wählen nichts aus.
  */
 function presetMuscles(words) {
   const hits = [];
   const scan = (phrases, muscles, group) => {
-    for (const p of phrases) for (let i = 0; i + p.length <= words.length; i++)
-      if (p.length && p.every((x, k) => close(words[i + k], x))) hits.push({ start: i, phrase: p, muscles, group });
+    for (const p of phrases) for (let i = 0; p.length && i + p.length <= words.length; i++) {
+      const d = p.map((x, k) => presetDistance(words[i + k], x));
+      if (d.every(x => x != null)) hits.push({ start: i, phrase: p, typos: d.reduce((a, x) => a + x, 0), muscles, group });
+    }
   };
   for (const g of GROUPS) scan(g.words, g.muscles, true);
   for (const [key, ps] of TARGETS) scan(ps, { [muscleOfRegion(key)]: 1 }, false);
-  const score = h => h.phrase.length * 10000 + h.phrase.join('').length * 2 + (h.group ? 1 : 0);
+  const chars = h => h.phrase.join('').length;
+  const order = (a, b) => b.phrase.length - a.phrase.length || a.typos - b.typos || chars(b) - chars(a) || b.group - a.group;
   const used = new Set(), accepted = [], out = {};
-  for (const h of hits.sort((a, b) => score(b) - score(a))) {
+  for (const h of hits.sort(order)) {
     const range = h.phrase.map((_, k) => h.start + k);
     if (range.some(i => used.has(i))) continue;
     range.forEach(i => used.add(i));
-    accepted.push(h);
+    if (h.start === 0 || !NEGATIONS.has(words[h.start - 1])) accepted.push(h);
   }
   // Reihenfolge wie in der Frage
   for (const h of accepted.sort((a, b) => a.start - b.start))
