@@ -122,10 +122,22 @@ class GymStore(context: Context) {
         if (file.exists()) {
             file.copyTo(File(file.parentFile, "gym_data_before_import.json"), overwrite = true)
         }
+        clearAll()
+        try {
+            readFrom(root)
+        } catch (e: Exception) {
+            // Fehlerhafte Sicherung (z. B. Satz ohne Zeit): halb eingelesene Daten verwerfen und den alten
+            // Stand aus der Datei zurückholen – sonst würde der nächste save() ihn überschreiben.
+            clearAll()
+            load()
+            throw e
+        }
+        save()
+    }
+
+    private fun clearAll() {
         exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
-        readFrom(root)
-        save()
     }
 
     private fun readFrom(root: JSONObject) {

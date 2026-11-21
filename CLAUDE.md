@@ -90,6 +90,8 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 - Ziel-Sätze: `Workout.targets`; Standard **0 = optional**. Prozent = `goalCompletion()`.
 - kcal: MET-Methode, braucht Körpergewicht (`weightAt`), sonst `null`.
 - Neue gespeicherte Felder: in `readFrom()` mit `opt…`-Default lesen (alte Dateien bleiben gültig)
+  (Web: im `#readFrom` Typ prüfen, Ungültiges überspringen, Schlüssel wie `__proto__` über `entries()` filtern;
+  `importJson` ist atomar – schlägt das Einlesen fehl, wird der alte Stand wiederhergestellt, auf beiden Plattformen)
   und in `toJson()` schreiben. Bei Import zusätzlich in `importJson()` leeren.
 - **Kotlin-Falle:** Properties in `GymStore`, die `load()` befüllt, müssen **vor** `init { load() }` stehen.
 - `HomeScreen`-Tabs: 0 Start, 1 Übungen, 2 Workouts, 3 Kalender, 4 Körper, 5 Fragen (Pager-Größe 6; Web: `TABS` in home.js).

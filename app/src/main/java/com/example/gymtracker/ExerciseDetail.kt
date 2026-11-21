@@ -144,7 +144,7 @@ fun SetInput(
             // Komma als Dezimaltrenner erlauben; bei Cardio (und Zeitübungen ohne Gerät) ist das Gewicht 0
             val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull() ?: if (timed) 0.0 else null
             val r = repsText.trim().toIntOrNull()
-            if (w != null && r != null && r > 0) {
+            if (w != null && w >= 0 && r != null && r > 0) { // wie EditSetDialog: kein negatives Gewicht
                 store.addSet(exercise, w, r, type)
                 type = SetType.NORMAL
                 watchStart = null

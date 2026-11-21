@@ -5,6 +5,7 @@
 import { RENAMED_EXERCISES, TEMPLATES } from './data.js';
 import {
   CustomMeta, catalogGroup, isCardio, setAppLanguage, appLanguage, tr, dayKey, SET_TYPES, setTypeOf, isWork,
+  GROUP_KEYS, EQUIPMENT_KEYS,
 } from './core.js';
 
 const KEY = 'gym_data';
@@ -51,50 +52,57 @@ class GymStore {
   // ----- Laden / Speichern -----
 
   #readFrom(root) {
+    // Daten können aus einer fremden/kaputten Sicherung stammen → alles prüfen, Ungültiges überspringen
+    // (wie Android: unbekannte Kategorie/Gerät ignorieren). Schlüssel wie „__proto__“ nie übernehmen,
+    // sonst ließe sich über eine präparierte Datei Object.prototype verändern.
     const arr = x => (Array.isArray(x) ? x : []);
     const obj = x => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
-    const intMap = o => Object.fromEntries(Object.entries(obj(o)).map(([k, v]) => [migrateName(k), Number(v) || 0]));
+    const objs = x => arr(x).filter(o => o && typeof o === 'object' && !Array.isArray(o));
+    const entries = o => Object.entries(obj(o)).filter(([k]) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype');
+    const num = x => (typeof x === 'number' && Number.isFinite(x) ? x : null);
+    const intMap = o => Object.fromEntries(entries(o).map(([k, v]) => [migrateName(k), Number(v) || 0]));
+    const names = x => arr(x).filter(n => typeof n === 'string').map(migrateName);
 
-    for (const e of arr(root.exercises)) {
-      const n = migrateName(String(e));
-      if (!this.exercises.includes(n)) this.exercises.push(n);
-    }
-    for (const [k, g] of Object.entries(obj(root.groups))) this.groups[migrateName(k)] = g;
-    for (const [k, e] of Object.entries(obj(root.customEquipment))) CustomMeta.equipment[migrateName(k)] = e;
-    for (const t of arr(root.customTimed)) CustomMeta.timed.add(migrateName(t));
-    for (const [k, m] of Object.entries(obj(root.customMuscles))) {
+    for (const n of names(root.exercises)) if (!this.exercises.includes(n)) this.exercises.push(n);
+    for (const [k, g] of entries(root.groups)) if (GROUP_KEYS.includes(g)) this.groups[migrateName(k)] = g;
+    for (const [k, e] of entries(root.customEquipment)) if (EQUIPMENT_KEYS.includes(e)) CustomMeta.equipment[migrateName(k)] = e;
+    for (const t of names(root.customTimed)) CustomMeta.timed.add(t);
+    for (const [k, m] of entries(root.customMuscles)) {
       CustomMeta.muscles[migrateName(k)] = { primary: arr(m?.primary).map(String), secondary: arr(m?.secondary).map(String) };
     }
 
-    this.workouts = arr(root.workouts).map(o => ({
-      id: o.id, name: o.name,
-      exercises: arr(o.exercises).map(migrateName),
+    this.workouts = objs(root.workouts).map(o => ({
+      id: o.id, name: String(o.name ?? ''),
+      exercises: names(o.exercises),
       targets: intMap(o.targets),
       // Trainingstage laut Plan: 1 = Montag … 7 = Sonntag (wie Workout.days)
       days: arr(o.days).map(Number).filter(d => d >= 1 && d <= 7),
     }));
     const s = obj(root.settings);
-    this.weeklyGoal = s.weeklyGoal ?? 3;
-    this.restSeconds = s.restSeconds ?? 90;
-    this.lastExport = s.lastExport ?? 0;
+    this.weeklyGoal = num(s.weeklyGoal) ?? 3;
+    this.restSeconds = num(s.restSeconds) ?? 90;
+    this.lastExport = num(s.lastExport) ?? 0;
     this.themeMode = s.theme ?? 'system';
     setAppLanguage(s.language ?? 'de');
 
-    this.weights = arr(root.weights).map(o => ({ time: o.time, kg: o.kg })).sort((a, b) => a.time - b.time);
-    for (const [ex, days] of Object.entries(obj(root.notes))) {
+    this.weights = objs(root.weights).filter(o => num(o.time) != null && num(o.kg) != null)
+      .map(o => ({ time: o.time, kg: o.kg })).sort((a, b) => a.time - b.time);
+    for (const [ex, days] of entries(root.notes)) {
       const n = migrateName(ex);
-      for (const [d, text] of Object.entries(obj(days))) if (text) (this.notes[n] ??= {})[d] = String(text);
+      for (const [d, text] of entries(days)) if (text) (this.notes[n] ??= {})[d] = String(text);
     }
-    this.sessions = arr(root.sessions).map(o => ({
-      id: o.id, workoutId: o.workoutId, workoutName: o.workoutName,
-      exercises: arr(o.exercises).map(migrateName),
+    this.sessions = objs(root.sessions).filter(o => num(o.start) != null && num(o.end) != null).map(o => ({
+      id: o.id, workoutId: o.workoutId, workoutName: String(o.workoutName ?? ''),
+      exercises: names(o.exercises),
       start: o.start, end: o.end, targets: intMap(o.targets),
     }));
-    this.sets = arr(root.sets).map(o => ({
-      id: o.id, exercise: migrateName(o.exercise), weight: Number(o.weight), reps: Number(o.reps), time: o.time,
-      // Satz-Typ nur speichern, wenn er nicht „Normal“ ist (wie Android)
-      ...(SET_TYPES.includes(o.type) && o.type !== 'NORMAL' ? { type: o.type } : {}),
-    }));
+    this.sets = objs(root.sets)
+      .filter(o => typeof o.exercise === 'string' && num(o.weight) != null && num(o.reps) != null && num(o.time) != null)
+      .map(o => ({
+        id: o.id, exercise: migrateName(o.exercise), weight: o.weight, reps: o.reps, time: o.time,
+        // Satz-Typ nur speichern, wenn er nicht „Normal“ ist (wie Android)
+        ...(SET_TYPES.includes(o.type) && o.type !== 'NORMAL' ? { type: o.type } : {}),
+      }));
   }
 
   #toJson() {
@@ -142,10 +150,21 @@ class GymStore {
     const root = JSON.parse(text); // zuerst parsen: bei Fehler bleibt alles unverändert
     const old = localStorage.getItem(KEY);
     if (old) localStorage.setItem('gym_data_before_import', old);
+    this.#clearAll();
+    try {
+      this.#readFrom(root);
+    } catch (e) {
+      // Halb eingelesene Daten verwerfen, alten Stand zurückholen (sonst überschreibt ihn der nächste Speichervorgang)
+      this.#clearAll();
+      if (old) this.#readFrom(JSON.parse(old));
+      throw e;
+    }
+    this.#save();
+  }
+
+  #clearAll() {
     this.exercises = []; this.sets = []; this.groups = {}; this.workouts = []; this.sessions = []; this.weights = []; this.notes = {};
     CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
-    this.#readFrom(root);
-    this.#save();
   }
 
   markExported() { this.lastExport = Date.now(); this.#save(); }
