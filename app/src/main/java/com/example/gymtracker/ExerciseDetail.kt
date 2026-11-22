@@ -187,6 +187,10 @@ fun SetInput(
         }
         Spacer(Modifier.width(56.dp + 8.dp)) // unter dem ＋
     }
+    // Scheibenrechner + Aufwärm-Rampe (Plates.kt)
+    if (showWeight && !timed) SetHelpers(store, exercise, weightText) { w, r ->
+        weightText = fmtW(w); repsText = r.toString(); type = SetType.WARMUP
+    }
     }
 }
 

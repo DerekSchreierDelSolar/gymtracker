@@ -36,6 +36,7 @@ class GymStore {
   restSeconds = 90;
   lastExport = 0;
   weeklyGoal = 3;
+  barWeight = 20;       // Langhantel-Stange für den Scheibenrechner (plates.js) – wie GymStore.barWeight
   themeMode = 'system';
   profile = {};          // optional für genauere kcal: { sex: 'm'|'f', birthYear, height } – wie GymStore.profile
   goals = [];            // langfristige Ziele { id, type, exercise?, target, start, created } – wie GymStore.goals (goals.js)
@@ -135,6 +136,7 @@ class GymStore {
     }));
     const s = obj(root.settings);
     this.weeklyGoal = num(s.weeklyGoal) ?? 3;
+    this.barWeight = num(s.barWeight) != null && s.barWeight >= 0 && s.barWeight <= 50 ? s.barWeight : 20;
     this.restSeconds = num(s.restSeconds) ?? 90;
     this.lastExport = num(s.lastExport) ?? 0;
     this.themeMode = s.theme ?? 'system';
@@ -195,6 +197,7 @@ class GymStore {
         theme: this.themeMode,
         language: appLanguage,
         weeklyGoal: this.weeklyGoal,
+        barWeight: this.barWeight,
       },
       sets: this.sets,
       ...(Object.keys(this.profile).length ? { profile: this.profile } : {}),
@@ -261,6 +264,7 @@ class GymStore {
     this.#save();
   }
 
+  changeBarWeight(kg) { this.barWeight = kg; this.#save(); }
   changeWeeklyGoal(n) { this.weeklyGoal = Math.min(14, Math.max(1, n)); this.#save(); }
 
   // ----- Übungen -----

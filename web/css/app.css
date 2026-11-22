@@ -722,3 +722,12 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .quote-pig img { width: 100%; height: 100%; object-fit: cover; }
 .quote-spark { position: absolute; top: 0; right: 0; }
 .quote-bubble { flex: 1; margin: 0; padding: 10px 14px; background: var(--container-high); border-radius: 4px 16px 16px 16px; }
+/* Scheibenrechner + Aufwärm-Rampe (plates.js) */
+.set-helpers { display: flex; gap: 4px; margin-top: 2px; }
+.plate-row { display: flex; align-items: center; gap: 3px; }
+.plate-bar { width: 28px; height: 8px; background: var(--outline); }
+.plate { width: 14px; border-radius: 3px; display: inline-block; }
+.ramp-row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 4px; text-align: left; font-size: 17px; }
+.ramp-label { width: 32px; color: #e0a030; }
+.ramp-label.work { color: inherit; }
+.error-text { color: var(--error); }

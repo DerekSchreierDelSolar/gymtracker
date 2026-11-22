@@ -48,6 +48,12 @@ class GymStore(context: Context) {
     var weeklyGoal by mutableIntStateOf(3)
         private set
 
+    /** Gewicht der Langhantel-Stange für den Scheibenrechner (Plates.kt). Vor init { load() }! */
+    var barWeight by mutableDoubleStateOf(20.0)
+        private set
+
+    fun changeBarWeight(kg: Double) { barWeight = kg; save() }
+
     /** Optionales Profil für genauere Kalorien (Stats.kt). Vor init { load() }! */
     var profile by mutableStateOf(Profile())
         private set
@@ -235,6 +241,7 @@ class GymStore(context: Context) {
             }
             root.optJSONObject("settings")?.let {
                 restSeconds = it.optInt("restSeconds", 90)
+                barWeight = it.optDouble("barWeight", 20.0).takeIf { b -> b in 0.0..50.0 } ?: 20.0
                 lastExport = it.optLong("lastExport", 0L)
                 themeMode = it.optString("theme", "system")
                 appLanguage = it.optString("language", "de")
@@ -344,6 +351,7 @@ class GymStore(context: Context) {
                 .put("theme", themeMode)
                 .put("language", appLanguage)
                 .put("weeklyGoal", weeklyGoal)
+                .put("barWeight", barWeight)
         )
         if (!profile.isEmpty) root.put("profile", JSONObject().apply {
             profile.sex?.let { put("sex", it) }
