@@ -297,7 +297,68 @@ fun HomeScreen(
     }
 }
 
-/** Einstellungen: Design, Sprache, Backup, Erinnerung und „Fortschritt zurücksetzen“. */
+/**
+ * Profil für genauere Kalorien (optional): Geschlecht, Geburtsjahr, Größe. Erst wenn alles ausgefüllt ist,
+ * rechnet estimateKcal mit dem Grundumsatz (Mifflin-St-Jeor), sonst mit der einfachen MET-Formel.
+ */
+@Composable
+fun ProfileSettings(store: GymStore) {
+    val p = store.profile
+    // Eingabetext lokal halten (auch halb getippte Werte), gespeichert wird nur Gültiges
+    var year by remember { mutableStateOf(p.birthYear?.toString() ?: "") }
+    var height by remember { mutableStateOf(p.heightCm?.toString() ?: "") }
+    Text(tr("Profil für Kalorien (optional)", "Profile for calories (optional)"), style = MaterialTheme.typography.titleSmall)
+    Text(
+        tr("Mit Geschlecht, Geburtsjahr und Größe (plus Körpergewicht) wird der Verbrauch über deinen Grundumsatz genauer geschätzt.",
+            "With sex, birth year and height (plus body weight) calories are estimated more precisely from your resting metabolic rate."),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        listOf("m" to tr("Männlich", "Male"), "f" to tr("Weiblich", "Female")).forEach { (key, label) ->
+            FilterChip(
+                selected = p.sex == key,
+                onClick = { store.updateProfile(p.copy(sex = if (p.sex == key) null else key)) }, // erneut tippen = abwählen
+                label = { Text(label) }
+            )
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            value = year,
+            onValueChange = { v ->
+                year = v.filter(Char::isDigit).take(4)
+                val y = year.toIntOrNull()
+                store.updateProfile(store.profile.copy(birthYear = y?.takeIf { Profile.validYear(it) }))
+            },
+            label = { Text(tr("Geburtsjahr", "Birth year")) },
+            isError = year.isNotEmpty() && !Profile.validYear(year.toIntOrNull()),
+            singleLine = true,
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+            modifier = Modifier.weight(1f)
+        )
+        OutlinedTextField(
+            value = height,
+            onValueChange = { v ->
+                height = v.filter(Char::isDigit).take(3)
+                val h = height.toIntOrNull()
+                store.updateProfile(store.profile.copy(heightCm = h?.takeIf { Profile.validHeight(it) }))
+            },
+            label = { Text(tr("Größe (cm)", "Height (cm)")) },
+            isError = height.isNotEmpty() && !Profile.validHeight(height.toIntOrNull()),
+            singleLine = true,
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+            modifier = Modifier.weight(1f)
+        )
+    }
+    if (store.profile.isComplete && store.weights.isEmpty()) Text(
+        tr("Trag im Tab „Körper“ noch dein Gewicht ein.", "Also log your weight in the \"Body\" tab."),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+/** Einstellungen: Design, Sprache, Profil, Backup, Erinnerung und „Fortschritt zurücksetzen“. */
 @Composable
 fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
     var confirmReset by remember { mutableStateOf(false) }
@@ -332,6 +393,8 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
                         )
                     }
                 }
+                Spacer(Modifier.height(8.dp))
+                ProfileSettings(store)
                 Spacer(Modifier.height(8.dp))
                 AutoBackupSettings(store)
                 Spacer(Modifier.height(8.dp))

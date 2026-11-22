@@ -581,3 +581,14 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .wizard .chip .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 .wizard-actions { display: flex; justify-content: flex-end; }
 .swap-note { font-weight: 600; margin-top: -6px; }
+.muscle-link { background: none; border: 0; padding: 0; font: inherit; color: var(--primary); cursor: pointer; }
+/* Rückblick (review.js) */
+.review-card { display: flex; flex-direction: column; gap: 10px; }
+.review-card h3 { margin: 0; }
+.review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 4px; text-align: center; }
+.review-stat b { display: block; font-size: 17px; white-space: nowrap; }
+.review-stat small { display: block; }
+.delta-up { color: #43A047; }
+.delta-down { color: var(--error); }
+.review-line { display: flex; gap: 8px; margin: 0; line-height: 1.4; }
+.review-line span { flex: none; width: 22px; }

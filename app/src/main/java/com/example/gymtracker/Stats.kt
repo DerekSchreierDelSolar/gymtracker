@@ -3,6 +3,7 @@ package com.example.gymtracker
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import java.util.Calendar
 
 // ---------- Trainingsmodus ----------
 
@@ -71,13 +72,42 @@ fun exerciseResult(
 }
 
 /**
+ * Optionale Angaben für genauere Kalorien (im JSON als "profile", nur wenn etwas gesetzt ist).
+ * sex = "m" / "f", birthYear z. B. 1994, heightCm z. B. 180. Fehlt etwas, gilt die einfache MET-Formel.
+ */
+data class Profile(val sex: String? = null, val birthYear: Int? = null, val heightCm: Int? = null) {
+    val isComplete: Boolean get() = sex != null && birthYear != null && heightCm != null
+    val isEmpty: Boolean get() = sex == null && birthYear == null && heightCm == null
+
+    companion object {
+        fun validYear(y: Int?) = y != null && y in 1900..(Calendar.getInstance().get(Calendar.YEAR) - 10)
+        fun validHeight(h: Int?) = h != null && h in 100..250
+    }
+}
+
+/** Grundumsatz in kcal pro Tag nach Mifflin-St-Jeor; null, wenn das Profil unvollständig ist. */
+fun bmrKcalPerDay(p: Profile, kg: Double, time: Long): Double? {
+    if (!p.isComplete) return null
+    val year = Calendar.getInstance().apply { timeInMillis = time }.get(Calendar.YEAR)
+    val age = (year - p.birthYear!!).coerceAtLeast(10)
+    return 10 * kg + 6.25 * p.heightCm!! - 5 * age + if (p.sex == "m") 5 else -161
+}
+
+/**
+ * kcal je „MET-Stunde“: Standard 1 kcal × kg; mit vollständigem Profil der persönliche Grundumsatz pro Stunde
+ * (korrigierte MET-Methode – berücksichtigt Alter, Größe und Geschlecht).
+ */
+fun kcalPerMetHour(store: GymStore, kg: Double, time: Long): Double =
+    bmrKcalPerDay(store.profile, kg, time)?.let { it / 24.0 } ?: kg
+
+/**
  * Geschätzter Kalorienverbrauch eines Trainings (MET-Methode, siehe CARDIO_MET).
  * Cardio: eingetragene Minuten × MET des Geräts.
  * Kraft: restliche Trainingszeit × 5 MET; beim freien Training (keine echte Dauer)
- * 2,5 Minuten pro Satz inkl. Pause.
+ * 2,5 Minuten pro Satz inkl. Pause. Mit Profil: × Grundumsatz/24 statt × kg (kcalPerMetHour).
  */
 fun estimateKcal(store: GymStore, t: TrainingSession, results: List<ExerciseResult>): Int? {
-    val kg = store.weightAt(t.start) ?: return null
+    val kg = store.weightAt(t.start)?.let { kcalPerMetHour(store, it, t.start) } ?: return null
     val cardio = results.filter { it.group.isCardio }.map { it.copy(sets = it.sets.work()) }
     val cardioMinutes = cardio.sumOf { r -> r.sets.sumOf { it.reps } }
     val cardioKcal = cardio.sumOf { r -> r.sets.sumOf { it.reps } * cardioMet(r.name) } * kg / 60.0

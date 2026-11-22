@@ -4,6 +4,7 @@ import { store } from '../store.js';
 import {
   tr, exName, sortByName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
+  validYear, validHeight, profileComplete,
 } from '../core.js';
 import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, nextWorkoutAfter, planPick } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
@@ -15,6 +16,7 @@ import { nav, go, update, rerender, openDialog, closeDialog, onSwipe } from '../
 import { screen, fab } from '../layout.js';
 import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
+import { reviewCard } from '../review.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -126,13 +128,44 @@ function importData() {
   input.click();
 }
 
+// Eingabetext des Profils (auch halb getippt) – gespeichert wird nur Gültiges (wie ProfileSettings in HomeScreen.kt)
+const profileDraft = { year: '', height: '' };
+
+function profileSettings() {
+  const p = store.profile;
+  const numInput = (id, key, max, valid, label, field) => h('label', { class: 'field' + (profileDraft[key] && !valid(Number(profileDraft[key])) ? ' error' : '') },
+    h('input', {
+      id, type: 'text', inputmode: 'numeric', value: profileDraft[key], autocomplete: 'off', placeholder: ' ',
+      oninput: e => {
+        profileDraft[key] = e.target.value.replace(/D/g, '').slice(0, max);
+        const n = Number(profileDraft[key]);
+        store.updateProfile({ [field]: valid(n) ? n : null });
+      },
+    }),
+    h('span', null, label));
+  return [
+    h('b', { class: 'small-title' }, tr('Profil für Kalorien (optional)', 'Profile for calories (optional)')),
+    muted(tr('Mit Geschlecht, Geburtsjahr und Größe (plus Körpergewicht) wird der Verbrauch über deinen Grundumsatz genauer geschätzt.',
+      'With sex, birth year and height (plus body weight) calories are estimated more precisely from your resting metabolic rate.'), 'small'),
+    h('div', { class: 'chips' }, [['m', tr('Männlich', 'Male')], ['f', tr('Weiblich', 'Female')]].map(([k, l]) =>
+      chip(l, p.sex === k, () => store.updateProfile({ sex: p.sex === k ? null : k })))), // erneut tippen = abwählen
+    h('div', { class: 'row' },
+      numInput('profile-year', 'year', 4, validYear, tr('Geburtsjahr', 'Birth year'), 'birthYear'),
+      numInput('profile-height', 'height', 3, validHeight, tr('Größe (cm)', 'Height (cm)'), 'height')),
+    profileComplete(p) && !store.weights.length ? muted(tr('Trag im Tab „Körper“ noch dein Gewicht ein.', 'Also log your weight in the "Body" tab.'), 'small accent') : null,
+  ];
+}
+
 function settingsDialog() {
+  profileDraft.year = store.profile.birthYear ? String(store.profile.birthYear) : '';
+  profileDraft.height = store.profile.height ? String(store.profile.height) : '';
   openDialog(() => dialog(tr('Einstellungen', 'Settings'), [
     h('b', { class: 'small-title' }, tr('Design', 'Theme')),
     h('div', { class: 'chips' }, [['system', 'System'], ['light', tr('☀ Hell', '☀ Light')], ['dark', tr('☾ Dunkel', '☾ Dark')]]
       .map(([m, l]) => chip(l, store.themeMode === m, () => store.setTheme(m)))),
     h('b', { class: 'small-title' }, tr('Sprache', 'Language')),
     h('div', { class: 'chips' }, [['de', 'Deutsch'], ['en', 'English']].map(([l, label]) => chip(label, appLanguage === l, () => store.setLanguage(l)))),
+    profileSettings(),
     // Fortschritt zurücksetzen (wie SettingsDialog in HomeScreen.kt): Nachfrage, danach „Rückgängig“
     h('hr'),
     h('b', { class: 'small-title' }, tr('Fortschritt', 'Progress')),
@@ -214,6 +247,9 @@ function dashboardTab(onStartWorkout) {
       statBox(tr('Sätze', 'Sets'), String(weekStats.reduce((a, s) => a + s.sets, 0))),
       statBox(tr('Volumen', 'Volume'), `${fmtW(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
       statBox('🔥 kcal', weekKcal > 0 ? `~${weekKcal}` : '–')),
+
+    // Rückblick: letzte Woche bzw. letzter Monat im Vergleich (review.js)
+    store.sets.length ? reviewCard() : null,
 
     store.sets.length ? muscleHeatCard(store.sets, nav.statPeriod, p => update({ statPeriod: p })) : null,
 

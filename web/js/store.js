@@ -5,7 +5,7 @@
 import { RENAMED_EXERCISES, TEMPLATES } from './data.js';
 import {
   CustomMeta, catalogGroup, isCardio, setAppLanguage, appLanguage, tr, dayKey, SET_TYPES, setTypeOf, isWork,
-  GROUP_KEYS, EQUIPMENT_KEYS, migrateArmGroup,
+  GROUP_KEYS, EQUIPMENT_KEYS, migrateArmGroup, validYear, validHeight,
 } from './core.js';
 
 const KEY = 'gym_data';
@@ -23,6 +23,7 @@ class GymStore {
   lastExport = 0;
   weeklyGoal = 3;
   themeMode = 'system';
+  profile = {};          // optional für genauere kcal: { sex: 'm'|'f', birthYear, height } – wie GymStore.profile
   #listeners = new Set();
 
   constructor() {
@@ -111,6 +112,13 @@ class GymStore {
     this.themeMode = s.theme ?? 'system';
     setAppLanguage(s.language ?? 'de');
 
+    // Profil (optional): ungültige Werte überspringen (wie readFrom in GymStore.kt)
+    const pr = obj(root.profile);
+    this.profile = {};
+    if (pr.sex === 'm' || pr.sex === 'f') this.profile.sex = pr.sex;
+    if (validYear(num(pr.birthYear))) this.profile.birthYear = num(pr.birthYear);
+    if (validHeight(num(pr.height))) this.profile.height = num(pr.height);
+
     this.weights = objs(root.weights).filter(o => num(o.time) != null && num(o.kg) != null)
       .map(o => ({ time: o.time, kg: o.kg })).sort((a, b) => a.time - b.time);
     for (const [ex, days] of entries(root.notes)) {
@@ -152,6 +160,7 @@ class GymStore {
         weeklyGoal: this.weeklyGoal,
       },
       sets: this.sets,
+      ...(Object.keys(this.profile).length ? { profile: this.profile } : {}),
     };
   }
 
@@ -191,6 +200,7 @@ class GymStore {
   #clearAll() {
     this.exercises = []; this.sets = []; this.groups = {}; this.workouts = []; this.sessions = []; this.weights = []; this.notes = {};
     CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
+    this.profile = {};
   }
 
   markExported() { this.lastExport = Date.now(); this.#save(); }
@@ -199,6 +209,12 @@ class GymStore {
 
   setRest(sec) { this.restSeconds = sec; this.#save(); }
   setTheme(mode) { this.themeMode = mode; this.#save(); }
+  /** Profil ändern; null/ungültig = Feld entfernen */
+  updateProfile(changes) {
+    const p = { ...this.profile, ...changes };
+    for (const k of Object.keys(p)) if (p[k] == null) delete p[k];
+    this.profile = p; this.#save();
+  }
   setLanguage(lang) { setAppLanguage(lang); this.#save(); }
   /** Muskeln einer eigenen Übung festlegen (leere Auswahl = entfernen). */
   setCustomMuscles(name, m) {

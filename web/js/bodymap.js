@@ -4,7 +4,8 @@
 import { MUSCLES, REGION_NAMES, BODY, BODY_SHAPES } from './body-data.js';
 import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural, isWork } from './core.js';
 import { h, chip, dialog, horizontalBars } from './ui.js';
-import { wikiFor } from './wiki.js';
+import { wikiFor, openMuscle } from './wiki.js';
+import { MUSCLE_INFO } from './muscle-data.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
 import { store } from './store.js';
 
@@ -51,12 +52,26 @@ export function levelsOf(m) {
 
 /** Beschriftungen je Stufe: ganzer Muskel, wenn alle seine Regionen in der Stufe sind, sonst die Regionen. */
 export function levelLabels(levels) {
+  return levelEntries(levels).map(([st, list]) => [st, list.map(e => e[1])]);
+}
+
+/** Wie levelLabels, aber je Eintrag [Muskel-ID, Beschriftung] (zum Antippen → Muskel-Wiki) */
+export function levelEntries(levels) {
   return LEVELS.map(st => [st, Object.keys(MUSCLES).flatMap(m => {
     const regs = MUSCLE_REGIONS[m];
     const inStage = regs.filter(r => levels[r] != null && stageOf(levels[r]) === st);
-    return !inStage.length ? [] : inStage.length === regs.length ? [muscleLabel(m)] : inStage.map(regionLabel);
+    return !inStage.length ? [] : inStage.length === regs.length ? [[m, muscleLabel(m)]] : inStage.map(r => [m, regionLabel(r)]);
   })]).filter(([, l]) => l.length);
 }
+
+/** Muskelnamen mit Komma; Namen mit Muskel-Wiki-Eintrag sind Links (wie MuscleNames in BodyMap.kt) */
+export const muscleNames = entries => entries.map(([id, label], i) => [
+  MUSCLE_INFO[id] ? h('button', { class: 'muscle-link', onclick: e => { e.stopPropagation(); openMuscle(id); } }, label) : label,
+  i < entries.length - 1 ? ', ' : null,
+]);
+
+/** Klick auf eine Muskelfläche (Ebene aus svg(…, tap = true)) → Muskel-Wiki */
+const openTappedMuscle = e => { const id = e.target.closest?.('[data-muscle]')?.dataset.muscle; if (id && MUSCLE_INFO[id]) openMuscle(id); };
 
 const COLORS = {
   light: { FUR: '#F3E6D6', PATCH: '#9C6B45', PINK: '#F2B8B5', outline: '#7A5A43', neutral: '#CFC7BE', TISSUE: '#C8BDB1' },
@@ -240,11 +255,16 @@ export const bodyFigure = colorOf => [
  * Körperdiagramm einer Übung mit Beschriftung „Vorne/Hinten“ und Legende „Hauptarbeit: … · Mittel: … · Leicht: …“.
  * levels = Region → Stufe (levelsOf).
  */
-export function muscleMap(levels, { legend = true } = {}) {
+export function muscleMap(levels, { legend = true, tap = false } = {}) {
+  const colorOf = k => levelColor(levels[k]);
   return h('div', { class: 'muscle-map' },
-    bodyFigure(k => levelColor(levels[k])),
-    legend ? h('div', { class: 'muscle-legend' }, levelLabels(levels).map(([st, labels]) =>
-      h('span', null, h('i', { style: `background:${levelColor(st)}` }), levelTitle(st) + ': ' + labels.join(', ')))) : null);
+    // tap = Muskeln antippbar → Muskel-Wiki (Figur und Legende)
+    tap ? [h('div', { class: 'muscle-figure tappable', html: svg(colorOf, 'BOTH', true), onclick: openTappedMuscle }),
+      h('div', { class: 'muscle-views muted' }, h('span', null, tr('Vorne', 'Front')), h('span', null, tr('Hinten', 'Back')))]
+      : bodyFigure(colorOf),
+    legend ? h('div', { class: 'muscle-legend' }, levelEntries(levels).map(([st, entries]) =>
+      h('span', null, h('i', { style: `background:${levelColor(st)}` }), levelTitle(st) + ': ',
+        tap ? muscleNames(entries) : entries.map(e => e[1]).join(', ')))) : null);
 }
 
 // ---------- Muskeln einer Übung ----------
@@ -315,7 +335,7 @@ export function regionScore(sets) {
 }
 
 /** Sätze je Muskel = seine am stärksten belastete Region. */
-function muscleScoreOf(regionScore) {
+export function muscleScoreOf(regionScore) {
   const out = {};
   for (const [r, v] of Object.entries(regionScore)) { const m = muscleOfRegion(r); out[m] = Math.max(out[m] ?? 0, v); }
   return out;
@@ -399,16 +419,21 @@ export const musclesOnSide = view =>
  * showList = unten die Muskeln/Regionen der ganzen Übung nach Stufe (für die letzte Karte) – wie MuscleSideCard.
  */
 export function muscleSideCard(view, levels, showList = false) {
-  const group = (title, labels, color) => h('div', { class: 'side-group' },
+  const group = (title, entries, color) => h('div', { class: 'side-group' },
     h('small', null, h('i', { style: `background:${color}` }), title),
-    h('div', { class: 'side-names' }, labels.join(', ')));
+    h('div', { class: 'side-names' }, muscleNames(entries)));
+  const colorOf = k => levelColor(levels[k]);
   return h('div', { class: 'card pad-m glass side-card' },
     h('div', { class: 'side-head' },
       h('h3', null, view === 'FRONT' ? tr('Vorderseite', 'Front') : view === 'BACK' ? tr('Rückseite', 'Back') : tr('Beanspruchte Muskeln', 'Muscles worked'))),
-    // BOTH = Vorder- und Rückseite nebeneinander mit „Vorne/Hinten“ (wie MuscleSideCard in BodyMap.kt)
-    view === 'BOTH' ? bodyFigure(k => levelColor(levels[k])) : h('div', { class: 'side-figure', html: svg(k => levelColor(levels[k]), view) }),
+    // BOTH = Vorder- und Rückseite nebeneinander mit „Vorne/Hinten“ (wie MuscleSideCard in BodyMap.kt); Muskeln antippbar → Muskel-Wiki
+    view === 'BOTH'
+      ? [h('div', { class: 'muscle-figure tappable', html: svg(colorOf, 'BOTH', true), onclick: openTappedMuscle }),
+        h('div', { class: 'muscle-views muted' }, h('span', null, tr('Vorne', 'Front')), h('span', null, tr('Hinten', 'Back')))]
+      : h('div', { class: 'side-figure tappable', html: svg(colorOf, view, true), onclick: openTappedMuscle }),
     showList ? h('div', { class: 'side-list' },
-      levelLabels(levels).map(([st, labels]) => group(levelTitle(st), labels, levelColor(st)))) : null);
+      levelEntries(levels).map(([st, entries]) => group(levelTitle(st), entries, levelColor(st))),
+      h('small', { class: 'muted' }, tr('Muskel antippen für Anatomie & Infos', 'Tap a muscle for anatomy & info'))) : null);
 }
 
 /** Antippbare Muskelflächen (durchsichtig, oberste zuerst im DOM = zuletzt gezeichnet) */

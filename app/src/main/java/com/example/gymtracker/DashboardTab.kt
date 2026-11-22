@@ -201,6 +201,9 @@ fun DashboardTab(
             }
         }
 
+        // Rückblick: letzte Woche bzw. letzter Monat im Vergleich (Review.kt)
+        if (store.sets.isNotEmpty()) item { ReviewCard(store) }
+
         // Muskel-Heatmap (Meerschweinchen)
         if (store.sets.isNotEmpty()) item { MuscleHeatCard(store, period, onPeriod = { period = it }) }
 

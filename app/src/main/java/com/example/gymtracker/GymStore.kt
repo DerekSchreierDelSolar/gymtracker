@@ -45,6 +45,15 @@ class GymStore(context: Context) {
     var weeklyGoal by mutableIntStateOf(3)
         private set
 
+    /** Optionales Profil für genauere Kalorien (Stats.kt). Vor init { load() }! */
+    var profile by mutableStateOf(Profile())
+        private set
+
+    fun updateProfile(p: Profile) {
+        profile = p
+        save()
+    }
+
     /** Design: "system" (folgt dem Handy), "light" oder "dark". */
     var themeMode by mutableStateOf("system")
         private set
@@ -138,6 +147,7 @@ class GymStore(context: Context) {
     private fun clearAll() {
         exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
+        profile = Profile()
     }
 
     private fun readFrom(root: JSONObject) {
@@ -172,6 +182,14 @@ class GymStore(context: Context) {
             // Eigene Übungen der früheren Kategorie „Arme“: nach dem Hauptmuskel aufteilen (sonst Bizeps)
             for (n in oldArms) groups[n] = migrateArmGroup(CustomMeta.muscles[n])
             root.optJSONObject("settings")?.let { weeklyGoal = it.optInt("weeklyGoal", 3) }
+            // Profil (optional): ungültige Werte werden ignoriert
+            profile = root.optJSONObject("profile")?.let { p ->
+                Profile(
+                    sex = p.optString("sex").takeIf { it == "m" || it == "f" },
+                    birthYear = p.optInt("birthYear", 0).takeIf { Profile.validYear(it) },
+                    heightCm = p.optInt("height", 0).takeIf { Profile.validHeight(it) }
+                )
+            } ?: Profile()
             val wo = root.optJSONArray("workouts") ?: JSONArray()
             for (i in 0 until wo.length()) {
                 val o = wo.getJSONObject(i)
@@ -296,6 +314,11 @@ class GymStore(context: Context) {
                 .put("language", appLanguage)
                 .put("weeklyGoal", weeklyGoal)
         )
+        if (!profile.isEmpty) root.put("profile", JSONObject().apply {
+            profile.sex?.let { put("sex", it) }
+            profile.birthYear?.let { put("birthYear", it) }
+            profile.heightCm?.let { put("height", it) }
+        })
         val s = JSONArray()
         sets.forEach { set ->
             val o = JSONObject()

@@ -2,7 +2,7 @@
 
 import { STRENGTH_MET, MINUTES_PER_SET } from './data.js';
 import {
-  isCardio, isTimed, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays, isWork, isTop,
+  isCardio, isTimed, profileComplete, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays, isWork, isTop,
 } from './core.js';
 
 const sum = (arr, f = x => x) => arr.reduce((a, x) => a + f(x), 0);
@@ -28,9 +28,23 @@ export function exerciseResult(store, name, start, end, target, freeOnly = false
 }
 
 /** Geschätzter Verbrauch (MET-Methode); null ohne Körpergewicht. */
+/** Grundumsatz kcal/Tag nach Mifflin-St-Jeor; null bei unvollständigem Profil (wie bmrKcalPerDay) */
+export function bmrKcalPerDay(p, kg, time) {
+  if (!profileComplete(p)) return null;
+  const age = Math.max(10, new Date(time).getFullYear() - p.birthYear);
+  return 10 * kg + 6.25 * p.height - 5 * age + (p.sex === 'm' ? 5 : -161);
+}
+
+/** kcal je MET-Stunde: Standard 1 kcal × kg, mit Profil Grundumsatz/24 (korrigierte MET-Methode, wie kcalPerMetHour) */
+export function kcalPerMetHour(store, kg, time) {
+  const bmr = bmrKcalPerDay(store.profile, kg, time);
+  return bmr != null ? bmr / 24 : kg;
+}
+
 export function estimateKcal(store, t, results) {
-  const kg = store.weightAt(t.start);
-  if (kg == null) return null;
+  const w = store.weightAt(t.start);
+  if (w == null) return null;
+  const kg = kcalPerMetHour(store, w, t.start);
   const cardio = results.filter(r => isCardio(r.group));
   const cardioMinutes = sum(cardio, r => sum(r.sets.filter(isWork), s => s.reps));
   const cardioKcal = (sum(cardio, r => sum(r.sets.filter(isWork), s => s.reps) * cardioMet(r.name)) * kg) / 60;

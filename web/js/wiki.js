@@ -70,7 +70,7 @@ export function wikiContent(name, { header, muscles }) {
     header ? h('div', { class: 'wiki-head' },
       h('span', { html: exerciseIconHtml(first.name, first.group, 48) }),
       h('div', null, h('h2', null, cat ? exName(name) : baseName(base)), h('p', { class: 'accent' }, t(entry.muscles)))) : null,
-    m ? muscleMap(levelsOf(m)) : null,
+    m ? muscleMap(levelsOf(m), { tap: true }) : null,
     entry.how?.length ? [
       h('h3', null, tr('Ausführung', 'How to')),
       h('ol', { class: 'wiki-list' }, entry.how.map(p => h('li', null, t(p)))),

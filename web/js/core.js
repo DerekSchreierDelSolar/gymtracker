@@ -35,6 +35,11 @@ export const groupLabel = g => tr(MUSCLE_GROUPS[g].de, MUSCLE_GROUPS[g].en);
 export const groupColor = g => MUSCLE_GROUPS[g].color;
 export const isCardio = g => g === 'CARDIO';
 
+// Profil für genauere kcal (wie Profile in Stats.kt)
+export const validYear = y => Number.isInteger(y) && y >= 1900 && y <= new Date().getFullYear() - 10;
+export const validHeight = h => Number.isInteger(h) && h >= 100 && h <= 250;
+export const profileComplete = p => !!(p?.sex && p?.birthYear && p?.height);
+
 export const EQUIPMENT = {
   LANGHANTEL: { de: 'Langhantel', en: 'Barbell' },
   KURZHANTEL: { de: 'Kurzhantel', en: 'Dumbbell' },

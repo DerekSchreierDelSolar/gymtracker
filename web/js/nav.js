@@ -17,6 +17,7 @@ export const nav = {
   wikiQuery: '',
   wikiMuscles: false,    // Wiki: Reiter „Muskeln“ statt „Übungen“
   statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite
+  reviewPeriod: 'WEEK',   // Rückblick auf der Startseite: WEEK oder MONTH
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
   pickDetail: null,      // beim Bearbeiten geöffnete Übung (Info + Ziel-Sätze + Hinzufügen)

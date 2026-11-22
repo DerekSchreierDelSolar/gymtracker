@@ -96,6 +96,11 @@
             "The wiki has a \"Muscles\" tab at the top: for every muscle its Latin name, origin, insertion, nerve, function, role in everyday life, common problems and injuries, stretches and matching exercises. Tap a muscle on the figure or pick one from the list – or ask me, e.g. \"What does the lat do?\" or \"How do I stretch my calves?\". This is not medical advice."]
     },
     {
+      "keys": ["rueckblick", "wochenrueckblick", "monatsrueckblick", "letzte woche", "letzter monat", "vergleich vorwoche", "review", "last week", "last month"],
+      "a": ["Auf der Startseite zeigt die Karte „Rückblick“ die letzte abgeschlossene Woche bzw. den letzten Monat: Trainings, Sätze, Volumen, Trainingszeit und kcal mit Veränderung zum Zeitraum davor (grün = mehr, rot = weniger), dazu neue Rekorde, die meisttrainierten Muskeln und Muskeln, die du sonst trainierst, diesmal aber kaum (💤).",
+            "On the home screen the \"Review\" card shows the last completed week or month: workouts, sets, volume, training time and calories with the change versus the period before (green = more, red = less), plus new records, your most-trained muscles and muscles you usually train but barely did this time (💤)."]
+    },
+    {
       "keys": ["heatmap", "trainierte muskeln", "muskelkarte", "prozent", "trained muscles", "percent"],
       "a": ["Die Heatmap auf der Startseite zeigt, welche Muskeln du im gewählten Zeitraum (letztes Training, 7 Tage, 30 Tage, alle) trainiert hast. Je röter, desto mehr – in Prozent vom am meisten trainierten Muskel. Hauptarbeit zählt 1 Satz, mittel ½, leicht ¼; Aufwärmsätze nicht.",
             "The heatmap on the home screen shows which muscles you trained in the chosen period (last workout, 7 days, 30 days, all). The redder, the more – as a percentage of your most-trained muscle. Main work counts 1 set, moderate ½, light ¼; warm-up sets don't count."]
@@ -141,9 +146,9 @@
             "In the \"Body\" tab you log your body weight; the trend is shown as a chart. It's also needed for calories."]
     },
     {
-      "keys": ["kalorien", "kcal", "verbrauch", "calories"],
-      "a": ["Kalorien werden mit der MET-Methode geschätzt (Cardio je Gerät, Krafttraining pauschal) und brauchen dein Körpergewicht aus dem Tab „Körper“. Ohne Körpergewicht steht „–“.",
-            "Calories are estimated with the MET method (per machine for cardio, a flat value for strength) and need your body weight from the \"Body\" tab. Without it you'll see \"–\"."]
+      "keys": ["kalorien", "kcal", "verbrauch", "grundumsatz", "profil", "groesse", "geburtsjahr", "calories", "profile", "height"],
+      "a": ["Kalorien werden mit der MET-Methode geschätzt (Cardio je Gerät, Krafttraining pauschal) und brauchen dein Körpergewicht aus dem Tab „Körper“. Ohne Körpergewicht steht „–“. Genauer wird es, wenn du unter ⋮ → Einstellungen → „Profil für Kalorien“ Geschlecht, Geburtsjahr und Größe einträgst: Dann rechnet die App mit deinem Grundumsatz (Mifflin-St-Jeor).",
+            "Calories are estimated with the MET method (per machine for cardio, a flat value for strength) and need your body weight from the \"Body\" tab. Without it you'll see \"–\". For a more precise estimate enter sex, birth year and height under ⋮ → Settings → \"Profile for calories\": the app then uses your resting metabolic rate (Mifflin-St Jeor)."]
     },
     {
       "keys": ["export", "exportieren", "import", "importieren", "sichern", "sicherung", "backup", "datei"],

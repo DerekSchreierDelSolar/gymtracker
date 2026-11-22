@@ -8,6 +8,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -444,27 +445,56 @@ fun levelTitle(stage: Float): String = when (stage) {
  * sonst die einzelnen Regionen (z. B. „Brust oben“).
  */
 fun levelLabels(levels: Map<String, Float>): List<Pair<Float, List<String>>> =
+    levelEntries(levels).map { (st, list) -> st to list.map { it.second } }
+
+/** Wie levelLabels, aber je Eintrag zusätzlich die Muskel-ID (zum Antippen → Muskel-Wiki). */
+fun levelEntries(levels: Map<String, Float>): List<Pair<Float, List<Pair<String, String>>>> =
     LEVELS.map { st ->
         st to MUSCLES.keys.flatMap { m ->
             val regs = MUSCLE_REGIONS.getValue(m)
             val inStage = regs.filter { r -> levels[r]?.let(::stageOf) == st }
             when {
                 inStage.isEmpty() -> emptyList()
-                inStage.size == regs.size -> listOf(muscleLabel(m))
-                else -> inStage.map(::regionLabel)
+                inStage.size == regs.size -> listOf(m to muscleLabel(m))
+                else -> inStage.map { m to regionLabel(it) }
             }
         }
     }.filter { it.second.isNotEmpty() }
 
 /**
  * Körperdiagramm (Vorder- und Rückansicht) einer Übung: levels = Region → Stufe (siehe MuscleSet.levels),
- * Hauptarbeit rot, mittel orange, leicht gelb, Rest grau.
+ * Hauptarbeit rot, mittel orange, leicht gelb, Rest grau. Figur und Legende sind antippbar → Muskel-Wiki.
  */
 @Composable
-fun MuscleMap(levels: Map<String, Float>, modifier: Modifier = Modifier, showLegend: Boolean = true) {
+fun MuscleMap(levels: Map<String, Float>, modifier: Modifier = Modifier, showLegend: Boolean = true, tappable: Boolean = true) {
+    var open by remember { mutableStateOf<String?>(null) }
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        BodyFigure({ key -> levelColor(levels[key]) })
-        if (showLegend) MuscleLegend(levels, Modifier.padding(top = 8.dp))
+        BodyFigure({ key -> levelColor(levels[key]) }, onTapMuscle = if (tappable) { id -> if (id in MuscleWiki.entries) open = id } else null)
+        if (showLegend) MuscleLegend(levels, Modifier.padding(top = 8.dp), onTap = if (tappable) { id -> open = id } else null)
+    }
+    open?.let { MuscleSheet(it, onDismiss = { open = null }) }
+}
+
+/** Muskelnamen mit Komma, jeder Name antippbar (wenn es einen Muskel-Wiki-Eintrag gibt). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun MuscleNames(
+    entries: List<Pair<String, String>>,
+    onTap: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium
+) {
+    FlowRow(modifier) {
+        entries.forEachIndexed { i, (id, label) ->
+            val link = id in MuscleWiki.entries
+            Text(
+                label,
+                style = style,
+                color = if (link) MaterialTheme.colorScheme.primary else androidx.compose.ui.graphics.Color.Unspecified,
+                modifier = if (link) Modifier.clickable { onTap(id) } else Modifier
+            )
+            if (i < entries.lastIndex) Text(", ", style = style)
+        }
     }
 }
 
@@ -587,11 +617,15 @@ fun BodyFigure(
 
 /** „● Hauptarbeit: Brust oben, Schulter vorne“, darunter „● Mittel: …“ und „● Leicht: …“. */
 @Composable
-fun MuscleLegend(levels: Map<String, Float>, modifier: Modifier = Modifier) {
+fun MuscleLegend(levels: Map<String, Float>, modifier: Modifier = Modifier, onTap: ((String) -> Unit)? = null) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        for ((stage, labels) in levelLabels(levels)) Row(verticalAlignment = Alignment.Top) {
+        for ((stage, entries) in levelEntries(levels)) Row(verticalAlignment = Alignment.Top) {
             Box(Modifier.padding(top = 5.dp)) { LegendDot(levelColor(stage)!!) }
-            Text(levelTitle(stage) + ": " + labels.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
+            if (onTap == null) Text(levelTitle(stage) + ": " + entries.joinToString(", ") { it.second }, style = MaterialTheme.typography.bodyMedium)
+            else {
+                Text(levelTitle(stage) + ": ", style = MaterialTheme.typography.bodyMedium)
+                MuscleNames(entries, onTap)
+            }
         }
     }
 }
@@ -640,7 +674,7 @@ fun musclesOf(name: String): MuscleSet? =
 @Composable
 fun MusclePicker(value: MuscleSet, onChange: (MuscleSet) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        MuscleMap(value.levels(), showLegend = false)
+        MuscleMap(value.levels(), showLegend = false, tappable = false)
         Text(tr("Hauptmuskeln", "Primary muscles"), style = MaterialTheme.typography.titleSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             MUSCLES.keys.forEach { id ->
@@ -876,6 +910,8 @@ fun MuscleSideCard(
     showList: Boolean = false,
     colors: CardColors = CardDefaults.cardColors()
 ) {
+    var open by remember { mutableStateOf<String?>(null) } // angetippter Muskel → Muskel-Wiki
+    open?.let { MuscleSheet(it, onDismiss = { open = null }) }
     Card(Modifier.fillMaxWidth(), colors = colors) {
         Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -891,26 +927,34 @@ fun MuscleSideCard(
             }
             Spacer(Modifier.height(8.dp))
             // BOTH = Vorder- und Rückseite nebeneinander (fast volle Breite, beschriftet „Vorne/Hinten“), sonst eine Seite mittig groß
-            BodyFigure({ key -> levelColor(levels[key]) }, view = view, widthFraction = if (view == BodyView.BOTH) 0.96f else 0.62f)
+            BodyFigure(
+                { key -> levelColor(levels[key]) }, view = view, widthFraction = if (view == BodyView.BOTH) 0.96f else 0.62f,
+                onTapMuscle = { if (it in MuscleWiki.entries) open = it }
+            )
             if (showList) {
                 Spacer(Modifier.height(16.dp))
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    for ((stage, labels) in levelLabels(levels)) MuscleGroupList(levelTitle(stage), labels, levelColor(stage)!!)
+                    for ((stage, entries) in levelEntries(levels)) MuscleGroupList(levelTitle(stage), entries, levelColor(stage)!!) { open = it }
+                    Text(
+                        tr("Muskel antippen für Anatomie & Infos", "Tap a muscle for anatomy & info"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
     }
 }
 
-/** Überschrift („Hauptarbeit“) mit Farbpunkt, darunter die Muskeln bzw. Regionen. */
+/** Überschrift („Hauptarbeit“) mit Farbpunkt, darunter die Muskeln bzw. Regionen (antippbar). */
 @Composable
-private fun MuscleGroupList(title: String, labels: List<String>, color: Color) {
-    if (labels.isEmpty()) return
+private fun MuscleGroupList(title: String, entries: List<Pair<String, String>>, color: Color, onTap: (String) -> Unit) {
+    if (entries.isEmpty()) return
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             LegendDot(color)
             Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Text(labels.joinToString(", "), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp))
+        MuscleNames(entries, onTap, Modifier.padding(start = 16.dp), MaterialTheme.typography.bodyLarge)
     }
 }
