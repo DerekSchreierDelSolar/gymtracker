@@ -38,18 +38,29 @@ fun SetInput(
     exercise: String,
     onAdded: () -> Unit = {},
     weightOverride: Double? = null,
-    startWithWarmup: Boolean = false
+    startWithWarmup: Boolean = false,
+    goalReps: Int? = null
 ) {
     Column { // Stoppuhr, Eingabezeile und −/+ untereinander
     val cardio = store.groupOf(exercise).isCardio
     val timed = isTimed(exercise)
-    val lastSet = store.setsFor(exercise).firstOrNull()
-    var weightText by remember(exercise) { mutableStateOf(lastSet?.let { fmtW(it.weight) } ?: "") }
-    var repsText by remember(exercise) { mutableStateOf(lastSet?.reps?.toString() ?: "") }
-    // Übernommener Vorschlag überschreibt das Gewichtsfeld
-    LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtW(weightOverride) }
     // Satz-Typ des nächsten Satzes; springt nach jedem Satz auf Normal zurück (erster Satz im Training ggf. Aufwärmen)
     var type by remember(exercise) { mutableStateOf(if (startWithWarmup) SetType.WARMUP else SetType.NORMAL) }
+    // Vorbelegung passend zum Satz-Typ (Aufwärmen leichter, Arbeitssatz mit Wdh.-Ziel)
+    fun prefill(t: SetType): Pair<String, String> {
+        val (w, r) = setPrefill(store.setsFor(exercise), t, goalReps)
+        return (w?.let { fmtW(it) } ?: "") to (r?.toString() ?: "")
+    }
+    val initial = remember(exercise) { prefill(type) }
+    var weightText by remember(exercise) { mutableStateOf(initial.first) }
+    var repsText by remember(exercise) { mutableStateOf(initial.second) }
+    // Typ wechseln: unveränderte Felder gehen mit (eigene Eingaben bleiben stehen)
+    fun changeType(t: SetType) {
+        if (weightText to repsText == prefill(type)) prefill(t).let { weightText = it.first; repsText = it.second }
+        type = t
+    }
+    // Übernommener Vorschlag überschreibt das Gewichtsfeld
+    LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtW(weightOverride) }
 
     // Stoppuhr für Zeitübungen: Startzeitpunkt (null = steht)
     var watchStart by remember(exercise) { mutableStateOf<Long?>(null) }
@@ -111,7 +122,7 @@ fun SetInput(
     Row(verticalAlignment = Alignment.CenterVertically) {
         // Satz-Typ: antippen = nächster Typ (N → A → D → V); bei Cardio nicht sinnvoll
         if (!cardio) {
-            SetTypeButton(type) { type = SetType.entries[(type.ordinal + 1) % SetType.entries.size] }
+            SetTypeButton(type) { changeType(SetType.entries[(type.ordinal + 1) % SetType.entries.size]) }
             Spacer(Modifier.width(8.dp))
         }
         // Gewicht: bei Kraftübungen immer, bei Zeitübungen nur, wenn ein Gerät im Spiel ist
@@ -149,6 +160,8 @@ fun SetInput(
             val r = repsText.trim().toIntOrNull()
             if (w != null && w >= 0 && r != null && r > 0) { // wie EditSetDialog: kein negatives Gewicht
                 store.addSet(exercise, w, r, type)
+                // Nach dem Aufwärmen: Felder auf den Arbeitssatz umstellen
+                if (type == SetType.WARMUP) prefill(SetType.NORMAL).let { weightText = it.first; repsText = it.second }
                 type = SetType.NORMAL
                 watchStart = null
                 onAdded()
@@ -175,6 +188,21 @@ fun SetInput(
         Spacer(Modifier.width(56.dp + 8.dp)) // unter dem ＋
     }
     }
+}
+
+/**
+ * Vorbelegung (Gewicht, Wdh.) für den nächsten Satz; `sets` = Sätze der Übung, neueste zuerst.
+ * Aufwärmen: letzter Aufwärmsatz, sonst halbes Arbeitsgewicht (auf 2,5 kg gerundet) × 10.
+ * Sonst: letzter Arbeitssatz (Normal/Versagen), Wdh. = Ziel aus dem Trainingsmodus, falls bekannt.
+ * Web: setPrefill in exercise.js.
+ */
+fun setPrefill(sets: List<GymSet>, type: SetType, goalReps: Int?): Pair<Double?, Int?> {
+    val top = sets.firstOrNull { it.isTop } ?: sets.firstOrNull()
+    if (type == SetType.WARMUP) {
+        sets.firstOrNull { it.type == SetType.WARMUP }?.let { return it.weight to it.reps }
+        if (top != null) return Math.round(top.weight * 0.5 / 2.5) * 2.5 to 10
+    }
+    return top?.weight to (goalReps ?: top?.reps)
 }
 
 /** Zwei kleine Knöpfe „− x“ / „+ x“; onStep(−1 oder +1). */
@@ -666,7 +694,7 @@ fun HistoryDayCard(store: GymStore, day: String, daySets: List<GymSet>, cardio: 
                         " · " + tr("gesamt ", "total ") + fmtSeconds(work.sumOf { it.reps })
                 else
                     "$day · " + plural(work.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                        " · ${fmtW(work.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
+                        " · ${fmtVolume(work.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
                 style = MaterialTheme.typography.titleSmall
             )
             daySets.firstOrNull()?.let { store.noteFor(it.exercise, dayKey(it.time)) }?.let { note ->

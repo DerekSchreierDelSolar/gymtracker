@@ -4,7 +4,7 @@ import { wikiFor, wikiContent } from '../wiki.js';
 import { musclesOf, muscleEditDialog, muscleSideCard, levelsOf } from '../bodymap.js';
 import { store } from '../store.js';
 import {
-  tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
+  tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
   oneRepMax, parseNum, parseIntStrict, startOfToday, groupColor, catalogGroup, dayKey, monthIndex, startOfWeek,
   fmtShortDate, completionColor, SET_TYPES, setTypeOf, setTypeLabel, setTypeShort, setLabels, isWork, isTop,
 } from '../core.js';
@@ -25,10 +25,26 @@ export function exerciseTile(name, group, onClick, extra = {}) {
     style: `--tint:${groupColor(group)}`,
   },
   h('span', { html: exerciseIconHtml(name, group, 44) }),
-  h('span', { class: 'tile-name', lang: tr('de', 'en') }, exName(name)),
+  tileName(exName(name)),
   h('small', null, last ? fmtSet(last, isCardio(group)) : '–'));
   if (extra.onLongPress) onLongPress(tile, extra.onLongPress);
   return tile;
+}
+
+/** „Bankdrücken (Langhantel)“ → ['Bankdrücken', 'Langhantel'] (wie splitExerciseName in HomeScreen.kt). */
+export function splitExerciseName(display) {
+  const i = display.lastIndexOf(' (');
+  if (i <= 0 || !display.endsWith(')')) return [display, null];
+  return [display.slice(0, i), display.slice(i + 2, -1)];
+}
+
+/** Kachel-Name: Grundübung + darunter klein das Gerät; feste Höhe, damit alle Kacheln gleich hoch sind. */
+function tileName(display) {
+  const [base, detail] = splitExerciseName(display);
+  return h('span', { class: 'tile-name', lang: tr('de', 'en') },
+    // Ein einzelnes Wort bleibt in einer Zeile und wird dafür kleiner (CSS: --chars, wie autoSize in ExerciseTile)
+    base.includes(' ') ? h('span', { class: 'tile-base' }, base)
+      : h('span', { class: 'tile-base one-word', style: `--chars:${base.length}` }, base), detail ? h('small', { class: 'tile-detail' }, detail) : null);
 }
 
 /** Gedrückt halten (0,5 s, ohne zu wischen) → fn; der Klick danach öffnet nichts (siehe exerciseTile; wie combinedClickable). */
@@ -62,11 +78,29 @@ export function progressionHint(name, before = startOfToday()) {
 
 /** Eingabewerte je Übung (bleiben erhalten, solange die App offen ist); vorbelegt mit dem letzten Satz. */
 const inputs = new Map();
-function inputState(name) {
-  if (!inputs.has(name)) {
-    const last = store.setsFor(name)[0];
-    inputs.set(name, { weight: last ? fmtW(last.weight) : '', reps: last ? String(last.reps) : '', watchStart: null, type: 'NORMAL' });
+/**
+ * Vorbelegung [Gewicht, Wdh.] für den nächsten Satz (wie setPrefill in ExerciseDetail.kt); sets = neueste zuerst.
+ * Aufwärmen: letzter Aufwärmsatz, sonst halbes Arbeitsgewicht (auf 2,5 kg gerundet) × 10.
+ * Sonst: letzter Arbeitssatz (Normal/Versagen), Wdh. = Ziel aus dem Trainingsmodus, falls bekannt.
+ */
+export function setPrefill(sets, type, goalReps) {
+  const top = sets.find(isTop) ?? sets[0];
+  if (type === 'WARMUP') {
+    const wu = sets.find(x => x.type === 'WARMUP');
+    if (wu) return [wu.weight, wu.reps];
+    if (top) return [Math.round(top.weight * 0.5 / 2.5) * 2.5, 10];
   }
+  return [top?.weight ?? null, goalReps ?? top?.reps ?? null];
+}
+
+/** Felder als Text für den Satz-Typ */
+function prefillText(name, type, goalReps) {
+  const [w, r] = setPrefill(store.setsFor(name), type, goalReps);
+  return { weight: w == null ? '' : fmtW(w), reps: r == null ? '' : String(r) };
+}
+
+function inputState(name) {
+  if (!inputs.has(name)) inputs.set(name, { ...prefillText(name, 'NORMAL', null), watchStart: null, type: 'NORMAL' });
   return inputs.get(name);
 }
 
@@ -78,11 +112,21 @@ const mmss = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')
  * warmupKey: im Training gesetzt (= Trainingsstart), wenn die Übung dort noch keinen Satz hat → erster Satz
  * „Aufwärmen“ (wie startWithWarmup in ExerciseDetail.kt); einmal je Training, danach bleibt die Auswahl des Nutzers.
  */
-export function setInput(name, onAdded = () => {}, warmupKey = null) {
+export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = null) {
   const cardio = isCardio(store.groupOf(name));
   const timed = isTimed(name);
   const st = inputState(name);
-  if (warmupKey != null && st.warmupKey !== warmupKey && !cardio && !timed) { st.type = 'WARMUP'; st.warmupKey = warmupKey; }
+  // Neues Training: Typ Aufwärmen und Felder passend vorbelegen (einmal je Training)
+  if (warmupKey != null && st.warmupKey !== warmupKey && !cardio && !timed) {
+    st.type = 'WARMUP'; st.warmupKey = warmupKey;
+    Object.assign(st, prefillText(name, 'WARMUP', goalReps));
+  }
+  // Typ wechseln: unveränderte Felder gehen mit (eigene Eingaben bleiben stehen)
+  const changeType = t => {
+    const p = prefillText(name, st.type ?? 'NORMAL', goalReps);
+    if (st.weight === p.weight && st.reps === p.reps) Object.assign(st, prefillText(name, t, goalReps));
+    st.type = t;
+  };
   const showWeight = !cardio && (!timed || equipmentOf(name) !== 'KOERPER');
   const idBase = 'in-' + name.replace(/\W+/g, '_');
 
@@ -95,6 +139,7 @@ export function setInput(name, onAdded = () => {}, warmupKey = null) {
     }
     st.watchStart = null;
     store.addSet(name, w, r, st.type ?? 'NORMAL');
+    if (st.type === 'WARMUP') Object.assign(st, prefillText(name, 'NORMAL', goalReps)); // nach dem Aufwärmen: Arbeitssatz
     st.type = 'NORMAL'; // nach jedem Satz wieder „Normal“
     onAdded();
   };
@@ -123,7 +168,7 @@ export function setInput(name, onAdded = () => {}, warmupKey = null) {
     h('div', { class: 'row', id: idBase + '-row', onanimationend: e => e.currentTarget.classList.remove('shake') },
       // Satz-Typ: antippen = nächster Typ (N → A → D → V); bei Cardio nicht sinnvoll
       cardio ? null : setTypeButton(st.type ?? 'NORMAL', () => {
-        st.type = SET_TYPES[(SET_TYPES.indexOf(st.type ?? 'NORMAL') + 1) % SET_TYPES.length];
+        changeType(SET_TYPES[(SET_TYPES.indexOf(st.type ?? 'NORMAL') + 1) % SET_TYPES.length]);
         rerender();
       }),
       showWeight ? textField({
@@ -347,7 +392,7 @@ export function historyDayCard(day, all, cardio, timed) {
       ? plural(list.length, tr('Einheit', 'session'), tr('Einheiten', 'sessions')) + ` · ${sumReps(list)} ` + tr('Min gesamt', 'min total')
       : timed
         ? plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ' · ' + tr('gesamt ', 'total ') + fmtSeconds(sumReps(list))
-        : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtW(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
+        : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtVolume(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
     all.length && store.noteFor(all[0].exercise, dayKey(all[0].time))
       ? h('p', { class: 'day-note' }, '📝 ' + store.noteFor(all[0].exercise, dayKey(all[0].time))) : null,
     // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training

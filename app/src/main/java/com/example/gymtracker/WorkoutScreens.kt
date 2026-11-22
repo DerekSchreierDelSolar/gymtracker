@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 
 /** Tab „Workouts“: Liste aller Workouts. */
 @Composable
-fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onNew: () -> Unit) {
+fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onNew: () -> Unit, onStart: (Long) -> Unit) {
     if (store.workouts.isEmpty()) {
         Column(modifier.padding(16.dp)) {
             Text(
@@ -88,7 +88,12 @@ fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onN
                             }
                         }
                     }
-                    AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    // ▶ startet das Training direkt (Karte antippen = Workout öffnen/bearbeiten)
+                    if (w.exercises.isNotEmpty()) {
+                        FilledTonalIconButton(onClick = { onStart(w.id) }, modifier = Modifier.size(52.dp)) {
+                            AppIcon(Ico.PLAY)
+                        }
+                    } else AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -350,7 +355,7 @@ fun WorkoutScreen(
                                     Text(
                                         "${stats.percent} % · ${fmtDuration(t.end - t.start)} · " +
                                             plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                            (if (stats.volume > 0) " · ${fmtW(stats.volume)} kg" else "") +
+                                            (if (stats.volume > 0) " · ${fmtVolume(stats.volume)} kg" else "") +
                                             (stats.kcal?.let { " · 🔥 $it kcal" } ?: ""),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant

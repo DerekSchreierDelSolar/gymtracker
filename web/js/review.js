@@ -1,7 +1,7 @@
 // Wochen-/Monatsrückblick (Karte auf der Startseite) – entspricht Review.kt.
 // Zeigt den letzten ABGESCHLOSSENEN Zeitraum (letzte Woche Mo–So bzw. letzten Kalendermonat) im Vergleich zum Zeitraum davor.
 
-import { tr, exName, fmtW, fmtDate, startOfWeek, addDays } from './core.js';
+import { tr, exName, fmtW, fmtVolume, fmtDate, startOfWeek, addDays } from './core.js';
 import { h, chip } from './ui.js';
 import { allSessions, sessionStats, recordEvents } from './stats.js';
 import { regionScore, muscleScoreOf, relativeLoad, muscleLabel } from './bodymap.js';
@@ -79,7 +79,7 @@ export function reviewCard() {
       h('div', { class: 'review-grid' },
         stat(tr('Einheiten', 'Workouts'), String(r.now.sessions), deltaOf(r.now.sessions, r.before.sessions, false)),
         stat(tr('Sätze', 'Sets'), String(r.now.sets), deltaOf(r.now.sets, r.before.sets, false)),
-        stat(tr('Volumen', 'Volume'), `${fmtW(r.now.volume)} kg`, deltaOf(r.now.volume, r.before.volume, true)),
+        stat(tr('Volumen', 'Volume'), `${fmtVolume(r.now.volume)} kg`, deltaOf(r.now.volume, r.before.volume, true)),
         stat(tr('Trainingszeit', 'Training time'), r.now.duration > 0 ? fmtHoursMinutes(r.now.duration) : '–',
           r.now.duration > 0 ? deltaOf(r.now.duration, r.before.duration, true) : null),
         stat('🔥 kcal', r.now.kcal != null ? `~${r.now.kcal}` : '–', r.now.kcal != null ? deltaOf(r.now.kcal, r.before.kcal ?? 0, true) : null),

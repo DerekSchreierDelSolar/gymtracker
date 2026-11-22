@@ -33,6 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -232,7 +236,7 @@ fun HomeScreen(
             when (page) {
                 0 -> DashboardTab(store, modifier, onStartWorkout, onOpenWorkout, onOpenSession, onGoTo = onTab, onNewWorkout = { showNewWorkout = true })
                 1 -> ExerciseGrid(store, modifier, listFilter, onListFilter, listUi, onOpen, onCatalog)
-                2 -> WorkoutList(store, modifier, onOpenWorkout, onNew = { showNewWorkout = true })
+                2 -> WorkoutList(store, modifier, onOpenWorkout, onNew = { showNewWorkout = true }, onStart = onStartWorkout)
                 3 -> CalendarTab(store, modifier, calMonth, onCalMonth, calDay, onCalDay, onOpenSession)
                 else -> BodyTab(store, modifier)
             }
@@ -532,6 +536,13 @@ fun TileGrid(
     )
 }
 
+/** „Bankdrücken (Langhantel)“ → („Bankdrücken“, „Langhantel“); ohne Klammer → (Name, null). Web: splitExerciseName in exercise.js. */
+fun splitExerciseName(display: String): Pair<String, String?> {
+    val i = display.lastIndexOf(" (")
+    if (i <= 0 || !display.endsWith(")")) return display to null
+    return display.substring(0, i) to display.substring(i + 2, display.length - 1)
+}
+
 /** Kompakte Kachel einer Übung: Symbol, Name, letzter Eintrag. */
 @Composable
 fun ExerciseTile(
@@ -570,20 +581,34 @@ fun ExerciseTile(
         ) {
             ExerciseIcon(name, group, Modifier.size(44.dp))
             Spacer(Modifier.height(6.dp))
-            // minLines = maxLines = 2 → alle Kacheln gleich hoch, egal wie lang der Name ist
-            // Silbentrennung in der App-Sprache, damit lange Wörter sauber umbrechen („Schrägbank-drücken“)
-            Text(
-                exName(name),
-                style = MaterialTheme.typography.labelLarge.copy(
-                    hyphens = Hyphens.Auto,
-                    lineBreak = LineBreak.Paragraph,
-                    localeList = LocaleList(tr("de-DE", "en-GB"))
-                ),
-                textAlign = TextAlign.Center,
-                minLines = 2,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            // Name zweigeteilt: Grundübung + darunter klein das Gerät („Schrägbankdrücken“ / „Langhantel“).
+            // Feste Höhe des Namensblocks (2 Zeilen + Gerät) → alle Kacheln einer Reihe gleich hoch.
+            val (base, detail) = splitExerciseName(exName(name))
+            val nameStyle = MaterialTheme.typography.labelLarge
+            val detailStyle = MaterialTheme.typography.bodySmall
+            val blockHeight = with(LocalDensity.current) { (nameStyle.lineHeight * 2).toDp() + detailStyle.lineHeight.toDp() }
+            Column(
+                Modifier.height(blockHeight),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Ein einzelnes langes Wort bleibt in einer Zeile und wird dafür etwas kleiner (statt „Schrägbankdrü-cken“)
+                BasicText(
+                    base,
+                    style = nameStyle.copy(color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center),
+                    maxLines = if (' ' in base) 2 else 1,
+                    overflow = TextOverflow.Ellipsis,
+                    autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = nameStyle.fontSize)
+                )
+                if (detail != null) Text(
+                    detail,
+                    style = detailStyle,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
             Text(
                 if (last == null) "–" else fmtSet(last, group.isCardio),
                 style = MaterialTheme.typography.bodySmall,

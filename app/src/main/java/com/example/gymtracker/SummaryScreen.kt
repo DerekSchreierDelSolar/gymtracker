@@ -60,7 +60,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                     if (t.id >= 0) add(tr("Dauer", "Duration") to fmtDuration(t.end - t.start))
                     add(tr("Sätze", "Sets") to stats.sets.toString())
                     stats.kcal?.let { add(tr("🔥 Verbrauch", "🔥 Burned") to "~$it kcal") }
-                    if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtW(stats.volume)} kg")
+                    if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtVolume(stats.volume)} kg")
                     if (stats.cardioMinutes > 0) add("Cardio" to "${stats.cardioMinutes} min")
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -101,7 +101,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
             if (volumeItems.size >= 2) {
                 item {
                     ChartCard(tr("Volumen pro Übung", "Volume per exercise"), tr("Gewicht × Wiederholungen", "Weight × reps")) {
-                        HorizontalBars(volumeItems) { "${fmtW(it)} kg" }
+                        HorizontalBars(volumeItems) { "${fmtVolume(it)} kg" }
                     }
                 }
             }
@@ -125,7 +125,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                                 else -> tr("$change % Volumen gegenüber letztem Mal", "$change % volume vs. last time")
                             }
                         ) {
-                            HistoryBars(volumes, history.map { fmtShortDate(it.start) }) { "${fmtW(it)} kg" }
+                            HistoryBars(volumes, history.map { fmtShortDate(it.start) }) { "${fmtVolume(it)} kg" }
                         }
                     }
                 }
@@ -179,7 +179,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                                 )
                                 if (!cardio && !isTimed(r.name)) {
                                     Text(
-                                        tr("Volumen: ", "Volume: ") + "${fmtW(r.sets.work().sumOf { it.weight * it.reps })} kg",
+                                        tr("Volumen: ", "Volume: ") + "${fmtVolume(r.sets.work().sumOf { it.weight * it.reps })} kg",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

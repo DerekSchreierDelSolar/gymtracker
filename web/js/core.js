@@ -76,6 +76,8 @@ export function fmtW(w) {
   if (w % 1 === 0) return String(Math.trunc(w));
   return w.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1, useGrouping: false });
 }
+/** Volumen zur Anzeige: ab 1000 ganzzahlig mit Tausendertrennzeichen (wie fmtVolume in Format.kt). Nie in Eingabefelder. */
+export const fmtVolume = v => (v >= 1000 ? Math.round(v).toLocaleString(locale()) : fmtW(v));
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const pad2 = n => String(n).padStart(2, '0');
 

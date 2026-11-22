@@ -13,6 +13,10 @@ fun fmtW(w: Double): String =
     if (w % 1.0 == 0.0) w.toLong().toString()
     else String.format(appLocale(), "%.1f", w) // DE: 62,5 – EN: 62.5
 
+/** Volumen (kg × Wdh.) zur Anzeige: ab 1000 ganzzahlig mit Tausendertrennzeichen (DE 10.753, EN 10,753), sonst wie fmtW.
+ *  Nur zum Anzeigen – nie in Eingabefelder (dort würde „1.000“ als 1 gelesen). Web: fmtVolume in core.js. */
+fun fmtVolume(v: Double): String = if (v >= 1000) String.format(appLocale(), "%,d", Math.round(v)) else fmtW(v)
+
 fun plural(n: Int, one: String, many: String): String = "$n ${if (n == 1) one else many}"
 
 fun fmtDate(t: Long): String =

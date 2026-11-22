@@ -127,6 +127,8 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .play-btn:active { filter: brightness(.9); }
+.play-btn.tonal { width: 52px; height: 52px; background: var(--primary-container); color: var(--on-primary-container); }
+.workout-card[role=button] { cursor: pointer; }
 
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat-box { padding: 14px 4px; text-align: center; }
@@ -238,11 +240,22 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation;
 }
 .tile:active { filter: brightness(.96); }
+/* Name zweigeteilt (wie ExerciseTile): Grundübung (max. 2 Zeilen) + Gerät klein darunter; feste Höhe → gleich hohe Kacheln */
 .tile-name {
-  font-size: 14px; font-weight: 600; line-height: 1.25; margin-top: 4px; min-height: 2.5em;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1px;
+  margin-top: 4px; height: calc(2 * 1.25 * 14px + 16px); width: 100%; overflow: hidden;
+}
+.tile-base {
+  font-size: 14px; font-weight: 600; line-height: 1.25; max-width: 100%;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere;
 }
+.tile-name { container-type: inline-size; }
+.tile-base.one-word {
+  display: block; white-space: nowrap; hyphens: manual; -webkit-hyphens: manual; text-overflow: ellipsis;
+  font-size: clamp(10px, calc(100cqw / (var(--chars) * 0.56)), 14px);
+}
+.tile .tile-detail { font-size: 12px; line-height: 16px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .tile small { color: var(--muted); white-space: nowrap; }
 .motion-icon { display: block; flex-shrink: 0; }
 
@@ -554,10 +567,11 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .linechart-axis small { color: var(--muted); font-size: 11px; line-height: 1; }
 .segments { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
 .segments .chip { justify-content: center; padding: 0 4px; min-width: 0; }
-.day .plan-dot { position: absolute; bottom: 6px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; }
-.plan-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; }
+.day .plan-dot { position: absolute; bottom: 6px; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; }
+.plan-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; }
 .plan-dot.planned { background: var(--primary); }
-.plan-dot.missed { background: color-mix(in srgb, var(--error) 60%, transparent); }
+/* verpasst = roter Ring statt Punkt (wie PlanDot in CalendarTab.kt) */
+.plan-dot.missed { border: 1.5px solid var(--error); }
 .legend .info-btn { margin-left: auto; }
 .fab.compact span:last-child { display: none; }
 .fab.compact { padding: 0; width: 56px; justify-content: center; }
@@ -603,3 +617,4 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .evidence-badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--ev); display: inline-block; }
 .deficiency-badge { font-size: 13px; padding: 3px 10px; border-radius: 99px; background: color-mix(in srgb, var(--primary) 15%, transparent); }
 .supp-summary { font-size: 17px; line-height: 1.4; }
+.stat-caption { display: block; margin: 0 4px -2px; }

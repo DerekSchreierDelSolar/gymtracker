@@ -2,7 +2,7 @@
 
 import { store } from '../store.js';
 import {
-  tr, exName, sortByName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, fmtWeek, plural, isCardio, isEnglish, groupLabel,
+  tr, exName, sortByName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDuration, fmtShortDate, fmtWeek, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
 } from '../core.js';
@@ -243,9 +243,10 @@ function dashboardTab(onStartWorkout) {
           'Your data only lives on this device. Back it up regularly via ⋮ → "Export data".'))),
       h('button', { class: 'btn text', onclick: exportData }, tr('Jetzt', 'Now'))) : null,
 
+    h('small', { class: 'muted stat-caption' }, tr('Diese Woche', 'This week')), // Zeitraum der Kennzahlen
     h('div', { class: 'stat-grid three' },
       statBox(tr('Sätze', 'Sets'), String(weekStats.reduce((a, s) => a + s.sets, 0))),
-      statBox(tr('Volumen', 'Volume'), `${fmtW(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
+      statBox(tr('Volumen', 'Volume'), `${fmtVolume(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
       statBox('🔥 kcal', weekKcal > 0 ? `~${weekKcal}` : '–')),
 
     // Rückblick: letzte Woche bzw. letzter Monat im Vergleich (review.js)
@@ -255,7 +256,7 @@ function dashboardTab(onStartWorkout) {
 
     volumes.some(v => v[1] > 0) ? chartCard(tr('Volumen pro Woche', 'Weekly volume'),
       tr('Letzte 8 Wochen · aktuelle Woche hervorgehoben', 'Last 8 weeks · current week highlighted'),
-      historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtW(v)} kg`)) : null,
+      historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtVolume(v)} kg`)) : null,
 
     // geschätzter Kalorienverbrauch pro Woche (nur mit Körpergewicht) – wie DashboardTab.kt
     (k => k && k.some(v => v[1] > 0) ? chartCard(tr('🔥 Kalorien pro Woche', '🔥 Calories per week'),

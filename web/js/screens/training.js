@@ -5,8 +5,8 @@ import { similarExercises } from '../wizard.js';
 import { heatCard, regionScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
-  tr, exName, fmtSet, fmtW, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
-  goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort,
+  tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
+  goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort, parseIntStrict,
 } from '../core.js';
 import { sessionStats } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
@@ -236,7 +236,7 @@ function exercisePage(w, start, name) {
     recordLine(store.setsFor(name), cardio, timed),
     h('div', { class: 'circle-row' }, reps, restCircle(), sets),
     // Übung in diesem Training noch nicht gemacht → erster Satz „Aufwärmen“
-    setInput(name, startRest, today.length ? null : start),
+    setInput(name, startRest, today.length ? null : start, cardio || timed ? null : parseIntStrict(goal?.[0] ?? '')), // Wdh. wie im Kreis
     noteButton(name),
     today.length ? [h('h2', { class: 'section' }, tr('Heute', 'Today')),
       setRows(today, cardio)] : null,
@@ -257,7 +257,7 @@ export function summaryScreen(t, onDone) {
   if (t.id >= 0) tiles.push([tr('Dauer', 'Duration'), fmtDuration(t.end - t.start)]);
   tiles.push([tr('Sätze', 'Sets'), String(stats.sets)]);
   if (stats.kcal != null) tiles.push([tr('🔥 Verbrauch', '🔥 Burned'), `~${stats.kcal} kcal`]);
-  if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtW(stats.volume)} kg`]);
+  if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtVolume(stats.volume)} kg`]);
   if (stats.cardioMinutes > 0) tiles.push(['Cardio', `${stats.cardioMinutes} min`]);
 
   const volumeItems = stats.results
@@ -276,7 +276,7 @@ export function summaryScreen(t, onDone) {
         change == null ? tr('Volumen der letzten Trainingseinheiten', 'Volume of recent sessions')
           : change >= 0 ? tr(`+${change} % Volumen gegenüber letztem Mal`, `+${change} % volume vs. last time`)
             : tr(`${change} % Volumen gegenüber letztem Mal`, `${change} % volume vs. last time`),
-        historyBars(vols, hist.map(x => fmtShortDate(x.start)), v => `${fmtW(v)} kg`));
+        historyBars(vols, hist.map(x => fmtShortDate(x.start)), v => `${fmtVolume(v)} kg`));
     }
   }
 
@@ -299,7 +299,7 @@ export function summaryScreen(t, onDone) {
         empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),
       }) : null,
       volumeItems.length >= 2 ? chartCard(tr('Volumen pro Übung', 'Volume per exercise'), tr('Gewicht × Wiederholungen', 'Weight × reps'),
-        horizontalBars(volumeItems, v => `${fmtW(v)} kg`)) : null,
+        horizontalBars(volumeItems, v => `${fmtVolume(v)} kg`)) : null,
       trend,
       stats.records > 0 ? h('div', { class: 'card record-card' }, '🏆 ' + plural(stats.records,
         tr('neue Bestleistung', 'new personal record'), tr('neue Bestleistungen', 'new personal records')) + '!') : null,
@@ -314,7 +314,7 @@ export function summaryScreen(t, onDone) {
             r.sets.length === 0
               ? muted(r.target === 0 ? tr('nicht gemacht', 'not done') : tr('übersprungen', 'skipped'), 'small')
               : [h('small', null, r.sets.map(s => fmtSet(s, cardio) + (s.type ? ` (${setTypeShort(s.type)})` : '')).join(', ')),
-                !cardio && !isTimed(r.name) ? muted(tr('Volumen: ', 'Volume: ') + `${fmtW(r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0))} kg`, 'small') : null,
+                !cardio && !isTimed(r.name) ? muted(tr('Volumen: ', 'Volume: ') + `${fmtVolume(r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0))} kg`, 'small') : null,
                 comparisonLine(r)]),
           r.record ? h('span', { class: 'big-emoji' }, '🏆') : null);
       }),

@@ -205,15 +205,21 @@ fun DashboardTab(
             }
         }
 
-        // Kennzahlen dieser Woche
-        item {
+        // Kennzahlen dieser Woche (mit Überschrift, damit der Zeitraum klar ist)
+        item { Column {
+            Text(
+                tr("Diese Woche", "This week"),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 StatBox(tr("Sätze", "Sets"), weekStats.sumOf { it.sets }.toString(), Modifier.weight(1f))
-                StatBox(tr("Volumen", "Volume"), "${fmtW(weekStats.sumOf { it.volume })} kg", Modifier.weight(1f))
+                StatBox(tr("Volumen", "Volume"), "${fmtVolume(weekStats.sumOf { it.volume })} kg", Modifier.weight(1f))
                 val kcal = weekStats.mapNotNull { it.kcal }.sum()
                 StatBox("🔥 kcal", if (kcal > 0) "~$kcal" else "–", Modifier.weight(1f))
             }
-        }
+        } }
 
         // Rückblick: letzte Woche bzw. letzter Monat im Vergleich (Review.kt)
         if (store.sets.isNotEmpty()) item { ReviewCard(store) }
@@ -226,7 +232,7 @@ fun DashboardTab(
         if (volumes.any { it.second > 0 }) {
             item {
                 ChartCard(tr("Volumen pro Woche", "Weekly volume"), tr("Letzte 8 Wochen · aktuelle Woche hervorgehoben", "Last 8 weeks · current week highlighted")) {
-                    HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtW(it)} kg" }
+                    HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtVolume(it)} kg" }
                 }
             }
         }

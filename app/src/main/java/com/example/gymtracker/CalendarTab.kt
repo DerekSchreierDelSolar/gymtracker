@@ -3,6 +3,7 @@ package com.example.gymtracker
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -290,11 +291,11 @@ enum class PlanMark { NONE, PLANNED, MISSED }
 @Composable
 fun PlanDot(mark: PlanMark, modifier: Modifier = Modifier) {
     if (mark == PlanMark.NONE) return
+    // geplant = gefüllter Punkt, verpasst = roter Ring (unterscheidbar auch ohne Farbsehen)
+    val base = modifier.size(7.dp).clip(CircleShape)
     Box(
-        modifier
-            .size(6.dp)
-            .clip(CircleShape)
-            .background(if (mark == PlanMark.PLANNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+        if (mark == PlanMark.PLANNED) base.background(MaterialTheme.colorScheme.primary)
+        else base.border(1.5.dp, MaterialTheme.colorScheme.error, CircleShape)
     )
 }
 

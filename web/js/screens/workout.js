@@ -5,7 +5,7 @@ import { musclePicker, musclesOf, muscleSideCard, levelsOf } from '../bodymap.js
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import {
-  tr, exName, sortByName, fmtDate, fmtDateTime, fmtDuration, fmtW, plural, isCardio, isTimed, equipmentOf, catalogEntry,
+  tr, exName, sortByName, fmtDate, fmtDateTime, fmtDuration, fmtW, fmtVolume, plural, isCardio, isTimed, equipmentOf, catalogEntry,
   catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel, groupColor, fmtSet,
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
@@ -20,7 +20,7 @@ const sortedGroups = names => [...new Set(names.map(n => store.groupOf(n)))].sor
 
 // ---------- Tab „Workouts“ ----------
 
-export function workoutList() {
+export function workoutList(onStartWorkout) {
   if (!store.workouts.length) {
     return h('div', { class: 'pad stack' },
       h('p', null, tr('Noch keine Workouts. Ein Workout fasst mehrere Übungen zusammen, z. B. „Push-Tag“ oder „Beine“.',
@@ -29,7 +29,8 @@ export function workoutList() {
   }
   return h('div', { class: 'stack pad list-bottom' }, store.workouts.map(w => {
     const last = store.sessionsFor(w.id)[0];
-    return h('button', { class: 'card workout-card', onclick: () => go({ workoutId: w.id }) },
+    // div statt button, weil ▶ darin ein eigener Knopf ist (Knöpfe dürfen nicht verschachtelt sein)
+    return h('div', { class: 'card workout-card', role: 'button', tabindex: 0, onclick: () => go({ workoutId: w.id }) },
       h('div', { class: 'grow' },
         h('h2', null, w.name),
         // Trainingstage laut Plan, z. B. „📅 Mo · Do“
@@ -37,7 +38,11 @@ export function workoutList() {
         h('small', { class: 'muted' }, plural(w.exercises.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) +
           (last ? tr(' · zuletzt ', ' · last ') + fmtDate(last.start) : '')),
         w.exercises.length ? h('div', { class: 'icon-row', html: sortedGroups(w.exercises).map(g => muscleIconHtml(g, 28)).join('') }) : null),
-      icon('chevron'));
+      // ▶ startet das Training direkt (wie WorkoutList in WorkoutScreens.kt)
+      w.exercises.length && onStartWorkout ? h('button', {
+        class: 'play-btn tonal', 'aria-label': tr('Training starten', 'Start workout'),
+        onclick: e => { e.stopPropagation(); onStartWorkout(w.id); },
+      }, icon('play', 24)) : icon('chevron'));
   }));
 }
 
@@ -103,7 +108,7 @@ export function workoutScreen(w, onStart) {
               h('b', null, fmtDateTime(t.start)),
               h('small', { class: 'muted' }, `${s.percent} % · ${fmtDuration(t.end - t.start)} · ` +
                 plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) +
-                (s.volume > 0 ? ` · ${fmtW(s.volume)} kg` : '') + (s.kcal != null ? ` · 🔥 ${s.kcal} kcal` : ''))),
+                (s.volume > 0 ? ` · ${fmtVolume(s.volume)} kg` : '') + (s.kcal != null ? ` · 🔥 ${s.kcal} kcal` : ''))),
             s.records > 0 ? h('span', null, `🏆 ${s.records}`) : null,
             icon('chevron'));
         })),
