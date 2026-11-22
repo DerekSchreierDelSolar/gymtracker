@@ -97,11 +97,11 @@ export function chartCard(title, subtitle, ...content) {
     h('div', { class: 'chart-body' }, content));
 }
 
-/** Waagerechte Balken: [[label, wert], …]. */
-export function horizontalBars(items, format) {
+/** Waagerechte Balken: [[label, wert], …]. wide = Name + Wert über dem Balken (für lange Namen). */
+export function horizontalBars(items, format, wide = false) {
   const mx = Math.max(...items.map(i => i[1]));
   if (!(mx > 0)) return null;
-  return h('div', { class: 'hbars' }, items.map(([label, v]) =>
+  return h('div', { class: ['hbars', wide && 'wide'] }, items.map(([label, v]) =>
     h('div', { class: 'hbar' }, h('span', { class: 'label' }, label),
       h('span', { class: 'track' }, h('span', { class: 'fill', style: `width:${Math.max(2, (v / mx) * 100)}%` })),
       h('span', { class: 'value' }, format(v)))));

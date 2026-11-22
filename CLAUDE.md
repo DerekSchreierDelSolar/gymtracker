@@ -44,7 +44,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `Model.kt` | `GymSet`, `MuscleGroup`, `Equipment`, `Workout`, `TrainingSession`, `CustomMeta`, `TEMPLATES`, `fmtSet`, `oneRepMax`, `isTimed` |
 | `Catalog.kt` | `CATALOG` (207 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
 | `I18n.kt` | `appLanguage`, `tr()`, `appLocale()` |
-| `Format.kt` | `fmtW`, `fmtDate`, `fmtDateTime`, `fmtDuration`, `plural` |
+| `Format.kt` | `fmtW`, `fmtDate`, `fmtDateTime`, `fmtDuration`, `plural`, `fmtVolume`, `fmtKcal` (kcal-Anzeigen immer darüber, Tausenderpunkt; Web: core.js) |
 | `Stats.kt` | `ExerciseResult`, `SessionStats`, `sessionStats()`, `estimateKcal()`, `allSessions()`; `Profile` (optional Geschlecht/Geburtsjahr/Größe, im JSON `profile` = { sex: m/f, birthYear, height } nur wenn gesetzt, Eingabe `ProfileSettings` im Einstellungen-Dialog), `bmrKcalPerDay` (Mifflin-St-Jeor), `kcalPerMetHour` = Grundumsatz/24 statt kg, sobald das Profil vollständig ist (Web: stats.js, Validierung `validYear`/`validHeight` in core.js) |
 | `Filter.kt` | `ExerciseFilter` (Kategorie/Gerät/Suche), `FilterUiState`, `FilterActions`, `FilterBar` |
 | `HomeScreen.kt` | Startseite: `ExerciseTile` zeigt den Namen zweigeteilt (`splitExerciseName`: Grundübung, einzelnes Wort per autoSize einzeilig, + Gerät klein; Web: `tileName`, CSS `--chars`); TopBar mit Buch (Wiki) + Sprechblase (Fragen) immer sichtbar, ⋮-Menü (Einstellungen/Export/Import), NavigationBar, **HorizontalPager mit 5 Tabs**, `SettingsDialog`, `ExerciseGrid`, `TileGrid`, `ExerciseTile` |
@@ -116,6 +116,8 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
   (Web: im `#readFrom` Typ prüfen, Ungültiges überspringen, Schlüssel wie `__proto__` über `entries()` filtern;
   `importJson` ist atomar – schlägt das Einlesen fehl, wird der alte Stand wiederhergestellt, auf beiden Plattformen)
   und in `toJson()` schreiben. Bei Import zusätzlich in `importJson()` leeren.
+- **Android-Backup** (Google-Konto): `res/xml/backup_rules.xml` + `data_extraction_rules.xml` schließen `health_connect.xml`, `auto_backup.xml` und die Kopien `gym_data_before_*`/`.tmp` aus – neue gerätegebundene Prefs oder Gesundheitsdaten dort ebenfalls eintragen. `save()` fängt Fehler ab (Toast statt Absturz), höchstens 3 `gym_data_corrupt_*`, Import max. 20 MB.
+- **Web-Speicher:** immer über `storeItem()` (store.js) schreiben – bei vollem localStorage werden erst die Kopien geopfert, sonst Ereignis `gym-save-failed` → Toast (app.js). `navigator.storage.persist()` beim Start.
 - **Kotlin-Falle:** Properties in `GymStore`, die `load()` befüllt, müssen **vor** `init { load() }` stehen.
 - `HomeScreen`-Tabs: 0 Start, 1 Übungen, 2 Workouts, 3 Kalender, 4 Körper (Pager-Größe 5; Web: `TABS` in home.js). „Fragen“ ist seit der UX-Runde kein Tab mehr.
 - Reihen gleich breiter Auswahl-Knöpfe: `SegmentChip` mit `Modifier.weight(1f)` (Components.kt; Web: `.segments`).

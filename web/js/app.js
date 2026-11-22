@@ -2,7 +2,7 @@
 
 import { store } from './store.js';
 import { tr } from './core.js';
-import { tickers, dialog, h } from './ui.js';
+import { tickers, dialog, h, toast } from './ui.js';
 import { nav, update, setRenderer, setBackHandler, go, goBack, openDialog, closeDialog } from './nav.js';
 import { homeScreen } from './screens/home.js';
 import { exerciseDetailScreen } from './screens/exercise.js';
@@ -195,3 +195,15 @@ function backToTraining() {
   const i = w ? sessionWorkout(w, nav.swaps).exercises.indexOf(nav.editInTraining) : -1;
   update({ editInTraining: null, pickGroup: null, pickDetail: null, ...(i >= 0 ? { trainingIndex: i } : {}) });
 }
+
+// Browser bitten, die Daten nicht bei Speichermangel zu löschen (Safari räumt sonst den localStorage von
+// Seiten auf, die 7 Tage nicht benutzt wurden – als Web-App auf dem Home-Bildschirm gilt das nicht)
+navigator.storage?.persist?.().catch(() => {});
+
+// Speichern fehlgeschlagen (localStorage voll) – deutlich melden, sonst wären Änderungen beim Schließen weg
+let saveWarned = 0;
+window.addEventListener('gym-save-failed', () => {
+  if (Date.now() - saveWarned < 10000) return; // nicht bei jedem Tastendruck
+  saveWarned = Date.now();
+  toast(tr('Speichern fehlgeschlagen – Browser-Speicher voll. Bitte exportieren!', 'Saving failed – browser storage full. Please export!'));
+});

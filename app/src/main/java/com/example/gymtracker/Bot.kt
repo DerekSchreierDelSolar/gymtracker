@@ -427,9 +427,9 @@ object Bot {
                     "\nMost time in zone ${heartZoneNames()[top]} (${minutes[top]} min)"))
             }
             stats.kcal?.let {
-                append(if (stats.kcalFromHr) tr("\n🔥 ~$it kcal (aus dem Puls berechnet)", "\n🔥 ~$it kcal (calculated from heart rate)")
-                else tr("\n🔥 ~$it kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)",
-                    "\n🔥 ~$it kcal (MET estimate – with sex and birth year in your profile I use heart rate)"))
+                append(if (stats.kcalFromHr) tr("\n🔥 ~${fmtKcal(it)} kcal (aus dem Puls berechnet)", "\n🔥 ~${fmtKcal(it)} kcal (calculated from heart rate)")
+                else tr("\n🔥 ~${fmtKcal(it)} kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)",
+                    "\n🔥 ~${fmtKcal(it)} kcal (MET estimate – with sex and birth year in your profile I use heart rate)"))
             }
             if (withHr.size >= 2) {
                 val recent = withHr.take(5)

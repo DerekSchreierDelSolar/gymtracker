@@ -650,3 +650,8 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .set-heart-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
 .set-heart-label { width: 24px; }
 .set-heart-row .error { color: var(--error); }
+/* Lange Namen (Volumen pro Übung): Name + Wert oben, Balken darunter in voller Breite */
+.hbars.wide .hbar { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; }
+.hbars.wide .label { width: auto; white-space: normal; }
+.hbars.wide .value { width: auto; }
+.hbars.wide .track { grid-column: 1 / -1; grid-row: 2; flex: none; }

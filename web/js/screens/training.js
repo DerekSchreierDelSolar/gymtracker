@@ -5,7 +5,7 @@ import { similarExercises } from '../wizard.js';
 import { heatCard, regionScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
-  tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
+  tr, exName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
   goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort, parseIntStrict,
 } from '../core.js';
 import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames, setHeartRates } from '../stats.js';
@@ -325,13 +325,14 @@ export function summaryScreen(t, onDone) {
   const tiles = [];
   if (t.id >= 0) tiles.push([tr('Dauer', 'Duration'), fmtDuration(t.end - t.start)]);
   tiles.push([tr('Sätze', 'Sets'), String(stats.sets)]);
-  if (stats.kcal != null) tiles.push([stats.kcalFromHr ? tr('❤ Verbrauch', '❤ Burned') : tr('🔥 Verbrauch', '🔥 Burned'), `~${stats.kcal} kcal`]);
+  if (stats.kcal != null) tiles.push([stats.kcalFromHr ? tr('❤ Verbrauch', '❤ Burned') : tr('🔥 Verbrauch', '🔥 Burned'), `~${fmtKcal(stats.kcal)} kcal`]);
   if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtVolume(stats.volume)} kg`]);
   if (stats.cardioMinutes > 0) tiles.push(['Cardio', `${stats.cardioMinutes} min`]);
 
   const volumeItems = stats.results
     .filter(r => !isCardio(r.group) && !isTimed(r.name) && r.sets.length)
     .map(r => [exName(r.name), r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0)])
+    .filter(i => i[1] > 0) // Körpergewichtsübungen (0 kg) hätten nur einen leeren Balken
     .sort((a, b) => b[1] - a[1]);
 
   let trend = null;
@@ -370,7 +371,7 @@ export function summaryScreen(t, onDone) {
         empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),
       }) : null,
       volumeItems.length >= 2 ? chartCard(tr('Volumen pro Übung', 'Volume per exercise'), tr('Gewicht × Wiederholungen', 'Weight × reps'),
-        horizontalBars(volumeItems, v => `${fmtVolume(v)} kg`)) : null,
+        horizontalBars(volumeItems, v => `${fmtVolume(v)} kg`, true)) : null,
       trend,
       stats.records > 0 ? h('div', { class: 'card record-card' }, '🏆 ' + plural(stats.records,
         tr('neue Bestleistung', 'new personal record'), tr('neue Bestleistungen', 'new personal records')) + '!') : null,
@@ -385,7 +386,7 @@ export function summaryScreen(t, onDone) {
             r.sets.length === 0
               ? muted(r.target === 0 ? tr('nicht gemacht', 'not done') : tr('übersprungen', 'skipped'), 'small')
               : [h('small', null, r.sets.map(s => fmtSet(s, cardio) + (s.type ? ` (${setTypeShort(s.type)})` : '')).join(', ')),
-                !cardio && !isTimed(r.name) ? muted(tr('Volumen: ', 'Volume: ') + `${fmtVolume(r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0))} kg`, 'small') : null,
+                ((v) => !cardio && !isTimed(r.name) && v > 0 ? muted(tr('Volumen: ', 'Volume: ') + `${fmtVolume(v)} kg`, 'small') : null)(r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0)), // 0 kg (Körpergewicht) ausblenden
                 comparisonLine(r)]),
           r.record ? h('span', { class: 'big-emoji' }, '🏆') : null);
       }),

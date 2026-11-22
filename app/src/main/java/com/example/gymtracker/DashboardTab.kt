@@ -131,7 +131,7 @@ fun DashboardTab(
                     PercentRing((weekSessions.size.toFloat() / goal).coerceAtMost(1f), Modifier.size(84.dp))
                     Spacer(Modifier.width(16.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(tr("Diese Woche", "This week"), style = MaterialTheme.typography.labelLarge,
+                        Text(tr("Wochenziel", "Weekly goal"), style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
                             // Ziel erreicht/übertroffen → nicht „5 von 3“, sondern „5 Trainings ✓“ (Ziel steht darunter)
@@ -222,7 +222,7 @@ fun DashboardTab(
                 StatBox(tr("Sätze", "Sets"), weekStats.sumOf { it.sets }.toString(), Modifier.weight(1f))
                 StatBox(tr("Volumen", "Volume"), "${fmtVolume(weekStats.sumOf { it.volume })} kg", Modifier.weight(1f))
                 val kcal = weekStats.mapNotNull { it.kcal }.sum()
-                StatBox("🔥 kcal", if (kcal > 0) "~$kcal" else "–", Modifier.weight(1f))
+                StatBox("🔥 kcal", if (kcal > 0) "~${fmtKcal(kcal)}" else "–", Modifier.weight(1f))
             }
         } }
 
@@ -247,7 +247,7 @@ fun DashboardTab(
         if (kcalWeeks != null && kcalWeeks.any { it.second > 0 }) {
             item {
                 ChartCard(tr("🔥 Kalorien pro Woche", "🔥 Calories per week"), tr("Letzte 8 Wochen · geschätzt", "Last 8 weeks · estimated")) {
-                    HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${it.toInt()} kcal" }
+                    HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${fmtKcal(it)} kcal" }
                 }
             }
         }

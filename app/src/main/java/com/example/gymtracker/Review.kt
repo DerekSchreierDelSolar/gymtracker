@@ -158,7 +158,7 @@ fun ReviewCard(store: GymStore) {
             Row {
                 ReviewStat(tr("Trainingszeit", "Training time"), if (r.now.duration > 0) fmtHoursMinutes(r.now.duration) else "–",
                     deltaOf(r.now.duration.toDouble(), r.before.duration.toDouble(), true).takeIf { r.now.duration > 0 }, Modifier.weight(1f))
-                ReviewStat("🔥 kcal", r.now.kcal?.let { "~$it" } ?: "–",
+                ReviewStat("🔥 kcal", r.now.kcal?.let { "~${fmtKcal(it)}" } ?: "–",
                     r.now.kcal?.let { deltaOf(it.toDouble(), (r.before.kcal ?: 0).toDouble(), true) }, Modifier.weight(1f))
                 ReviewStat(tr("Rekorde", "Records"), "🏆 ${r.records.size}", null, Modifier.weight(1f))
             }

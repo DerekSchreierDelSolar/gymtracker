@@ -17,6 +17,9 @@ fun fmtW(w: Double): String =
  *  Nur zum Anzeigen – nie in Eingabefelder (dort würde „1.000“ als 1 gelesen). Web: fmtVolume in core.js. */
 fun fmtVolume(v: Double): String = if (v >= 1000) String.format(appLocale(), "%,d", Math.round(v)) else fmtW(v)
 
+/** kcal-Anzeige mit Tausenderpunkt wie das Volumen (z. B. „1.467“). */
+fun fmtKcal(v: Number): String = fmtVolume(Math.round(v.toDouble()).toDouble())
+
 fun plural(n: Int, one: String, many: String): String = "$n ${if (n == 1) one else many}"
 
 fun fmtDate(t: Long): String =

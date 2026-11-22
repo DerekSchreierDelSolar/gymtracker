@@ -67,12 +67,36 @@ fun ChartCard(title: String, subtitle: String? = null, colors: CardColors = Card
  * Waagerechte Balken (z. B. Volumen pro Übung). Eine Datenreihe → eine Farbe;
  * jede Zeile ist direkt beschriftet (Name links, Wert rechts), daher keine Legende nötig.
  * Gebaut aus normalen Layout-Bausteinen statt Canvas: Balkenlänge = Anteil am größten Wert.
+ * `wide` = Name + Wert über dem Balken in voller Breite (für lange Übungsnamen, sonst abgeschnitten).
  */
 @Composable
-fun HorizontalBars(items: List<Pair<String, Double>>, format: (Double) -> String) {
+fun HorizontalBars(items: List<Pair<String, Double>>, wide: Boolean = false, format: (Double) -> String) {
     val max = items.maxOfOrNull { it.second }?.takeIf { it > 0 } ?: return
     val barColor = MaterialTheme.colorScheme.primary
     val track = MaterialTheme.colorScheme.surfaceContainerHigh
+    if (wide) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items.forEach { (label, value) ->
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                        Text(format(value), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 8.dp))
+                    }
+                    Box(
+                        Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(4.dp)).background(track)
+                    ) {
+                        Box(
+                            Modifier.fillMaxHeight()
+                                .fillMaxWidth((value / max).toFloat().coerceIn(0.02f, 1f))
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(barColor)
+                        )
+                    }
+                }
+            }
+        }
+        return
+    }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         items.forEach { (label, value) ->
             Row(verticalAlignment = Alignment.CenterVertically) {

@@ -9,6 +9,7 @@ import org.json.JSONObject
 import java.io.File
 
 class GymStore(context: Context) {
+    private val appContext = context.applicationContext
     private val file = File(context.filesDir, "gym_data.json")
     val exercises = mutableStateListOf<String>()
     val sets = mutableStateListOf<GymSet>()
@@ -83,6 +84,9 @@ class GymStore(context: Context) {
             // Datei ist beschädigt: Kopie aufheben, bevor der nächste save() sie überschreibt
             runCatching {
                 file.copyTo(File(file.parentFile, "gym_data_corrupt_${System.currentTimeMillis()}.json"))
+                // Nur die 3 neuesten Kopien behalten (sonst wächst der Speicher bei wiederholten Fehlern)
+                file.parentFile?.listFiles { f -> f.name.startsWith("gym_data_corrupt_") }
+                    ?.sortedByDescending { it.name }?.drop(3)?.forEach { it.delete() }
             }
         }
     }
@@ -92,11 +96,23 @@ class GymStore(context: Context) {
      * Stürzt die App mitten im Schreiben ab, bleibt die alte Datei vollständig erhalten.
      */
     private fun save() {
-        val tmp = File(file.parentFile, "gym_data.json.tmp")
-        tmp.writeText(toJson().toString())
-        if (!tmp.renameTo(file)) {
-            file.writeText(tmp.readText())
-            tmp.delete()
+        try {
+            val tmp = File(file.parentFile, "gym_data.json.tmp")
+            tmp.writeText(toJson().toString())
+            if (!tmp.renameTo(file)) {
+                file.writeText(tmp.readText())
+                tmp.delete()
+            }
+        } catch (e: Exception) {
+            // z. B. Speicher voll: nicht abstürzen, aber deutlich melden (die Daten sind nur im Arbeitsspeicher)
+            e.printStackTrace()
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                android.widget.Toast.makeText(
+                    appContext,
+                    tr("Speichern fehlgeschlagen – ist der Speicher voll?", "Saving failed – is the storage full?"),
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 

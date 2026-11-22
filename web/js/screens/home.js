@@ -2,7 +2,7 @@
 
 import { store } from '../store.js';
 import {
-  tr, exName, sortByName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDuration, fmtShortDate, fmtWeek, plural, isCardio, isEnglish, groupLabel,
+  tr, exName, sortByName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDuration, fmtShortDate, fmtWeek, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
 } from '../core.js';
@@ -102,6 +102,8 @@ function importData() {
     const f = input.files?.[0];
     input.remove();
     if (!f) return;
+    // Echte Sicherungen sind weit kleiner – eine riesige Datei würde den Browser nur einfrieren
+    if (f.size > 20 * 1024 * 1024) { toast(tr('Das ist keine gültige GymTracker-Sicherung.', 'This is not a valid GymTracker backup.')); return; }
     const text = await f.text();
     const info = store.inspectBackup(text);
     if (!info) { toast(tr('Das ist keine gültige GymTracker-Sicherung.', 'This is not a valid GymTracker backup.')); return; }
@@ -213,7 +215,7 @@ function dashboardTab(onStartWorkout) {
     h('button', { class: 'card week-card', onclick: () => { hintUsed('weekGoal'); weeklyGoalDialog(); } },
       percentRing(Math.min(1, weekSessions.length / goal), 84),
       h('div', { class: 'grow' },
-        h('small', { class: 'muted' }, tr('Diese Woche', 'This week')),
+        h('small', { class: 'muted' }, tr('Wochenziel', 'Weekly goal')),
         // Ziel erreicht/übertroffen → „5 Trainings ✓“ statt „5 von 3“ (wie DashboardTab.kt)
         h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Trainingseinheit', 'workout'), tr('Trainingseinheiten', 'workouts')) + ' ✓'
           : tr(`${weekSessions.length} von ${goal} Trainingseinheiten`, `${weekSessions.length} of ${goal} workouts`)),
@@ -249,7 +251,7 @@ function dashboardTab(onStartWorkout) {
     h('div', { class: 'stat-grid three' },
       statBox(tr('Sätze', 'Sets'), String(weekStats.reduce((a, s) => a + s.sets, 0))),
       statBox(tr('Volumen', 'Volume'), `${fmtVolume(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
-      statBox('🔥 kcal', weekKcal > 0 ? `~${weekKcal}` : '–')),
+      statBox('🔥 kcal', weekKcal > 0 ? `~${fmtKcal(weekKcal)}` : '–')),
 
     // Rückblick: letzte Woche bzw. letzter Monat im Vergleich (review.js)
     store.sets.length ? reviewCard() : null,
@@ -263,7 +265,7 @@ function dashboardTab(onStartWorkout) {
     // geschätzter Kalorienverbrauch pro Woche (nur mit Körpergewicht) – wie DashboardTab.kt
     (k => k && k.some(v => v[1] > 0) ? chartCard(tr('🔥 Kalorien pro Woche', '🔥 Calories per week'),
       tr('Letzte 8 Wochen · geschätzt', 'Last 8 weeks · estimated'),
-      historyBars(k.map(v => v[1]), k.map(v => fmtWeek(v[0])), v => `~${Math.round(v)} kcal`)) : null)(weeklyKcal(store, 8)),
+      historyBars(k.map(v => v[1]), k.map(v => fmtWeek(v[0])), v => `~${fmtKcal(v)} kcal`)) : null)(weeklyKcal(store, 8)),
 
     groupItems.length ? chartCard(tr('Sätze pro Muskelgruppe', 'Sets per muscle group'), periodLabel(nav.statPeriod),
       horizontalBars(groupItems, v => String(v))) : null,
@@ -410,7 +412,7 @@ function calendarTab() {
     const n = monthSessions.length;
     const kcal = monthSessions.reduce((a, t) => a + (stats.get(t.id).kcal ?? 0), 0);
     monthText = tr(`${plural(n, 'Trainingseinheit', 'Trainingseinheiten')} an ${plural(days, 'Tag', 'Tagen')} · Ø ${avg} % abgeschlossen`,
-      `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg} % completed`) + (kcal > 0 ? ` · 🔥 ~${kcal} kcal` : '');
+      `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg} % completed`) + (kcal > 0 ? ` · 🔥 ~${fmtKcal(kcal)} kcal` : '');
   }
   const daySessions = (byDay.get(nav.calDay) ?? []).slice().sort((a, b) => a.start - b.start);
 
@@ -432,7 +434,7 @@ function calendarTab() {
           h('small', { class: 'muted' }, (t.id < 0 ? plural(s.results.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) + ' · '
             : s.total === 0 ? fmtDuration(t.end - t.start) + ' · '
               : `${s.done}/${s.total} ` + tr('Ziel-Sätze', 'target sets') + ` · ${fmtDuration(t.end - t.start)} · `) +
-            plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) + (s.kcal != null ? ` · 🔥 ${s.kcal} kcal` : ''))),
+            plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)} kcal` : ''))),
         icon('chevron'));
     }),
     h('div', { class: 'legend' }, [[1, '100 %'], [0.5, '≥ 50 %'], [0.25, '< 50 %']].map(([p, l]) => [ring(p, 16), h('small', null, l)]),

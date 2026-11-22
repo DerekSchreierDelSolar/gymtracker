@@ -60,7 +60,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                     if (t.id >= 0) add(tr("Dauer", "Duration") to fmtDuration(t.end - t.start))
                     add(tr("Sätze", "Sets") to stats.sets.toString())
                     stats.kcal?.let {
-                        add((if (stats.kcalFromHr) tr("❤ Verbrauch", "❤ Burned") else tr("🔥 Verbrauch", "🔥 Burned")) to "~$it kcal")
+                        add((if (stats.kcalFromHr) tr("❤ Verbrauch", "❤ Burned") else tr("🔥 Verbrauch", "🔥 Burned")) to "~${fmtKcal(it)} kcal")
                     }
                     if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtVolume(stats.volume)} kg")
                     if (stats.cardioMinutes > 0) add("Cardio" to "${stats.cardioMinutes} min")
@@ -105,11 +105,12 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
             val volumeItems = stats.results
                 .filter { !it.group.isCardio && !isTimed(it.name) && it.sets.isNotEmpty() }
                 .map { exName(it.name) to it.sets.work().sumOf { s -> s.weight * s.reps } }
+                .filter { it.second > 0 }   // Körpergewichtsübungen (0 kg) hätten nur einen leeren Balken
                 .sortedByDescending { it.second }
             if (volumeItems.size >= 2) {
                 item {
                     ChartCard(tr("Volumen pro Übung", "Volume per exercise"), tr("Gewicht × Wiederholungen", "Weight × reps")) {
-                        HorizontalBars(volumeItems) { "${fmtVolume(it)} kg" }
+                        HorizontalBars(volumeItems, wide = true) { "${fmtVolume(it)} kg" }
                     }
                 }
             }
@@ -185,9 +186,10 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                                     r.sets.joinToString(", ") { fmtSet(it, cardio) + if (it.type != SetType.NORMAL) " (${it.type.short})" else "" },
                                     style = MaterialTheme.typography.bodySmall
                                 )
-                                if (!cardio && !isTimed(r.name)) {
+                                val volume = r.sets.work().sumOf { it.weight * it.reps }
+                                if (!cardio && !isTimed(r.name) && volume > 0) {  // Körpergewicht (0 kg): keine „Volumen: 0 kg“-Zeile
                                     Text(
-                                        tr("Volumen: ", "Volume: ") + "${fmtVolume(r.sets.work().sumOf { it.weight * it.reps })} kg",
+                                        tr("Volumen: ", "Volume: ") + "${fmtVolume(volume)} kg",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

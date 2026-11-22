@@ -78,6 +78,7 @@ export function fmtW(w) {
 }
 /** Volumen zur Anzeige: ab 1000 ganzzahlig mit Tausendertrennzeichen (wie fmtVolume in Format.kt). Nie in Eingabefelder. */
 export const fmtVolume = v => (v >= 1000 ? Math.round(v).toLocaleString(locale()) : fmtW(v));
+export const fmtKcal = v => fmtVolume(Math.round(v));
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const pad2 = n => String(n).padStart(2, '0');
 

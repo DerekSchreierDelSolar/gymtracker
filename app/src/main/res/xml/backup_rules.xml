@@ -1,13 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Android-Backup (Google-Konto) bis Android 11. Gesichert werden die Trainingsdaten (gym_data.json) und
+   geräteunabhängige Einstellungen. Ausgeschlossen:
+   - health_connect.xml: Erholungswerte (Ruhepuls/HRV/Schlaf) und Abgleich-Stand mit Health Connect –
+     Gesundheitsdaten, die Health Connect selbst verwaltet; auf einem neuen Gerät würde der alte Stand stören
+   - auto_backup.xml: Ordner-Berechtigung (SAF) gilt nur auf diesem Gerät
+   - Sicherungskopien vor Import/Zurücksetzen und die Zwischendatei beim Speichern
+   Gleiche Liste in data_extraction_rules.xml (ab Android 12).
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+        <exclude domain="sharedpref" path="health_connect.xml" />
+        <exclude domain="sharedpref" path="auto_backup.xml" />
+        <exclude domain="file" path="gym_data_before_import.json" />
+        <exclude domain="file" path="gym_data_before_reset.json" />
+        <exclude domain="file" path="gym_data.json.tmp" />
 </full-backup-content>

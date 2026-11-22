@@ -109,8 +109,14 @@ fun HomeScreen(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
+        // Höchstens 20 MB lesen (echte Sicherungen sind weit kleiner): eine riesige Datei würde sonst
+        // den Arbeitsspeicher sprengen und die App abstürzen lassen
+        val maxBytes = 20 * 1024 * 1024
         val text = runCatching {
-            context.contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                val bytes = input.readNBytesCompat(maxBytes + 1)
+                if (bytes.size > maxBytes) null else String(bytes, Charsets.UTF_8)
+            }
         }.getOrNull()
         if (text != null && store.inspectBackup(text) != null) pendingImport = text
         else toast(tr("Das ist keine gültige GymTracker-Sicherung.", "This is not a valid GymTracker backup."))
@@ -712,3 +718,15 @@ fun ExerciseTile(
 }
 
 
+
+/** Liest höchstens [limit] Bytes (InputStream.readNBytes gibt es erst ab Android 13). */
+private fun java.io.InputStream.readNBytesCompat(limit: Int): ByteArray {
+    val out = java.io.ByteArrayOutputStream()
+    val buf = ByteArray(64 * 1024)
+    while (out.size() < limit) {
+        val n = read(buf, 0, minOf(buf.size, limit - out.size()))
+        if (n < 0) break
+        out.write(buf, 0, n)
+    }
+    return out.toByteArray()
+}

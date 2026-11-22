@@ -4,7 +4,7 @@
 import { BOT } from './bot-data.js';
 import { WIKI } from './wiki-data.js';
 import { CATALOG } from './data.js';
-import { tr, isEnglish, isCardio, exName, equipmentLabel, fmtDate } from './core.js';
+import { tr, isEnglish, isCardio, exName, equipmentLabel, fmtDate, fmtKcal } from './core.js';
 import { store } from './store.js';
 import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames } from './stats.js';
 import { h, icon, chip } from './ui.js';
@@ -164,9 +164,9 @@ function heartAnswer() {
     if (minutes[top] > 0) lines.push(tr(`Meiste Zeit in Zone ${heartZoneNames()[top]} (${minutes[top]} min)`, `Most time in zone ${heartZoneNames()[top]} (${minutes[top]} min)`));
   }
   if (stats.kcal != null) lines.push(stats.kcalFromHr
-    ? tr(`🔥 ~${stats.kcal} kcal (aus dem Puls berechnet)`, `🔥 ~${stats.kcal} kcal (calculated from heart rate)`)
-    : tr(`🔥 ~${stats.kcal} kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)`,
-      `🔥 ~${stats.kcal} kcal (MET estimate – with sex and birth year in your profile I use heart rate)`));
+    ? tr(`🔥 ~${fmtKcal(stats.kcal)} kcal (aus dem Puls berechnet)`, `🔥 ~${fmtKcal(stats.kcal)} kcal (calculated from heart rate)`)
+    : tr(`🔥 ~${fmtKcal(stats.kcal)} kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)`,
+      `🔥 ~${fmtKcal(stats.kcal)} kcal (MET estimate – with sex and birth year in your profile I use heart rate)`));
   if (withHr.length >= 2) {
     const recent = withHr.slice(0, 5);
     const avg = Math.round(recent.reduce((a, s) => a + s.hr.avg, 0) / recent.length);

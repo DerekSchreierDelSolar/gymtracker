@@ -1,7 +1,7 @@
 // Wochen-/Monatsrückblick (Karte auf der Startseite) – entspricht Review.kt.
 // Zeigt den letzten ABGESCHLOSSENEN Zeitraum (letzte Woche Mo–So bzw. letzten Kalendermonat) im Vergleich zum Zeitraum davor.
 
-import { tr, exName, fmtW, fmtVolume, fmtDate, startOfWeek, addDays } from './core.js';
+import { tr, exName, fmtW, fmtVolume, fmtKcal, fmtDate, startOfWeek, addDays } from './core.js';
 import { h, chip } from './ui.js';
 import { allSessions, sessionStats, recordEvents } from './stats.js';
 import { regionScore, muscleScoreOf, relativeLoad, muscleLabel } from './bodymap.js';
@@ -82,7 +82,7 @@ export function reviewCard() {
         stat(tr('Volumen', 'Volume'), `${fmtVolume(r.now.volume)} kg`, deltaOf(r.now.volume, r.before.volume, true)),
         stat(tr('Trainingszeit', 'Training time'), r.now.duration > 0 ? fmtHoursMinutes(r.now.duration) : '–',
           r.now.duration > 0 ? deltaOf(r.now.duration, r.before.duration, true) : null),
-        stat('🔥 kcal', r.now.kcal != null ? `~${r.now.kcal}` : '–', r.now.kcal != null ? deltaOf(r.now.kcal, r.before.kcal ?? 0, true) : null),
+        stat('🔥 kcal', r.now.kcal != null ? `~${fmtKcal(r.now.kcal)}` : '–', r.now.kcal != null ? deltaOf(r.now.kcal, r.before.kcal ?? 0, true) : null),
         stat(tr('Rekorde', 'Records'), `🏆 ${r.records.length}`, null)),
       recordNames.length ? h('p', { class: 'review-line' }, h('span', null, '🏆'),
         recordNames.slice(0, 3).map(exName).join(', ') + (recordNames.length > 3 ? ' …' : '')) : null,

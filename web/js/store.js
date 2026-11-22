@@ -11,6 +11,17 @@ import {
 const KEY = 'gym_data';
 const migrateName = n => RENAMED_EXERCISES[n] ?? n;
 
+// Sicherungskopien im localStorage (vor Import/Zurücksetzen, beschädigte Stände). Sie belegen jeweils so viel
+// Platz wie die Daten selbst – ist das Limit (~5 MB) erreicht, werden sie zuerst geopfert.
+const COPY_KEYS = () => Object.keys(localStorage).filter(k => k === 'gym_data_before_import' || k === 'gym_data_before_reset' || k.startsWith('gym_data_corrupt_'));
+/** setItem, das bei vollem Speicher erst die Kopien löscht und es dann noch einmal versucht. */
+function storeItem(key, value, { dropCopies = true } = {}) {
+  try { localStorage.setItem(key, value); return true; } catch { /* voll */ }
+  if (!dropCopies) return false;
+  for (const k of COPY_KEYS()) if (k !== key) localStorage.removeItem(k);
+  try { localStorage.setItem(key, value); return true; } catch { return false; }
+}
+
 class GymStore {
   exercises = [];
   sets = [];            // { id, exercise, weight, reps, time, type? } (type fehlt = NORMAL)
@@ -36,7 +47,9 @@ class GymStore {
     } catch (e) {
       console.error(e);
       // Beschädigt: Kopie aufheben, bevor der nächste Speichervorgang sie überschreibt
-      localStorage.setItem(`gym_data_corrupt_${Date.now()}`, text);
+      storeItem(`gym_data_corrupt_${Date.now()}`, text, { dropCopies: false });
+      // Nur die 3 neuesten beschädigten Stände behalten
+      Object.keys(localStorage).filter(k => k.startsWith('gym_data_corrupt_')).sort().reverse().slice(3).forEach(k => localStorage.removeItem(k));
     }
   }
 
@@ -45,7 +58,8 @@ class GymStore {
   #changed() { this.#listeners.forEach(fn => fn()); }
 
   #save() {
-    localStorage.setItem(KEY, JSON.stringify(this.#toJson()));
+    // Schlägt das Speichern fehl (Speicher voll), meldet app.js das – die Änderung wäre sonst beim Schließen weg
+    if (!storeItem(KEY, JSON.stringify(this.#toJson()))) window.dispatchEvent(new Event('gym-save-failed'));
     this.#changed();
   }
   saveNow() { this.#save(); }
@@ -57,7 +71,7 @@ class GymStore {
   resetProgress() {
     const snap = { sets: this.sets, sessions: this.sessions, weights: this.weights, notes: this.notes };
     const old = localStorage.getItem(KEY);
-    if (old) localStorage.setItem('gym_data_before_reset', old);
+    if (old) storeItem('gym_data_before_reset', old, { dropCopies: false });
     this.sets = []; this.sessions = []; this.weights = []; this.notes = {};
     this.#save();
     return snap;
@@ -195,7 +209,7 @@ class GymStore {
   importJson(text) {
     const root = JSON.parse(text); // zuerst parsen: bei Fehler bleibt alles unverändert
     const old = localStorage.getItem(KEY);
-    if (old) localStorage.setItem('gym_data_before_import', old);
+    if (old) storeItem('gym_data_before_import', old, { dropCopies: false });
     this.#clearAll();
     try {
       this.#readFrom(root);
