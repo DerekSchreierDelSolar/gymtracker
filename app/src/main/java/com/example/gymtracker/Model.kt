@@ -90,7 +90,7 @@ val MuscleGroup.isCardio: Boolean get() = this == MuscleGroup.CARDIO
  * Zeitübungen (Plank, Wandsitzen …): Die Sekunden stehen ebenfalls im Feld `reps`,
  * `weight` ist optional (z. B. Farmer's Walk mit 2 × 24 kg).
  */
-val TIMED_CATALOG = setOf("Unterarmstütz / Plank (Körpergewicht)", "Seitstütz (Körpergewicht)", "Wandsitzen (Körpergewicht)", "Farmer's Walk (Kurzhantel)", "Farmer's Walk (Kettlebell)")
+val TIMED_CATALOG = setOf("Wandsitzen (Körpergewicht)", "Unterarmstütz / Plank (Körpergewicht)", "Seitstütz (Körpergewicht)", "Farmer's Walk (Kurzhantel)", "Farmer's Walk (Kettlebell)")
 
 /**
  * Zusatzangaben zu eigenen Übungen (nicht im Katalog): Gerät, ob sie zeitbasiert sind, Muskeln.
@@ -190,22 +190,22 @@ val TEMPLATES = listOf(
         "Bankdrücken (Langhantel)", "Schrägbankdrücken (Kurzhantel)", "Schulterdrücken (Kurzhantel)", "Seitheben (Kurzhantel)", "Trizepsdrücken (Kabelzug)", "Dips (Körpergewicht)"
     )),
     WorkoutTemplate("Pull (Ziehen)", "Pull", listOf(
-        "Klimmzüge (Körpergewicht)", "Rudern vorgebeugt (Langhantel)", "Latziehen (Kabelzug)", "Face Pulls (Kabelzug)", "Bizepscurls (Kurzhantel)", "Hammercurls (Kurzhantel)"
+        "Klimmzüge (Körpergewicht)", "Rudern vorgebeugt (Langhantel)", "Latziehen (Kabelzug)", "Face Pulls (Kabelzug)", "Bizeps-Curls (Kurzhantel)", "Hammer Curls (Kurzhantel)"
     )),
     WorkoutTemplate("Beine", "Legs", listOf(
-        "Kniebeugen (Langhantel)", "Rumänisches Kreuzheben (Langhantel)", "Beinpresse (Maschine)", "Beinbeuger (Maschine)", "Wadenheben stehend (Maschine)"
+        "Kniebeugen (Langhantel)", "Rumänisches Kreuzheben (Langhantel)", "Beinpresse (Maschine)", "Beincurls (Maschine)", "Wadenheben stehend (Maschine)"
     )),
     WorkoutTemplate("Oberkörper", "Upper body", listOf(
-        "Bankdrücken (Langhantel)", "Rudern vorgebeugt (Langhantel)", "Schulterdrücken (Kurzhantel)", "Latziehen (Kabelzug)", "Bizepscurls (Kurzhantel)", "Trizepsdrücken (Kabelzug)"
+        "Bankdrücken (Langhantel)", "Rudern vorgebeugt (Langhantel)", "Schulterdrücken (Kurzhantel)", "Latziehen (Kabelzug)", "Bizeps-Curls (Kurzhantel)", "Trizepsdrücken (Kabelzug)"
     )),
     WorkoutTemplate("Unterkörper", "Lower body", listOf(
-        "Kniebeugen (Langhantel)", "Rumänisches Kreuzheben (Langhantel)", "Ausfallschritte (Kurzhantel)", "Beinstrecker (Maschine)", "Wadenheben stehend (Maschine)", "Unterarmstütz / Plank (Körpergewicht)"
+        "Kniebeugen (Langhantel)", "Rumänisches Kreuzheben (Langhantel)", "Ausfallschritte (Kurzhantel)", "Beinstrecken (Maschine)", "Wadenheben stehend (Maschine)", "Unterarmstütz / Plank (Körpergewicht)"
     )),
     WorkoutTemplate("Ganzkörper", "Full body", listOf(
         "Kniebeugen (Langhantel)", "Bankdrücken (Langhantel)", "Rudern vorgebeugt (Langhantel)", "Schulterdrücken (Kurzhantel)", "Hip Thrust (Langhantel)", "Unterarmstütz / Plank (Körpergewicht)"
     )),
     WorkoutTemplate("Cardio & Core", "Cardio & core", listOf(
-        "Rudergerät", "Laufband", "Hängendes Beinheben (Körpergewicht)", "Russian Twists (Körpergewicht)", "Unterarmstütz / Plank (Körpergewicht)"
+        "Rudergerät", "Laufband", "Beinheben hängend (Körpergewicht)", "Russian Twist (Körpergewicht)", "Unterarmstütz / Plank (Körpergewicht)"
     ))
 )
 

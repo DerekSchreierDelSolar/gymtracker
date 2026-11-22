@@ -18,7 +18,6 @@
     "variants": {
       "Langhantel": ["Bei schweren Sätzen mit Sicherungsablagen oder Partner trainieren.", "Use safety arms or a spotter for heavy sets."],
       "Kurzhantel": ["Größerer Bewegungsradius; unten tiefer gehen, oben die Hanteln nicht zusammenschlagen.", "Greater range of motion; go a little deeper and don't clank the dumbbells together at the top."],
-      "Maschine": ["Sitz so einstellen, dass die Griffe auf Höhe der unteren Brust sind.", "Adjust the seat so the handles are level with your lower chest."],
       "Multipresse": ["Bank so stellen, dass die Stange auf die untere Brust trifft. Sicherungshaken nutzen.", "Position the bench so the bar touches your lower chest. Use the safety catches."]
     }
   },
@@ -92,25 +91,8 @@
       ["Lieber leichtes Gewicht und saubere Dehnung.", "Use light weight and a controlled stretch."]
     ],
     "variants": {
-      "Kurzhantel": ["Oben kaum Spannung – die Arbeit passiert im unteren Teil.", "Little tension at the top – the work happens in the lower half."],
-      "Maschine / Butterfly": ["Sitz so einstellen, dass die Griffe auf Brusthöhe sind; Schultern bleiben hinten.", "Set the seat so the handles are at chest height; keep your shoulders back."],
-      "Kabelzug / Crossover": ["Ein Schritt nach vorne, leicht vorgebeugt; die Hände treffen sich vor dem Körper.", "Step forward, lean slightly; your hands meet in front of your body."]
+      "Kurzhantel": ["Oben kaum Spannung – die Arbeit passiert im unteren Teil.", "Little tension at the top – the work happens in the lower half."]
     }
-  },
-  "Fliegende von unten": {
-    "muscles": ["Obere Brust, vordere Schulter", "Upper chest, front delts"],
-    "primary": ["chest"],
-    "secondary": ["delts"],
-    "regions": { "chest.upper": 1, "chest.mid": 0.6, "chest.lower": 0.3, "delts.front": 0.6 },
-    "how": [
-      ["Kabelrollen ganz unten einstellen, mittig stehen.", "Set the pulleys at the lowest position and stand in the middle."],
-      ["Mit leicht gebeugten Armen die Griffe von unten-seitlich nach oben-vorne führen.", "With slightly bent arms, bring the handles from low and wide to high in front of you."],
-      ["Die Hände treffen sich etwa auf Kinnhöhe, dann langsam zurück.", "Your hands meet around chin height, then return slowly."]
-    ],
-    "tips": [
-      ["Nicht mit dem Oberkörper schwingen.", "Don't swing your torso."],
-      ["Schultern unten lassen, nicht hochziehen.", "Keep your shoulders down, don't shrug."]
-    ]
   },
   "Schrägbank-Fliegende": {
     "muscles": ["Obere Brust", "Upper chest"],
@@ -160,10 +142,7 @@
       ["Nicht tiefer als bis zur Waagerechten – starke Belastung für die Schulter.", "Don't go much below parallel – it stresses the shoulder."],
       ["Schultern nicht zu den Ohren ziehen.", "Don't let your shoulders creep up to your ears."],
       ["Aufrechter Oberkörper = mehr Trizeps, vorgeneigt = mehr Brust.", "Upright torso = more triceps, leaning forward = more chest."]
-    ],
-    "variants": {
-      "Maschine": ["Das Gegengewicht unterstützt: mehr Gewicht = leichter.", "The counterweight assists you: more weight = easier."]
-    }
+    ]
   },
   "Liegestütze": {
     "muscles": ["Brust, Trizeps, vordere Schulter, Rumpf", "Chest, triceps, front delts, core"],
@@ -179,21 +158,68 @@
       ["Bauch und Gesäß anspannen – kein Hohlkreuz, kein Po in die Luft.", "Brace your abs and glutes – no sagging hips, no butt in the air."],
       ["Ellbogen etwa 45° zum Körper.", "Elbows about 45° from your body."],
       ["Zu schwer? Erst mit Händen auf einer Bank oder auf den Knien üben.", "Too hard? Start with hands on a bench or from your knees."]
-    ]
+    ],
+    "variants": {
+      "Körpergewicht, negativ": ["Füße auf einer Bank oder Stufe, Hände am Boden. Je höher die Füße, desto schwerer und desto mehr Schulter.", "Feet on a bench or step, hands on the floor. The higher your feet, the harder it gets and the more shoulders work."],
+      "Körpergewicht, kniend": ["Auf den Knien statt auf den Füßen – Körper von Knie bis Kopf gerade.", "On your knees instead of your feet – body straight from knees to head."],
+      "Körpergewicht, positiv": ["Hände erhöht auf Bank oder Stufe – leichter, gut für Anfänger.", "Hands raised on a bench or step – easier and good for beginners."],
+      "Körpergewicht, breit": ["Hände deutlich breiter als schulterbreit – mehr Brust, weniger Trizeps.", "Hands clearly wider than shoulder width – more chest, less triceps."]
+    }
   },
-  "Schräge Liegestütze": {
-    "muscles": ["Obere Brust, vordere Schulter, Trizeps", "Upper chest, front delts, triceps"],
-    "primary": ["chest", "delts"],
-    "secondary": ["triceps"],
-    "regions": { "chest.upper": 1, "chest.mid": 0.6, "chest.lower": 0.3, "delts.front": 1, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3 },
+  "Brustpresse": {
+    "muscles": ["Brust, vordere Schulter, Trizeps", "Chest, front delts, triceps"],
+    "primary": ["chest"],
+    "secondary": ["triceps", "delts"],
+    "regions": { "chest.mid": 1, "chest.upper": 0.6, "chest.lower": 0.6, "delts.front": 0.6, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3 },
     "how": [
-      ["Füße auf einer Bank oder Stufe, Hände am Boden.", "Feet on a bench or step, hands on the floor."],
-      ["Körper gerade halten und Brust zum Boden absenken.", "Keep your body straight and lower your chest to the floor."],
-      ["Hochdrücken.", "Push back up."]
+      ["Sitz so einstellen, dass die Griffe etwa auf Höhe der mittleren Brust liegen.", "Adjust the seat so the handles are roughly level with your mid chest."],
+      ["Rücken fest an die Lehne, Schulterblätter leicht zurück und unten.", "Press your back into the pad, shoulder blades slightly back and down."],
+      ["Griffe nach vorne drücken, bis die Arme fast gestreckt sind.", "Press the handles forward until your arms are almost straight."],
+      ["Langsam zurückführen, bis eine leichte Dehnung in der Brust spürbar ist.", "Return slowly until you feel a light stretch in your chest."]
     ],
     "tips": [
-      ["Je höher die Füße, desto schwerer und desto mehr Schulter.", "The higher your feet, the harder it gets and the more shoulders work."],
-      ["Hüfte nicht abknicken lassen.", "Don't let your hips pike or sag."]
+      ["Schultern bleiben hinten – nicht nach vorne rollen, wenn die Arme gestreckt sind.", "Keep your shoulders back – don't let them roll forward as you extend."],
+      ["Ellbogen etwas unter Schulterhöhe halten, das schont die Schultern.", "Keep your elbows slightly below shoulder height to protect your shoulders."],
+      ["Gute Übung für Anfänger und zum Ausbelasten am Ende des Trainings.", "Great for beginners and for finishing off your chest at the end of a session."]
     ]
+  },
+  "Butterfly": {
+    "muscles": ["Brust (vor allem innen), vordere Schulter", "Chest (especially inner), front delts"],
+    "primary": ["chest"],
+    "secondary": ["delts"],
+    "regions": { "chest.mid": 1, "chest.upper": 0.6, "chest.lower": 0.6, "delts.front": 0.3 },
+    "how": [
+      ["Sitz so einstellen, dass die Griffe bzw. Polster auf Brusthöhe sind.", "Set the seat so the handles or pads are at chest height."],
+      ["Arme leicht gebeugt, Rücken an der Lehne.", "Arms slightly bent, back against the pad."],
+      ["Arme in einem Bogen vor der Brust zusammenführen und kurz halten.", "Bring your arms together in an arc in front of your chest and hold briefly."],
+      ["Kontrolliert öffnen, bis die Brust gedehnt ist.", "Open under control until your chest is stretched."]
+    ],
+    "tips": [
+      ["Der Ellbogenwinkel bleibt gleich – nicht drücken.", "Keep the elbow angle fixed – don't press."],
+      ["Schultern unten und hinten lassen.", "Keep your shoulders down and back."],
+      ["In der Dehnung nicht weiter gehen, als die Schulter angenehm mitmacht.", "Don't stretch further than your shoulders comfortably allow."]
+    ]
+  },
+  "Cable Crossover": {
+    "muscles": ["Brust, vordere Schulter", "Chest, front delts"],
+    "primary": ["chest"],
+    "secondary": ["delts"],
+    "regions": { "chest.mid": 1, "chest.lower": 0.6, "chest.upper": 0.6, "delts.front": 0.3 },
+    "how": [
+      ["Beide Kabelrollen gleich hoch einstellen, mittig stehen, ein Schritt nach vorne.", "Set both pulleys at the same height, stand in the middle and take a step forward."],
+      ["Oberkörper leicht vorbeugen, Arme leicht gebeugt und seitlich geöffnet.", "Lean slightly forward with arms slightly bent and open to the sides."],
+      ["Griffe in einem Bogen vor dem Körper zusammenführen.", "Bring the handles together in an arc in front of your body."],
+      ["Langsam zurück in die Dehnung.", "Return slowly into the stretch."]
+    ],
+    "tips": [
+      ["Die Zugrichtung bestimmt den Bereich: von oben = untere Brust, von unten = obere Brust.", "The cable angle decides the focus: high-to-low = lower chest, low-to-high = upper chest."],
+      ["Nicht mit dem Oberkörper schwingen.", "Don't swing your torso."],
+      ["Spannung bleibt dank Kabel über die ganze Bewegung – lieber leichter und sauber.", "The cable keeps tension throughout – go lighter and stay clean."]
+    ],
+    "variants": {
+      "Kabelzug, von oben": ["Rollen oben einstellen und die Hände vor dem Bauch zusammenführen – Fokus untere Brust.", "Set the pulleys high and bring your hands together in front of your belly – lower chest focus."],
+      "Kabelzug, von unten": ["Rollen ganz unten einstellen; die Hände treffen sich etwa auf Kinnhöhe – Fokus obere Brust.", "Set the pulleys at the bottom; your hands meet around chin height – upper chest focus."],
+      "Kabelzug, einarmig": ["Mit der freien Hand festhalten; der Arm darf etwas über die Körpermitte hinausgehen.", "Hold on with your free hand; your working arm may cross slightly past the midline."]
+    }
   }
 }

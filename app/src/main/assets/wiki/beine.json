@@ -162,7 +162,7 @@
       ["Ruhig und kontrolliert gehen, nicht stolpern.", "Walk steadily and controlled, don't stumble."]
     ]
   },
-  "Bulgarische Kniebeugen": {
+  "Bulgarian Split Squat": {
     "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
     "primary": ["quads", "glutes"],
     "secondary": ["adductors", "hamstrings"],
@@ -180,7 +180,7 @@
       "Multipresse": ["Die geführte Stange hilft beim Gleichgewicht – Fuß gut positionieren.", "The guided bar helps balance – set your foot position carefully."]
     }
   },
-  "Step-ups": {
+  "Step-Ups": {
     "muscles": ["Oberschenkel vorne, Gesäß", "Quads, glutes"],
     "primary": ["quads", "glutes"],
     "secondary": ["hamstrings", "calves"],
@@ -195,7 +195,7 @@
       ["Stabile Box verwenden.", "Use a stable box."]
     ]
   },
-  "Beinstrecker": {
+  "Beinstrecken": {
     "muscles": ["Oberschenkel vorne", "Quads"],
     "primary": ["quads"],
     "secondary": [],
@@ -208,9 +208,13 @@
     "tips": [
       ["Nicht mit Schwung arbeiten.", "Don't use momentum."],
       ["Gesäß bleibt auf dem Sitz, Griffe festhalten.", "Keep your glutes on the seat and hold the handles."]
-    ]
+    ],
+    "variants": {
+      "Kabelzug": ["Fußschlaufe am unteren Kabel, mit dem Rücken zum Gerät auf eine Bank setzen.", "Ankle strap on the low cable; sit on a bench facing away from the machine."],
+      "Theraband": ["Band um Knöchel und Stuhlbein legen und das Bein im Sitzen strecken.", "Loop the band around your ankle and a chair leg and extend your leg while seated."]
+    }
   },
-  "Beinbeuger": {
+  "Beincurls": {
     "muscles": ["Beinbeuger (hinterer Oberschenkel)", "Hamstrings"],
     "primary": ["hamstrings"],
     "secondary": ["calves"],
@@ -223,9 +227,15 @@
     "tips": [
       ["Hüfte bleibt am Polster, nicht hochkommen.", "Keep your hips on the pad; don't let them lift."],
       ["Besonders die Abwärtsbewegung langsam ausführen.", "Take the lowering part especially slowly."]
-    ]
+    ],
+    "variants": {
+      "Maschine, liegend": ["Bäuchlings liegen, Hüfte bleibt fest auf dem Polster.", "Lie face down and keep your hips pressed into the pad."],
+      "Kabelzug, stehend": ["Fußschlaufe am unteren Kabel, festhalten und die Ferse Richtung Gesäß ziehen.", "Ankle strap on the low cable; hold on and pull your heel toward your glutes."],
+      "Kurzhantel": ["Bäuchlings auf der Bank, Kurzhantel zwischen den Füßen einklemmen.", "Lie face down on a bench with a dumbbell squeezed between your feet."],
+      "Theraband": ["Band an einem festen Punkt in Bodennähe befestigen und um den Knöchel legen.", "Anchor the band low and loop it around your ankle."]
+    }
   },
-  "Adduktoren": {
+  "Adduktion": {
     "muscles": ["Oberschenkel-Innenseite (Adduktoren)", "Inner thighs (adductors)"],
     "primary": ["adductors"],
     "secondary": [],
@@ -237,9 +247,13 @@
     "tips": [
       ["Startweite nicht zu groß wählen – Zerrungsgefahr.", "Don't set the starting width too wide – risk of strain."],
       ["Keine ruckartigen Bewegungen.", "Avoid jerky movements."]
-    ]
+    ],
+    "variants": {
+      "Kabelzug": ["Seitlich zum Kabel stehen, Fußschlaufe am inneren Bein und das Bein vor dem Standbein vorbeiziehen.", "Stand sideways to the cable, strap on the inner leg, and pull it across in front of your standing leg."],
+      "Maschine, umgekehrt": ["Umgekehrt im Gerät sitzen bzw. die Polster so einstellen, dass der Widerstand am Ende der Bewegung größer ist.", "Sit reversed in the machine or set the pads so the resistance is greatest at the end of the movement."]
+    }
   },
-  "Abduktoren": {
+  "Abduktion": {
     "muscles": ["Äußeres Gesäß (Gluteus medius)", "Outer glutes (gluteus medius)"],
     "primary": ["glutes"],
     "secondary": [],
@@ -252,7 +266,11 @@
     "tips": [
       ["Leicht nach vorne lehnen betont das Gesäß noch mehr.", "Leaning slightly forward targets the glutes even more."],
       ["Gleichmäßiges Tempo, kein Schwung.", "Steady tempo, no swinging."]
-    ]
+    ],
+    "variants": {
+      "Maschine, stehend": ["Stehend am Gerät, das Polster an der Außenseite des Beins – ein Bein nach außen drücken.", "Standing at the machine with the pad on the outside of your leg – push one leg out."],
+      "Kabelzug": ["Seitlich zum Kabel stehen, Schlaufe am äußeren Bein und das Bein seitlich wegführen.", "Stand sideways to the cable, strap on the outer leg, and move it out to the side."]
+    }
   },
   "Wadenheben stehend": {
     "muscles": ["Waden (v. a. Zwillingswadenmuskel)", "Calves (mainly gastrocnemius)"],
@@ -285,7 +303,7 @@
       ["Ergänzt das Wadenheben stehend gut.", "A good complement to standing calf raises."]
     ]
   },
-  "Glute Kickbacks": {
+  "Po-Kickbacks": {
     "muscles": ["Gesäß", "Glutes"],
     "primary": ["glutes"],
     "secondary": ["hamstrings"],
@@ -298,7 +316,11 @@
     "tips": [
       ["Nicht ins Hohlkreuz gehen – die Bewegung kommt aus der Hüfte.", "Don't arch your lower back – the movement comes from the hip."],
       ["Standbein leicht gebeugt.", "Keep your standing leg slightly bent."]
-    ]
+    ],
+    "variants": {
+      "Maschine": ["Knie bzw. Fuß gegen das Polster, das Bein gestreckt nach hinten drücken.", "Knee or foot against the pad; press your straight leg backward."],
+      "Theraband": ["Band um beide Füße bzw. an einem festen Punkt, aus dem Vierfüßlerstand nach hinten treten.", "Band around both feet or anchored; kick back from all fours."]
+    }
   },
   "Beckenheben": {
     "muscles": ["Gesäß, Beinbeuger, unterer Rücken", "Glutes, hamstrings, lower back"],
@@ -316,7 +338,7 @@
       ["Schwerer: einbeinig oder mit Gewicht auf der Hüfte.", "Harder: single leg or with weight on your hips."]
     ]
   },
-  "Nordic Curls": {
+  "Nordic Hamstring Curls": {
     "muscles": ["Beinbeuger (sehr intensiv)", "Hamstrings (very intense)"],
     "primary": ["hamstrings"],
     "secondary": ["glutes", "calves"],
@@ -360,6 +382,375 @@
     "tips": [
       ["Spannung im Band halten, Knie nicht nach innen fallen lassen.", "Keep tension on the band; don't let your knees cave in."],
       ["Oberkörper ruhig, nicht hin und her schaukeln.", "Keep your torso still, don't rock side to side."]
+    ]
+  },
+  "Box Squat": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Beinbeuger", "Quads, glutes, hamstrings"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "lowerback", "adductors"],
+    "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 0.6, "glutes.max": 1, "hamstrings.inner": 0.6, "hamstrings.outer": 0.6, "lowerback": 0.3, "adductors": 0.3 },
+    "how": [
+      ["Box oder Bank hinter dich stellen, so hoch, dass die Oberschenkel beim Sitzen etwa waagerecht sind.", "Place a box or bench behind you, high enough that your thighs are about parallel when seated."],
+      ["Hüfte nach hinten schieben und kontrolliert absenken, bis das Gesäß die Box berührt.", "Push your hips back and lower under control until your glutes touch the box."],
+      ["Kurz absetzen, Spannung halten und kraftvoll aufstehen.", "Pause briefly while staying tight, then drive up powerfully."]
+    ],
+    "tips": [
+      ["Nicht auf die Box fallen lassen – nur antippen oder kurz absitzen.", "Don't drop onto the box – just touch it or sit briefly."],
+      ["Gut, um Tiefe und Technik zu lernen.", "Great for learning depth and technique."]
+    ],
+    "variants": {
+      "Langhantel, Front": ["Stange vorne auf den Schultern, Ellbogen hoch – Oberkörper bleibt aufrechter.", "Bar on your front shoulders, elbows high – your torso stays more upright."],
+      "Körpergewicht, einbeinig": ["Auf einem Bein zur Box absenken, das andere Bein nach vorne strecken.", "Lower to the box on one leg with the other leg extended forward."]
+    }
+  },
+  "Zercher Squat": {
+    "muscles": ["Oberschenkel vorne, Gesäß, oberer Rücken, Bauch", "Quads, glutes, upper back, core"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["abs", "traps", "biceps", "lowerback"],
+    "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 0.6, "glutes.max": 0.6, "abs.upper": 0.6, "abs.lower": 0.3, "traps.upper": 0.3, "biceps.long": 0.3, "lowerback": 0.3 },
+    "how": [
+      ["Stange in den Armbeugen halten, Hände vor der Brust zusammen.", "Hold the bar in the crooks of your elbows, hands together in front of your chest."],
+      ["Oberkörper aufrecht, Bauch fest anspannen.", "Keep your torso upright and brace your core hard."],
+      ["Tief in die Kniebeuge gehen und wieder hochdrücken.", "Squat down deep and drive back up."]
+    ],
+    "tips": [
+      ["Ein Handtuch oder Pad um die Stange schont die Armbeugen.", "A towel or pad around the bar protects your elbows."],
+      ["Mit leichtem Gewicht beginnen – die Haltung ist ungewohnt.", "Start light – the position takes getting used to."]
+    ]
+  },
+  "Sumo Squat": {
+    "muscles": ["Adduktoren, Gesäß, Oberschenkel vorne", "Adductors, glutes, quads"],
+    "primary": ["adductors", "glutes", "quads"],
+    "secondary": ["hamstrings"],
+    "regions": { "adductors": 1, "glutes.max": 1, "glutes.med": 0.3, "quads.inner": 1, "quads.middle": 0.6, "quads.outer": 0.3, "hamstrings.inner": 0.3 },
+    "how": [
+      ["Weiter Stand, Fußspitzen deutlich nach außen gedreht.", "Wide stance with your toes turned clearly outward."],
+      ["Gewicht zwischen den Beinen halten (bei Kurzhantel senkrecht vor dem Körper).", "Hold the weight between your legs (a dumbbell hangs vertically in front of you)."],
+      ["Knie in Richtung Fußspitzen nach außen schieben und tief absenken.", "Push your knees out over your toes and lower deep."],
+      ["Über die Fersen wieder aufrichten.", "Drive back up through your heels."]
+    ],
+    "tips": [
+      ["Knie dürfen nicht nach innen fallen.", "Don't let your knees cave in."],
+      ["Oberkörper bleibt aufrecht.", "Keep your torso upright."]
+    ]
+  },
+  "Einbeinige Kniebeuge": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "calves", "abs"],
+    "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 1, "glutes.max": 1, "glutes.med": 0.6, "hamstrings.inner": 0.3, "hamstrings.outer": 0.3, "calves.inner": 0.3, "abs.lower": 0.3 },
+    "how": [
+      ["Auf einem Bein stehen, das andere Bein vom Boden lösen.", "Stand on one leg with the other foot off the floor."],
+      ["Langsam in die Kniebeuge gehen, Arme zum Ausbalancieren nach vorne.", "Squat down slowly, arms forward for balance."],
+      ["So tief wie kontrolliert möglich, dann über die Ferse hochdrücken.", "Go as deep as you can control, then drive up through your heel."]
+    ],
+    "tips": [
+      ["Knie bleibt über dem Fuß, nicht nach innen knicken.", "Keep your knee over your foot; don't let it cave in."],
+      ["Zum Üben an einem Türrahmen festhalten oder auf eine Bank absetzen.", "Hold a door frame or sit back onto a bench while learning."]
+    ],
+    "variants": {
+      "Körpergewicht, Pistol": ["Das freie Bein bleibt gestreckt vor dem Körper – ganz tief bis unten.", "Keep the free leg straight in front of you and go all the way down."],
+      "Körpergewicht, Hawaiian": ["Den Knöchel des freien Beins auf das Standknie legen und die Hüfte nach hinten setzen.", "Rest the free ankle on your standing knee and sit your hips back."],
+      "Körpergewicht, Skater": ["Das freie Bein nach hinten beugen; das Knie berührt beinahe den Boden.", "Bend the free leg behind you; its knee nearly touches the floor."]
+    }
+  },
+  "Cossack Squat": {
+    "muscles": ["Adduktoren, Oberschenkel vorne, Gesäß, Beweglichkeit", "Adductors, quads, glutes, mobility"],
+    "primary": ["adductors", "quads"],
+    "secondary": ["glutes", "hamstrings"],
+    "regions": { "adductors": 1, "quads.inner": 1, "quads.middle": 0.6, "glutes.max": 0.6, "glutes.med": 0.3, "hamstrings.inner": 0.6 },
+    "how": [
+      ["Sehr weiter Stand, Fußspitzen leicht nach außen.", "Very wide stance, toes slightly turned out."],
+      ["Gewicht auf ein Bein verlagern und tief in dieses Knie sinken.", "Shift your weight onto one leg and sink deep into that knee."],
+      ["Das andere Bein bleibt gestreckt, die Fußspitze zeigt nach oben.", "The other leg stays straight with its toes pointing up."],
+      ["Zurück zur Mitte und Seite wechseln.", "Return to the middle and switch sides."]
+    ],
+    "tips": [
+      ["Ferse des gebeugten Beins bleibt am Boden.", "Keep the heel of the bent leg on the floor."],
+      ["Nur so tief, wie es die Beweglichkeit erlaubt.", "Only go as deep as your mobility allows."]
+    ]
+  },
+  "Gestrecktes Kreuzheben": {
+    "muscles": ["Beinbeuger, Gesäß, unterer Rücken", "Hamstrings, glutes, lower back"],
+    "primary": ["hamstrings", "glutes"],
+    "secondary": ["lowerback", "forearms"],
+    "regions": { "hamstrings.inner": 1, "hamstrings.outer": 1, "glutes.max": 1, "lowerback": 0.6, "forearms": 0.3, "traps.upper": 0.3 },
+    "how": [
+      ["Hüftbreit stehen, Gewicht vor den Oberschenkeln, Knie fast gestreckt.", "Stand hip-width, weight in front of your thighs, knees almost straight."],
+      ["Mit geradem Rücken aus der Hüfte nach vorne beugen und das Gewicht nah an den Beinen absenken.", "Hinge forward from your hips with a flat back and lower the weight close to your legs."],
+      ["Bei spürbarer Dehnung in den Beinbeugern wieder aufrichten.", "Stand back up once you feel a stretch in your hamstrings."]
+    ],
+    "tips": [
+      ["Rücken nie rund werden lassen – lieber weniger tief.", "Never let your back round – go less deep instead."],
+      ["Im Unterschied zum Rumänischen Kreuzheben bleiben die Knie noch gerader.", "Unlike the Romanian deadlift, your knees stay even straighter."]
+    ]
+  },
+  "Reverse Lunge": {
+    "muscles": ["Gesäß, Oberschenkel vorne, Beinbeuger", "Glutes, quads, hamstrings"],
+    "primary": ["glutes", "quads"],
+    "secondary": ["hamstrings", "adductors", "calves"],
+    "regions": { "glutes.max": 1, "glutes.med": 0.6, "quads.outer": 1, "quads.middle": 1, "quads.inner": 0.6, "hamstrings.inner": 0.6, "hamstrings.outer": 0.6, "adductors": 0.3, "calves.inner": 0.3 },
+    "how": [
+      ["Aufrecht stehen, Gewicht in den Händen bzw. auf dem Rücken.", "Stand tall with the weight in your hands or on your back."],
+      ["Mit einem Bein einen großen Schritt nach hinten machen.", "Take a big step backward with one leg."],
+      ["Absenken, bis das hintere Knie fast den Boden berührt.", "Lower until your back knee almost touches the floor."],
+      ["Über die Ferse des vorderen Beins zurück in den Stand drücken.", "Push back up to standing through your front heel."]
+    ],
+    "tips": [
+      ["Schonender für die Knie als Ausfallschritte nach vorne.", "Easier on the knees than forward lunges."],
+      ["Oberkörper aufrecht, das vordere Knie bleibt über dem Fuß.", "Keep your torso upright and your front knee over your foot."]
+    ]
+  },
+  "Seitliche Ausfallschritte": {
+    "muscles": ["Adduktoren, Oberschenkel vorne, Gesäß", "Adductors, quads, glutes"],
+    "primary": ["quads", "adductors"],
+    "secondary": ["glutes", "hamstrings"],
+    "regions": { "quads.inner": 1, "quads.middle": 0.6, "quads.outer": 0.6, "adductors": 1, "glutes.max": 0.6, "glutes.med": 0.6, "hamstrings.inner": 0.3 },
+    "how": [
+      ["Hüftbreit stehen, Gewicht vor der Brust oder in den Händen.", "Stand hip-width with the weight at your chest or in your hands."],
+      ["Einen großen Schritt zur Seite machen und die Hüfte nach hinten setzen.", "Take a big step to the side and sit your hips back."],
+      ["Das andere Bein bleibt gestreckt, dann zurück in die Mitte drücken.", "Keep the other leg straight, then push back to the middle."]
+    ],
+    "tips": [
+      ["Fußspitzen zeigen nach vorne, die Ferse bleibt am Boden.", "Toes point forward and your heel stays on the floor."],
+      ["Rücken gerade, Brust bleibt oben.", "Back flat, chest up."]
+    ]
+  },
+  "Cross Lunge": {
+    "muscles": ["Gesäß (auch seitlich), Oberschenkel vorne, Adduktoren", "Glutes (incl. side), quads, adductors"],
+    "primary": ["glutes", "quads"],
+    "secondary": ["adductors", "hamstrings"],
+    "regions": { "glutes.max": 1, "glutes.med": 1, "quads.outer": 0.6, "quads.middle": 0.6, "quads.inner": 0.6, "adductors": 0.6, "hamstrings.outer": 0.3 },
+    "how": [
+      ["Aufrecht stehen, Hände an der Hüfte oder Hanteln seitlich.", "Stand tall, hands on your hips or dumbbells at your sides."],
+      ["Ein Bein schräg hinter dem Standbein vorbei nach hinten setzen (Knicks).", "Step one leg diagonally back behind your standing leg (like a curtsy)."],
+      ["Absenken, bis das vordere Bein etwa waagerecht ist, dann zurück.", "Lower until your front thigh is about parallel, then return."]
+    ],
+    "tips": [
+      ["Hüfte bleibt nach vorne ausgerichtet, nicht mitdrehen.", "Keep your hips facing forward; don't rotate."],
+      ["Vorderes Knie nicht nach innen kippen lassen.", "Don't let your front knee cave in."]
+    ]
+  },
+  "Split Squat": {
+    "muscles": ["Oberschenkel vorne, Gesäß", "Quads, glutes"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["hamstrings", "adductors", "calves"],
+    "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 0.6, "glutes.max": 1, "glutes.med": 0.3, "hamstrings.inner": 0.3, "hamstrings.outer": 0.3, "adductors": 0.3, "calves.inner": 0.3 },
+    "how": [
+      ["Schrittstellung einnehmen: ein Fuß vorne, einer hinten auf dem Fußballen.", "Take a split stance: one foot in front, the back foot on its ball."],
+      ["Gerade nach unten absenken, bis das hintere Knie fast den Boden berührt.", "Lower straight down until your back knee almost touches the floor."],
+      ["Über das vordere Bein hochdrücken; die Füße bleiben stehen.", "Drive up through your front leg; your feet stay in place."]
+    ],
+    "tips": [
+      ["Erst alle Wiederholungen auf einer Seite, dann wechseln.", "Do all reps on one side, then switch."],
+      ["Oberkörper aufrecht; etwas Vorlage betont das Gesäß.", "Keep your torso upright; a slight lean emphasises the glutes."]
+    ]
+  },
+  "Glute Ham Raises": {
+    "muscles": ["Beinbeuger, Gesäß, unterer Rücken", "Hamstrings, glutes, lower back"],
+    "primary": ["hamstrings"],
+    "secondary": ["glutes", "lowerback", "calves"],
+    "regions": { "hamstrings.inner": 1, "hamstrings.outer": 1, "glutes.max": 0.6, "lowerback": 0.6, "calves.inner": 0.3, "calves.outer": 0.3 },
+    "how": [
+      ["Am GHD-Gerät die Füße einhaken, Knie hinter dem Polster.", "Hook your feet in the GHD with your knees just behind the pad."],
+      ["Oberkörper nach vorne absenken, bis er etwa waagerecht ist.", "Lower your torso forward until it's about horizontal."],
+      ["Mit Gesäß und Beinbeugern den Körper wieder aufrichten und die Knie beugen.", "Use your glutes and hamstrings to raise your body back up, bending at the knees."]
+    ],
+    "tips": [
+      ["Hüfte bleibt gestreckt – der Körper bildet eine Linie.", "Keep your hips extended – your body forms one line."],
+      ["Sehr schwer; anfangs mit den Händen am Boden nachhelfen.", "Very hard; help yourself with your hands at first."]
+    ]
+  },
+  "Wadenheben an der Beinpresse": {
+    "muscles": ["Waden (vor allem Zwillingswadenmuskel)", "Calves (mainly gastrocnemius)"],
+    "primary": ["calves"],
+    "secondary": [],
+    "regions": { "calves.inner": 1, "calves.outer": 1 },
+    "how": [
+      ["Nur mit den Fußballen an den unteren Rand der Plattform stellen.", "Place only the balls of your feet on the lower edge of the platform."],
+      ["Beine fast gestreckt, Sicherung bleibt geschlossen bzw. Hebel griffbereit.", "Legs almost straight; keep the safety locked or within reach."],
+      ["Fersen absenken und die Plattform mit den Zehen wegdrücken.", "Let your heels drop, then push the platform away with your toes."]
+    ],
+    "tips": [
+      ["Nicht mit gebeugten Knien wippen – die Waden machen die Arbeit.", "Don't bounce with bent knees – your calves do the work."],
+      ["Füße fest auf der Plattform, damit sie nicht abrutschen.", "Keep your feet firmly on the platform so they don't slip."]
+    ]
+  },
+  "Donkey Calf Raises": {
+    "muscles": ["Waden mit starker Dehnung", "Calves with a deep stretch"],
+    "primary": ["calves"],
+    "secondary": [],
+    "regions": { "calves.inner": 1, "calves.outer": 1 },
+    "how": [
+      ["Oberkörper nach vorne beugen und abstützen, Fußballen auf einer Stufe.", "Bend forward and support your upper body, balls of your feet on a step."],
+      ["Fersen tief absenken, bis die Waden gedehnt sind.", "Lower your heels deep until your calves are stretched."],
+      ["So hoch wie möglich auf die Zehen drücken.", "Rise as high as possible onto your toes."]
+    ],
+    "tips": [
+      ["Die Vorbeuge dehnt den Zwillingswadenmuskel besonders stark.", "Bending forward stretches the gastrocnemius especially well."],
+      ["Oben kurz halten.", "Pause briefly at the top."]
+    ],
+    "variants": {
+      "Körpergewicht, Partner": ["Ein Partner setzt sich auf den unteren Rücken bzw. das Becken als Zusatzgewicht.", "A partner sits on your lower back or hips as added weight."]
+    }
+  },
+  "Zehenheben": {
+    "muscles": ["Schienbeinmuskel (vorderer Unterschenkel)", "Tibialis (front of the shin)"],
+    "primary": ["calves"],
+    "secondary": [],
+    "regions": { "calves.outer": 0.6 },
+    "how": [
+      ["Mit dem Rücken an eine Wand lehnen, Füße etwas vor dem Körper.", "Lean your back against a wall with your feet slightly in front of you."],
+      ["Fußspitzen so weit wie möglich anheben, Fersen bleiben am Boden.", "Raise your toes as high as possible while your heels stay down."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Stärkt das Schienbein – hilft gegen Schienbeinschmerzen beim Laufen.", "Strengthens the shin – helps prevent shin splints from running."],
+      ["Viele Wiederholungen, bis es brennt.", "High reps until it burns."]
+    ]
+  },
+  "Frog Pumps": {
+    "muscles": ["Gesäß", "Glutes"],
+    "primary": ["glutes"],
+    "secondary": ["adductors"],
+    "regions": { "glutes.max": 1, "glutes.med": 0.6, "adductors": 0.3 },
+    "how": [
+      ["Rückenlage, Fußsohlen zusammen, Knie fallen nach außen (Froschhaltung).", "Lie on your back, soles together, knees falling out (frog position)."],
+      ["Fersen nah zum Gesäß ziehen.", "Draw your heels close to your glutes."],
+      ["Hüfte kräftig nach oben drücken, Gesäß fest anspannen, ablegen.", "Drive your hips up hard, squeeze your glutes, lower."]
+    ],
+    "tips": [
+      ["Schnelle, kurze Wiederholungen mit voller Anspannung oben.", "Quick, short reps with a full squeeze at the top."],
+      ["Gut als Aufwärmübung vor Hip Thrusts.", "Great as a warm-up before hip thrusts."]
+    ]
+  },
+  "Beinspreizen": {
+    "muscles": ["Seitliches Gesäß (Abduktoren)", "Side glutes (abductors)"],
+    "primary": ["glutes"],
+    "secondary": [],
+    "regions": { "glutes.med": 1, "glutes.max": 0.3 },
+    "how": [
+      ["Liegend auf dem Rücken oder sitzend auf der Bank, Beine zusammen (Band um die Knie).", "Lying on your back or sitting on a bench, legs together (band around your knees)."],
+      ["Beine bzw. Knie gegen den Widerstand nach außen öffnen.", "Open your legs or knees outward against the resistance."],
+      ["Kurz halten und langsam schließen.", "Hold briefly and close slowly."]
+    ],
+    "tips": [
+      ["Bewegung nur aus der Hüfte – Oberkörper ruhig.", "Move only from your hips – keep your upper body still."],
+      ["Langsam zurückführen, nicht zuschnappen lassen.", "Return slowly; don't let your legs snap back."]
+    ]
+  },
+  "Seitliches Beinheben": {
+    "muscles": ["Seitliches Gesäß (Abduktoren)", "Side glutes (abductors)"],
+    "primary": ["glutes"],
+    "secondary": ["obliques"],
+    "regions": { "glutes.med": 1, "glutes.max": 0.3, "obliques": 0.3 },
+    "how": [
+      ["In Seitlage (bzw. stehend mit Halt) den Körper in einer Linie ausrichten.", "Lie on your side (or stand with support) with your body in one line."],
+      ["Oberes Bein gestreckt nach oben bzw. zur Seite anheben.", "Raise the top leg, straight, upward or out to the side."],
+      ["Langsam absenken, ohne abzulegen.", "Lower slowly without resting it."]
+    ],
+    "tips": [
+      ["Fußspitze zeigt nach vorne, nicht zur Decke – sonst arbeitet der Hüftbeuger.", "Point your toes forward, not to the ceiling – otherwise your hip flexors take over."],
+      ["Nicht zu hoch heben; die Hüfte kippt sonst nach hinten.", "Don't lift too high or your hips will roll back."]
+    ],
+    "variants": {
+      "Körpergewicht, Seitstütz": ["Im Seitstütz auf dem Unterarm das obere Bein anheben – trainiert zusätzlich die seitlichen Bauchmuskeln.", "Raise the top leg from a forearm side plank – also works the obliques."]
+    }
+  },
+  "Clamshell": {
+    "muscles": ["Seitliches Gesäß, Hüftaußenrotatoren", "Side glutes, hip external rotators"],
+    "primary": ["glutes"],
+    "secondary": [],
+    "regions": { "glutes.med": 1, "glutes.max": 0.6 },
+    "how": [
+      ["Seitlage, Knie angewinkelt, Fersen übereinander, Band über den Knien.", "Lie on your side, knees bent, heels stacked, band above your knees."],
+      ["Oberes Knie öffnen wie eine Muschel, die Füße bleiben zusammen.", "Open your top knee like a clamshell while your feet stay together."],
+      ["Kurz halten und langsam schließen.", "Hold briefly and close slowly."]
+    ],
+    "tips": [
+      ["Becken bleibt still, nicht nach hinten kippen.", "Keep your pelvis still; don't roll back."],
+      ["Gut zum Aufwärmen und bei Knieproblemen.", "Good as a warm-up and for knee problems."]
+    ]
+  },
+  "Monster Walk": {
+    "muscles": ["Seitliches Gesäß, Gesäß", "Side glutes, glutes"],
+    "primary": ["glutes"],
+    "secondary": ["quads"],
+    "regions": { "glutes.med": 1, "glutes.max": 0.6, "quads.outer": 0.3 },
+    "how": [
+      ["Band um die Knöchel oder knapp über die Knie legen, leicht in die Hocke gehen.", "Place a band around your ankles or just above your knees and sink into a slight squat."],
+      ["Mit hüftbreiten Füßen schräg nach vorne gehen, das Band bleibt gespannt.", "Walk diagonally forward with feet hip-width apart, keeping the band tight."],
+      ["Einige Schritte vor, dann rückwärts zurück.", "A few steps forward, then walk back."]
+    ],
+    "tips": [
+      ["Knie zeigen nach außen, nicht nach innen fallen lassen.", "Keep your knees pushed out; don't let them cave."],
+      ["Oberkörper ruhig, nicht von Seite zu Seite schaukeln.", "Keep your upper body still; don't rock side to side."]
+    ]
+  },
+  "Feuerhydrant": {
+    "muscles": ["Seitliches Gesäß, Gesäß", "Side glutes, glutes"],
+    "primary": ["glutes"],
+    "secondary": ["abs"],
+    "regions": { "glutes.med": 1, "glutes.max": 0.6, "abs.lower": 0.3 },
+    "how": [
+      ["Vierfüßlerstand, Hände unter den Schultern, Knie unter der Hüfte.", "On all fours, hands under your shoulders, knees under your hips."],
+      ["Ein Bein angewinkelt seitlich anheben, bis der Oberschenkel etwa waagerecht ist.", "Raise one bent leg out to the side until your thigh is about horizontal."],
+      ["Langsam absenken; optional das Bein oben nach hinten strecken (Kick).", "Lower slowly; optionally kick the leg back at the top."]
+    ],
+    "tips": [
+      ["Rücken gerade, das Gewicht nicht auf die andere Seite verlagern.", "Keep your back flat; don't shift your weight to the other side."],
+      ["Ein Band über den Knien macht es schwerer.", "A band above your knees makes it harder."]
+    ]
+  },
+  "Donkey Kicks": {
+    "muscles": ["Gesäß, Beinbeuger", "Glutes, hamstrings"],
+    "primary": ["glutes"],
+    "secondary": ["hamstrings", "lowerback"],
+    "regions": { "glutes.max": 1, "glutes.med": 0.3, "hamstrings.inner": 0.6, "hamstrings.outer": 0.6, "lowerback": 0.3 },
+    "how": [
+      ["Vierfüßlerstand (bzw. am Gerät oder unter der Multipresse), Rücken gerade.", "On all fours (or at the machine / under the Smith machine), back flat."],
+      ["Ein Bein angewinkelt nach hinten oben drücken, die Fußsohle zeigt zur Decke.", "Drive one bent leg back and up, sole facing the ceiling."],
+      ["Oben das Gesäß anspannen, dann langsam zurück.", "Squeeze your glutes at the top, then return slowly."]
+    ],
+    "tips": [
+      ["Kein Hohlkreuz – Bauch leicht anspannen.", "No arching – brace your abs lightly."],
+      ["Bewegung kommt aus der Hüfte, nicht aus dem Rücken.", "Move from the hip, not from your back."]
+    ],
+    "variants": {
+      "Körpergewicht, gestrecktes Bein": ["Das Bein gestreckt nach hinten heben – längerer Hebel, mehr Beinbeuger.", "Lift the leg straight back – a longer lever with more hamstrings."],
+      "Kabelzug": ["Fußschlaufe am unteren Seilzug befestigen.", "Attach an ankle strap to the low pulley."],
+      "Multipresse": ["Die Fußsohle drückt gegen die Stange der Multipresse.", "Push the sole of your foot against the Smith machine bar."]
+    }
+  },
+  "Pull-Through": {
+    "muscles": ["Gesäß, Beinbeuger, unterer Rücken", "Glutes, hamstrings, lower back"],
+    "primary": ["glutes", "hamstrings"],
+    "secondary": ["lowerback"],
+    "regions": { "glutes.max": 1, "hamstrings.inner": 0.6, "hamstrings.outer": 0.6, "lowerback": 0.3 },
+    "how": [
+      ["Seilgriff am unteren Kabelzug, mit dem Rücken zum Gerät stehen und das Seil zwischen den Beinen greifen.", "Rope on the low pulley; stand facing away and grab it between your legs."],
+      ["Ein paar Schritte vorgehen, Hüfte nach hinten schieben, Seil nach hinten durchlassen.", "Walk forward a few steps, hinge your hips back and let the rope travel back."],
+      ["Hüfte kräftig nach vorne strecken und oben das Gesäß anspannen.", "Drive your hips forward powerfully and squeeze your glutes at the top."]
+    ],
+    "tips": [
+      ["Arme sind nur Haken – die Hüfte macht die Arbeit.", "Your arms are just hooks – your hips do the work."],
+      ["Gut zum Lernen der Hüftbeuge-Bewegung für Kreuzheben und Kettlebell Swing.", "Great for learning the hip hinge for deadlifts and kettlebell swings."]
+    ]
+  },
+  "Reverse Hyperextensions": {
+    "muscles": ["Gesäß, unterer Rücken, Beinbeuger", "Glutes, lower back, hamstrings"],
+    "primary": ["glutes", "lowerback"],
+    "secondary": ["hamstrings"],
+    "regions": { "glutes.max": 1, "lowerback": 1, "hamstrings.inner": 0.6, "hamstrings.outer": 0.6 },
+    "how": [
+      ["Mit dem Oberkörper bäuchlings auf Bank oder Gerät legen, die Hüfte an der Kante.", "Lie face down with your torso on the bench or machine, hips at the edge."],
+      ["Beine hängen nach unten; gut festhalten.", "Let your legs hang down and hold on firmly."],
+      ["Gestreckte Beine nach hinten oben anheben, bis sie in einer Linie mit dem Körper sind.", "Raise your straight legs back and up until they're in line with your body."],
+      ["Kontrolliert absenken.", "Lower under control."]
+    ],
+    "tips": [
+      ["Nicht über die Waagerechte hinaus ins Hohlkreuz schwingen.", "Don't swing past horizontal into an arch."],
+      ["Entlastet die Wirbelsäule – gut bei Rückenproblemen (vorher ärztlich abklären).", "Easy on the spine – good for back issues (check with a doctor first)."]
     ]
   }
 }

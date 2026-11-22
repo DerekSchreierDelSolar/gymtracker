@@ -151,23 +151,9 @@
       ["Zuerst die Schulterblätter nach unten ziehen, dann die Arme.", "Start by pulling your shoulder blades down, then your arms."]
     ],
     "variants": {
-      "Maschine": ["Geführte Bewegung, oft mit getrennten Griffen – gut für einseitiges Training.", "Guided path, often with separate handles – good for one-arm work."]
+      "Maschine": ["Geführte Bewegung, oft mit getrennten Griffen – gut für einseitiges Training.", "Guided path, often with separate handles – good for one-arm work."],
+      "Kabelzug, enger Griff": ["Engen Griff (V-Griff) einhängen und mit neutralem Griff fassen. Oben volle Streckung für eine gute Dehnung.", "Attach a close-grip (V) handle and hold it with a neutral grip. Fully extend at the top for a good stretch."]
     }
-  },
-  "Latziehen eng": {
-    "muscles": ["Latissimus (unterer Bereich), Bizeps", "Lats (lower part), biceps"],
-    "primary": ["lats"],
-    "secondary": ["biceps", "traps"],
-    "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6 },
-    "how": [
-      ["Engen Griff (V-Griff) einhängen und mit neutralem Griff fassen.", "Attach a close-grip (V) handle and hold it with a neutral grip."],
-      ["Leicht zurücklehnen und den Griff zur Brust ziehen.", "Lean back slightly and pull the handle to your chest."],
-      ["Ellbogen eng am Körper nach unten führen, dann langsam zurück.", "Drive your elbows down close to your body, then return slowly."]
-    ],
-    "tips": [
-      ["Oben volle Streckung für eine gute Dehnung.", "Fully extend at the top for a good stretch."],
-      ["Nicht mit dem Oberkörper nach hinten werfen.", "Don't throw your torso backward."]
-    ]
   },
   "Überzüge": {
     "muscles": ["Latissimus", "Lats"],
@@ -202,23 +188,9 @@
     ],
     "variants": {
       "Maschine / unterstützt": ["Mehr Gegengewicht = leichter. Gewicht über die Wochen reduzieren.", "More counterweight = easier. Reduce it over the weeks."],
-      "Widerstandsband": ["Band um die Stange schlingen und Knie oder Fuß hineinstellen; dickeres Band = mehr Hilfe.", "Loop the band over the bar and put your knee or foot in it; thicker band = more help."]
+      "Widerstandsband": ["Band um die Stange schlingen und Knie oder Fuß hineinstellen; dickeres Band = mehr Hilfe.", "Loop the band over the bar and put your knee or foot in it; thicker band = more help."],
+      "Körpergewicht, Untergriff": ["Stange im Untergriff schulterbreit fassen. Meist etwas leichter als Klimmzüge im Obergriff, weil der Bizeps stärker hilft.", "Grip the bar underhand at shoulder width. Usually a bit easier than overhand pull-ups since the biceps help more."]
     }
-  },
-  "Klimmzüge Untergriff": {
-    "muscles": ["Latissimus, Bizeps", "Lats, biceps"],
-    "primary": ["lats", "biceps"],
-    "secondary": ["traps", "forearms"],
-    "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6, "biceps.long": 1, "biceps.short": 1, "biceps.brachialis": 0.6 },
-    "how": [
-      ["Stange im Untergriff schulterbreit fassen.", "Grip the bar underhand at shoulder width."],
-      ["Schulterblätter nach unten ziehen, dann die Brust zur Stange ziehen.", "Pull your shoulder blades down, then pull your chest toward the bar."],
-      ["Kontrolliert absenken bis zum gestreckten Hang.", "Lower under control to a full hang."]
-    ],
-    "tips": [
-      ["Meist etwas leichter als Klimmzüge im Obergriff, weil der Bizeps stärker hilft.", "Usually a bit easier than overhand pull-ups since the biceps help more."],
-      ["Ellbogen unten nicht ruckartig durchstrecken.", "Don't snap your elbows straight at the bottom."]
-    ]
   },
   "Australische Klimmzüge": {
     "muscles": ["Oberer Rücken, Latissimus, Bizeps, Rumpf", "Upper back, lats, biceps, core"],
@@ -248,6 +220,36 @@
       ["Oben nicht überstrecken (kein Hohlkreuz).", "Don't hyperextend at the top (no arching)."],
       ["Langsam und ohne Schwung.", "Move slowly, without momentum."],
       ["Für mehr Gewicht eine Scheibe vor der Brust halten.", "Hold a plate against your chest for extra load."]
+    ]
+  },
+  "Superman": {
+    "muscles": ["Unterer Rücken, Gesäß, hintere Schulter", "Lower back, glutes, rear delts"],
+    "primary": ["lowerback"],
+    "secondary": ["glutes", "delts"],
+    "regions": { "lowerback": 1, "glutes.max": 0.6, "hamstrings.inner": 0.3, "hamstrings.outer": 0.3, "delts.rear": 0.3, "traps.lower": 0.3 },
+    "how": [
+      ["Bauchlage, Arme nach vorne gestreckt, Blick zum Boden.", "Lie face down with your arms stretched forward, eyes on the floor."],
+      ["Arme, Brust und Beine gleichzeitig leicht vom Boden abheben.", "Lift your arms, chest and legs slightly off the floor at the same time."],
+      ["1–2 Sekunden halten und kontrolliert ablegen.", "Hold for 1–2 seconds and lower under control."]
+    ],
+    "tips": [
+      ["Nur wenige Zentimeter anheben – kein starkes Hohlkreuz.", "Only lift a few centimetres – don't over-arch your back."],
+      ["Nacken lang lassen, nicht nach vorne schauen.", "Keep your neck long; don't look forward."]
+    ]
+  },
+  "Bird-Dog": {
+    "muscles": ["Unterer Rücken, Gesäß, Bauch (Stabilität)", "Lower back, glutes, core (stability)"],
+    "primary": ["lowerback"],
+    "secondary": ["glutes", "abs", "delts"],
+    "regions": { "lowerback": 1, "glutes.max": 0.6, "glutes.med": 0.3, "abs.upper": 0.3, "abs.lower": 0.3, "delts.front": 0.3 },
+    "how": [
+      ["Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte.", "On all fours: hands under your shoulders, knees under your hips."],
+      ["Rechten Arm und linkes Bein gleichzeitig nach vorne bzw. hinten strecken.", "Extend your right arm forward and your left leg back at the same time."],
+      ["Kurz halten, zurückführen und Seite wechseln.", "Hold briefly, return and switch sides."]
+    ],
+    "tips": [
+      ["Rücken bleibt gerade wie ein Tisch – nichts kippt zur Seite.", "Keep your back flat like a table – nothing tips to the side."],
+      ["Langsam ausführen; es geht um Kontrolle, nicht um Höhe.", "Move slowly; it's about control, not height."]
     ]
   }
 }

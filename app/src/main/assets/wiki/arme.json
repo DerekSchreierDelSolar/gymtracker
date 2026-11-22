@@ -1,5 +1,5 @@
 {
-  "Bizepscurls": {
+  "Bizeps-Curls": {
     "muscles": ["Bizeps, Unterarm", "Biceps, forearms"],
     "primary": ["biceps"],
     "secondary": ["forearms"],
@@ -19,10 +19,12 @@
       "SZ-Stange": ["Die gewinkelte Stange schont die Handgelenke.", "The angled bar is easier on your wrists."],
       "Kabelzug": ["Konstante Spannung, auch unten in der Streckung.", "Constant tension, even at the bottom."],
       "Maschine": ["Oberarme flach aufs Polster, Ellbogen auf Höhe der Drehachse.", "Upper arms flat on the pad, elbows in line with the pivot."],
-      "Widerstandsband": ["Auf das Band stellen; je weiter oben, desto mehr Widerstand.", "Stand on the band; resistance increases toward the top."]
+      "Theraband": ["Auf das Band stellen; je weiter oben, desto mehr Widerstand.", "Stand on the band; resistance increases toward the top."],
+      "Kabelzug, über Kopf": ["Zwischen zwei oberen Kabelrollen stehen, Arme seitlich auf Schulterhöhe, Griffe zu den Ohren curlen.", "Stand between two high pulleys, arms out at shoulder height, curl the handles toward your ears."],
+      "Langhantel, Arm Blaster": ["Der Arm Blaster hält die Ellbogen fest am Körper – kein Schwung möglich.", "The arm blaster locks your elbows at your sides – no swinging possible."]
     }
   },
-  "Hammercurls": {
+  "Hammer Curls": {
     "muscles": ["Oberarmmuskel (Brachialis), Bizeps, Unterarm", "Brachialis, biceps, forearms"],
     "primary": ["biceps", "forearms"],
     "secondary": [],
@@ -37,7 +39,9 @@
       ["Gut für dickere Arme und stärkeren Griff.", "Great for thicker arms and a stronger grip."]
     ],
     "variants": {
-      "Kabelzug": ["Mit Seilgriff am unteren Kabel.", "Use a rope attachment on a low cable."]
+      "Kabelzug": ["Mit Seilgriff am unteren Kabel.", "Use a rope attachment on a low cable."],
+      "Trizepsstange": ["Neutralen Griff der Trizepsstange nutzen – beide Arme gleichzeitig.", "Use the neutral grip of the triceps bar – both arms at once."],
+      "Kurzhantel, Schrägbank": ["Auf der Schrägbank zurückgelehnt, die Arme hängen senkrecht – stärkere Dehnung.", "Leaning back on an incline bench with arms hanging straight down – a greater stretch."]
     }
   },
   "Konzentrationscurls": {
@@ -112,7 +116,11 @@
     "tips": [
       ["Kleine Bewegung, viele Wiederholungen (15–20).", "Small movement, high reps (15–20)."],
       ["Unterarme bleiben liegen.", "Keep your forearms down."]
-    ]
+    ],
+    "variants": {
+      "Langhantel, hinter dem Rücken": ["Stange hinter dem Gesäß im Stehen halten, Handflächen nach hinten, nur aus dem Handgelenk hochrollen.", "Hold the bar behind your glutes while standing, palms back, and roll it up with your wrists only."],
+      "Kabelzug": ["Am unteren Kabel mit kurzer Stange, Unterarme auf der Bank.", "On the low cable with a short bar, forearms on a bench."]
+    }
   },
   "Trizepsdrücken": {
     "muscles": ["Trizeps", "Triceps"],
@@ -213,19 +221,103 @@
       ["Leichter: Knie anwinkeln. Schwerer: Füße erhöht.", "Easier: bend your knees. Harder: elevate your feet."]
     ]
   },
-  "Diamond-Liegestütze": {
+  "Enge Liegestütze": {
     "muscles": ["Trizeps, Brust", "Triceps, chest"],
     "primary": ["triceps", "chest"],
     "secondary": ["delts"],
     "regions": { "triceps.lateral": 1, "triceps.medial": 1, "triceps.long": 0.6, "chest.mid": 1, "chest.lower": 0.6, "chest.upper": 0.3, "delts.front": 0.6 },
     "how": [
-      ["Hände unter der Brust so zusammen, dass Daumen und Zeigefinger ein Dreieck bilden.", "Hands together under your chest so your thumbs and index fingers form a triangle."],
+      ["Hände etwa schulterbreit oder enger unter der Brust aufsetzen.", "Place your hands about shoulder-width or closer, under your chest."],
       ["Körper gerade, Brust zu den Händen absenken.", "Keep your body straight and lower your chest to your hands."],
       ["Hochdrücken.", "Push back up."]
     ],
     "tips": [
       ["Ellbogen nah am Körper.", "Elbows close to your body."],
       ["Belastet die Handgelenke – bei Schmerzen Hände etwas weiter auseinander.", "It's demanding on the wrists – move your hands a bit apart if they hurt."]
+    ],
+    "variants": {
+      "Körpergewicht, Diamond": ["Hände unter der Brust so zusammen, dass Daumen und Zeigefinger ein Dreieck bilden.", "Hands together under your chest so your thumbs and index fingers form a triangle."]
+    }
+  },
+  "Reverse Unterarm-Curls": {
+    "muscles": ["Unterarm-Strecker (Oberseite)", "Forearm extensors (top side)"],
+    "primary": ["forearms"],
+    "secondary": [],
+    "how": [
+      ["Unterarme auf Oberschenkel oder Bank legen, Handflächen zeigen nach unten.", "Rest your forearms on your thighs or a bench, palms facing down."],
+      ["Handgelenke langsam nach unten sinken lassen.", "Let your wrists sink slowly."],
+      ["Handrücken nach oben ziehen, kurz halten, absenken.", "Raise the backs of your hands, hold briefly, lower."]
+    ],
+    "tips": [
+      ["Deutlich weniger Gewicht als bei normalen Unterarm-Curls.", "Use much less weight than for regular wrist curls."],
+      ["Gut gegen Ungleichgewicht und Tennisarm-Beschwerden – langsam steigern.", "Helps balance the forearms and with tennis elbow – progress slowly."]
     ]
+  },
+  "Finger-Curls": {
+    "muscles": ["Unterarm-Beuger, Griffkraft", "Forearm flexors, grip strength"],
+    "primary": ["forearms"],
+    "secondary": [],
+    "how": [
+      ["Stange oder Hantelscheibe in den Händen, Handflächen nach oben bzw. zum Körper.", "Hold the bar or plate in your hands, palms up or facing your body."],
+      ["Gewicht bis in die Fingerspitzen abrollen lassen.", "Let the weight roll down to your fingertips."],
+      ["Mit den Fingern wieder einrollen und die Faust schließen.", "Curl it back up with your fingers and close your fist."]
+    ],
+    "tips": [
+      ["Nur die Finger bewegen, der Unterarm bleibt ruhig.", "Only your fingers move; your forearms stay still."],
+      ["Hohe Wiederholungszahlen (15–25) funktionieren gut.", "High reps (15–25) work well."]
+    ]
+  },
+  "Wrist Roller": {
+    "muscles": ["Unterarme (Beuger und Strecker), Griffkraft, Schultern halten", "Forearms (flexors and extensors), grip, shoulders hold"],
+    "primary": ["forearms"],
+    "secondary": ["delts"],
+    "regions": { "forearms": 1, "delts.front": 0.3 },
+    "how": [
+      ["Stab mit Seil und Gewichtsscheibe mit gestreckten Armen vor dem Körper halten.", "Hold the roller with rope and plate in front of you with straight arms."],
+      ["Seil durch abwechselndes Drehen der Handgelenke aufrollen, bis die Scheibe oben ist.", "Wind the rope up by alternately turning your wrists until the plate reaches the top."],
+      ["Kontrolliert wieder abrollen.", "Unwind it under control."]
+    ],
+    "tips": [
+      ["Aufrollen nach vorne trainiert die Oberseite, nach hinten die Unterseite des Unterarms.", "Rolling forward works the top of the forearm, rolling backward the underside."],
+      ["Mit leichter Scheibe beginnen – brennt schnell.", "Start with a light plate – it burns quickly."]
+    ]
+  },
+  "Trizeps-Dips": {
+    "muscles": ["Trizeps, untere Brust, vordere Schulter", "Triceps, lower chest, front delts"],
+    "primary": ["triceps"],
+    "secondary": ["chest", "delts"],
+    "regions": { "triceps.lateral": 1, "triceps.medial": 1, "triceps.long": 0.6, "chest.lower": 0.6, "delts.front": 0.6 },
+    "how": [
+      ["Im Stütz am Dip-Barren starten, Arme gestreckt, Oberkörper aufrecht.", "Start in a support on the dip bars, arms straight, torso upright."],
+      ["Ellbogen nach hinten beugen und absenken, bis die Oberarme etwa waagerecht sind.", "Bend your elbows backward and lower until your upper arms are about parallel."],
+      ["Über den Trizeps wieder nach oben drücken.", "Press back up using your triceps."]
+    ],
+    "tips": [
+      ["Aufrecht bleiben – je mehr Vorlage, desto mehr Brust arbeitet.", "Stay upright – the more you lean forward, the more your chest takes over."],
+      ["Ellbogen eng am Körper, Schultern tief.", "Elbows close to your body, shoulders down."],
+      ["Nicht tiefer als bis zur Waagerechten gehen.", "Don't go much below parallel."]
+    ],
+    "variants": {
+      "Zusatzgewicht": ["Gewicht am Dip-Gürtel befestigen; erst bei 10+ sauberen Wiederholungen mit Körpergewicht.", "Hang weight from a dip belt; only once you can do 10+ clean bodyweight reps."],
+      "Maschine": ["Kniend auf dem Polster: Das Gegengewicht unterstützt – mehr Gewicht = leichter.", "Kneeling on the pad: the counterweight assists you – more weight = easier."]
+    }
+  },
+  "Arnold Dips": {
+    "muscles": ["Trizeps, vordere Schulter", "Triceps, front delts"],
+    "primary": ["triceps"],
+    "secondary": ["delts", "chest"],
+    "regions": { "triceps.lateral": 1, "triceps.medial": 1, "triceps.long": 0.6, "delts.front": 0.6, "chest.lower": 0.3 },
+    "how": [
+      ["Hände hinter dem Körper auf eine Bank stützen, Finger zeigen nach vorne.", "Place your hands behind you on a bench, fingers pointing forward."],
+      ["Beine angewinkelt vor dem Körper, Gesäß nah an der Bank.", "Knees bent in front of you, hips close to the bench."],
+      ["Durch Beugen der Ellbogen den Körper absenken und wieder hochdrücken.", "Lower your body by bending your elbows, then press back up."]
+    ],
+    "tips": [
+      ["Ellbogen zeigen nach hinten, nicht nach außen.", "Point your elbows back, not out."],
+      ["Nur so tief, wie die Schulter es angenehm erlaubt.", "Only go as deep as your shoulders comfortably allow."]
+    ],
+    "variants": {
+      "Zusatzgewicht": ["Hantelscheibe auf die Oberschenkel legen oder von einem Partner auflegen lassen.", "Place a weight plate on your thighs or have a partner put one there."]
+    }
   }
 }

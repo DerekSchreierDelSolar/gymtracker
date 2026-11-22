@@ -15,12 +15,10 @@
     ],
     "variants": {
       "Kurzhantel": ["Sitzend mit Lehne ist am stabilsten; oben die Hanteln nicht zusammenschlagen.", "Seated with back support is most stable; don't clank the dumbbells together at the top."],
-      "Langhantel / Military Press": ["Stehend: Kopf kurz nach hinten nehmen, damit die Stange vorbeikommt, dann den Kopf wieder 'durch die Arme' schieben.", "Standing: move your head back to let the bar pass, then push your head 'through' your arms at the top."],
-      "Maschine": ["Sitz so einstellen, dass die Griffe auf Schulterhöhe starten.", "Adjust the seat so the handles start at shoulder height."],
-      "Multipresse": ["Bank leicht vor die Stange stellen, damit sie vor dem Gesicht vorbeiläuft.", "Set the bench slightly in front of the bar so it travels past your face."]
+      "Maschine": ["Sitz so einstellen, dass die Griffe auf Schulterhöhe starten.", "Adjust the seat so the handles start at shoulder height."]
     }
   },
-  "Arnold Press": {
+  "Arnold-Press": {
     "muscles": ["Vordere und seitliche Schulter, Trizeps", "Front and side delts, triceps"],
     "primary": ["delts"],
     "secondary": ["triceps"],
@@ -70,13 +68,13 @@
       ["Die vordere Schulter arbeitet bei Drückübungen schon viel mit – wenig Sätze reichen.", "Front delts already work a lot in pressing – a few sets are enough."]
     ]
   },
-  "Reverse Flys": {
+  "Vorgebeugtes Seitheben": {
     "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],
     "primary": ["delts"],
     "secondary": ["traps"],
     "regions": { "delts.rear": 1, "delts.side": 0.3, "traps.middle": 0.6, "lats.upper": 0.3 },
     "how": [
-      ["Vorgebeugt (oder an der Maschine mit Brust am Polster), Arme leicht gebeugt.", "Bent over (or chest against the pad on the machine), arms slightly bent."],
+      ["Mit geradem Rücken weit nach vorne beugen (stehend, sitzend oder bäuchlings auf der Schrägbank), Arme leicht gebeugt.", "Hinge far forward with a flat back (standing, seated or chest-down on an incline bench), arms slightly bent."],
       ["Arme seitlich nach außen und hinten öffnen.", "Open your arms out and back."],
       ["Langsam zurückführen.", "Return slowly."]
     ],
@@ -85,8 +83,7 @@
       ["Leichtes Gewicht, kein Schwung.", "Light weight, no momentum."]
     ],
     "variants": {
-      "Maschine / Reverse Butterfly": ["Griffe auf Schulterhöhe einstellen, Brust am Polster.", "Set the handles at shoulder height, chest on the pad."],
-      "Kabelzug": ["Kabel überkreuzt greifen (links nach rechts) auf Schulterhöhe.", "Grab the cables crossed (left to right) at shoulder height."]
+      "Kurzhantel, Schrägbank": ["Bäuchlings auf die Schrägbank (30–45°) legen – der Rücken muss nichts halten.", "Lie chest-down on an incline bench (30–45°) – your back doesn't have to hold you."]
     }
   },
   "Face Pulls": {
@@ -136,7 +133,7 @@
       ["Bei Schulterschmerzen lieber Seitheben machen.", "If your shoulders hurt, do lateral raises instead."]
     ]
   },
-  "Schulterheben": {
+  "Shrugs": {
     "muscles": ["Oberer Trapez (Nacken)", "Upper traps"],
     "primary": ["traps"],
     "secondary": ["forearms"],
@@ -149,9 +146,13 @@
     "tips": [
       ["Nicht mit den Schultern kreisen.", "Don't roll your shoulders."],
       ["Arme bleiben gestreckt – nicht mit dem Bizeps ziehen.", "Keep your arms straight – don't pull with your biceps."]
-    ]
+    ],
+    "variants": {
+      "Kabelzug": ["Am unteren Kabel mit Stange oder zwei Griffen – Spannung auch unten.", "On the low cable with a bar or two handles – tension even at the bottom."],
+      "Maschine": ["Polster auf den Schultern bzw. Griffe neben dem Körper, Knie leicht gebeugt.", "Pads on your shoulders or handles at your sides, knees slightly bent."]
+    }
   },
-  "Pike-Liegestütze": {
+  "Pike Push-Up": {
     "muscles": ["Schultern, Trizeps", "Shoulders, triceps"],
     "primary": ["delts"],
     "secondary": ["triceps", "chest"],
@@ -165,5 +166,63 @@
       ["Ellbogen nicht seitlich wegklappen lassen.", "Don't let your elbows flare out sideways."],
       ["Schwerer: Füße erhöht auf eine Bank.", "Harder: elevate your feet on a bench."]
     ]
+  },
+  "Military Press": {
+    "muscles": ["Vordere und seitliche Schulter, Trizeps, oberer Trapez", "Front and side delts, triceps, upper traps"],
+    "primary": ["delts"],
+    "secondary": ["triceps", "traps", "abs"],
+    "regions": { "delts.front": 1, "delts.side": 0.6, "traps.upper": 0.3, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3, "abs.upper": 0.3 },
+    "how": [
+      ["Stange etwas mehr als schulterbreit greifen, vor dem Hals auf den Schultern ablegen.", "Grip the bar slightly wider than shoulder width and rest it on your front shoulders."],
+      ["Bauch und Gesäß anspannen, Füße hüftbreit.", "Brace your abs and glutes, feet hip-width apart."],
+      ["Stange senkrecht nach oben drücken; den Kopf kurz zurücknehmen, damit sie vorbeikommt.", "Press the bar straight up; move your head back briefly to let it pass."],
+      ["Oben den Kopf wieder 'durch die Arme' schieben, dann kontrolliert absenken.", "At the top push your head 'through' your arms, then lower under control."]
+    ],
+    "tips": [
+      ["Kein Hohlkreuz – Rippen unten halten.", "No excessive arch – keep your ribs down."],
+      ["Handgelenke gerade über den Ellbogen.", "Keep your wrists stacked over your elbows."],
+      ["Nicht mit den Beinen Schwung holen (das wäre Push Press).", "Don't use leg drive (that would be a push press)."]
+    ],
+    "variants": {
+      "Langhantel, sitzend": ["Lehne fast senkrecht stellen; der Rücken bleibt angelehnt.", "Set the backrest almost upright and keep your back against it."],
+      "Multipresse": ["Bank leicht vor die Stange stellen, damit sie vor dem Gesicht vorbeiläuft.", "Set the bench slightly in front of the bar so it travels past your face."]
+    }
+  },
+  "Handstand Push-Up": {
+    "muscles": ["Schultern, Trizeps, oberer Trapez", "Shoulders, triceps, upper traps"],
+    "primary": ["delts", "triceps"],
+    "secondary": ["traps", "abs"],
+    "regions": { "delts.front": 1, "delts.side": 0.6, "triceps.lateral": 1, "triceps.medial": 1, "triceps.long": 0.6, "traps.upper": 0.6, "abs.upper": 0.3 },
+    "how": [
+      ["Mit dem Rücken zur Wand in den Handstand gehen, Hände etwas breiter als schulterbreit.", "Kick up into a handstand facing away from the wall, hands slightly wider than shoulders."],
+      ["Kopf kontrolliert Richtung Boden absenken, Ellbogen leicht nach vorne.", "Lower your head toward the floor under control, elbows slightly forward."],
+      ["Kraftvoll zurück in den Handstand drücken.", "Press powerfully back up into the handstand."]
+    ],
+    "tips": [
+      ["Sehr anspruchsvoll – erst Pike Push-Ups sicher beherrschen.", "Very demanding – master pike push-ups first."],
+      ["Ein Kissen unter dem Kopf schützt beim Üben.", "A cushion under your head protects you while practising."]
+    ]
+  },
+  "Butterfly Reverse": {
+    "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],
+    "primary": ["delts"],
+    "secondary": ["traps"],
+    "regions": { "delts.rear": 1, "delts.side": 0.3, "traps.middle": 0.6, "lats.upper": 0.3 },
+    "how": [
+      ["An der Maschine mit der Brust zum Polster sitzen bzw. mittig zwischen zwei Kabelrollen stehen.", "Sit with your chest against the pad on the machine, or stand between two cable pulleys."],
+      ["Arme leicht gebeugt vor dem Körper, Griffe auf Schulterhöhe.", "Arms slightly bent in front of you, handles at shoulder height."],
+      ["Arme seitlich nach hinten öffnen, bis sie etwa in einer Linie mit dem Körper sind.", "Open your arms out and back until they're roughly in line with your body."],
+      ["Langsam zurückführen.", "Return slowly."]
+    ],
+    "tips": [
+      ["Schulterblätter nicht stark zusammenziehen – Fokus bleibt auf der hinteren Schulter.", "Don't squeeze your shoulder blades hard – keep the focus on the rear delts."],
+      ["Leichtes Gewicht, kein Schwung.", "Light weight, no momentum."]
+    ],
+    "variants": {
+      "Maschine": ["Griffe auf Schulterhöhe einstellen, Brust am Polster.", "Set the handles at shoulder height, chest on the pad."],
+      "Kabelzug": ["Kabel überkreuzt greifen (links nach rechts) auf Schulterhöhe.", "Grab the cables crossed (left to right) at shoulder height."],
+      "Kabelzug, von oben": ["Rollen über Kopfhöhe – zieht zusätzlich den mittleren Trapez mit.", "Pulleys above head height – also works the mid traps."],
+      "Kabelzug, von unten": ["Rollen unten, Oberkörper vorgebeugt (Bank als Stütze möglich).", "Pulleys low, torso bent forward (a bench can support you)."]
+    }
   }
 }

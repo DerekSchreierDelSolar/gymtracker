@@ -19,7 +19,7 @@
       "Maschine": ["Polster/Griffe einstellen, dann Oberkörper einrollen statt mit den Armen ziehen.", "Adjust the pads/handles, then curl your torso instead of pulling with your arms."]
     }
   },
-  "Sit-ups": {
+  "Sit-Ups": {
     "muscles": ["Bauch, Hüftbeuger", "Abs, hip flexors"],
     "primary": ["abs"],
     "secondary": ["obliques"],
@@ -34,7 +34,7 @@
       ["Bei Rückenproblemen lieber Crunches oder Dead Bugs.", "If your back bothers you, choose crunches or dead bugs instead."]
     ]
   },
-  "Fahrrad-Crunches": {
+  "Bicycle Crunches": {
     "muscles": ["Schräge und gerade Bauchmuskeln", "Obliques, rectus abdominis"],
     "primary": ["obliques", "abs"],
     "secondary": [],
@@ -93,7 +93,7 @@
       ["Nicht fallen lassen.", "Don't let your legs drop."]
     ]
   },
-  "Hängendes Beinheben": {
+  "Beinheben hängend": {
     "muscles": ["Unterer Bauch, Hüftbeuger, Griffkraft", "Lower abs, hip flexors, grip"],
     "primary": ["abs"],
     "secondary": ["obliques", "forearms"],
@@ -108,7 +108,7 @@
       ["Leichter: mit angewinkelten Knien.", "Easier: with bent knees."]
     ]
   },
-  "Knieheben an der Dip-Station": {
+  "Knieheben am Gerät": {
     "muscles": ["Unterer Bauch, Hüftbeuger", "Lower abs, hip flexors"],
     "primary": ["abs"],
     "secondary": ["obliques"],
@@ -169,7 +169,7 @@
       ["Leichter: Knie anwinkeln (Tuck-ups).", "Easier: bend your knees (tuck-ups)."]
     ]
   },
-  "Ab-Roller": {
+  "Bauchroller": {
     "muscles": ["Gesamter Rumpf, Latissimus, Schultern", "Entire core, lats, shoulders"],
     "primary": ["abs"],
     "secondary": ["lats", "delts", "obliques"],
@@ -182,9 +182,12 @@
       ["Kein Hohlkreuz – das Becken leicht eingerollt halten.", "No sagging – keep your pelvis slightly tucked."],
       ["Anfangs nur kurze Strecken rollen.", "Start with short rollouts."],
       ["Weiche Unterlage für die Knie.", "Use a pad under your knees."]
-    ]
+    ],
+    "variants": {
+      "Langhantel": ["Stange mit runden Scheiben statt des Rads – gleiche Ausführung.", "A barbell with round plates instead of the wheel – same technique."]
+    }
   },
-  "Russian Twists": {
+  "Russian Twist": {
     "muscles": ["Schräge Bauchmuskeln", "Obliques"],
     "primary": ["obliques"],
     "secondary": ["abs"],
@@ -198,7 +201,7 @@
       ["Die Drehung kommt aus dem Oberkörper, nicht nur aus den Armen.", "The rotation comes from your torso, not just your arms."]
     ]
   },
-  "Holzhacker": {
+  "Rumpfrotation": {
     "muscles": ["Schräge Bauchmuskeln, Rumpf, Schultern", "Obliques, core, shoulders"],
     "primary": ["obliques"],
     "secondary": ["abs", "delts"],
@@ -210,7 +213,15 @@
     "tips": [
       ["Arme bleiben fast gestreckt – die Kraft kommt aus dem Rumpf.", "Arms stay nearly straight – the power comes from your core."],
       ["Hinteren Fuß mitdrehen, um das Knie zu schonen.", "Pivot your back foot to protect your knee."]
-    ]
+    ],
+    "variants": {
+      "Kabelzug, nach oben": ["Kabel unten einstellen und von unten-seitlich nach oben-diagonal ziehen.", "Set the cable low and pull from low at the side diagonally upward."],
+      "Kabelzug, seitlich nach unten": ["Kabel oben einstellen und seitlich am Körper vorbei nach unten ziehen.", "Set the cable high and pull down past the side of your body."],
+      "Kabelzug, stehend": ["Kabel auf Brusthöhe, Arme gestreckt vor der Brust; nur den Oberkörper drehen.", "Cable at chest height, arms straight in front of your chest; rotate only your torso."],
+      "Kabelzug, sitzend": ["Seitlich zum Kabel auf der Bank sitzen – die Hüfte kann nicht mitdrehen.", "Sit sideways to the cable on a bench – your hips can't rotate along."],
+      "Langhantel": ["Stange auf dem oberen Rücken, langsam von Seite zu Seite drehen; nur leichtes Gewicht.", "Bar across your upper back, rotate slowly side to side; light weight only."],
+      "Maschine": ["Brust am Polster, die Beine bzw. der Sitz drehen gegen den Widerstand.", "Chest against the pad; rotate your legs or the seat against the resistance."]
+    }
   },
   "Pallof Press": {
     "muscles": ["Rumpf (Anti-Rotation)", "Core (anti-rotation)"],
@@ -225,5 +236,258 @@
       ["Hüfte und Schultern zeigen die ganze Zeit nach vorne.", "Hips and shoulders face forward the whole time."],
       ["Weiter weg stehen = schwerer.", "Standing further away = harder."]
     ]
+  },
+  "Butterfly-Crunches": {
+    "muscles": ["Gerade Bauchmuskeln (oben)", "Rectus abdominis (upper)"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
+    "regions": { "abs.upper": 1, "abs.lower": 0.3, "obliques": 0.3 },
+    "how": [
+      ["Rückenlage, Fußsohlen zusammen, Knie fallen nach außen.", "Lie on your back, soles together, knees falling outward."],
+      ["Hände an die Schläfen oder Arme nach vorne strecken.", "Hands at your temples or arms reaching forward."],
+      ["Oberkörper einrollen, bis die Schulterblätter abheben, dann langsam zurück.", "Curl up until your shoulder blades lift, then lower slowly."]
+    ],
+    "tips": [
+      ["Die Beinhaltung schaltet den Hüftbeuger weitgehend aus.", "The leg position largely takes your hip flexors out."],
+      ["Nicht am Kopf ziehen.", "Don't pull on your head."]
+    ]
+  },
+  "Reverse Crunches": {
+    "muscles": ["Gerade Bauchmuskeln (unten)", "Rectus abdominis (lower)"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
+    "regions": { "abs.lower": 1, "abs.upper": 0.3, "obliques": 0.3 },
+    "how": [
+      ["Rückenlage, Beine angewinkelt angehoben, Hände neben dem Körper oder an der Bank.", "Lie on your back with bent legs raised, hands beside you or holding the bench."],
+      ["Becken einrollen und Knie Richtung Brust ziehen, bis das Gesäß abhebt.", "Curl your pelvis and pull your knees toward your chest until your glutes lift."],
+      ["Langsam Wirbel für Wirbel ablegen.", "Lower slowly, one vertebra at a time."]
+    ],
+    "tips": [
+      ["Kein Schwung aus den Beinen – das Becken rollt.", "No leg momentum – your pelvis does the rolling."],
+      ["Auf der Schrägbank (Kopf oben) wird es deutlich schwerer.", "On an incline bench (head up) it gets much harder."]
+    ]
+  },
+  "Side Crunches": {
+    "muscles": ["Seitliche Bauchmuskeln", "Obliques"],
+    "primary": ["obliques"],
+    "secondary": ["abs"],
+    "regions": { "obliques": 1, "abs.upper": 0.3 },
+    "how": [
+      ["Seitlich auf dem Boden liegen, Knie leicht angewinkelt.", "Lie on your side with your knees slightly bent."],
+      ["Obere Hand an den Kopf, untere Hand auf den Bauch.", "Top hand behind your head, bottom hand on your belly."],
+      ["Oberkörper seitlich anheben, Rippen Richtung Hüfte ziehen, langsam absenken.", "Lift your upper body sideways, pulling your ribs toward your hip, lower slowly."]
+    ],
+    "tips": [
+      ["Kleine Bewegung, volle Anspannung.", "Small movement, full contraction."],
+      ["Nicht nach vorne drehen.", "Don't rotate forward."]
+    ]
+  },
+  "V-Crunches": {
+    "muscles": ["Gerade Bauchmuskeln, Hüftbeuger", "Rectus abdominis, hip flexors"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
+    "regions": { "abs.upper": 1, "abs.lower": 1, "obliques": 0.3 },
+    "how": [
+      ["Auf dem Gesäß sitzen, Oberkörper leicht zurückgelehnt, Beine gestreckt angehoben.", "Sit on your glutes, torso leaning back slightly, straight legs raised."],
+      ["Knie zur Brust ziehen und gleichzeitig den Oberkörper nach vorne bringen.", "Pull your knees to your chest while bringing your torso forward."],
+      ["Wieder strecken, ohne die Füße abzulegen.", "Extend again without putting your feet down."]
+    ],
+    "tips": [
+      ["Rücken nicht rund durchhängen lassen.", "Don't let your back slump."],
+      ["Hände neben dem Gesäß stützen macht es leichter.", "Supporting yourself with your hands beside you makes it easier."]
+    ]
+  },
+  "Heel-Touches": {
+    "muscles": ["Seitliche Bauchmuskeln", "Obliques"],
+    "primary": ["obliques"],
+    "secondary": ["abs"],
+    "regions": { "obliques": 1, "abs.upper": 0.6 },
+    "how": [
+      ["Rückenlage, Füße aufgestellt, Schultern leicht angehoben.", "Lie on your back with feet planted and shoulders slightly raised."],
+      ["Abwechselnd mit der rechten Hand zur rechten Ferse und mit der linken zur linken greifen.", "Reach alternately with your right hand to your right heel and your left hand to your left heel."],
+      ["Die Schultern bleiben die ganze Zeit oben.", "Keep your shoulders up the whole time."]
+    ],
+    "tips": [
+      ["Seitlich beugen, nicht drehen.", "Bend sideways; don't twist."],
+      ["Gleichmäßiges Tempo, Nacken entspannt.", "Steady tempo, relaxed neck."]
+    ]
+  },
+  "Toe-Touches": {
+    "muscles": ["Gerade Bauchmuskeln (oben)", "Rectus abdominis (upper)"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
+    "regions": { "abs.upper": 1, "abs.lower": 0.3, "obliques": 0.3 },
+    "how": [
+      ["Ausgangsstellung je nach Variante: liegend mit gestreckten Beinen nach oben, sitzend oder stehend.", "Starting position depends on the variant: lying with legs straight up, seated or standing."],
+      ["Mit den Händen Richtung Zehenspitzen greifen und dabei den Bauch anspannen.", "Reach for your toes while tightening your abs."],
+      ["Kontrolliert zurück in die Ausgangsstellung.", "Return to the start under control."]
+    ],
+    "tips": [
+      ["Bewegung aus dem Bauch, nicht aus dem Schwung der Arme.", "Move from your abs, not from arm momentum."],
+      ["Liegend: Beine bleiben senkrecht über der Hüfte.", "Lying: keep your legs vertical over your hips."]
+    ],
+    "variants": {
+      "Körpergewicht, Windmühle": ["Stehend mit weitem Stand abwechselnd mit einer Hand zum gegenüberliegenden Fuß greifen.", "Stand wide and alternately reach one hand to the opposite foot."]
+    }
+  },
+  "Side Plank Crunches": {
+    "muscles": ["Seitliche Bauchmuskeln, Schulter (Stabilität)", "Obliques, shoulders (stability)"],
+    "primary": ["obliques"],
+    "secondary": ["abs", "delts", "glutes"],
+    "regions": { "obliques": 1, "abs.upper": 0.3, "abs.lower": 0.3, "delts.side": 0.3, "glutes.med": 0.3 },
+    "how": [
+      ["In den Seitstütz auf dem Unterarm gehen, die obere Hand am Kopf.", "Get into a forearm side plank with your top hand behind your head."],
+      ["Oberen Ellbogen Richtung Hüfte bzw. Knie ziehen.", "Pull your top elbow toward your hip or knee."],
+      ["Wieder öffnen, die Hüfte bleibt oben.", "Open back up, keeping your hips high."]
+    ],
+    "tips": [
+      ["Becken nicht absinken lassen.", "Don't let your hips sag."],
+      ["Erst alle Wiederholungen auf einer Seite, dann wechseln.", "Do all reps on one side, then switch."]
+    ]
+  },
+  "Klappmesser": {
+    "muscles": ["Gerade Bauchmuskeln (oben und unten), Hüftbeuger", "Rectus abdominis (upper and lower), hip flexors"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
+    "regions": { "abs.upper": 1, "abs.lower": 1, "obliques": 0.3 },
+    "how": [
+      ["Rückenlage, Arme über dem Kopf und Beine gestreckt.", "Lie on your back with arms overhead and legs straight."],
+      ["Gleichzeitig Oberkörper und Beine anheben und die Hände zu den Füßen führen.", "Lift your upper body and legs at the same time, bringing your hands to your feet."],
+      ["Langsam wieder ausstrecken, ohne ganz abzulegen.", "Extend slowly without fully resting."]
+    ],
+    "tips": [
+      ["Lendenwirbelsäule bleibt am Boden, wenn die Beine unten sind.", "Keep your lower back on the floor when your legs are down."],
+      ["Lieber weniger, dafür kontrolliert.", "Fewer reps, but controlled."]
+    ],
+    "variants": {
+      "Körpergewicht, Split": ["Die Beine öffnen sich oben zur Seite; die Hände greifen zwischen den Beinen hindurch.", "Your legs open to the sides at the top; reach your hands between them."],
+      "Ball": ["Gymnastikball zwischen Händen und Füßen übergeben.", "Pass a gym ball between your hands and feet."]
+    }
+  },
+  "Spiderman Plank": {
+    "muscles": ["Bauch, seitliche Bauchmuskeln, Hüftbeuger", "Abs, obliques, hip flexors"],
+    "primary": ["abs", "obliques"],
+    "secondary": ["delts", "chest"],
+    "regions": { "abs.upper": 0.6, "abs.lower": 1, "obliques": 1, "delts.front": 0.3, "chest.mid": 0.3 },
+    "how": [
+      ["In den Liegestütz oder Unterarmstütz gehen, Körper gerade.", "Get into a push-up or forearm plank, body straight."],
+      ["Ein Knie seitlich außen zum Ellbogen ziehen.", "Draw one knee out to the side toward your elbow."],
+      ["Zurück und Seite wechseln.", "Return and switch sides."]
+    ],
+    "tips": [
+      ["Hüfte bleibt tief und ruhig.", "Keep your hips low and steady."],
+      ["Langsam ausführen für mehr Spannung.", "Go slowly for more tension."]
+    ]
+  },
+  "Seitliches Hüftheben": {
+    "muscles": ["Seitliche Bauchmuskeln", "Obliques"],
+    "primary": ["obliques"],
+    "secondary": ["glutes", "abs"],
+    "regions": { "obliques": 1, "glutes.med": 0.6, "abs.lower": 0.3 },
+    "how": [
+      ["Seitstütz auf dem Unterarm, Füße übereinander (bzw. Füße auf einer Bank).", "Forearm side plank with feet stacked (or feet on a bench)."],
+      ["Hüfte Richtung Boden absenken.", "Lower your hips toward the floor."],
+      ["Hüfte kräftig wieder nach oben drücken, bis der Körper eine Linie bildet.", "Drive your hips back up until your body forms a straight line."]
+    ],
+    "tips": [
+      ["Ellbogen genau unter der Schulter.", "Elbow directly under your shoulder."],
+      ["Eine Kurzhantel auf der Hüfte macht es schwerer.", "A dumbbell on your hip makes it harder."]
+    ]
+  },
+  "Hüftheben": {
+    "muscles": ["Gerade Bauchmuskeln (vor allem unten)", "Rectus abdominis (mainly lower)"],
+    "primary": ["abs"],
+    "secondary": [],
+    "regions": { "abs.lower": 1, "abs.upper": 0.6 },
+    "how": [
+      ["Rückenlage, Beine senkrecht nach oben gestreckt, Arme neben dem Körper.", "Lie on your back with legs straight up and arms beside you."],
+      ["Becken mit Kraft aus dem Bauch einige Zentimeter vom Boden heben, die Füße zeigen zur Decke.", "Lift your hips a few centimetres off the floor using your abs, feet pointing at the ceiling."],
+      ["Langsam absenken.", "Lower slowly."]
+    ],
+    "tips": [
+      ["Nicht mit den Beinen nach hinten schwingen.", "Don't swing your legs backward."],
+      ["Auf der Bank mit den Händen hinter dem Kopf festhalten.", "On a bench, hold on behind your head."]
+    ]
+  },
+  "Knieheben im Liegen": {
+    "muscles": ["Gerade Bauchmuskeln (unten), Hüftbeuger", "Rectus abdominis (lower), hip flexors"],
+    "primary": ["abs"],
+    "secondary": [],
+    "regions": { "abs.lower": 1, "abs.upper": 0.3 },
+    "how": [
+      ["Rückenlage, Beine leicht angehoben, Hände neben dem Körper.", "Lie on your back with legs slightly raised, hands beside you."],
+      ["Knie zur Brust ziehen.", "Pull your knees to your chest."],
+      ["Beine wieder ausstrecken, ohne die Füße abzulegen.", "Extend your legs again without putting your feet down."]
+    ],
+    "tips": [
+      ["Unterer Rücken bleibt am Boden.", "Keep your lower back on the floor."],
+      ["Ruhig atmen: beim Anziehen ausatmen.", "Breathe steadily: exhale as you pull in."]
+    ]
+  },
+  "Flutter Kicks": {
+    "muscles": ["Gerade Bauchmuskeln (unten), Hüftbeuger", "Rectus abdominis (lower), hip flexors"],
+    "primary": ["abs"],
+    "secondary": ["glutes"],
+    "regions": { "abs.lower": 1, "abs.upper": 0.3 },
+    "how": [
+      ["Rückenlage, Hände unter dem Gesäß, gestreckte Beine knapp über dem Boden.", "Lie on your back, hands under your glutes, straight legs just above the floor."],
+      ["Beine abwechselnd in kleinen, schnellen Bewegungen auf und ab bewegen.", "Move your legs alternately up and down in small, quick kicks."],
+      ["Über die gewünschte Zeit oder Anzahl halten.", "Keep going for the desired time or reps."]
+    ],
+    "tips": [
+      ["Lendenwirbelsäule gegen den Boden drücken.", "Press your lower back into the floor."],
+      ["Je tiefer die Beine, desto schwerer.", "The lower your legs, the harder it is."]
+    ],
+    "variants": {
+      "Körpergewicht, Po": ["Bäuchlings mit der Hüfte auf der Bankkante, die gestreckten Beine kicken nach oben – trainiert das Gesäß.", "Face down with your hips on the bench edge; straight legs kick upward – works the glutes."]
+    }
+  },
+  "Beinschere": {
+    "muscles": ["Gerade Bauchmuskeln (unten), Adduktoren, Hüftbeuger", "Rectus abdominis (lower), adductors, hip flexors"],
+    "primary": ["abs"],
+    "secondary": ["adductors", "glutes"],
+    "regions": { "abs.lower": 1, "abs.upper": 0.3, "adductors": 0.6, "glutes.med": 0.3 },
+    "how": [
+      ["Rückenlage, Hände unter dem Gesäß, gestreckte Beine angehoben.", "Lie on your back, hands under your glutes, straight legs raised."],
+      ["Beine abwechselnd übereinander kreuzen und wieder öffnen.", "Cross your legs over each other alternately and open them again."],
+      ["Bewegung gleichmäßig fortsetzen.", "Keep the movement going steadily."]
+    ],
+    "tips": [
+      ["Unterer Rücken bleibt am Boden.", "Keep your lower back on the floor."],
+      ["Nacken entspannt, Kopf darf liegen bleiben.", "Relax your neck; your head can stay down."]
+    ]
+  },
+  "Hüftrollen": {
+    "muscles": ["Seitliche Bauchmuskeln", "Obliques"],
+    "primary": ["obliques"],
+    "secondary": ["abs"],
+    "regions": { "obliques": 1, "abs.lower": 0.3 },
+    "how": [
+      ["Rückenlage, Arme seitlich ausgebreitet, Knie angewinkelt angehoben.", "Lie on your back, arms out to the sides, bent knees raised."],
+      ["Knie langsam zu einer Seite Richtung Boden sinken lassen.", "Slowly lower your knees to one side toward the floor."],
+      ["Mit dem Bauch zurück zur Mitte holen und zur anderen Seite.", "Use your abs to bring them back to the middle and to the other side."]
+    ],
+    "tips": [
+      ["Schultern bleiben am Boden.", "Keep your shoulders on the floor."],
+      ["Gestreckte Beine machen es deutlich schwerer.", "Straight legs make it much harder."]
+    ]
+  },
+  "Seitliches Oberkörperbeugen": {
+    "muscles": ["Seitliche Bauchmuskeln, unterer Rücken (Quadratus lumborum)", "Obliques, lower back (quadratus lumborum)"],
+    "primary": ["obliques"],
+    "secondary": ["lowerback"],
+    "regions": { "obliques": 1, "lowerback": 0.6 },
+    "how": [
+      ["Aufrecht stehen, Gewicht in einer Hand (bzw. Stange auf dem Rücken oder Kabel seitlich).", "Stand tall with the weight in one hand (or a bar on your back, or a cable at your side)."],
+      ["Oberkörper zur Seite des Gewichts neigen.", "Bend your torso toward the weight."],
+      ["Mit den seitlichen Bauchmuskeln wieder aufrichten und etwas zur Gegenseite.", "Use your obliques to come back up and slightly past centre."]
+    ],
+    "tips": [
+      ["Nur seitlich beugen – nicht nach vorne oder hinten.", "Bend only sideways – not forward or back."],
+      ["Kein Gewicht in beiden Händen, sonst gleicht es sich aus.", "Don't hold weight in both hands or it cancels out."]
+    ],
+    "variants": {
+      "Hyperextension-Bank": ["Seitlich in die Bank legen und den Oberkörper aus der Seitlage anheben.", "Lie sideways in the bench and raise your torso from the side-lying position."]
+    }
   }
 }

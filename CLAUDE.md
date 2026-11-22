@@ -42,7 +42,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `GymStore.kt` | Gesamter Zustand + Laden/Speichern (atomar via .tmp), Import/Export, alle Mutationen |
 | `AutoBackup.kt` | Automatisches Backup: Ordner per SAF (`OpenDocumentTree`, Berechtigung persistent), beim Verlassen der App (`onStop`) höchstens 1×/Tag `gymtracker-auto-JJJJ-MM-TT.json`, die 7 neuesten bleiben; Einstellungen in SharedPreferences (gerätegebunden, nicht im Export); `AutoBackupSettings` im Einstellungen-Dialog |
 | `Model.kt` | `GymSet`, `MuscleGroup`, `Equipment`, `Workout`, `TrainingSession`, `CustomMeta`, `TEMPLATES`, `fmtSet`, `oneRepMax`, `isTimed` |
-| `Catalog.kt` | `CATALOG` (207 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
+| `Catalog.kt` | `CATALOG` (448 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
 | `I18n.kt` | `appLanguage`, `tr()`, `appLocale()` |
 | `Format.kt` | `fmtW`, `fmtDate`, `fmtDateTime`, `fmtDuration`, `plural`, `fmtVolume`, `fmtKcal` (kcal-Anzeigen immer darüber, Tausenderpunkt; Web: core.js) |
 | `Stats.kt` | `ExerciseResult`, `SessionStats`, `sessionStats()`, `estimateKcal()`, `allSessions()`; `Profile` (optional Geschlecht/Geburtsjahr/Größe, im JSON `profile` = { sex: m/f, birthYear, height } nur wenn gesetzt, Eingabe `ProfileSettings` im Einstellungen-Dialog), `bmrKcalPerDay` (Mifflin-St-Jeor), `kcalPerMetHour` = Grundumsatz/24 statt kg, sobald das Profil vollständig ist (Web: stats.js, Validierung `validYear`/`validHeight` in core.js) |

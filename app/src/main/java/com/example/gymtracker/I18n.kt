@@ -30,7 +30,7 @@ fun appLocale(): Locale = if (isEnglish) Locale.UK else Locale.GERMANY // europ�
  */
 fun <T> List<T>.sortedByName(name: (T) -> String): List<T> {
     val c = java.text.Collator.getInstance(appLocale()).apply { strength = java.text.Collator.PRIMARY }
-    // Einseitige Variante direkt unter der normalen: „Bizepscurls (Kurzhantel)“ vor „… (Kurzhantel, einarmig)“
+    // Einseitige Variante direkt unter der normalen: „Bizeps-Curls (Kurzhantel)“ vor „… (Kurzhantel, einarmig)“
     val side = Regex(""", (einarmig|einbeinig)\)""", RegexOption.IGNORE_CASE)
     fun key(t: T) = name(t).replace(side, ")")
     fun one(t: T) = if (key(t) == name(t)) 0 else 1 // 1 = einseitige Variante
