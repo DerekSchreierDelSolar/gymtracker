@@ -198,5 +198,14 @@ Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen
 - **Bekannter Bot-Fehler:** „Wie trage ich einen Satz ein?“ landet beim Supplement Eisen („einen“ ≈ „eisen“ durch die
   Tippfehler-Toleranz in `close()`; Supplements haben Vorrang vor FAQ). Lösungsidee: Tippfehler erst ab 6 Buchstaben oder
   Supplement-Treffer nur bei exakten Wörtern unter 6 Buchstaben (Bot.kt + bot.js gleich ändern).
+- **Feature-Ideen 22.11.2026** (besprochen, nicht umgesetzt; Empfehlung: Supersätze, Scheibenrechner + Aufwärm-Rampe, Körpermaße):
+  - *Klein:* Scheibenrechner (Zielgewicht → Scheiben pro Seite, Stange/vorhandene Scheiben in den Einstellungen, in `SetInput`
+    bei Langhantel); Aufwärm-Rampe (aus Arbeitsgewicht 2–3 Aufwärmsätze, z. B. 40 % × 10, 60 % × 5, 80 % × 2); RPE/RIR pro Satz
+    (optional, verbessert `Progression.kt`); %-Tabelle zum 1RM im Reiter Fortschritt
+  - *Mittel:* Jahresrückblick („Wrapped“, Logik aus `Review.kt`); relative Kraft (Rekord × Körpergewicht bzw. DOTS);
+    Workout teilen per QR-Code (offline, ohne `INTERNET`; QR-Erzeugung ohne Bibliothek selbst schreiben); mehrwöchige Programme
+    (Blöcke z. B. 4 Wochen Aufbau + 1 Woche Deload mit automatisch reduzierten Zielen, Erweiterung von `Plan.kt`)
+  - *Groß:* Widget über klassische `RemoteViews` (ohne Glance); Fortschrittsfotos lokal in `filesDir` mit Vorher/Nachher-Schieberegler
+    (Backup-Frage klären, nicht ins JSON); Ernährung eher aus Health Connect lesen statt eigenem Tagebuch
 - **Play-Store-Veröffentlichung** (besprochen 22.11.2026, nicht umgesetzt): Anforderungen und To-dos in `docs/play-store.md`
   (u. a. Package-Name statt `com.example`, `.aab`, Datenschutzerklärung, 12 Tester × 14 Tage, Bildrechte).
