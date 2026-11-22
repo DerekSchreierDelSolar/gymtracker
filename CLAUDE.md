@@ -155,5 +155,16 @@ Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen
 - **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
   Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
   Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
+- **UX-Analyse 22.11.2026 – noch offen** (erledigt in 1.9: Vorbelegung Aufwärmen/Wdh.-Ziel, „Diese Woche“ über Kennzahlen,
+  Tausenderpunkt `fmtVolume`, Kachel-Name zweigeteilt, ▶ in der Workout-Liste, verpasst = roter Ring):
+  - *Mittel:* Benachrichtigungs-Erlaubnis vor dem System-Dialog kurz erklären (erscheint sonst ohne Kontext beim Trainingsstart) ·
+    Übungs-Chips im Training mit Stand (✓ bzw. „2/4“) · Pause-Kreis als antippbar kennzeichnen („Pause · tippen zum Ändern“) ·
+    Übungen-Tab: gedrückt halten öffnet Menü (Öffnen / Zu Workout hinzufügen / Aus Liste entfernen) statt sofort zu entfernen ·
+    Workout-Detail: beschrifteter Knopf „Übungen hinzufügen / bearbeiten“ statt nur Stift · Ziel-Sätze in der Workout-Liste immer
+    zeigen („Ziel: –“) und direkt antippbar · Dauer-Hinweistexte („Tippen = öffnen …“, „Tipp: Am Griff ziehen …“, „tippen zum
+    Ändern“) nur bis zur ersten Nutzung zeigen (Flag in SharedPreferences / localStorage)
+  - *Klein:* Muskelliste unter der Heatmap auf Top 5 + „Alle anzeigen“ kürzen · Körper-Tab: doppelte kcal-Karte und MET-Erklärtext
+    hinter ⓘ · weitere Übungsfotos (Mischung Foto/Piktogramm wirkt uneinheitlich)
+  - *Groß:* Training minimieren (Zurück verlässt das Training nicht, Leiste „Training läuft · 12:34“ auf der Startseite)
 - **Play-Store-Veröffentlichung** (besprochen 22.11.2026, nicht umgesetzt): Anforderungen und To-dos in `docs/play-store.md`
   (u. a. Package-Name statt `com.example`, `.aab`, Datenschutzerklärung, 12 Tester × 14 Tage, Bildrechte).
