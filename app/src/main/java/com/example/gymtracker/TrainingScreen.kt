@@ -214,9 +214,14 @@ fun TrainingScreen(
             }
         }
     ) { padding ->
+        // Edge-to-Edge: das Fenster schrumpft bei offener Tastatur nicht → selbst Platz freihalten,
+        // sonst verdeckt die Tastatur die Eingabefelder. consumeWindowInsets: die untere Leiste
+        // (Vorherige/Nächste) liegt dann hinter der Tastatur, ihr Platz wird nicht doppelt abgezogen.
         Column(
             Modifier
                 .padding(padding)
+                .consumeWindowInsets(padding)
+                .imePadding()
                 .fillMaxSize()
         ) {
             // Fester Kopf: Fortschritt + Sprungleiste zu allen Übungen (✓ = Ziel erreicht)
