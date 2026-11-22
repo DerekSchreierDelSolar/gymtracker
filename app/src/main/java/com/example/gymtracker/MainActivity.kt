@@ -1,11 +1,13 @@
 package com.example.gymtracker
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.gymtracker.ui.theme.GymTrackerTheme
 import androidx.compose.foundation.layout.*
@@ -13,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 
 // ---------- Activity ----------
@@ -74,6 +77,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GymApp(store: GymStore) {
     // Navigation über einfachen State. Reihenfolge im `when` = was „oben“ liegt:
@@ -86,9 +90,19 @@ fun GymApp(store: GymStore) {
     var workoutId by rememberSaveable { mutableStateOf<Long?>(null) }
     var pickForWorkout by rememberSaveable { mutableStateOf(false) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
-    // Laufendes Training: Startzeit (null = kein Training) und aktuelle Übung
+    // Laufendes Training: Startzeit (null = kein Training), Workout und aktuelle Übung.
+    // Unabhängig von `workoutId` (= angezeigtes Workout), damit man das Training minimieren und
+    // in der App herumgehen kann, während es weiterläuft.
     var trainingStart by rememberSaveable { mutableStateOf<Long?>(null) }
+    var trainingWorkoutId by rememberSaveable { mutableStateOf<Long?>(null) }
     var trainingIndex by rememberSaveable { mutableIntStateOf(0) }
+    // false = minimiert (Leiste „Training läuft“ statt Trainingsbildschirm)
+    var trainingOpen by rememberSaveable { mutableStateOf(true) }
+    // Pause: Endzeitpunkt (null = keine) und Gesamtlänge – hier oben, damit sie beim Minimieren weiterläuft
+    var restEnd by rememberSaveable { mutableStateOf<Long?>(null) }
+    var restTotal by rememberSaveable { mutableLongStateOf(0L) }
+    // Training starten, während schon eins läuft → Hinweis
+    var startBlocked by remember { mutableStateOf(false) }
     // Tausch nur für das laufende Training: Original → Alternative (HashMap ist Serializable → rememberSaveable)
     var swaps by rememberSaveable { mutableStateOf<Map<String, String>>(HashMap()) }
     // Während des Trainings: Workout bearbeiten offen? Wert = Übung, die im Training gerade angezeigt war
@@ -103,111 +117,191 @@ fun GymApp(store: GymStore) {
     // bleiben, wenn man eine Übung öffnet und zurückkommt.
     var listFilter by remember { mutableStateOf(ExerciseFilter()) }
     var catalogFilter by remember { mutableStateOf(ExerciseFilter()) }
+    val context = LocalContext.current
 
     val ex = current
     val workout = workoutId?.let { store.workout(it) }
     // Negative ID = freies Training (wird aus den Sätzen des Tages gebaut)
     val summary = summaryId?.let { if (it < 0) store.freeSession((-it).toInt()) else store.session(it) }
     val start = trainingStart
-    when {
-        summary != null -> {
-            BackHandler { summaryId = null }
-            SummaryScreen(store, summary, onDone = { summaryId = null })
-        }
-        // Workout während des laufenden Trainings bearbeiten (Training läuft weiter, Zurück = zurück ins Training)
-        workout != null && start != null && editInTraining != null -> {
-            val backToTraining = {
-                // wieder auf die Übung, die vorher offen war (Index kann sich durch Hinzufügen/Entfernen verschoben haben)
-                val i = sessionWorkout(workout, swaps).exercises.indexOf(editInTraining)
-                if (i >= 0) trainingIndex = i
-                editInTraining = null
-            }
-            BackHandler { backToTraining() }
-            WorkoutPickerScreen(store, workout, onBack = backToTraining)
-        }
-        workout != null && start != null -> {
-            // Nur für dieses Training getauschte Übungen (Original → Alternative); das Workout selbst bleibt unverändert
-            val session = sessionWorkout(workout, swaps)
-            TrainingScreen(
-                store, session, start,
-                index = trainingIndex.coerceIn(0, (session.exercises.size - 1).coerceAtLeast(0)),
-                onIndex = { trainingIndex = it },
-                onSwap = { from, to -> swaps = swapTo(swaps, workout, from, to) },
-                originalOf = { e -> swaps.entries.firstOrNull { it.value == e }?.key },
-                onEdit = { editInTraining = session.exercises.getOrNull(trainingIndex) ?: "" },
-                onFinish = {
-                    // Übungen, die vor dem Tausch schon Sätze hatten, gehören trotzdem zum Training
-                    val withSets = session.copy(exercises = session.exercises + swaps.keys.filter { o ->
-                        o !in session.exercises && store.setsBetween(o, start, Long.MAX_VALUE).isNotEmpty()
-                    })
-                    val t = store.finishTraining(withSets, start)
-                    trainingStart = null
-                    trainingIndex = 0
-                    swaps = HashMap()
-                    summaryId = t?.id
-                }
-            )
-        }
-        ex != null -> {
-            BackHandler { current = null }
-            ExerciseDetailScreen(store, ex, onBack = { current = null })
-        }
-        workout != null && pickForWorkout -> {
-            BackHandler { pickForWorkout = false }
-            WorkoutPickerScreen(store, workout, onBack = { pickForWorkout = false })
-        }
-        workout != null -> {
-            BackHandler { workoutId = null }
-            WorkoutScreen(
-                store, workout,
-                onBack = { workoutId = null },
-                onOpen = { current = it },
-                onEdit = { pickForWorkout = true },
-                onStart = { trainingStart = System.currentTimeMillis(); trainingIndex = 0; swaps = HashMap() },
-                onOpenSession = { summaryId = it },
-                onDuplicate = { store.duplicateWorkout(workout.id)?.let { workoutId = it.id } }
-            )
-        }
-        showCatalog -> {
-            BackHandler { showCatalog = false }
-            CatalogScreen(store, catalogFilter, onFilter = { catalogFilter = it }, onBack = { showCatalog = false })
-        }
-        showBot -> {
-            BackHandler { showBot = false }
-            BotScreen(store, onBack = { showBot = false }, onOpenWorkout = { showBot = false; workoutId = it })
-        }
-        showWiki -> {
-            BackHandler { showWiki = false }
-            WikiScreen(onBack = { showWiki = false }, onAsk = { showBot = true })
-        }
-        else -> HomeScreen(
-            store,
-            tab = tab,
-            onTab = { tab = it },
-            onOpen = { current = it },
-            onCatalog = { showCatalog = true },
-            onWiki = { showWiki = true },
-            onBot = { showBot = true },
-            onOpenWorkout = { workoutId = it },
-            onCreatedWorkout = { workoutId = it; pickForWorkout = true },
-            calMonth = calMonth,
-            onCalMonth = { calMonth = it },
-            calDay = calDay,
-            onCalDay = { calDay = it },
-            onOpenSession = { summaryId = it },
-            listFilter = listFilter,
-            onListFilter = { listFilter = it },
-            // Schnellstart vom Dashboard: Workout öffnen und Training direkt starten
-            onStartWorkout = { id ->
-                workoutId = id
+    val trainingWorkout = trainingWorkoutId?.let { store.workout(it) }
+    // Nur für dieses Training getauschte Übungen (Original → Alternative); das Workout selbst bleibt unverändert
+    val session = trainingWorkout?.let { sessionWorkout(it, swaps) }
+
+    fun resetTraining() {
+        trainingStart = null
+        trainingWorkoutId = null
+        trainingIndex = 0
+        trainingOpen = true
+        swaps = HashMap()
+        editInTraining = null
+        restEnd = null
+        RestTimer.cancel(context)
+    }
+    // Workout gelöscht, während das Training minimiert war → Training aufgeben (Sätze bleiben als freies Training)
+    if (start != null && trainingWorkout == null) SideEffect { resetTraining() }
+
+    fun startTraining(id: Long) {
+        when {
+            trainingStart == null -> {
                 trainingStart = System.currentTimeMillis()
-                swaps = HashMap()
+                trainingWorkoutId = id
                 trainingIndex = 0
+                trainingOpen = true
+                swaps = HashMap()
+                restEnd = null
             }
+            trainingWorkoutId == id -> trainingOpen = true // dasselbe Workout: einfach fortsetzen
+            else -> startBlocked = true
+        }
+    }
+
+    // Pause läuft auch weiter, wenn das Training minimiert ist
+    RestTimerEffect(restEnd, session?.exercises?.getOrNull(trainingIndex) ?: "", onDone = { restEnd = null })
+
+    val trainingVisible = start != null && session != null && trainingOpen
+    val homeVisible = !trainingVisible && summary == null && ex == null && workout == null &&
+        !showCatalog && !showBot && !showWiki
+    val showBar = start != null && trainingWorkout != null && !trainingVisible
+    val bar: @Composable () -> Unit = {
+        TrainingBar(trainingWorkout?.name ?: "", start ?: 0L, restEnd, onOpen = { trainingOpen = true })
+    }
+    // Bei minimiertem Training auf der Startseite: Zurück schickt die App in den Hintergrund, statt sie zu
+    // beenden (sonst ginge das laufende Training auf älteren Android-Versionen verloren).
+    // Steht vor den Bildschirmen → deren eigene BackHandler haben Vorrang.
+    BackHandler(enabled = showBar && homeVisible) { (context as? Activity)?.moveTaskToBack(true) }
+
+    // Leiste unten auf allen anderen Bildschirmen (Startseite: über der Navigationsleiste).
+    // consumeWindowInsets: der Bildschirm darüber lässt unten keinen Platz mehr für die Systemleiste frei,
+    // das übernimmt die Leiste. Bei offener Tastatur ausgeblendet.
+    val globalBar = showBar && !homeVisible && !WindowInsets.isImeVisible
+    Column(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .weight(1f)
+                .then(if (globalBar) Modifier.consumeWindowInsets(WindowInsets.navigationBars) else Modifier)
+        ) {
+            when {
+                summary != null -> {
+                    BackHandler { summaryId = null }
+                    SummaryScreen(store, summary, onDone = { summaryId = null })
+                }
+                // Workout während des laufenden Trainings bearbeiten (Training läuft weiter, Zurück = zurück ins Training)
+                trainingVisible && editInTraining != null -> {
+                    val backToTraining = {
+                        // wieder auf die Übung, die vorher offen war (Index kann sich durch Hinzufügen/Entfernen verschoben haben)
+                        val i = sessionWorkout(trainingWorkout, swaps).exercises.indexOf(editInTraining)
+                        if (i >= 0) trainingIndex = i
+                        editInTraining = null
+                    }
+                    BackHandler { backToTraining() }
+                    WorkoutPickerScreen(store, trainingWorkout, onBack = backToTraining)
+                }
+                trainingVisible -> {
+                    TrainingScreen(
+                        store, session, start,
+                        index = trainingIndex.coerceIn(0, (session.exercises.size - 1).coerceAtLeast(0)),
+                        onIndex = { trainingIndex = it },
+                        onSwap = { from, to -> swaps = swapTo(swaps, trainingWorkout, from, to) },
+                        originalOf = { e -> swaps.entries.firstOrNull { it.value == e }?.key },
+                        onEdit = { editInTraining = session.exercises.getOrNull(trainingIndex) ?: "" },
+                        onMinimize = { trainingOpen = false },
+                        restEnd = restEnd,
+                        restTotal = restTotal,
+                        onRest = { end, total -> restEnd = end; restTotal = total },
+                        onFinish = {
+                            // Übungen, die vor dem Tausch schon Sätze hatten, gehören trotzdem zum Training
+                            val withSets = session.copy(exercises = session.exercises + swaps.keys.filter { o ->
+                                o !in session.exercises && store.setsBetween(o, start, Long.MAX_VALUE).isNotEmpty()
+                            })
+                            val t = store.finishTraining(withSets, start)
+                            resetTraining()
+                            summaryId = t?.id
+                        }
+                    )
+                }
+                ex != null -> {
+                    BackHandler { current = null }
+                    ExerciseDetailScreen(store, ex, onBack = { current = null })
+                }
+                workout != null && pickForWorkout -> {
+                    BackHandler { pickForWorkout = false }
+                    WorkoutPickerScreen(store, workout, onBack = { pickForWorkout = false })
+                }
+                workout != null -> {
+                    BackHandler { workoutId = null }
+                    WorkoutScreen(
+                        store, workout,
+                        onBack = { workoutId = null },
+                        onOpen = { current = it },
+                        onEdit = { pickForWorkout = true },
+                        onStart = { startTraining(workout.id) },
+                        onOpenSession = { summaryId = it },
+                        onDuplicate = { store.duplicateWorkout(workout.id)?.let { workoutId = it.id } },
+                        running = start != null && trainingWorkoutId == workout.id
+                    )
+                }
+                showCatalog -> {
+                    BackHandler { showCatalog = false }
+                    CatalogScreen(store, catalogFilter, onFilter = { catalogFilter = it }, onBack = { showCatalog = false })
+                }
+                showBot -> {
+                    BackHandler { showBot = false }
+                    BotScreen(store, onBack = { showBot = false }, onOpenWorkout = { showBot = false; workoutId = it })
+                }
+                showWiki -> {
+                    BackHandler { showWiki = false }
+                    WikiScreen(onBack = { showWiki = false }, onAsk = { showBot = true })
+                }
+                else -> HomeScreen(
+                    store,
+                    tab = tab,
+                    onTab = { tab = it },
+                    onOpen = { current = it },
+                    onCatalog = { showCatalog = true },
+                    onWiki = { showWiki = true },
+                    onBot = { showBot = true },
+                    onOpenWorkout = { workoutId = it },
+                    onCreatedWorkout = { workoutId = it; pickForWorkout = true },
+                    calMonth = calMonth,
+                    onCalMonth = { calMonth = it },
+                    calDay = calDay,
+                    onCalDay = { calDay = it },
+                    onOpenSession = { summaryId = it },
+                    listFilter = listFilter,
+                    onListFilter = { listFilter = it },
+                    // Schnellstart (Dashboard, ▶ in der Workout-Liste): Training direkt starten
+                    onStartWorkout = { id -> startTraining(id) },
+                    trainingBar = if (showBar) bar else null
+                )
+            }
+        }
+        // Hintergrund in Leistenfarbe auch unter der Systemleiste (Gesten-Bereich)
+        if (globalBar) Box(
+            Modifier
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+        ) { bar() }
+    }
+
+    if (startBlocked) {
+        AlertDialog(
+            onDismissRequest = { startBlocked = false },
+            title = { Text(tr("Training läuft bereits", "Workout in progress")) },
+            text = {
+                val name = trainingWorkout?.name ?: ""
+                Text(tr(
+                    "„$name“ läuft noch. Beende es, bevor du ein neues Training startest.",
+                    "“$name” is still running. Finish it before starting a new workout."
+                ))
+            },
+            confirmButton = {
+                TextButton(onClick = { startBlocked = false; trainingOpen = true }) { Text(tr("Zum Training", "Go to workout")) }
+            },
+            dismissButton = { TextButton(onClick = { startBlocked = false }) { Text(tr("Abbrechen", "Cancel")) } }
         )
     }
 }
-
 
 
 /** Workout für das laufende Training: getauschte Übungen ersetzt, Ziel-Sätze von der Original-Übung übernommen. */

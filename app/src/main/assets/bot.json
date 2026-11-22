@@ -46,6 +46,11 @@
             "The rest timer starts automatically after each set (middle circle in workout mode). Tap it to change the length: off, 1, 1.5, 2 or 3 minutes; during the countdown a tap skips it. At the end the phone vibrates (iPhone: sound). On Android the rest also shows as a notification with a countdown and \"Rest over\" arrives even when the app is in the background."]
     },
     {
+      "keys": ["minimieren", "training verlassen", "training laeuft", "zurueck im training", "nebenbei", "minimize", "leave workout", "workout in progress"],
+      "a": ["Zurück (oder der Pfeil oben links) minimiert das Training nur – es läuft weiter, auch die Pause. Unten erscheint dann die Leiste „Training läuft · Dauer“; antippen bringt dich zurück. So kannst du nebenbei z. B. im Wiki nachlesen oder eine Übung ansehen. Beendet wird das Training nur über „Beenden“. Solange es läuft, kannst du kein anderes Workout starten.",
+            "Back (or the arrow at the top left) only minimizes the workout – it keeps running, including the rest timer. A bar \"Workout in progress · duration\" appears at the bottom; tap it to return. That way you can look something up in the wiki or check an exercise in between. The workout only ends via \"Finish\". While it runs you can't start another workout."]
+    },
+    {
       "keys": ["kreise", "kreis", "wiederholungsziel", "ziel wiederholungen", "rep goal", "circles"],
       "a": ["Im Training zeigen drei Kreise: links das Wiederholungs-Ziel für heute (aus deinem letzten Training abgeleitet), in der Mitte die Pause, rechts die erledigten Sätze im Vergleich zum Ziel.",
             "In workout mode three circles show: left today's rep goal (based on your last session), middle the rest timer, right the sets done versus the target."]

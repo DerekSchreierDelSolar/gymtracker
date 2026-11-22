@@ -158,6 +158,18 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
   box-shadow: 0 4px 12px rgba(0, 0, 0, .25); z-index: 5;
 }
 .screen:not(:has(.bottom-nav)) .fab { bottom: calc(24px + env(safe-area-inset-bottom)); }
+/* Leiste „Training läuft“ (minimiertes Training): FAB darüber */
+.screen:has(.training-bar) .fab { bottom: calc(152px + env(safe-area-inset-bottom)); }
+.screen:not(:has(.bottom-nav)):has(.training-bar) .fab { bottom: calc(88px + env(safe-area-inset-bottom)); }
+.training-bar {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 16px; text-align: left;
+  background: var(--primary-container); color: var(--on-primary-container);
+}
+.training-bar.safe { padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+.training-bar .tb-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.training-bar b { font-size: 14px; font-weight: 600; }
+.training-bar small { font-size: 12px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.training-bar .tb-rest { color: #E8703A; font-weight: 600; font-size: 14px; }
 
 /* ---------- Navigation unten ---------- */
 

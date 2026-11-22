@@ -48,6 +48,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 
@@ -69,11 +70,17 @@ fun TrainingScreen(
     originalOf: (String) -> String? = { null },
     /** Workout bearbeiten, ohne das Training zu beenden */
     onEdit: () -> Unit = {},
+    /** Training ausblenden (läuft weiter, Leiste „Training läuft“ auf den anderen Bildschirmen) */
+    onMinimize: () -> Unit = {},
+    /** Pause: Endzeitpunkt (null = keine) und Gesamtlänge – liegen in GymApp, damit sie beim Minimieren weiterlaufen */
+    restEnd: Long? = null,
+    restTotal: Long = 0L,
+    onRest: (end: Long?, total: Long) -> Unit = { _, _ -> },
     onFinish: () -> Unit
 ) {
     var confirmEnd by remember { mutableStateOf(false) }
-    // Zurück-Taste beendet das Training nicht versehentlich, sondern fragt nach
-    BackHandler { confirmEnd = true }
+    // Zurück-Taste beendet das Training nicht, sondern minimiert es (Beenden nur über „Beenden“)
+    BackHandler { onMinimize() }
 
     // Stoppuhr: LaunchedEffect startet eine Coroutine, die regelmäßig `now` aktualisiert.
     // Sie wird automatisch beendet, wenn der Bildschirm verlassen wird.
@@ -94,22 +101,8 @@ fun TrainingScreen(
         onDispose { view.keepScreenOn = false }
     }
 
-    // Pausen-Timer: Endzeitpunkt und Gesamtlänge (für den Fortschrittsbalken), null = keine Pause
-    var restEnd by rememberSaveable { mutableStateOf<Long?>(null) }
-    var restTotal by rememberSaveable { mutableLongStateOf(0L) }
+    // Pausen-Timer (Ablauf, Vibration, Benachrichtigung): RestTimerEffect in GymApp
     val context = LocalContext.current
-    // Startet bei jeder Änderung von restEnd neu (z. B. +15 s) und wartet bis zum Ende der Pause.
-    // Parallel zeigt RestTimer den Countdown als Benachrichtigung (sichtbar, wenn das Handy in der Tasche ist).
-    LaunchedEffect(restEnd) {
-        val end = restEnd ?: return@LaunchedEffect
-        RestTimer.show(context, end, workout.exercises.getOrElse(index) { "" })
-        delay((end - System.currentTimeMillis()).coerceAtLeast(0))
-        vibrate(context)
-        RestTimer.done(context) // im Hintergrund: „Pause vorbei“
-        restEnd = null
-    }
-    // Training verlassen → Countdown-Benachrichtigung entfernen
-    DisposableEffect(Unit) { onDispose { RestTimer.cancel(context) } }
     // Ab Android 13 einmalig um Erlaubnis für Benachrichtigungen bitten (für den Pausen-Timer)
     // Vorher kurz erklären, wofür – sonst erscheint der System-Dialog ohne Zusammenhang beim Trainingsstart.
     val askNotify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -142,26 +135,10 @@ fun TrainingScreen(
             dismissButton = { TextButton(onClick = { explainNotify = false }) { Text(tr("Nicht jetzt", "Not now")) } }
         )
     }
-    // Countdown-Ticks: bei 3, 2 und 1 Sekunde(n) Rest kurz vibrieren
-    val restSecondsLeft = restEnd?.let { ((it - now + 999) / 1000).toInt() }
-    LaunchedEffect(restSecondsLeft) {
-        if (restSecondsLeft != null && restSecondsLeft in 1..3) tick(context)
-    }
     fun startRest() {
         if (store.restSeconds <= 0) return
-        restTotal = store.restSeconds * 1000L
-        restEnd = System.currentTimeMillis() + restTotal
-    }
-    fun adjustRest(deltaMs: Long) {
-        val end = restEnd ?: return
-        val newEnd = end + deltaMs
-        if (newEnd <= System.currentTimeMillis()) {
-            RestTimer.cancel(context)
-            restEnd = null
-        } else {
-            restEnd = newEnd
-            restTotal = (restTotal + deltaMs).coerceAtLeast(newEnd - System.currentTimeMillis())
-        }
+        val total = store.restSeconds * 1000L
+        onRest(System.currentTimeMillis() + total, total)
     }
 
     val n = workout.exercises.size
@@ -190,6 +167,8 @@ fun TrainingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                // Pfeil = Training minimieren (läuft weiter), genau wie die Zurück-Taste
+                navigationIcon = { IconAction(Ico.BACK, onClick = onMinimize) },
                 title = {
                     Column {
                         Text("${index + 1}/$n · ${workout.name}")
@@ -276,7 +255,7 @@ fun TrainingScreen(
                     store, workout, start,
                     name = workout.exercises[page],
                     now = now, restEnd = restEnd, restTotal = restTotal,
-                    onSkipRest = { restEnd = null; RestTimer.cancel(context) },
+                    onSkipRest = { onRest(null, restTotal); RestTimer.cancel(context) },
                     onAdded = { startRest() },
                     onSwap = { to -> onSwap(workout.exercises[page], to) },
                     original = originalOf(workout.exercises[page])
@@ -728,6 +707,76 @@ fun AlternativesSheet(
                     WikiButton(alt)
                 }
             }
+        }
+    }
+}
+
+/**
+ * Ablauf der Pause – in GymApp, damit er auch weiterläuft, wenn das Training minimiert ist.
+ * LaunchedEffect startet bei jeder Änderung von `restEnd` neu (vorherige Coroutine wird abgebrochen):
+ * Benachrichtigung mit Countdown, bei 3-2-1 kurz vibrieren, am Ende Doppel-Vibration + „Pause vorbei“.
+ */
+@Composable
+fun RestTimerEffect(restEnd: Long?, exercise: String, onDone: () -> Unit) {
+    val context = LocalContext.current
+    val currentOnDone by rememberUpdatedState(onDone)
+    LaunchedEffect(restEnd) {
+        val end = restEnd ?: return@LaunchedEffect
+        RestTimer.show(context, end, exercise)
+        for (s in 3 downTo 1) {
+            val wait = end - s * 1000L - System.currentTimeMillis()
+            if (wait >= 0) { delay(wait); tick(context) }
+        }
+        delay((end - System.currentTimeMillis()).coerceAtLeast(0))
+        vibrate(context)
+        RestTimer.done(context) // im Hintergrund: „Pause vorbei“
+        currentOnDone()
+    }
+}
+
+/**
+ * Leiste „Training läuft · 12:34“, solange das Training minimiert ist (wie ein Mini-Player).
+ * Antippen = zurück ins Training. Zeigt auch den Pausen-Countdown.
+ */
+@Composable
+fun TrainingBar(workoutName: String, start: Long, restEnd: Long?, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(250)
+            now = System.currentTimeMillis()
+        }
+    }
+    Surface(
+        onClick = onOpen,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            AppIcon(Ico.PLAY, Modifier.size(22.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    tr("Training läuft", "Workout in progress") + " · " + fmtDuration(now - start),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(workoutName, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            val left = restEnd?.let { it - now }
+            if (left != null && left > 0) {
+                Text(
+                    tr("Pause ", "Rest ") + fmtDuration(left + 999),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFFE8703A)
+                )
+            }
+            AppIcon(Ico.CHEVRON, Modifier.size(20.dp))
         }
     }
 }

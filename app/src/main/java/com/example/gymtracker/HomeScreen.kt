@@ -65,7 +65,9 @@ fun HomeScreen(
     onOpenSession: (Long) -> Unit,
     listFilter: ExerciseFilter,
     onListFilter: (ExerciseFilter) -> Unit,
-    onStartWorkout: (Long) -> Unit
+    onStartWorkout: (Long) -> Unit,
+    /** Leiste „Training läuft“ (minimiertes Training) – sitzt über der Navigationsleiste */
+    trainingBar: (@Composable () -> Unit)? = null
 ) {
     var showNewWorkout by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
@@ -182,26 +184,29 @@ fun HomeScreen(
         },
         // Navigation unten mit Icons (Material-3-Standard für Hauptbereiche einer App)
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                listOf(
-                    Triple(Ico.HOME, tr("Start", "Home"), 0),
-                    Triple(Ico.DUMBBELL, tr("Übungen", "Exercises"), 1),
-                    Triple(Ico.LIST, "Workouts", 2),
-                    Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 3),
-                    Triple(Ico.BODY, tr("Körper", "Body"), 4)
-                ).forEach { (icon, label, i) ->
-                    NavigationBarItem(
-                        selected = tab == i,
-                        onClick = { onTab(i) },
-                        icon = { AppIcon(icon) },
-                        label = { Text(label, maxLines = 1, softWrap = false) },
-                        // Akzentfarbe statt der Standard-Zweitfarbe
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            selectedTextColor = MaterialTheme.colorScheme.primary
+            Column {
+                trainingBar?.invoke()
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+                    listOf(
+                        Triple(Ico.HOME, tr("Start", "Home"), 0),
+                        Triple(Ico.DUMBBELL, tr("Übungen", "Exercises"), 1),
+                        Triple(Ico.LIST, "Workouts", 2),
+                        Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 3),
+                        Triple(Ico.BODY, tr("Körper", "Body"), 4)
+                    ).forEach { (icon, label, i) ->
+                        NavigationBarItem(
+                            selected = tab == i,
+                            onClick = { onTab(i) },
+                            icon = { AppIcon(icon) },
+                            label = { Text(label, maxLines = 1, softWrap = false) },
+                            // Akzentfarbe statt der Standard-Zweitfarbe
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.primary
+                            )
                         )
-                    )
+                    }
                 }
             }
         },

@@ -53,7 +53,7 @@ async function keepScreenOn(on) {
   } catch { /* nicht unterstützt */ }
 }
 // Nach dem Zurückkehren in die App die Sperre erneut anfordern
-document.addEventListener('visibilitychange', () => { if (nav.trainingStart != null) keepScreenOn(true); });
+document.addEventListener('visibilitychange', () => { if (nav.trainingStart != null && nav.trainingOpen) keepScreenOn(true); });
 
 // ---------- Pausen-Timer ----------
 
@@ -109,6 +109,22 @@ function repsGoal(name, before) {
 
 const REST_OPTIONS = [0, 60, 90, 120, 180];
 let lastTickSecond = null;
+/**
+ * Ablauf der Pause (3-2-1-Ticks, Ton am Ende) – app.js ruft das im Takt auf, auch wenn das Training
+ * minimiert ist (wie RestTimerEffect in GymApp).
+ */
+export function restWatch() {
+  if (nav.restEnd == null) return;
+  const remaining = nav.restEnd - Date.now();
+  if (remaining <= 0) { // Pause vorbei
+    alarm();
+    lastTickSecond = null;
+    update({ restEnd: null });
+    return;
+  }
+  const secLeft = Math.ceil(remaining / 1000);
+  if (secLeft <= 3 && secLeft !== lastTickSecond) { lastTickSecond = secLeft; tick(); }
+}
 /** Mittlerer Kreis: eingestellte Pause (antippen = ändern) bzw. Countdown nach einem Satz (antippen = überspringen). */
 function restCircle() {
   const el = circleStat(true, () => {
@@ -117,16 +133,8 @@ function restCircle() {
   });
   const refresh = () => {
     const now = Date.now();
-    if (nav.restEnd != null && nav.restEnd <= now) { // Pause vorbei
-      alarm();
-      lastTickSecond = null;
-      update({ restEnd: null });
-      return;
-    }
-    if (nav.restEnd != null) {
+    if (nav.restEnd != null && nav.restEnd > now) { // Ton/Vibration am Ende: restWatch()
       const remaining = nav.restEnd - now;
-      const secLeft = Math.ceil(remaining / 1000);
-      if (secLeft <= 3 && secLeft !== lastTickSecond) { lastTickSecond = secLeft; tick(); }
       el.classList.toggle('final', remaining <= 3000);
       el.set(remaining / nav.restTotal, fmtDuration(remaining + 999), tr('Pause · tippen = weiter', 'Rest · tap to skip'), '#E8703A');
     } else {
@@ -182,6 +190,8 @@ export function trainingScreen(w, onFinish) {
 
   return screen({
     title: `${index + 1}/${n} · ${w.name}`, subtitle: clock, key: 'training-' + index,
+    // Pfeil = Training minimieren (läuft weiter) – wie die Zurück-Geste
+    back: true,
     actions: [
       // Workout während des Trainings anpassen – Training läuft weiter
       iconBtn('edit', () => go({ editInTraining: name ?? '', pickGroup: null, pickDetail: null }), { label: tr('Workout bearbeiten', 'Edit workout') }),
@@ -247,6 +257,24 @@ function exercisePage(w, start, name) {
         [...previousDays.entries()].map(([day, list]) => historyDayCard(day, list, cardio, timed))]
       : muted(tr('Erstes Mal – viel Erfolg!', 'First time – good luck!')),
   ];
+}
+
+/**
+ * Leiste „Training läuft · 12:34“, solange das Training minimiert ist (wie TrainingBar in TrainingScreen.kt).
+ * Antippen = zurück ins Training; zeigt auch den Pausen-Countdown.
+ */
+export function trainingBar(w) {
+  const clock = h('b'), rest = h('span', { class: 'tb-rest' });
+  const refresh = () => {
+    const now = Date.now();
+    clock.textContent = tr('Training läuft', 'Workout in progress') + ' · ' + fmtDuration(now - nav.trainingStart);
+    const left = nav.restEnd != null ? nav.restEnd - now : 0;
+    rest.textContent = left > 0 ? tr('Pause ', 'Rest ') + fmtDuration(left + 999) : '';
+  };
+  refresh();
+  onTick(refresh);
+  return h('button', { class: 'training-bar', onclick: () => go({ trainingOpen: true }) },
+    icon('play'), h('span', { class: 'tb-text' }, clock, h('small', null, w.name)), rest, icon('chevron'));
 }
 
 // ---------- Übersicht nach dem Training ----------

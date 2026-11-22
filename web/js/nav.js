@@ -25,6 +25,8 @@ export const nav = {
   pickGroup: null,       // beim Bearbeiten geöffnete Kategorie (null = Übersicht)
   catalogGroup: null,    // im Katalog geöffnete Kategorie (null = Übersicht)
   trainingStart: null,   // laufendes Training (Startzeit)
+  trainingWorkoutId: null, // Workout des laufenden Trainings (unabhängig von workoutId = angezeigtes Workout)
+  trainingOpen: true,    // false = minimiert (Leiste „Training läuft“ statt Trainingsbildschirm)
   swaps: {},             // nur für das laufende Training getauscht: Original → Alternative
   trainingIndex: 0,
   restEnd: null,         // Pausen-Timer: Endzeitpunkt (ms)
@@ -45,14 +47,18 @@ export const nav = {
 const TRAINING_KEY = 'gym_training';
 try {
   const t = JSON.parse(localStorage.getItem(TRAINING_KEY) ?? 'null');
-  if (t?.trainingStart) Object.assign(nav, t);
+  if (t?.trainingStart) {
+    t.trainingWorkoutId ??= t.workoutId; // ältere Version: Training hing am angezeigten Workout
+    delete t.workoutId;
+    Object.assign(nav, t);
+  }
 } catch { /* ignorieren */ }
 
 function persistTraining() {
   if (nav.trainingStart == null) localStorage.removeItem(TRAINING_KEY);
   else {
-    const { workoutId, trainingStart, trainingIndex, restEnd, restTotal, swaps } = nav;
-    localStorage.setItem(TRAINING_KEY, JSON.stringify({ workoutId, trainingStart, trainingIndex, restEnd, restTotal, swaps }));
+    const { trainingWorkoutId, trainingOpen, trainingStart, trainingIndex, restEnd, restTotal, swaps } = nav;
+    localStorage.setItem(TRAINING_KEY, JSON.stringify({ trainingWorkoutId, trainingOpen, trainingStart, trainingIndex, restEnd, restTotal, swaps }));
   }
 }
 

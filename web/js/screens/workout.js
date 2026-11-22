@@ -75,7 +75,8 @@ function daysRow(w) {
 
 // ---------- Ein Workout ----------
 
-export function workoutScreen(w, onStart) {
+/** running = ein (minimiertes) Training mit diesem Workout läuft → „Training fortsetzen“ */
+export function workoutScreen(w, onStart, running = false) {
   const history = store.sessionsFor(w.id);
   const deleteDialog = () => openDialog(() => dialog(tr('Workout löschen?', 'Delete workout?'),
     h('p', null, tr(`„${w.name}“ wird gelöscht. Die Übungen und ihre Sätze bleiben erhalten.`,
@@ -125,7 +126,7 @@ export function workoutScreen(w, onStart) {
       iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') }),
     ],
     content,
-    fab: w.exercises.length ? fab(tr('Training starten', 'Start workout'), 'play', onStart) : null,
+    fab: w.exercises.length ? fab(running ? tr('Training fortsetzen', 'Resume workout') : tr('Training starten', 'Start workout'), 'play', onStart) : null,
   });
 }
 

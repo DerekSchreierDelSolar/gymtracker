@@ -2,14 +2,14 @@
 
 import { store } from './store.js';
 import { tr } from './core.js';
-import { tickers } from './ui.js';
-import { nav, update, setRenderer, setBackHandler, go, goBack, closeDialog } from './nav.js';
+import { tickers, dialog, h } from './ui.js';
+import { nav, update, setRenderer, setBackHandler, go, goBack, openDialog, closeDialog } from './nav.js';
 import { homeScreen } from './screens/home.js';
 import { exerciseDetailScreen } from './screens/exercise.js';
 import { workoutScreen, workoutPickerScreen, workoutExercisePage, catalogScreen } from './screens/workout.js';
 import { wikiScreen } from './wiki.js';
 import { botScreen } from './bot.js';
-import { trainingScreen, summaryScreen, confirmEndTraining, keepScreenOn, unlockAudio } from './screens/training.js';
+import { trainingScreen, summaryScreen, trainingBar, restWatch, keepScreenOn, unlockAudio } from './screens/training.js';
 
 const root = document.getElementById('app');
 
@@ -17,17 +17,29 @@ const root = document.getElementById('app');
 
 function startTraining(workoutId) {
   unlockAudio(); // im Tipp-Ereignis: erlaubt später den Pausen-Ton
-  go({ workoutId, trainingStart: Date.now(), trainingIndex: 0, restEnd: null, pick: false, exercise: null, swaps: {} });
+  if (nav.trainingStart != null) {
+    // Dasselbe Workout läuft schon (minimiert) → fortsetzen; ein anderes → erst beenden
+    if (nav.trainingWorkoutId === workoutId) go({ trainingOpen: true });
+    else openDialog(() => dialog(tr('Training läuft bereits', 'Workout in progress'),
+      h('p', null, tr(`„${store.workout(nav.trainingWorkoutId)?.name ?? ''}“ läuft noch. Beende es, bevor du ein neues Training startest.`,
+        `“${store.workout(nav.trainingWorkoutId)?.name ?? ''}” is still running. Finish it before starting a new workout.`)),
+      [
+        { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
+        { label: tr('Zum Training', 'Go to workout'), onClick: () => { closeDialog(); go({ trainingOpen: true }); } },
+      ], closeDialog));
+    return;
+  }
+  go({ trainingWorkoutId: workoutId, trainingOpen: true, trainingStart: Date.now(), trainingIndex: 0, restEnd: null, swaps: {} });
 }
 
 function finishTraining() {
-  const w = store.workout(nav.workoutId);
+  const w = store.workout(nav.trainingWorkoutId);
   // Getauschte Übungen speichern; Originale, die vor dem Tausch schon Sätze hatten, gehören trotzdem dazu
   const s = w ? sessionWorkout(w, nav.swaps) : null;
   if (s) s.exercises.push(...Object.keys(nav.swaps ?? {}).filter(o => !s.exercises.includes(o) && store.setsBetween(o, nav.trainingStart, Infinity).length));
   const t = s ? store.finishTraining(s, nav.trainingStart) : null;
   keepScreenOn(false);
-  update({ trainingStart: null, trainingIndex: 0, restEnd: null, swaps: {}, summaryId: t?.id ?? null });
+  update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, trainingIndex: 0, restEnd: null, swaps: {}, summaryId: t?.id ?? null });
 }
 
 // ---------- Welcher Bildschirm? ----------
@@ -38,17 +50,21 @@ function currentScreen() {
   const summary = nav.summaryId == null ? null
     : nav.summaryId < 0 ? store.freeSession(-nav.summaryId) : store.session(nav.summaryId);
 
+  // Laufendes Training: eigenes Workout (trainingWorkoutId), unabhängig vom angezeigten – kann minimiert sein
+  const tw = nav.trainingWorkoutId != null ? store.workout(nav.trainingWorkoutId) : null;
+  if (nav.trainingStart != null && !tw) update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, restEnd: null }); // Workout wurde gelöscht
+  const trainingVisible = nav.trainingStart != null && tw && nav.trainingOpen;
+
   if (summary) return summaryScreen(summary, goBack);
   // Während des Trainings das Workout bearbeiten (wie editInTraining in GymApp): Training läuft weiter
-  if (workout && nav.trainingStart != null && nav.editInTraining != null) {
-    return nav.pickDetail != null ? workoutExercisePage(workout, nav.pickDetail) : workoutPickerScreen(workout);
+  if (trainingVisible && nav.editInTraining != null) {
+    return nav.pickDetail != null ? workoutExercisePage(tw, nav.pickDetail) : workoutPickerScreen(tw);
   }
-  if (workout && nav.trainingStart != null) return trainingScreen(sessionWorkout(workout, nav.swaps), finishTraining, workout);
-  if (nav.trainingStart != null) update({ trainingStart: null }); // Workout wurde gelöscht
+  if (trainingVisible) return trainingScreen(sessionWorkout(tw, nav.swaps), finishTraining);
   if (nav.exercise != null) return exerciseDetailScreen(nav.exercise);
   if (workout && nav.pick && nav.pickDetail != null) return workoutExercisePage(workout, nav.pickDetail);
   if (workout && nav.pick) return workoutPickerScreen(workout);
-  if (workout) return workoutScreen(workout, () => startTraining(workout.id));
+  if (workout) return workoutScreen(workout, () => startTraining(workout.id), nav.trainingStart != null && nav.trainingWorkoutId === workout.id);
   if (nav.catalog) return catalogScreen();
   if (nav.bot) return botScreen(store);
   if (nav.wiki) return wikiScreen();
@@ -60,16 +76,15 @@ setBackHandler(() => {
   if (nav.dialog) { closeDialog(); return false; }
   if (nav.menuOpen) { update({ menuOpen: false }); return false; }
   if (nav.summaryId != null) { update({ summaryId: null }); return true; }
-  if (nav.trainingStart != null && nav.editInTraining != null) {
+  const trainingVisible = nav.trainingStart != null && nav.trainingOpen;
+  if (trainingVisible && nav.editInTraining != null) {
     if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }
     if (nav.pickGroup != null) { update({ pickGroup: null }); return true; }
     backToTraining();
     return true;
   }
-  if (nav.trainingStart != null) {
-    const w = store.workout(nav.workoutId);
-    if (w) { confirmEndTraining(w, finishTraining); return false; }
-  }
+  // Zurück im Training = minimieren (läuft weiter, Leiste „Training läuft“); beenden nur über „Beenden“
+  if (trainingVisible) { keepScreenOn(false); update({ trainingOpen: false }); return true; }
   if (nav.exercise != null) { update({ exercise: null }); return true; }
   if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }
   if (nav.pickGroup != null) { update({ pickGroup: null }); return true; }
@@ -104,6 +119,7 @@ function render() {
       applyTheme();
       document.documentElement.lang = tr('de', 'en');
       const view = currentScreen();
+      addTrainingBar(view);
       root.replaceChildren(view, nav.dialog ? nav.dialog() : '');
 
       const main = root.querySelector('main.content');
@@ -137,7 +153,8 @@ darkQuery.addEventListener('change', render);
 
 // ---------- Takt: Uhren und Timer ~4× pro Sekunde ----------
 
-setInterval(() => { for (const fn of [...tickers]) fn(); }, 250);
+// restWatch: Pause läuft auch weiter, wenn das Training minimiert ist
+setInterval(() => { restWatch(); for (const fn of [...tickers]) fn(); }, 250);
 // Beim Zurückkehren in die App (iOS pausiert Timer im Hintergrund) sofort aktualisieren
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
 
@@ -161,9 +178,20 @@ function sessionWorkout(w, swaps = {}) {
   };
 }
 
+/** Leiste „Training läuft“ bei minimiertem Training: Startseite über der Navigation, sonst ganz unten */
+function addTrainingBar(view) {
+  if (nav.trainingStart == null || nav.trainingOpen) return;
+  const tw = store.workout(nav.trainingWorkoutId);
+  if (!tw || !view.classList?.contains('screen')) return;
+  const bar = trainingBar(tw);
+  const bottomNav = view.querySelector(':scope > .bottom-nav');
+  if (bottomNav) bottomNav.before(bar);
+  else { bar.classList.add('safe'); view.append(bar); }
+}
+
 /** Bearbeiten beenden: wieder ins Training, auf die vorher angezeigte Übung (Index kann sich verschoben haben) */
 function backToTraining() {
-  const w = store.workout(nav.workoutId);
+  const w = store.workout(nav.trainingWorkoutId);
   const i = w ? sessionWorkout(w, nav.swaps).exercises.indexOf(nav.editInTraining) : -1;
   update({ editInTraining: null, pickGroup: null, pickDetail: null, ...(i >= 0 ? { trainingIndex: i } : {}) });
 }

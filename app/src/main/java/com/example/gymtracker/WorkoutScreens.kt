@@ -151,7 +151,9 @@ fun WorkoutScreen(
     onEdit: () -> Unit,
     onStart: () -> Unit,
     onOpenSession: (Long) -> Unit,
-    onDuplicate: () -> Unit
+    onDuplicate: () -> Unit,
+    /** Läuft gerade (minimiert) ein Training mit diesem Workout? → „Training fortsetzen“ */
+    running: Boolean = false
 ) {
     var confirmDelete by remember { mutableStateOf(false) }
     val history = store.sessionsFor(workout.id)
@@ -258,7 +260,7 @@ fun WorkoutScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     onClick = onStart,
                     icon = { AppIcon(Ico.PLAY) },
-                    text = { Text(tr("Training starten", "Start workout")) },
+                    text = { Text(if (running) tr("Training fortsetzen", "Resume workout") else tr("Training starten", "Start workout")) },
                     // beim Scrollen nur noch das Symbol → verdeckt keinen Text
                     expanded = listState.firstVisibleItemIndex == 0
                 )
