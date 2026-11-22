@@ -4,8 +4,7 @@
 #   .\tools\import-exercise-images.ps1 -Status                            # Grunduebungen ohne Bild
 #
 # Dateiname = Bild-Schluessel, z. B. kniebeugen.png (Grunduebung, gilt fuer alle Varianten) oder
-# kniebeugen-kurzhantel.png (nur diese Variante). Erlaubt: .png .jpg .jpeg (kein WebP - System.Drawing
-# kann es nicht lesen, vorher als PNG speichern).
+# kniebeugen-kurzhantel.png (nur diese Variante). Erlaubt: .png .jpg .jpeg .webp
 # Jedes Bild geht durch add-exercise-image.ps1 (512 x 512 JPEG). Danach: node web/tools/gen-data.mjs
 
 param(
@@ -33,7 +32,7 @@ foreach ($m in $entries) {
 $dir = Join-Path $root 'app\src\main\assets\exercises'
 
 if ($Folder) {
-    $files = Get-ChildItem $Folder -File | Where-Object { $_.Extension -match '^\.(png|jpe?g)$' }
+    $files = Get-ChildItem $Folder -File | Where-Object { $_.Extension -match '^\.(png|jpe?g|webp)$' }
     $ok = 0
     foreach ($f in $files) {
         $key = Get-ImageKey $f.BaseName

@@ -23,7 +23,22 @@ $dir = Join-Path $PSScriptRoot '..\app\src\main\assets\exercises'
 New-Item -ItemType Directory -Force $dir | Out-Null
 $target = Join-Path $dir "$key.jpg"
 
-$img = [System.Drawing.Image]::FromFile((Resolve-Path $Source))
+$srcPath = (Resolve-Path -LiteralPath $Source).Path
+if ([IO.Path]::GetExtension($srcPath) -eq '.webp') {
+    # System.Drawing kann kein WebP: ueber WPF (Windows-Codec) dekodieren und als PNG im Speicher weitergeben
+    Add-Type -AssemblyName PresentationCore
+    $fs = [IO.File]::OpenRead($srcPath)
+    try {
+        $dec = [System.Windows.Media.Imaging.BitmapDecoder]::Create($fs, 'None', 'OnLoad')
+        $enc = New-Object System.Windows.Media.Imaging.PngBitmapEncoder
+        $enc.Frames.Add($dec.Frames[0])
+        $ms = New-Object IO.MemoryStream
+        $enc.Save($ms)
+    } finally { $fs.Close() }
+    $img = [System.Drawing.Image]::FromStream($ms)
+} else {
+    $img = [System.Drawing.Image]::FromFile($srcPath)
+}
 try {
     $side = [Math]::Min($img.Width, $img.Height)
     $srcRect = New-Object System.Drawing.Rectangle ([int](($img.Width - $side) / 2)), ([int](($img.Height - $side) / 2)), $side, $side
