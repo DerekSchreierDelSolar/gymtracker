@@ -41,9 +41,11 @@ function close(a, b) {
 }
 
 /** Kommt die Wortfolge `phrase` in `words` vor? */
-function has(words, phrase) {
+/** `strict`: Wörter unter 6 Buchstaben nur exakt (sonst „einen“ ≈ „eisen“) – wie Bot.kt */
+function has(words, phrase, strict = false) {
   if (!phrase.length || phrase.length > words.length) return false;
-  for (let i = 0; i <= words.length - phrase.length; i++) if (phrase.every((p, k) => close(words[i + k], p))) return true;
+  const eq = (w, p) => (strict && Math.min(w.length, p.length) < 6 ? w === p : close(w, p));
+  for (let i = 0; i <= words.length - phrase.length; i++) if (phrase.every((p, k) => eq(words[i + k], p))) return true;
   return false;
 }
 const hasAny = (words, list) => list.some(p => has(words, p));
@@ -66,10 +68,10 @@ const EXERCISES = Object.keys(WIKI).map(base => {
 });
 
 /** Beste Übereinstimmung: längste Wortfolge („Rumänisches Kreuzheben“ vor „Kreuzheben“) */
-function best(entries, words) {
+function best(entries, words, strict = false) {
   let out = null;
   for (const [key, phrases] of entries) for (const p of phrases) {
-    if (!has(words, p)) continue;
+    if (!has(words, p, strict)) continue;
     const score = p.length * 1000 + p.join('').length;
     if (!out || score > out.score) out = { key, phrase: p, score };
   }
@@ -193,7 +195,7 @@ export function answer(question) {
   // Frage zum Muskel selbst („Was macht der Latissimus?“, „Wie dehne ich die Waden?“) → Muskel-Wiki (wie Bot.kt)
   const anatomy = new Set(ANATOMY.filter(([, list]) => hasAny(words, list)).map(([k]) => k));
   // Supplement genannt („Wie viel Kreatin?“) – außer eine Übung passt mit einer längeren Wortfolge (wie Bot.kt)
-  const supp = best(SUPP_PHRASES, words);
+  const supp = best(SUPP_PHRASES, words, true);
   if (supp && (!ex || supp.phrase.length >= ex.phrase.length)) return supplementAnswer(supp.key);
   if (target && anatomy.size && !hasAny(words, W.exerciseWords) && MUSCLE_INFO[muscleOfRegion(target.key)] &&
     (!ex || ex.phrase.every(w => target.phrase.some(p => close(p, w))))) return muscleAnswer(muscleOfRegion(target.key), anatomy);

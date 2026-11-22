@@ -1,7 +1,7 @@
 {
   "faq": [
     {
-      "keys": ["satz eintragen", "eintragen", "satz hinzufuegen", "saetze", "log set", "add set", "log"],
+      "keys": ["satz eintragen", "eintragen", "satz hinzufuegen", "saetze", "log set", "add set", "log", "einen satz", "satz ein", "saetze ein"],
       "a": ["Übung öffnen (oder im Training), Gewicht und Wiederholungen eingeben und auf ＋ tippen. Gewicht und Wiederholungen vom letzten Mal sind schon vorausgefüllt.",
             "Open the exercise (or use workout mode), enter weight and reps and tap ＋. Last time's values are pre-filled."]
     },

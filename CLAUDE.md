@@ -195,9 +195,6 @@ Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen
   - *Groß:* Ernährung aus anderen Apps (Eiweiß, kcal-Bilanz statt eigenem Ernährungstagebuch); geplante Workouts an die
     Uhr (`PlannedExerciseSessionRecord`, Android 15+); Abgleich im Hintergrund (`READ_HEALTH_DATA_IN_BACKGROUND` + JobScheduler,
     ohne WorkManager-Bibliothek); iPhone: Gewicht/Training per Kurzbefehl (`shortcuts://run-shortcut`) nach Apple Health
-- **Bekannter Bot-Fehler:** „Wie trage ich einen Satz ein?“ landet beim Supplement Eisen („einen“ ≈ „eisen“ durch die
-  Tippfehler-Toleranz in `close()`; Supplements haben Vorrang vor FAQ). Lösungsidee: Tippfehler erst ab 6 Buchstaben oder
-  Supplement-Treffer nur bei exakten Wörtern unter 6 Buchstaben (Bot.kt + bot.js gleich ändern).
 - **Roadmap (22.11.2026):** Feature-Ideen + Motivation/Belohnung (Ziele im Profil, Feier im Summary, Meilensteine, Morgen-Zeile,
   Level, Abzeichen, Serie-Joker, Scheibenrechner, Supersätze, Körpermaße, Jahresrückblick, Widget …) in sinnvoller Reihenfolge
   in `docs/roadmap.md` (Phase 0–5). Neue Ideen dort einsortieren, Erledigtes abhaken. Vergleich mit anderen/Bevölkerungsstatistiken bewusst verworfen.

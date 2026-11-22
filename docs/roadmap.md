@@ -7,7 +7,7 @@ neue Funktion → Antwort in `assets/bot.json`, neue gespeicherte Felder → `re
 Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstatistiken (bewusst verworfen).
 
 ## Phase 0 – Aufräumen
-0. **Bot-Fehler „einen“ ≈ „Eisen“** beheben (siehe CLAUDE.md). Klein, vorab erledigen.
+0. ✅ **Bot-Fehler „einen“ ≈ „Eisen“** (erledigt 22.11.2026: Supplement-Suche `has(…, strict = true)` = Wörter unter 6 Buchstaben nur exakt; FAQ-Stichwörter „einen satz“/„satz ein“).
 
 ## Phase 1 – Ziele + Erfolgserlebnisse (Grundlage für alles Weitere)
 1. **Langfristige Ziele im Profil.** Typen: Kraft (Übung + kg, über 1RM/Rekord), Ausdauer (Cardio-Übung + Minuten am Stück),

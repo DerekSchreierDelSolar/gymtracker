@@ -106,9 +106,12 @@ object Bot {
     }
 
     /** Kommt die Wortfolge `phrase` in `words` vor? */
-    private fun has(words: List<String>, phrase: List<String>): Boolean {
+    /** `strict`: Wörter unter 6 Buchstaben nur exakt (sonst „einen“ ≈ „eisen“) */
+    private fun has(words: List<String>, phrase: List<String>, strict: Boolean = false): Boolean {
         if (phrase.isEmpty() || phrase.size > words.size) return false
-        return (0..words.size - phrase.size).any { i -> phrase.indices.all { k -> close(words[i + k], phrase[k]) } }
+        return (0..words.size - phrase.size).any { i ->
+            phrase.indices.all { k -> val w = words[i + k]; val p = phrase[k]; if (strict && minOf(w.length, p.length) < 6) w == p else close(w, p) }
+        }
     }
 
     private fun hasAny(words: List<String>, list: List<List<String>>) = list.any { has(words, it) }
@@ -131,7 +134,7 @@ object Bot {
     }
 
     private fun findSupplement(words: List<String>): Pair<String, List<String>>? =
-        supplementPhrases.flatMap { (id, ps) -> ps.filter { has(words, it) }.map { id to it } }
+        supplementPhrases.flatMap { (id, ps) -> ps.filter { has(words, it, strict = true) }.map { id to it } }
             .maxWithOrNull(compareBy({ it.second.size }, { it.second.sumOf { w -> w.length } }))
 
     private fun findExercise(words: List<String>): Pair<String, List<String>>? =
