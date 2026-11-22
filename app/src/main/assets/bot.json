@@ -142,8 +142,8 @@
     },
     {
       "keys": ["koerpergewicht", "gewicht eintragen", "waage", "body weight", "bodyweight"],
-      "a": ["Im Tab „Körper“ trägst du dein Körpergewicht ein; der Verlauf wird als Diagramm gezeigt. Es wird auch für die Kalorien gebraucht.",
-            "In the \"Body\" tab you log your body weight; the trend is shown as a chart. It's also needed for calories."]
+      "a": ["Im Tab „Körper“ trägst du dein Körpergewicht ein; der Verlauf wird als Diagramm gezeigt. Einen Punkt im Diagramm antippen, um den Eintrag anzupassen oder zu löschen. Das Gewicht wird auch für die Kalorien gebraucht; auf der Startseite zeigt ein Diagramm die geschätzten kcal pro Woche.",
+            "In the \"Body\" tab you log your body weight; the trend is shown as a chart. Tap a point in the chart to edit or delete that entry. Your weight is also needed for calories; the home screen shows a chart of estimated calories per week."]
     },
     {
       "keys": ["kalorien", "kcal", "verbrauch", "grundumsatz", "profil", "groesse", "geburtsjahr", "calories", "profile", "height"],

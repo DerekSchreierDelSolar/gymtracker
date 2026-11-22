@@ -6,7 +6,7 @@ import {
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
 } from '../core.js';
-import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, nextWorkoutAfter, planPick } from '../stats.js';
+import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, statBox, chartCard, horizontalBars, historyBars, lineChart,
@@ -257,6 +257,11 @@ function dashboardTab(onStartWorkout) {
       tr('Letzte 8 Wochen · aktuelle Woche hervorgehoben', 'Last 8 weeks · current week highlighted'),
       historyBars(volumes.map(v => v[1]), volumes.map(v => fmtShortDate(v[0])), v => `${fmtW(v)} kg`)) : null,
 
+    // geschätzter Kalorienverbrauch pro Woche (nur mit Körpergewicht) – wie DashboardTab.kt
+    (k => k && k.some(v => v[1] > 0) ? chartCard(tr('🔥 Kalorien pro Woche', '🔥 Calories per week'),
+      tr('Letzte 8 Wochen · geschätzt', 'Last 8 weeks · estimated'),
+      historyBars(k.map(v => v[1]), k.map(v => fmtShortDate(v[0])), v => `~${Math.round(v)} kcal`)) : null)(weeklyKcal(store, 8)),
+
     groupItems.length ? chartCard(tr('Sätze pro Muskelgruppe', 'Sets per muscle group'), periodLabel(nav.statPeriod),
       horizontalBars(groupItems, v => String(v))) : null,
 
@@ -442,21 +447,37 @@ function bodyTab() {
           ? tr('Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.', 'Log your weight and the app will estimate calories burned.')
           : tr(`~${weekKcal} kcal verbrannt · ${plural(weekSessions.length, 'Training', 'Trainings')}`,
             `~${weekKcal} kcal burned · ${plural(weekSessions.length, 'workout', 'workouts')}`)))),
-    weights.length >= 2 ? chartCard(tr('Gewichtsverlauf', 'Weight trend'),
+    // Gewichtsverlauf; Punkt antippen = Eintrag anpassen oder löschen (statt einer Liste) – wie BodyTab.kt
+    weights.length ? chartCard(tr('Gewichtsverlauf', 'Weight trend'),
       `${fmtW(Math.min(...shown.map(w => w.kg)))} – ${fmtW(Math.max(...shown.map(w => w.kg)))} kg`,
-      lineChart(shown.map(w => w.kg), 'kg'),
-      h('div', { class: 'axis' }, h('small', null, fmtShortDate(shown[0].time)), h('small', null, fmtShortDate(shown[shown.length - 1].time)))) : null,
-    weights.length ? [h('h2', { class: 'section' }, tr('Einträge', 'Entries')),
-      weights.slice().reverse().slice(0, 20).map(w => h('div', { class: 'set-row' },
-        h('span', { class: 'grow' }, fmtDate(w.time)), h('b', null, `${fmtW(w.kg)} kg`),
-        iconBtn('delete', () => {
-          store.deleteWeight(w);
-          undoToast(tr('Eintrag gelöscht', 'Entry deleted'), () => store.restoreWeight(w));
-        }, { label: tr('Löschen', 'Delete') })))] : null,
+      lineChart(shown.map(w => w.kg), 'kg', i => weightEditDialog(shown[i])),
+      h('div', { class: 'axis' }, h('small', null, fmtShortDate(shown[0].time)), shown.length > 1 ? h('small', null, fmtShortDate(shown[shown.length - 1].time)) : null),
+      muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small')) : null,
     muted(tr('Der Verbrauch ist eine Schätzung nach der MET-Methode (Körpergewicht × Dauer × Intensität der Übung). Cardio wird über die eingetragenen Minuten gerechnet, Krafttraining über die Trainingsdauer.',
       'Calories are estimated with the MET method (body weight × duration × exercise intensity). Cardio uses the logged minutes, strength training the workout duration.'), 'small'));
 }
 
+
+/** Gewichtseintrag aus dem Diagramm: anpassen oder löschen (mit „Rückgängig“) – wie WeightEditDialog in BodyTab.kt */
+function weightEditDialog(entry) {
+  const st = { text: fmtW(entry.kg) };
+  const valid = () => { const kg = parseNum(st.text); return kg != null && kg >= 20 && kg <= 400 ? kg : null; };
+  openDialog(() => dialog(fmtDate(entry.time), [
+    textField({
+      id: 'weight-edit', label: tr('Gewicht in kg', 'Weight in kg'), value: st.text, inputmode: 'decimal',
+      error: valid() == null ? ' ' : null,
+      oninput: v => { st.text = v; rerender(); },
+      onenter: () => { const kg = valid(); if (kg != null) { store.updateWeight(entry, kg); closeDialog(); } },
+    }),
+  ], [
+    { label: tr('Löschen', 'Delete'), danger: true, onClick: () => {
+      closeDialog();
+      store.deleteWeight(entry);
+      undoToast(tr('Eintrag gelöscht', 'Entry deleted'), () => store.restoreWeight(entry));
+    } },
+    { label: tr('Speichern', 'Save'), disabled: valid() == null, onClick: () => { const kg = valid(); if (kg != null) { store.updateWeight(entry, kg); closeDialog(); } } },
+  ], closeDialog));
+}
 
 /** „2026-11-21“ für <input type="date"> (Ortszeit) */
 const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };

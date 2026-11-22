@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -187,10 +189,11 @@ fun ProgressChart(values: List<Double>, title: String, unit: String, colors: Car
 /**
  * Liniendiagramm: 2 dp Linie, kleine Punkte mit Hintergrund-Ring, dezente Hilfslinien.
  * Links die Werte der drei Hilfslinien (Achse), oben rechts der letzte (aktuelle) Wert.
+ * onTapPoint: Antippen wählt den nächstgelegenen Punkt (Index); dann reicht auch ein einzelner Punkt.
  */
 @Composable
-fun LineChart(values: List<Double>, unit: String) {
-    if (values.size < 2) return
+fun LineChart(values: List<Double>, unit: String, onTapPoint: ((Int) -> Unit)? = null) {
+    if (values.size < (if (onTapPoint != null) 1 else 2)) return
     val color = MaterialTheme.colorScheme.primary
     val grid = MaterialTheme.colorScheme.outlineVariant
     val surface = MaterialTheme.colorScheme.surfaceContainerHighest
@@ -218,7 +221,21 @@ fun LineChart(values: List<Double>, unit: String) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Canvas(Modifier.weight(1f).fillMaxHeight()) {
+            val tap = rememberUpdatedState(onTapPoint)
+            val n = values.size
+            Canvas(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .then(if (onTapPoint == null) Modifier else Modifier.pointerInput(n) {
+                        // nächster Punkt in x-Richtung (gleiche Abstände wie beim Zeichnen)
+                        detectTapGestures { pos ->
+                            val pad = 6.dp.toPx()
+                            val i = if (n == 1) 0 else Math.round((pos.x - pad) / ((size.width - 2 * pad) / (n - 1))).coerceIn(0, n - 1)
+                            tap.value?.invoke(i)
+                        }
+                    })
+            ) {
                 val pad = 6.dp.toPx()
                 val usableH = size.height - 2 * pad
                 // Drei dezente horizontale Hilfslinien
@@ -226,9 +243,9 @@ fun LineChart(values: List<Double>, unit: String) {
                     val y = pad + usableH * k / 2f
                     drawLine(grid, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
                 }
-                val stepX = (size.width - 2 * pad) / (values.size - 1)
+                val stepX = if (values.size > 1) (size.width - 2 * pad) / (values.size - 1) else 0f
                 val points = values.mapIndexed { i, v ->
-                    Offset(pad + i * stepX, (pad + usableH - (v - lo) / (hi - lo) * usableH).toFloat())
+                    Offset(if (values.size > 1) pad + i * stepX else size.width / 2, (pad + usableH - (v - lo) / (hi - lo) * usableH).toFloat())
                 }
                 points.zipWithNext { a, b -> drawLine(color, a, b, 2.dp.toPx(), StrokeCap.Round) }
                 points.forEachIndexed { i, pt ->

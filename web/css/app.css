@@ -592,3 +592,4 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .delta-down { color: var(--error); }
 .review-line { display: flex; gap: 8px; margin: 0; line-height: 1.4; }
 .review-line span { flex: none; width: 22px; }
+.linechart .tappable { cursor: pointer; }

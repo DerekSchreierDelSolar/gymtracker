@@ -486,6 +486,8 @@ class GymStore {
   /** Gelöschten Eintrag zurückholen („Rückgängig“) */
   restoreWeight(entry) { this.weights.push(entry); this.weights.sort((a, b) => a.time - b.time); this.#save(); }
   deleteWeight(entry) { this.weights = this.weights.filter(w => w !== entry); this.#save(); }
+  /** Gewicht eines Eintrags ändern (Datum bleibt) – wie updateWeight in GymStore.kt */
+  updateWeight(entry, kg) { const i = this.weights.indexOf(entry); if (i >= 0) { this.weights[i] = { ...entry, kg }; this.#save(); } }
 
   /** Gewicht zum Zeitpunkt t: letzter Eintrag davor, sonst der erste; null = nie eingetragen. */
   weightAt(t) {

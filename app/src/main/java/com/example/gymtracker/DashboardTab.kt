@@ -73,6 +73,20 @@ fun weeklyVolumes(store: GymStore, count: Int): List<Pair<Long, Double>> {
     }
 }
 
+/**
+ * Geschätzter Verbrauch (kcal) pro Woche für die letzten `count` Wochen, älteste zuerst (alle Trainings inkl. freier).
+ * null, wenn es noch kein Körpergewicht gibt (dann ist keine Schätzung möglich).
+ */
+fun weeklyKcal(store: GymStore, count: Int): List<Pair<Long, Double>>? {
+    if (store.weights.isEmpty()) return null
+    val starts = generateSequence(startOfWeek()) { previousWeek(it) }.take(count).toList().reversed()
+    val sessions = allSessions(store)
+    return starts.map { ws ->
+        val we = Calendar.getInstance().apply { timeInMillis = ws; add(Calendar.DAY_OF_MONTH, 7) }.timeInMillis
+        ws to sessions.filter { it.start in ws until we }.sumOf { sessionStats(store, it).kcal ?: 0 }.toDouble()
+    }
+}
+
 @Composable
 fun DashboardTab(
     store: GymStore,
@@ -213,6 +227,16 @@ fun DashboardTab(
             item {
                 ChartCard(tr("Volumen pro Woche", "Weekly volume"), tr("Letzte 8 Wochen · aktuelle Woche hervorgehoben", "Last 8 weeks · current week highlighted")) {
                     HistoryBars(volumes.map { it.second }, volumes.map { fmtShortDate(it.first) }) { "${fmtW(it)} kg" }
+                }
+            }
+        }
+
+        // Diagramm: geschätzter Kalorienverbrauch pro Woche (8 Wochen), nur mit Körpergewicht
+        val kcalWeeks = weeklyKcal(store, 8)
+        if (kcalWeeks != null && kcalWeeks.any { it.second > 0 }) {
+            item {
+                ChartCard(tr("🔥 Kalorien pro Woche", "🔥 Calories per week"), tr("Letzte 8 Wochen · geschätzt", "Last 8 weeks · estimated")) {
+                    HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtShortDate(it.first) }) { "~${it.toInt()} kcal" }
                 }
             }
         }

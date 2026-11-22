@@ -650,6 +650,14 @@ class GymStore(context: Context) {
         save()
     }
 
+    /** Gewicht eines Eintrags ändern (Datum bleibt). */
+    fun updateWeight(entry: WeightEntry, kg: Double) {
+        val i = weights.indexOf(entry)
+        if (i < 0) return
+        weights[i] = entry.copy(kg = kg)
+        save()
+    }
+
     /**
      * Gewicht zum Zeitpunkt t: der letzte Eintrag davor. Gibt es keinen,
      * nehmen wir den ersten danach (besser als gar keine Schätzung). null = nie eingetragen.

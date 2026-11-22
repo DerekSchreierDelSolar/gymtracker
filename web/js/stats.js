@@ -177,6 +177,19 @@ export function weeklyVolumes(store, count) {
   });
 }
 
+/** Geschätzte kcal pro Woche (letzte count Wochen, älteste zuerst); null ohne Körpergewicht – wie weeklyKcal */
+export function weeklyKcal(store, count) {
+  if (!store.weights.length) return null;
+  const starts = [];
+  let w = startOfWeek();
+  for (let i = 0; i < count; i++) { starts.unshift(w); w = addDays(w, -7); }
+  const sessions = allSessions(store);
+  return starts.map(ws => {
+    const we = addDays(ws, 7);
+    return [ws, sum(sessions.filter(t => t.start >= ws && t.start < we), t => sessionStats(store, t).kcal ?? 0)];
+  });
+}
+
 // ---------- Progressions-Vorschlag (doppelte Progression) ----------
 
 export function progressionSuggestion(store, name, before) {

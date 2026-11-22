@@ -119,14 +119,15 @@ export function historyBars(values, labels, format) {
 }
 
 /** Liniendiagramm (SVG); beschriftet ist nur der letzte Wert. */
-export function lineChart(values, unit) {
-  if (values.length < 2) return null;
+/** onTapPoint(i): Antippen wählt den nächsten Punkt (wie LineChart in Components.kt); dann reicht ein einzelner Punkt */
+export function lineChart(values, unit, onTapPoint = null) {
+  if (values.length < (onTapPoint ? 1 : 2)) return null;
   const W = 320, H = 124, pad = 7;
   const mn = Math.min(...values), mx = Math.max(...values);
   const span = mx - mn > 0 ? mx - mn : 1;
   const lo = mn - span * 0.1, hi = mx + span * 0.1, uh = H - 2 * pad;
-  const step = (W - 2 * pad) / (values.length - 1);
-  const pts = values.map((v, i) => [pad + i * step, pad + uh - ((v - lo) / (hi - lo)) * uh]);
+  const step = values.length > 1 ? (W - 2 * pad) / (values.length - 1) : 0;
+  const pts = values.map((v, i) => [values.length > 1 ? pad + i * step : W / 2, pad + uh - ((v - lo) / (hi - lo)) * uh]);
   const grid = [0, 1, 2].map(k => `<line x1="0" x2="${W}" y1="${pad + (uh * k) / 2}" y2="${pad + (uh * k) / 2}" class="grid"/>`).join('');
   const path = `<polyline points="${pts.map(p => p.join(',')).join(' ')}" class="line"/>`;
   const dots = pts.map((p, i) => {
@@ -139,7 +140,15 @@ export function lineChart(values, unit) {
     h('div', { class: 'vbars-value' }, `${fmtW(values[values.length - 1])} ${unit}`),
     h('div', { class: 'linechart-body' },
       h('div', { class: 'linechart-axis' }, axis),
-      h('div', { class: 'grow', html: `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${path}${dots}</svg>` })));
+      h('div', {
+        class: ['grow', onTapPoint && 'tappable'], html: `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${path}${dots}</svg>`,
+        onclick: onTapPoint ? e => {
+          // Klickposition → SVG-Koordinate → nächster Punkt in x-Richtung
+          const r = e.currentTarget.getBoundingClientRect();
+          const x = ((e.clientX - r.left) / r.width) * W;
+          onTapPoint(values.length > 1 ? Math.min(values.length - 1, Math.max(0, Math.round((x - pad) / step))) : 0);
+        } : null,
+      })));
 }
 
 export const progressChart = (values, title, unit) =>

@@ -35,6 +35,7 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
     var input by remember { mutableStateOf("") }
     var day by remember { mutableStateOf<Long?>(null) }   // gewählter Tag fürs Nachtragen (null = heute)
     var pickDay by remember { mutableStateOf(false) }
+    var editEntry by remember { mutableStateOf<WeightEntry?>(null) } // im Diagramm angetippter Eintrag
 
     // Verbrauch dieser Woche über alle Trainings (inkl. freier Trainings)
     val weekSessions = allSessions(store).filter { it.start >= startOfWeek() }
@@ -130,38 +131,28 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
             }
         }
 
-        // Gewichtsverlauf (letzte 30 Einträge)
-        if (store.weights.size >= 2) {
+        // Gewichtsverlauf (letzte 30 Einträge); Punkt antippen = Eintrag anpassen oder löschen (statt einer Liste)
+        if (store.weights.isNotEmpty()) {
             item {
                 val shown = store.weights.takeLast(30)
                 ChartCard(
                     tr("Gewichtsverlauf", "Weight trend"),
                     "${fmtW(shown.minOf { it.kg })} – ${fmtW(shown.maxOf { it.kg })} kg"
                 ) {
-                    LineChart(shown.map { it.kg }, "kg")
+                    LineChart(shown.map { it.kg }, "kg", onTapPoint = { editEntry = shown[it] })
                     Row(Modifier.fillMaxWidth()) {
                         Text(fmtShortDate(shown.first().time), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.weight(1f))
-                        Text(fmtShortDate(shown.last().time), style = MaterialTheme.typography.labelSmall,
+                        if (shown.size > 1) Text(fmtShortDate(shown.last().time), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
-            }
-        }
-
-        // Liste der Einträge (neueste zuerst)
-        if (store.weights.isNotEmpty()) {
-            item { Text(tr("Einträge", "Entries"), style = MaterialTheme.typography.titleMedium) }
-            items(store.weights.reversed().take(20), key = { it.time }) { w ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(fmtDate(w.time), modifier = Modifier.weight(1f))
-                    Text("${fmtW(w.kg)} kg", style = MaterialTheme.typography.titleSmall)
-                    IconAction(Ico.DELETE, onClick = {
-                        store.deleteWeight(w)
-                        Undo.show(tr("Eintrag gelöscht", "Entry deleted")) { store.restoreWeight(w) }
-                    },
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        tr("Punkt antippen zum Anpassen oder Löschen", "Tap a point to edit or delete"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
                 }
             }
         }
@@ -177,6 +168,8 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
             )
         }
     }
+
+    editEntry?.let { e -> WeightEditDialog(store, e, onDismiss = { editEntry = null }) }
 
     // Datum wählen (Material-Kalender). Er liefert Mitternacht in UTC → als 12:00 Ortszeit speichern,
     // damit der Tag in jeder Zeitzone stimmt. Zukunft ist nicht wählbar.
@@ -207,3 +200,38 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
 }
 
 
+
+/** Gewichtseintrag aus dem Diagramm: Gewicht anpassen oder löschen (mit „Rückgängig“). */
+@Composable
+private fun WeightEditDialog(store: GymStore, entry: WeightEntry, onDismiss: () -> Unit) {
+    var text by remember(entry) { mutableStateOf(fmtW(entry.kg)) }
+    val kg = text.replace(',', '.').toDoubleOrNull()?.takeIf { it in 20.0..400.0 } // wie beim Eintragen
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(fmtDate(entry.time)) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text(tr("Gewicht in kg", "Weight in kg")) },
+                isError = kg == null,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            TextButton(enabled = kg != null, onClick = {
+                kg?.let { store.updateWeight(entry, it) }
+                onDismiss()
+            }) { Text(tr("Speichern", "Save")) }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                store.deleteWeight(entry)
+                Undo.show(tr("Eintrag gelöscht", "Entry deleted")) { store.restoreWeight(entry) }
+                onDismiss()
+            }) { Text(tr("Löschen", "Delete"), color = MaterialTheme.colorScheme.error) }
+        }
+    )
+}
