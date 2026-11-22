@@ -2,6 +2,7 @@
 
 import { WIKI } from './wiki-data.js';
 import { MUSCLE_INFO } from './muscle-data.js';
+import { SUPPLEMENTS } from './supplement-data.js';
 import { MUSCLES } from './body-data.js';
 import { CATALOG } from './data.js';
 import { tr, exName, sortByName, isEnglish, isCardio, GROUP_KEYS, equipmentLabel } from './core.js';
@@ -155,9 +156,62 @@ function muscleList(query) {
   ];
 }
 
-/** Wiki-Übersicht: Reiter Übungen (alle Grundübungen nach Muskelgruppe) / Muskeln, mit Suche. */
+// ---------- Supplement-Wiki (entspricht SupplementWiki.kt), Inhalte: supplement-data.js aus assets/supplements.json ----------
+
+/** Kleinbuchstaben, Umlaute ausgeschrieben (wie Bot.norm) – für die Suche */
+const norm = s => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+export const evidenceLabel = l => [tr('Kein Nutzen belegt', 'No proven benefit'), tr('Schwach belegt', 'Weak evidence'), tr('Teilweise belegt', 'Some evidence'), tr('Gut belegt', 'Well proven')][l] ?? '';
+export const evidenceColor = l => ['#9E9E9E', '#EF6C00', '#F9A825', '#43A047'][l] ?? '#9E9E9E';
+const evidenceBadge = l => h('span', { class: 'evidence-badge', style: `--ev:${evidenceColor(l)}` }, h('i'), evidenceLabel(l));
+
+export const openSupplement = id => { if (SUPPLEMENTS[id]) openDialog(() => supplementSheet(id)); };
+
+function supplementSheet(id) {
+  const s = SUPPLEMENTS[id];
+  const list = (title, items, cls = '') => items?.length ? [h('h3', null, title), h('ul', { class: 'wiki-list bullets ' + cls }, items.map(p => h('li', null, t(p))))] : null;
+  return h('div', { class: 'dialog-backdrop sheet-backdrop', onclick: e => { if (e.target === e.currentTarget) closeDialog(); } },
+    h('div', { class: 'sheet', role: 'dialog' },
+      h('div', { class: 'sheet-handle', onclick: closeDialog }),
+      h('div', { class: 'sheet-body' },
+        h('div', null, h('h2', null, t(s.name)), h('p', { class: 'accent' }, t(s.category))),
+        h('div', { class: 'row-s' }, evidenceBadge(s.evidence), s.deficiencyOnly ? h('span', { class: 'deficiency-badge' }, tr('Nur bei Mangel', 'Only if deficient')) : null),
+        h('p', { class: 'supp-summary' }, t(s.summary)),
+        h('h3', null, tr('Was ist das?', 'What is it?')), h('p', null, t(s.what)),
+        list(tr('Wirkung', 'Effect'), s.effects),
+        h('h3', null, tr('Dosierung', 'Dosage')), h('p', null, t(s.dose)),
+        s.timing[0] !== '–' ? [h('h3', null, tr('Einnahme', 'When to take')), h('p', null, t(s.timing))] : null,
+        list(tr('Nebenwirkungen & Wechselwirkungen', 'Side effects & interactions'), s.risks, 'warn'),
+        list(tr('Gut zu wissen', 'Good to know'), s.tips, 'facts'),
+        muted(tr('Allgemeine Informationen, keine Beratung. Bei Erkrankungen, Medikamenten, Schwangerschaft oder Stillzeit vorher ärztlich abklären. Wettkampfsportler: nur geprüfte Produkte (z. B. Kölner Liste) wegen Dopinggefahr.',
+          'General information, not advice. With medical conditions, medication, pregnancy or breastfeeding ask a doctor first. Competitive athletes: only tested products (e.g. Kölner Liste) because of doping risk.'), 'small wiki-disclaimer'))));
+}
+
+/** Reiter „Supplements“: nach Evidenz gruppiert (gut belegt zuerst), innerhalb alphabetisch */
+function supplementList(query) {
+  const q = norm(query);
+  const all = Object.entries(SUPPLEMENTS).filter(([, s]) => !q ||
+    [...s.name, ...s.category].some(x => norm(x).includes(q)) || s.keys.some(k => norm(k).includes(q)));
+  return [
+    q ? null : muted(tr('Was bringt was? Einstufung nach aktueller Studienlage – das meiste erreichst du über Training, Schlaf und Ernährung.',
+      'What actually works? Rated by current evidence – most results come from training, sleep and diet.'), 'small'),
+    all.length ? null : muted(tr('Kein Supplement gefunden.', 'No supplement found.')),
+    [3, 2, 1, 0].map(level => {
+      const group = sortByName(all.filter(([, s]) => s.evidence === level), ([, s]) => t(s.name));
+      return group.length ? [
+        h('div', { class: 'evidence-header' }, h('i', { style: `background:${evidenceColor(level)}` }), evidenceLabel(level)),
+        group.map(([id, s]) => h('button', { class: 'cat-row', onclick: () => openSupplement(id) },
+          h('div', { class: 'grow' }, h('span', null, t(s.name)),
+            h('small', { class: 'muted' }, (s.deficiencyOnly ? tr('Nur bei Mangel · ', 'Only if deficient · ') : '') + t(s.summary))),
+          h('span', { class: 'muted' }, icon('chevron')))),
+      ] : null;
+    }),
+  ];
+}
+
+/** Wiki-Übersicht: Reiter Übungen (alle Grundübungen nach Muskelgruppe) / Muskeln / Supplements, mit Suche. */
 export function wikiScreen() {
-  const muscles = nav.wikiMuscles;
+  const tab = nav.wikiTab;
+  const muscles = tab === 1;
   const q = nav.wikiQuery.trim().toLowerCase();
   const bases = [];
   const seen = new Set();
@@ -173,17 +227,17 @@ export function wikiScreen() {
     actions: [iconBtn('chat', () => update({ bot: true }), { label: tr('Fragen', 'Ask') })], // Frage an den Bot
     content: h('div', { class: 'pad' },
       h('div', { class: 'segments wiki-tabs' },
-        chip(tr('Übungen', 'Exercises'), !muscles, () => update({ wikiMuscles: false, wikiQuery: '' })),
-        chip(tr('Muskeln', 'Muscles'), muscles, () => update({ wikiMuscles: true, wikiQuery: '' }))),
+        [tr('Übungen', 'Exercises'), tr('Muskeln', 'Muscles'), 'Supplements'].map((label, i) =>
+          chip(label, tab === i, () => update({ wikiTab: i, wikiQuery: '' })))),
       h('label', { class: 'search wiki-search' }, icon('search', 20),
         h('input', {
           id: 'wiki-search', type: 'search', value: nav.wikiQuery,
-          placeholder: muscles ? tr('Muskel suchen', 'Search muscle') : tr('Übung suchen', 'Search exercise'),
+          placeholder: [tr('Übung suchen', 'Search exercise'), tr('Muskel suchen', 'Search muscle'), tr('Supplement suchen', 'Search supplement')][tab],
           autocomplete: 'off', enterkeyhint: 'search',
           oninput: e => update({ wikiQuery: e.target.value }),
           onkeydown: e => { if (e.key === 'Enter') e.target.blur(); },
         })),
-      muscles ? muscleList(nav.wikiQuery) : [
+      tab === 2 ? supplementList(nav.wikiQuery) : muscles ? muscleList(nav.wikiQuery) : [
         byGroup.length ? null : muted(tr('Keine Übung gefunden.', 'No exercise found.')),
         byGroup.map(([g, list]) => [groupHeader(g), list.map(c =>
           h('button', { class: 'cat-row', onclick: () => openWiki(c.base) },

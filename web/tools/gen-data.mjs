@@ -189,6 +189,19 @@ writeFileSync(join(root, 'web/js/muscle-data.js'),
   `export const MUSCLE_INFO = ${JSON.stringify(muscleInfo)};\n`);
 console.log(`muscle-data.js: ${Object.keys(muscleInfo).length} Muskeln`);
 
+// ----- Supplement-Wiki: app/src/main/assets/supplements.json → web/js/supplement-data.js -----
+const supplements = JSON.parse(readFileSync(join(root, 'app/src/main/assets/supplements.json'), 'utf8'));
+for (const [id, s] of Object.entries(supplements)) {
+  for (const k of ['name', 'category', 'summary', 'what', 'dose', 'timing']) if (!isPair(s[k])) throw new Error(`supplements.json: ${k} = [de, en] fehlt bei ${id}`);
+  for (const k of ['effects', 'risks', 'tips']) if (s[k] && !(Array.isArray(s[k]) && s[k].every(isPair))) throw new Error(`supplements.json: ${k} bei ${id}`);
+  if (![0, 1, 2, 3].includes(s.evidence)) throw new Error('supplements.json: evidence 0–3 bei ' + id);
+  if (!Array.isArray(s.keys) || !s.keys.length) throw new Error('supplements.json: keys fehlen bei ' + id);
+}
+writeFileSync(join(root, 'web/js/supplement-data.js'),
+  `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs aus app/src/main/assets/supplements.json – nicht von Hand ändern!\n` +
+  `export const SUPPLEMENTS = ${JSON.stringify(supplements)};\n`);
+console.log(`supplement-data.js: ${Object.keys(supplements).length} Supplements`);
+
 // ----- Fragen-Bot: app/src/main/assets/bot.json → web/js/bot-data.js -----
 const bot = JSON.parse(readFileSync(join(root, 'app/src/main/assets/bot.json'), 'utf8'));
 for (const k of Object.keys(bot.targets)) if (!regionKeys.has(k) && !muscles[k]) throw new Error('bot.json: unbekannte Region/Muskel ' + k);

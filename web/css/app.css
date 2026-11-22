@@ -596,3 +596,10 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 /* Datumsfeld im App-Format (dateField in ui.js): sichtbarer Text, unsichtbares natives Feld darüber */
 .date-field { position: relative; display: inline-block; color: var(--text); border: 1px solid var(--outline-variant); border-radius: 8px; padding: 6px 10px; }
 .date-field input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+/* Supplement-Wiki */
+.evidence-header { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 17px; margin: 14px 0 4px; }
+.evidence-header i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.evidence-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 3px 10px; border-radius: 99px; background: color-mix(in srgb, var(--ev) 18%, transparent); }
+.evidence-badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--ev); display: inline-block; }
+.deficiency-badge { font-size: 13px; padding: 3px 10px; border-radius: 99px; background: color-mix(in srgb, var(--primary) 15%, transparent); }
+.supp-summary { font-size: 17px; line-height: 1.4; }

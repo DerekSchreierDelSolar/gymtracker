@@ -78,7 +78,7 @@ setBackHandler(() => {
   if (nav.catalogGroup != null) { update({ catalogGroup: null }); return true; }
   if (nav.catalog) { update({ catalog: false }); return true; }
   if (nav.bot) { update({ bot: false }); return true; }
-  if (nav.wiki) { update({ wiki: false, wikiQuery: '', wikiMuscles: false }); return true; }
+  if (nav.wiki) { update({ wiki: false, wikiQuery: '', wikiTab: 0 }); return true; }
   return true;
 });
 

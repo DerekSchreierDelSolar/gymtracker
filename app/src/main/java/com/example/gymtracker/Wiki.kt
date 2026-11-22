@@ -200,14 +200,15 @@ private fun WikiLine(bullet: String, text: String, bulletColor: androidx.compose
     }
 }
 
-/** Wiki-Übersicht: alle Grundübungen nach Muskelgruppe, mit Suche. Tippen öffnet das Wiki-Blatt. */
+/** Wiki-Übersicht mit Reitern Übungen (Grundübungen nach Muskelgruppe) / Muskeln / Supplements, jeweils mit Suche. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
     var query by remember { mutableStateOf("") }
     var open by remember { mutableStateOf<String?>(null) }
-    var musclesMode by rememberSaveable { mutableStateOf(false) } // Reiter „Muskeln“ statt „Übungen“
+    var tab by rememberSaveable { mutableIntStateOf(0) } // 0 Übungen, 1 Muskeln, 2 Supplements
     var openMuscle by remember { mutableStateOf<String?>(null) }
+    var openSupplement by remember { mutableStateOf<String?>(null) }
     // Grundübungen in Katalog-Reihenfolge, gruppiert
     val bases = CATALOG.distinctBy { it.base }.filter { Wiki.entries.containsKey(it.base) }
     val q = query.trim()
@@ -231,23 +232,28 @@ fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
         ) {
             item {
                 Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    SegmentChip(tr("Übungen", "Exercises"), !musclesMode, { musclesMode = false; query = "" }, Modifier.weight(1f))
-                    SegmentChip(tr("Muskeln", "Muscles"), musclesMode, { musclesMode = true; query = "" }, Modifier.weight(1f))
+                    listOf(tr("Übungen", "Exercises"), tr("Muskeln", "Muscles"), "Supplements").forEachIndexed { i, label ->
+                        SegmentChip(label, tab == i, { tab = i; query = "" }, Modifier.weight(1f))
+                    }
                 }
             }
             item {
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text(if (musclesMode) tr("Muskel suchen", "Search muscle") else tr("Übung suchen", "Search exercise")) },
+                    placeholder = { Text(when (tab) { 1 -> tr("Muskel suchen", "Search muscle"); 2 -> tr("Supplement suchen", "Search supplement"); else -> tr("Übung suchen", "Search exercise") }) },
                     leadingIcon = { AppIcon(Ico.SEARCH) },
                     trailingIcon = { if (query.isNotEmpty()) IconAction(Ico.CLOSE, onClick = { query = "" }) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            if (musclesMode) {
+            if (tab == 1) {
                 muscleWikiItems(query) { openMuscle = it }
+                return@LazyColumn
+            }
+            if (tab == 2) {
+                supplementWikiItems(query) { openSupplement = it }
                 return@LazyColumn
             }
             if (visible.isEmpty()) item {
@@ -286,4 +292,5 @@ fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
     }
     open?.let { WikiSheet(it, onDismiss = { open = null }) }
     openMuscle?.let { MuscleSheet(it, onDismiss = { openMuscle = null }) }
+    openSupplement?.let { SupplementSheet(it, onDismiss = { openSupplement = null }) }
 }

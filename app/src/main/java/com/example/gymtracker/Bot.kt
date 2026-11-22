@@ -121,6 +121,15 @@ object Bot {
     }
 
     /** Am besten passende Übung: die mit der längsten erkannten Wortfolge („Rumänisches Kreuzheben“ vor „Kreuzheben“) */
+    /** Supplement-ID → Wortfolgen (Suchbegriffe aus supplements.json) */
+    private val supplementPhrases: Map<String, List<List<String>>> by lazy {
+        SupplementWiki.entries.associate { s -> s.id to s.keys.map(::tokens).filter { it.isNotEmpty() } }
+    }
+
+    private fun findSupplement(words: List<String>): Pair<String, List<String>>? =
+        supplementPhrases.flatMap { (id, ps) -> ps.filter { has(words, it) }.map { id to it } }
+            .maxWithOrNull(compareBy({ it.second.size }, { it.second.sumOf { w -> w.length } }))
+
     private fun findExercise(words: List<String>): Pair<String, List<String>>? =
         exercisePhrases.flatMap { (base, ps) -> ps.filter { has(words, it) }.map { base to it } }
             .maxWithOrNull(compareBy({ it.second.size }, { it.second.sumOf { w -> w.length } }))
@@ -149,6 +158,8 @@ object Bot {
             tr("Was bedeutet optional?", "What does optional mean?"),
             tr("Übungen für den unteren Rücken", "Exercises for the lower back"),
             tr("Was macht der Latissimus?", "What does the lat do?"),
+            tr("Wie viel Kreatin soll ich nehmen?", "How much creatine should I take?"),
+            tr("Bringen BCAA etwas?", "Do BCAAs work?"),
             tr("Wie dehne ich die Waden?", "How do I stretch my calves?"),
             tr("Verletzungen am Beinbeuger", "Hamstring injuries")
         )
@@ -160,8 +171,8 @@ object Bot {
     fun greeting(recent: String? = null) = BotMessage(
         false,
         tr(
-            "Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert – oder sag „Erstelle mir ein Workout“.",
-            "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works – or say \"Create a workout for me\"."
+            "Hallo! 👋 Ich kenne alle Übungen, Muskeln und Supplements aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel, nach einem Supplement oder wie etwas in der App funktioniert – oder sag „Erstelle mir ein Workout“.",
+            "Hi! 👋 I know every exercise, muscle and supplement in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, about a supplement, or how something in the app works – or say \"Create a workout for me\"."
         ),
         // „Erstelle mir ein Workout“ zuerst, dann die zuletzt trainierte Übung, dann Zufall
         suggestions = suggestions.let { s -> s.take(1) + listOfNotNull(recent?.let { tr("Wie mache ich $it?", "How do I do $it?") }) + s.drop(1).take(if (recent != null) 3 else 4) }
@@ -319,7 +330,10 @@ object Bot {
         val asksHow = hasAny(words, howWords) || hasAny(words, tipWords) || hasAny(words, muscleWords)
         // Frage zum Muskel selbst („Was macht der Latissimus?“, „Wie dehne ich die Waden?“) → Muskel-Wiki
         val anatomy = anatomyWords.filterValues { hasAny(words, it) }.keys
+        // Supplement genannt („Wie viel Kreatin?“) – außer eine Übung passt mit einer längeren Wortfolge
+        val supp = findSupplement(words)
         return when {
+            supp != null && (ex == null || supp.second.size >= ex.second.size) -> supplementAnswer(supp.first)
             target != null && anatomy.isNotEmpty() && !hasAny(words, exerciseWords) && muscleOfRegion(target.first) in MuscleWiki.entries &&
                 (ex == null || ex.second.all { w -> target.second.any { close(it, w) } }) ->
                 muscleAnswer(muscleOfRegion(target.first), anatomy)
@@ -365,6 +379,28 @@ object Bot {
             sb.append("\n\n").append(tr("Hinweis ($k): ", "Note ($k): ")).append(v.text)
         }
         return BotMessage(false, sb.toString(), groups = listOf(tr("Im Wiki öffnen", "Open in wiki") to listOf(base)))
+    }
+
+    /** Kurzinfo aus dem Supplement-Wiki: Einstufung, Wirkung, Dosierung, Einnahme, Risiken */
+    private fun supplementAnswer(id: String): BotMessage {
+        val s = SupplementWiki.byId(id) ?: return BotMessage(false, "")
+        val dot = when (s.evidence) { 3 -> "🟢"; 2 -> "🟡"; 1 -> "🟠"; else -> "⚪" }
+        val sb = StringBuilder(s.name.text).append("\n").append(dot).append(" ").append(evidenceLabel(s.evidence))
+        if (s.deficiencyOnly) sb.append(tr(" · nur bei Mangel", " · only if deficient"))
+        sb.append("\n\n").append(s.summary.text)
+        if (s.effects.isNotEmpty()) {
+            sb.append("\n\n").append(tr("Wirkung:", "Effect:"))
+            s.effects.forEach { sb.append("\n• ").append(it.text) }
+        }
+        sb.append("\n\n").append(tr("Dosierung: ", "Dosage: ")).append(s.dose.text)
+        if (s.timing.de != "–") sb.append("\n").append(tr("Einnahme: ", "When: ")).append(s.timing.text)
+        if (s.risks.isNotEmpty()) {
+            sb.append("\n\n").append(tr("Nebenwirkungen:", "Side effects:"))
+            s.risks.forEach { sb.append("\n⚠ ").append(it.text) }
+        }
+        sb.append("\n\n").append(tr("Mehr im Wiki unter „Supplements“. Keine Beratung – bei Erkrankungen oder Medikamenten ärztlich abklären.",
+            "More in the wiki under \"Supplements\". Not advice – ask a doctor if you have conditions or take medication."))
+        return BotMessage(false, sb.toString())
     }
 
     /**

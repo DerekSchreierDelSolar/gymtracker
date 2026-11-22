@@ -7,8 +7,9 @@ import { CATALOG } from './data.js';
 import { tr, isEnglish, isCardio, exName, equipmentLabel } from './core.js';
 import { h, icon, chip } from './ui.js';
 import { rerender, go } from './nav.js';
-import { baseName, openWiki, mainExercisesFor } from './wiki.js';
+import { baseName, openWiki, mainExercisesFor, evidenceLabel } from './wiki.js';
 import { MUSCLE_INFO } from './muscle-data.js';
+import { SUPPLEMENTS } from './supplement-data.js';
 import { screen } from './layout.js';
 import { levelsOf, levelLabels, levelTitle, regionLabel, muscleLabel, muscleOfRegion, levelColor, tappableFigure } from './bodymap.js';
 import { MUSCLES } from './body-data.js';
@@ -49,6 +50,8 @@ const FAQ = BOT.faq.map(f => ({ keys: f.keys.map(tokens), a: f.a }));
 const TARGETS = Object.entries(BOT.targets).map(([k, list]) => [k, list.map(tokens)]);
 const W = Object.fromEntries(['exerciseWords', 'muscleWords', 'howWords', 'tipWords'].map(k => [k, BOT[k].map(tokens)]));
 /** Fragen zum Muskel selbst (Muskel-Wiki): Abschnitt → Wortfolgen (anatomy, function, problems, stretch, general) */
+/** Supplement-ID → Wortfolgen (Suchbegriffe aus supplements.json) – wie Bot.supplementPhrases */
+const SUPP_PHRASES = Object.entries(SUPPLEMENTS).map(([id, s]) => [id, s.keys.map(tokens).filter(p => p.length)]);
 const ANATOMY = Object.entries(BOT.anatomyWords ?? {}).map(([k, list]) => [k, list.map(tokens)]);
 
 // ---------- Übungen und Muskeln erkennen ----------
@@ -92,6 +95,8 @@ const pool = () => [
   tr('Was macht der Latissimus?', 'What does the lat do?'),
   tr('Wie dehne ich die Waden?', 'How do I stretch my calves?'),
   tr('Verletzungen am Beinbeuger', 'Hamstring injuries'),
+  tr('Wie viel Kreatin soll ich nehmen?', 'How much creatine should I take?'),
+  tr('Bringen BCAA etwas?', 'Do BCAAs work?'),
 ];
 
 // „Erstelle mir ein Workout“ immer zuerst, dann eine zufällige Auswahl (wie Bot.kt)
@@ -100,8 +105,8 @@ const suggestions = () => [tr('Erstelle mir ein Workout', 'Create a workout for 
 /** Begrüßung; recent = zuletzt trainierte Übung (Grundübung) → passender erster Vorschlag */
 const greeting = recent => ({
   bot: true,
-  text: tr('Hallo! 👋 Ich kenne alle Übungen aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel oder wie etwas in der App funktioniert – oder sag „Erstelle mir ein Workout“.',
-    "Hi! 👋 I know every exercise in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, or how something in the app works – or say \"Create a workout for me\"."),
+  text: tr('Hallo! 👋 Ich kenne alle Übungen, Muskeln und Supplements aus dem Wiki und die Funktionen der App. Frag mich z. B. nach der Ausführung einer Übung, nach Übungen für einen Muskel, nach einem Supplement oder wie etwas in der App funktioniert – oder sag „Erstelle mir ein Workout“.',
+    "Hi! 👋 I know every exercise, muscle and supplement in the wiki and the app's features. Ask me how to do an exercise, which exercises train a muscle, about a supplement, or how something in the app works – or say \"Create a workout for me\"."),
   suggestions: (s => recent ? [s[0], tr(`Wie mache ich ${recent}?`, `How do I do ${recent}?`), ...s.slice(1, 4)] : s)(suggestions()),
 });
 
@@ -117,6 +122,9 @@ export function answer(question) {
   const asksHow = hasAny(words, W.howWords) || hasAny(words, W.tipWords) || hasAny(words, W.muscleWords);
   // Frage zum Muskel selbst („Was macht der Latissimus?“, „Wie dehne ich die Waden?“) → Muskel-Wiki (wie Bot.kt)
   const anatomy = new Set(ANATOMY.filter(([, list]) => hasAny(words, list)).map(([k]) => k));
+  // Supplement genannt („Wie viel Kreatin?“) – außer eine Übung passt mit einer längeren Wortfolge (wie Bot.kt)
+  const supp = best(SUPP_PHRASES, words);
+  if (supp && (!ex || supp.phrase.length >= ex.phrase.length)) return supplementAnswer(supp.key);
   if (target && anatomy.size && !hasAny(words, W.exerciseWords) && MUSCLE_INFO[muscleOfRegion(target.key)] &&
     (!ex || ex.phrase.every(w => target.phrase.some(p => close(p, w))))) return muscleAnswer(muscleOfRegion(target.key), anatomy);
   // „Übungen für Beinbeuger“: Muskel gemeint, obwohl es auch eine Übung „Beinbeuger“ gibt
@@ -149,6 +157,21 @@ function exerciseAnswer(base, words) {
   const variant = Object.entries(e.variants ?? {}).find(([k]) => has(words, tokens(k.split('/')[0])));
   if (variant) text += '\n\n' + tr(`Hinweis (${variant[0]}): `, `Note (${variant[0]}): `) + t(variant[1]);
   return { bot: true, text, groups: [[tr('Im Wiki öffnen', 'Open in wiki'), [base]]] };
+}
+
+/** Kurzinfo aus dem Supplement-Wiki (wie supplementAnswer in Bot.kt) */
+function supplementAnswer(id) {
+  const s = SUPPLEMENTS[id];
+  const NL = '\n';
+  let text = t(s.name) + NL + ['⚪', '🟠', '🟡', '🟢'][s.evidence] + ' ' + evidenceLabel(s.evidence) + (s.deficiencyOnly ? tr(' · nur bei Mangel', ' · only if deficient') : '');
+  text += NL + NL + t(s.summary);
+  if (s.effects?.length) text += NL + NL + tr('Wirkung:', 'Effect:') + s.effects.map(x => NL + '• ' + t(x)).join('');
+  text += NL + NL + tr('Dosierung: ', 'Dosage: ') + t(s.dose);
+  if (s.timing[0] !== '–') text += NL + tr('Einnahme: ', 'When: ') + t(s.timing);
+  if (s.risks?.length) text += NL + NL + tr('Nebenwirkungen:', 'Side effects:') + s.risks.map(x => NL + '⚠ ' + t(x)).join('');
+  text += NL + NL + tr('Mehr im Wiki unter „Supplements“. Keine Beratung – bei Erkrankungen oder Medikamenten ärztlich abklären.',
+    'More in the wiki under "Supplements". Not advice – ask a doctor if you have conditions or take medication.');
+  return { bot: true, text };
 }
 
 /** Infos aus dem Muskel-Wiki; nur „general“ → alles, sonst nur die gefragten Teile (wie Bot.kt) */

@@ -15,7 +15,7 @@ export const nav = {
   wiki: false,           // Übungs-Wiki geöffnet
   bot: false,            // Bildschirm „Fragen“ geöffnet
   wikiQuery: '',
-  wikiMuscles: false,    // Wiki: Reiter „Muskeln“ statt „Übungen“
+  wikiTab: 0,            // Wiki-Reiter: 0 Übungen, 1 Muskeln, 2 Supplements
   statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite
   reviewPeriod: 'WEEK',   // Rückblick auf der Startseite: WEEK oder MONTH
   workoutId: null,

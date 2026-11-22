@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
         AutoBackup.load(applicationContext)
         Wiki.load(applicationContext)
         MuscleWiki.load(applicationContext)
+        SupplementWiki.load(applicationContext)
         Bot.load(applicationContext)
         Reminder.schedule(applicationContext) // Erinnerung (falls an) nach Update/Neuinstallation sicher planen
         ExerciseImages.load(applicationContext)
