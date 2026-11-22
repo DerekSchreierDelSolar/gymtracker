@@ -175,6 +175,7 @@ function sessionWorkout(w, swaps = {}) {
     ...w,
     exercises: w.exercises.map(e => swaps[e] ?? e),
     targets: Object.fromEntries(Object.entries(w.targets).map(([k, v]) => [swaps[k] ?? k, v])),
+    links: (w.links ?? []).map(e => swaps[e] ?? e),
   };
 }
 

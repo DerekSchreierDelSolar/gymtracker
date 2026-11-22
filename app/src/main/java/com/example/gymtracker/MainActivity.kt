@@ -317,7 +317,8 @@ fun sessionWorkout(w: Workout, swaps: Map<String, String>): Workout {
     if (swaps.isEmpty()) return w
     return w.copy(
         exercises = w.exercises.map { swaps[it] ?: it },
-        targets = w.targets.mapKeys { (k, _) -> swaps[k] ?: k }
+        targets = w.targets.mapKeys { (k, _) -> swaps[k] ?: k },
+        links = w.links.map { swaps[it] ?: it }.toSet()
     )
 }
 

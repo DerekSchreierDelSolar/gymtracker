@@ -172,7 +172,9 @@ data class Workout(
     /** Ziel-Sätze pro Übung; fehlt ein Eintrag, gilt der Standard (siehe defaultTarget) */
     val targets: Map<String, Int> = emptyMap(),
     /** Trainingstage laut Plan: 1 = Montag … 7 = Sonntag (leer = ohne festen Tag) */
-    val days: Set<Int> = emptySet()
+    val days: Set<Int> = emptySet(),
+    /** Supersätze: Übungen, die mit der NÄCHSTEN in der Liste verbunden sind (Supersets.kt). JSON "links" nur wenn nicht leer. */
+    val links: Set<String> = emptySet()
 )
 
 /**

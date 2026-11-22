@@ -132,6 +132,8 @@ class GymStore {
       targets: intMap(o.targets),
       // Trainingstage laut Plan: 1 = Montag … 7 = Sonntag (wie Workout.days)
       days: arr(o.days).map(Number).filter(d => d >= 1 && d <= 7),
+      // Supersätze: mit der nächsten Übung verbunden (wie Workout.links)
+      links: names(o.links),
     }));
     const s = obj(root.settings);
     this.weeklyGoal = num(s.weeklyGoal) ?? 3;
@@ -187,7 +189,10 @@ class GymStore {
       customEquipment: CustomMeta.equipment,
       customTimed: [...CustomMeta.timed],
       customMuscles: CustomMeta.muscles,
-      workouts: this.workouts.map(({ days, ...w }) => (days?.length ? { ...w, days } : w)),
+      workouts: this.workouts.map(({ days, links, ...w }) => {
+        const l = (links ?? []).filter(e => w.exercises.includes(e));
+        return { ...w, ...(days?.length ? { days } : {}), ...(l.length ? { links: l } : {}) };
+      }),
       sessions: this.sessions,
       weights: this.weights,
       notes: this.notes,
@@ -374,6 +379,16 @@ class GymStore {
     const w = this.workout(workoutId);
     if (!w) return;
     w.targets[exercise] = Math.min(20, Math.max(0, target));
+    this.#save();
+  }
+
+  /** Übung mit der nächsten zum Supersatz verbinden bzw. lösen (supersets.js) */
+  toggleLink(workoutId, exercise) {
+    const w = this.workout(workoutId);
+    if (!w) return;
+    const l = new Set(w.links ?? []);
+    if (l.has(exercise)) l.delete(exercise); else l.add(exercise);
+    w.links = [...l];
     this.#save();
   }
 

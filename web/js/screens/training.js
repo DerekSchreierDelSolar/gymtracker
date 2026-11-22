@@ -19,6 +19,7 @@ import { setInput, setRows, historyDayCard, recordLine, noteButton } from './exe
 import { achievements } from '../achievements.js';
 import { achievementsCard, goalsTouched, goalsCard, celebrateOnce } from '../celebration.js';
 import { quoteFor, quoteBubble } from '../quotes.js';
+import { supersetOf, supersetNext, supersetHint } from '../supersets.js';
 
 // ---------- Ton, Vibration, Bildschirm an ----------
 
@@ -250,7 +251,14 @@ function exercisePage(w, start, name) {
     recordLine(store.setsFor(name), cardio, timed),
     h('div', { class: 'circle-row' }, reps, restCircle(), sets),
     // Übung in diesem Training noch nicht gemacht → erster Satz „Aufwärmen“
-    setInput(name, startRest, today.length ? null : start, cardio || timed ? null : parseIntStrict(goal?.[0] ?? '')), // Wdh. wie im Kreis
+    (ss => (ss ? supersetHint(ss, name) : null))(supersetOf(w, name)), // Supersatz-Hinweis
+    setInput(name, () => {
+      // Supersatz (supersets.js): direkt zur nächsten Übung der Gruppe, Pause erst nach der letzten
+      const warmup = store.setsFor(name)[0]?.type === 'WARMUP';
+      const { next, rest } = supersetNext(w, name, start, warmup);
+      if (rest) startRest();
+      if (next) update({ trainingIndex: w.exercises.indexOf(next) });
+    }, today.length ? null : start, cardio || timed ? null : parseIntStrict(goal?.[0] ?? '')), // Wdh. wie im Kreis
     noteButton(name),
     today.length ? [h('h2', { class: 'section' }, tr('Heute', 'Today')),
       setRows(today, cardio)] : null,

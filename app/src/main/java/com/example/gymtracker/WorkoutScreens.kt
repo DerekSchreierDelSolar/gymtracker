@@ -299,7 +299,7 @@ fun WorkoutScreen(
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
                 }
-                items(workout.exercises, key = { it }) { name ->
+                workout.exercises.forEachIndexed { pos, name -> item(key = name) {
                     val dragging = name == dragKey
                     // Wichtig: die Modifier-Kette hat immer dieselbe Struktur (nur Werte ändern sich),
                     // sonst würde Compose den pointerInput-Knoten neu anlegen und die Geste abbrechen.
@@ -339,6 +339,11 @@ fun WorkoutScreen(
                             )
                         }
                     )
+                }
+                // Verbinder zur nächsten Übung: antippen = Supersatz an/aus (Supersets.kt); beim Ziehen ausgeblendet
+                if (pos < workout.exercises.lastIndex) item(key = "link_$name") {
+                    if (dragKey == null) SupersetLink(name in workout.links) { store.toggleLink(workout.id, name) }
+                }
                 }
                 // Beschrifteter Knopf statt nur Stift oben: öffnet WorkoutPickerScreen
                 item {

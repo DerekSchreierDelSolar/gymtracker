@@ -13,6 +13,7 @@ import { exerciseIconHtml, muscleIconHtml, exerciseImageUrl } from '../pictogram
 import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, showHint, hintUsed, undoToast, categoryRow } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
+import { supersetLink, keepLinks } from '../supersets.js';
 
 import { filterActions, filterBar, matches, noFilterResults, filterActive } from '../filter.js';
 
@@ -93,7 +94,7 @@ export function workoutScreen(w, onStart, running = false) {
       h('div', null, h('button', { class: 'btn', onclick: () => go({ pick: true }) }, tr('Übungen auswählen', 'Choose exercises'))),
       daysRow(w));
   } else {
-    const list = h('div', { class: 'ex-list' }, w.exercises.map(name => exerciseRow(w, name)));
+    const list = h('div', { class: 'ex-list' }, w.exercises.map((name, i) => exerciseRow(w, name, i < w.exercises.length - 1)));
     enableDrag(list, w);
     content = h('div', { class: 'pad list-bottom' },
       daysRow(w),
@@ -131,7 +132,7 @@ export function workoutScreen(w, onStart, running = false) {
 }
 
 /** Eine Übung im Workout als Listenzeile: Bild, Name, letzter Satz, Ziel-Pille (antippbar), Griff (wie WorkoutExerciseRow in WorkoutScreens.kt) */
-function exerciseRow(w, name) {
+function exerciseRow(w, name, canLink = false) {
   const g = store.groupOf(name), last = store.setsFor(name)[0], target = store.targetFor(w, name);
   const sub = last ? tr('Zuletzt ', 'Last ') + fmtSet(last, isCardio(g)) : '–';
   return h('button', {
@@ -139,6 +140,7 @@ function exerciseRow(w, name) {
     onclick: e => {
       if (e.currentTarget.dataset.justDragged || e.target.closest('.drag-handle')) return; // nach dem Ziehen / am Griff nicht öffnen
       if (e.target.closest('.target-pill')) { targetDialog(w, name); return; }
+      if (e.target.closest('.superset-link')) { store.toggleLink(w.id, name); return; } // Supersatz mit der nächsten an/aus
       go({ exercise: name });
     },
   },
@@ -146,7 +148,8 @@ function exerciseRow(w, name) {
   h('div', { class: 'grow' }, h('b', null, exName(name)), h('small', null, sub),
     // Ziel-Sätze immer sichtbar („Ziel: –“ = optional) und direkt antippbar (span, da die Zeile selbst ein button ist)
     h('span', { class: 'target-pill', role: 'button' }, tr('Ziel: ', 'Goal: ') + (target === 0 ? '–' : targetLabel(target, g)) + ' ✎')),
-  h('span', { class: 'drag-handle', 'aria-label': tr('Ziehen', 'Drag') }, icon('drag')));
+  h('span', { class: 'drag-handle', 'aria-label': tr('Ziehen', 'Drag') }, icon('drag')),
+  canLink ? supersetLink((w.links ?? []).includes(name)) : null);
 }
 
 /** Ziel-Sätze einer Übung direkt aus der Workout-Liste ändern (wie der Ziel-Dialog in WorkoutExerciseRow) */
@@ -233,7 +236,9 @@ function enableDrag(list, workout) {
       row.style.transition = 'transform .15s ease-out';
       row.style.transform = '';
       row.classList.remove('dragging');
+      const old = [...workout.exercises];
       workout.exercises.splice(0, workout.exercises.length, ...rows().map(r => r.dataset.name));
+      workout.links = keepLinks(old, workout.exercises, workout.links); // Supersätze: nur unveränderte Paare bleiben
       row.dataset.justDragged = '1';
       setTimeout(() => { delete row.dataset.justDragged; store.saveNow(); }, 160);
     };

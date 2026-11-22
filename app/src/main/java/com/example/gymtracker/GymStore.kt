@@ -229,7 +229,8 @@ class GymStore(context: Context) {
                         name = o.getString("name"),
                         exercises = (0 until list.length()).map { migrateName(list.getString(it)) },
                         targets = o.optJSONObject("targets").toIntMap().mapKeys { migrateName(it.key) },
-                        days = o.optJSONArray("days")?.let { d -> (0 until d.length()).map { d.getInt(it) }.filter { it in 1..7 }.toSet() }.orEmpty()
+                        days = o.optJSONArray("days")?.let { d -> (0 until d.length()).map { d.getInt(it) }.filter { it in 1..7 }.toSet() }.orEmpty(),
+                        links = o.optJSONArray("links")?.let { l -> (0 until l.length()).map { migrateName(l.getString(it)) }.toSet() }.orEmpty()
                     )
                 )
             }
@@ -310,6 +311,7 @@ class GymStore(context: Context) {
             o.put("exercises", JSONArray(w.exercises))
             o.put("targets", w.targets.toJson())
             if (w.days.isNotEmpty()) o.put("days", JSONArray(w.days.sorted()))
+            w.links.filter { it in w.exercises }.takeIf { it.isNotEmpty() }?.let { o.put("links", JSONArray(it)) }
             wo.put(o)
         }
         root.put("workouts", wo)
@@ -504,6 +506,15 @@ class GymStore(context: Context) {
     }
 
     /** Übung im Workout von Position `from` nach `to` verschieben (für Drag & Drop). */
+    /** Übung mit der nächsten im Workout zum Supersatz verbinden bzw. lösen (Supersets.kt). */
+    fun toggleLink(workoutId: Long, exercise: String) {
+        val i = workouts.indexOfFirst { it.id == workoutId }
+        if (i < 0) return
+        val w = workouts[i]
+        workouts[i] = w.copy(links = if (exercise in w.links) w.links - exercise else w.links + exercise)
+        save()
+    }
+
     fun moveInWorkout(workoutId: Long, from: Int, to: Int) {
         val i = workouts.indexOfFirst { it.id == workoutId }
         if (i < 0) return
@@ -511,7 +522,7 @@ class GymStore(context: Context) {
         if (from !in list.indices || to !in list.indices || from == to) return
         list.add(to, list.removeAt(from))
         // Nur im Speicher ändern; gespeichert wird beim Loslassen (saveNow), nicht bei jedem Schritt
-        workouts[i] = workouts[i].copy(exercises = list)
+        workouts[i] = workouts[i].copy(exercises = list, links = movedLinks(workouts[i], from, to))
     }
 
     /** Aktuellen Stand sofort in die Datei schreiben. */

@@ -166,6 +166,11 @@
             "After each work set the app optionally asks \"How many more reps could you have done?\" (0 = to failure, 4+ = plenty left). It's shown as \"RIR\" on the set and can be changed in the set dialog. If you had 3 or more reps in reserve last time, 💡 suggests more weight right away. In the \"Progress\" tab a table shows how many kg 95 %, 90 %, 85 % … of your estimated 1RM are and roughly how many reps that's good for."]
     },
     {
+      "keys": ["supersatz", "supersaetze", "superset", "supersets", "riesensatz", "verbinden", "zwei uebungen abwechselnd", "giant set"],
+      "a": ["Im Workout steht zwischen zwei Übungen „+ Supersatz“: antippen verbindet sie (🔗), erneut antippen löst sie. Mehrere hintereinander verbundene Übungen bilden einen Riesensatz. Im Training springt die App nach jedem Arbeitssatz automatisch zur nächsten Übung der Gruppe; die Pause startet erst nach der letzten, danach geht es zurück zur ersten, bis alle Ziel-Sätze erledigt sind. Aufwärmsätze lösen keinen Sprung aus. Verschiebst du eine verbundene Übung, löst sich ihre Verbindung.",
+            "In a workout, \"+ Superset\" appears between two exercises: tap to link them (🔗), tap again to unlink. Several linked in a row form a giant set. During training the app jumps to the next exercise of the group after each work set; the rest timer only starts after the last one, then it goes back to the first until all target sets are done. Warm-up sets don't trigger a jump. Moving a linked exercise removes its link."]
+    },
+    {
       "keys": ["serie", "wochen in folge", "streak", "joker", "urlaub", "krank", "pause serie"],
       "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist. 🃏 Pro Monat gibt es einen Joker: Eine Woche ohne Training (Urlaub, krank) wird automatisch überbrückt, wenn du davor trainiert hast – erst zwei Pausenwochen am Stück beenden die Serie.",
             "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running. 🃏 Each month you get one joker: a week without training (holiday, sick) is bridged automatically if you trained before it – only two weeks off in a row end the streak."]

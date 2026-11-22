@@ -261,7 +261,14 @@ fun TrainingScreen(
                     name = workout.exercises[page],
                     now = now, restEnd = restEnd, restTotal = restTotal,
                     onSkipRest = { onRest(null, restTotal); RestTimer.cancel(context) },
-                    onAdded = { startRest() },
+                    onAdded = {
+                        // Supersatz (Supersets.kt): direkt zur nächsten Übung der Gruppe, Pause erst nach der letzten
+                        val ex = workout.exercises[page]
+                        val warmup = store.setsFor(ex).firstOrNull()?.type == SetType.WARMUP
+                        val (next, rest) = supersetNext(store, workout, ex, start, warmup)
+                        if (rest) startRest()
+                        next?.let { onIndex(workout.exercises.indexOf(it)) }
+                    },
                     onSwap = { to -> onSwap(workout.exercises[page], to) },
                     original = originalOf(workout.exercises[page])
                 )
@@ -397,6 +404,9 @@ fun TrainingExercisePage(
                 )
             }
         }
+
+        // Supersatz-Hinweis (Supersets.kt)
+        supersetOf(workout, name)?.let { g -> item { SupersetHint(g, name) } }
 
         // Nach jedem eingetragenen Satz startet die Pause
         // Übung in diesem Training noch nicht gemacht → erster Satz „Aufwärmen“ (nicht bei Cardio/Zeitübungen)

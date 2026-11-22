@@ -734,3 +734,8 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .orm-table { display: flex; flex-direction: column; gap: 4px; }
 .orm-row { display: flex; align-items: center; }
 .orm-p { width: 64px; }
+/* Supersätze (supersets.js) */
+.ex-row { flex-wrap: wrap; }
+.superset-link { flex-basis: 100%; text-align: center; margin: 8px 0 -6px; font-size: 13px; padding: 4px 0; color: var(--muted); opacity: .8; }
+.superset-link.linked { color: #ff9800; opacity: 1; font-weight: 600; }
+.superset-hint { padding: 8px 12px; border-radius: 12px; background: rgba(255, 152, 0, .15); font-size: 14px; }
