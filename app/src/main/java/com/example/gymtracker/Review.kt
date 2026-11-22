@@ -167,6 +167,13 @@ fun ReviewCard(store: GymStore) {
                     if (r.records.map { it.exercise }.distinct().size > 3) " …" else "")
             if (r.topMuscles.isNotEmpty()) ReviewLine("💪", tr("Am meisten: ", "Most: ") + r.topMuscles.joinToString(", ") { muscleLabel(it) })
             if (r.neglected.isNotEmpty()) ReviewLine("💤", tr("Kaum trainiert: ", "Barely trained: ") + r.neglected.joinToString(", ") { muscleLabel(it) })
+            // Über dich (Schritt 10): unabhängig vom Zeitraum
+            val me = identityLines(store)
+            if (me.isNotEmpty()) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Text(tr("Über dich", "About you"), style = MaterialTheme.typography.titleSmall)
+                me.forEach { (icon, text) -> ReviewLine(icon, text) }
+            }
         }
     }
 }
@@ -177,4 +184,52 @@ private fun ReviewLine(icon: String, text: String) {
         Text(icon, modifier = Modifier.width(28.dp))
         Text(text, style = MaterialTheme.typography.bodyMedium)
     }
+}
+
+// ---------- „Über dich“ (Roadmap Schritt 10, Identität statt Pflicht) ----------
+// Sätze über die eigene Routine: „9 von 10 Wochen Ziel geschafft – das ist Routine“, Lieblingsübung, typische
+// Trainingszeit, stärkste Muskelgruppe. Grundlage: die letzten 10 abgeschlossenen Wochen bzw. 90 Tage. Web: review.js.
+
+/** Zeilen (Symbol, Text) für „Über dich“; leer, solange es zu wenig Daten gibt. */
+fun identityLines(store: GymStore, now: Long = System.currentTimeMillis()): List<Pair<String, String>> {
+    val out = mutableListOf<Pair<String, String>>()
+    val sessions = allSessions(store)
+    if (sessions.size < 3) return out
+    // Wochenziel in den letzten (bis zu) 10 abgeschlossenen Wochen seit dem ersten Training
+    val first = startOfWeek(sessions.minOf { it.start })
+    val weeks = generateSequence(previousWeek(startOfWeek(now))) { previousWeek(it) }.takeWhile { it >= first }.take(10).toList()
+    if (weeks.size >= 4) {
+        val perWeek = sessions.groupingBy { startOfWeek(it.start) }.eachCount()
+        val hit = weeks.count { (perWeek[it] ?: 0) >= store.weeklyGoal }
+        if (hit * 10 >= weeks.size * 6) out += "✅" to tr("$hit von ${weeks.size} Wochen Ziel geschafft – das ist Routine", "$hit of ${weeks.size} weeks on target – that's a habit")
+        else if (hit * 10 >= weeks.size * 3) out += "✅" to tr("$hit von ${weeks.size} Wochen Ziel geschafft – du bleibst dran", "$hit of ${weeks.size} weeks on target – you're sticking with it")
+    }
+    val since = now - 90L * 86_400_000
+    val recent = store.sets.filter { it.isWork && it.time >= since }
+    // Lieblingsübung: die meisten Sätze
+    recent.groupingBy { it.exercise }.eachCount().maxByOrNull { it.value }?.takeIf { it.value >= 5 }?.let { (ex, n) ->
+        out += "❤️" to tr("Lieblingsübung: ${exName(ex)} · $n Sätze", "Favourite exercise: ${exName(ex)} · $n sets")
+    }
+    // Typische Trainingszeit + Lieblings-Wochentag
+    val starts = sessions.filter { it.start >= since }.map { it.start }
+    if (starts.size >= 3) {
+        fun bucket(t: Long) = when (Calendar.getInstance().apply { timeInMillis = t }.get(Calendar.HOUR_OF_DAY)) {
+            in 0..10 -> tr("morgens", "in the morning")
+            in 11..14 -> tr("mittags", "around midday")
+            in 15..17 -> tr("nachmittags", "in the afternoon")
+            in 18..20 -> tr("abends", "in the evening")
+            else -> tr("spätabends", "late at night")
+        }
+        val time = starts.groupingBy { bucket(it) }.eachCount().maxBy { it.value }.key
+        val day = starts.groupingBy { weekdayOf(it) }.eachCount().maxBy { it.value }
+        val dayText = if (day.value * 10 >= starts.size * 3) tr(", am liebsten ${weekdayLong(day.key).lowercase()}s", ", mostly on ${weekdayLong(day.key)}s") else ""
+        out += "🕐" to tr("Du trainierst meist $time$dayText", "You usually train $time$dayText")
+    }
+    // Stärkste Muskelgruppe (die meisten Sätze, ohne Cardio/Sonstige)
+    recent.groupingBy { store.groupOf(it.exercise) }.eachCount()
+        .filterKeys { it != MuscleGroup.CARDIO && it != MuscleGroup.SONSTIGE }
+        .maxByOrNull { it.value }?.takeIf { it.value >= 5 }?.let { (g, _) ->
+            out += "💪" to tr("Deine Stärke: ${g.label}", "Your strength: ${g.label}")
+        }
+    return out
 }

@@ -1,9 +1,9 @@
 // Wochen-/Monatsrückblick (Karte auf der Startseite) – entspricht Review.kt.
 // Zeigt den letzten ABGESCHLOSSENEN Zeitraum (letzte Woche Mo–So bzw. letzten Kalendermonat) im Vergleich zum Zeitraum davor.
 
-import { tr, exName, fmtW, fmtVolume, fmtKcal, fmtDate, startOfWeek, addDays } from './core.js';
+import { tr, exName, fmtW, fmtVolume, fmtKcal, fmtDate, startOfWeek, addDays, isWork, groupLabel } from './core.js';
 import { h, chip } from './ui.js';
-import { allSessions, sessionStats, recordEvents } from './stats.js';
+import { allSessions, sessionStats, recordEvents, weekdayOf, weekdayLong } from './stats.js';
 import { regionScore, muscleScoreOf, relativeLoad, muscleLabel } from './bodymap.js';
 import { MUSCLES } from './body-data.js';
 import { nav, update } from './nav.js';
@@ -88,5 +88,49 @@ export function reviewCard() {
         recordNames.slice(0, 3).map(exName).join(', ') + (recordNames.length > 3 ? ' …' : '')) : null,
       r.topMuscles.length ? h('p', { class: 'review-line' }, h('span', null, '💪'), tr('Am meisten: ', 'Most: ') + r.topMuscles.map(muscleLabel).join(', ')) : null,
       r.neglected.length ? h('p', { class: 'review-line' }, h('span', null, '💤'), tr('Kaum trainiert: ', 'Barely trained: ') + r.neglected.map(muscleLabel).join(', ')) : null,
+      // Über dich (Schritt 10): unabhängig vom Zeitraum
+      (me => (me.length ? [h('hr'), h('b', { class: 'small-title' }, tr('Über dich', 'About you')),
+        me.map(([icon, text]) => h('p', { class: 'review-line' }, h('span', null, icon), text))] : null))(identityLines()),
     ]);
+}
+
+// ---------- „Über dich“ (Roadmap Schritt 10) – wie identityLines in Review.kt ----------
+
+/** Zeilen [Symbol, Text] für „Über dich“; leer, solange es zu wenig Daten gibt. */
+export function identityLines(now = Date.now()) {
+  const out = [];
+  const sessions = allSessions(store);
+  if (sessions.length < 3) return out;
+  // Wochenziel in den letzten (bis zu) 10 abgeschlossenen Wochen seit dem ersten Training
+  const first = startOfWeek(Math.min(...sessions.map(t => t.start)));
+  const weeks = [];
+  for (let w = startOfWeek(addDays(startOfWeek(now), -7)); w >= first && weeks.length < 10; w = startOfWeek(addDays(w, -7))) weeks.push(w);
+  if (weeks.length >= 4) {
+    const perWeek = new Map();
+    for (const t of sessions) perWeek.set(startOfWeek(t.start), (perWeek.get(startOfWeek(t.start)) ?? 0) + 1);
+    const hit = weeks.filter(w => (perWeek.get(w) ?? 0) >= store.weeklyGoal).length;
+    if (hit * 10 >= weeks.length * 6) out.push(['✅', tr(`${hit} von ${weeks.length} Wochen Ziel geschafft – das ist Routine`, `${hit} of ${weeks.length} weeks on target – that's a habit`)]);
+    else if (hit * 10 >= weeks.length * 3) out.push(['✅', tr(`${hit} von ${weeks.length} Wochen Ziel geschafft – du bleibst dran`, `${hit} of ${weeks.length} weeks on target – you're sticking with it`)]);
+  }
+  const since = now - 90 * 86_400_000;
+  const recent = store.sets.filter(s => isWork(s) && s.time >= since);
+  const top = (items, key) => { const m = new Map(); for (const x of items) m.set(key(x), (m.get(key(x)) ?? 0) + 1); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
+  // Lieblingsübung: die meisten Sätze
+  const fav = top(recent, s => s.exercise)[0];
+  if (fav && fav[1] >= 5) out.push(['❤️', tr(`Lieblingsübung: ${exName(fav[0])} · ${fav[1]} Sätze`, `Favourite exercise: ${exName(fav[0])} · ${fav[1]} sets`)]);
+  // Typische Trainingszeit + Lieblings-Wochentag
+  const starts = sessions.filter(t => t.start >= since).map(t => t.start);
+  if (starts.length >= 3) {
+    const bucket = t => { const hr = new Date(t).getHours();
+      return hr <= 10 ? tr('morgens', 'in the morning') : hr <= 14 ? tr('mittags', 'around midday') : hr <= 17 ? tr('nachmittags', 'in the afternoon')
+        : hr <= 20 ? tr('abends', 'in the evening') : tr('spätabends', 'late at night'); };
+    const time = top(starts, bucket)[0][0];
+    const [day, n] = top(starts, weekdayOf)[0];
+    const dayText = n * 10 >= starts.length * 3 ? tr(`, am liebsten ${weekdayLong(day).toLowerCase()}s`, `, mostly on ${weekdayLong(day)}s`) : '';
+    out.push(['🕐', tr(`Du trainierst meist ${time}${dayText}`, `You usually train ${time}${dayText}`)]);
+  }
+  // Stärkste Muskelgruppe (ohne Cardio/Sonstige)
+  const g = top(recent.filter(s => !['CARDIO', 'SONSTIGE'].includes(store.groupOf(s.exercise))), s => store.groupOf(s.exercise))[0];
+  if (g && g[1] >= 5) out.push(['💪', tr(`Deine Stärke: ${groupLabel(g[0])}`, `Your strength: ${groupLabel(g[0])}`)]);
+  return out;
 }
