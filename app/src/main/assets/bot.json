@@ -146,6 +146,11 @@
             "At the top of the home screen a card recalls your last workout (up to 3 days back) with its best win, e.g. \"Yesterday: New record squat\". On Mondays, at the start of a month and in early January it shows a fresh-start note as long as you haven't trained in that period yet. The next-workout card shows a suggestion like \"Last time 75 kg squat – can you do 77.5 today?\", and the workout reminder uses the same sentence."]
     },
     {
+      "keys": ["level", "punkte", "xp", "titel", "frischling", "aufsteigen", "levelaufstieg", "points", "level up", "title"],
+      "a": ["Für jedes Training bekommst du Punkte (XP): 50 pro Training, 5 pro Satz (ohne Aufwärmen), 25 pro Rekord, 50 pro Woche mit geschafftem Wochenziel und 200 pro erreichtem Ziel. Jedes Level braucht 50 Punkte mehr als das vorige. Neue Titel gibt es ab Level 5 (Trainingsschweinchen), 10 (Hantel-Held), 20 (Kraftpaket), 30 (Eiserner Nager), 40 (Muskel-Meerschwein) und 50 (Gym-Legende). Die Level-Karte auf der Startseite antippen zeigt deine Punkte im Einzelnen; ein Aufstieg wird nach dem Training gefeiert.",
+            "Every workout earns points (XP): 50 per workout, 5 per set (no warm-ups), 25 per record, 50 per week with your weekly goal reached and 200 per goal reached. Each level needs 50 points more than the one before. New titles at level 5 (Gym piggy), 10 (Dumbbell hero), 20 (Powerhouse), 30 (Iron rodent), 40 (Muscle guinea pig) and 50 (Gym legend). Tap the level card on the home screen for your point details; a level-up is celebrated after the workout."]
+    },
+    {
       "keys": ["serie", "wochen in folge", "streak"],
       "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist.",
             "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running."]

@@ -20,6 +20,7 @@ import { reviewCard } from '../review.js';
 import { goalsCard } from '../goals.js';
 import { milestonesCard } from '../milestones.js';
 import { morningCard, anticipation } from '../morning.js';
+import { levelCard } from '../levels.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -231,6 +232,9 @@ function dashboardTab(onStartWorkout) {
         showHint('weekGoal') || weekSessions.length >= goal ? h('small', { class: 'muted' }, weekSessions.length >= goal
           ? tr(`Ziel ${goal}/Woche`, `Goal ${goal}/week`) + (showHint('weekGoal') ? tr(' · tippen zum Ändern', ' · tap to change') : '')
           : tr('Tippen, um das Ziel zu ändern', 'Tap to change goal')) : null)),
+
+    // Level (levels.js)
+    levelCard(),
 
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
       h('div', { class: 'grow' },

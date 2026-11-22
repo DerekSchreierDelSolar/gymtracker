@@ -6,10 +6,12 @@ import { store } from './store.js';
 import { tr, exName, fmtW, fmtDate, fmtVolume, plural, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, groupLabel } from './core.js';
 import { allSessions, sessionStats } from './stats.js';
 import { goalProgress, goalTitle, fmtAmount } from './goals.js';
+import { levelUpIn, levelTitle, nextTitleLevel } from './levels.js';
 
 /** Art → [Emoji, Feiern?] – Reihenfolge = Wichtigkeit (wie AchievementKind) */
 export const ACHIEVEMENT_KINDS = {
   GOAL_REACHED: ['🏆', true],
+  LEVEL_UP: ['⭐', true],
   RECORD: ['🥇', true],
   REP_RECORD: ['🔁', false],
   GOAL_PROGRESS: ['🎯', false],
@@ -50,6 +52,14 @@ export function achievements(t, stats = sessionStats(store, t)) {
       out.push(item('GOAL_REACHED', tr('Ziel erreicht: ', 'Goal reached: ') + goalTitle(g),
         tr(`Seit ${fmtDate(g.created)} drangeblieben – stark!`, `Kept at it since ${fmtDate(g.created)} – awesome!`), g.exercise ?? null));
     }
+  }
+
+  // Level-Aufstieg (levels.js)
+  const lv = levelUpIn(t);
+  if (lv) {
+    out.push(item('LEVEL_UP', tr(`Level ${lv} erreicht!`, `Level ${lv} reached!`),
+      levelTitle(lv) !== levelTitle(lv - 1) ? tr(`Neuer Titel: ${levelTitle(lv)}`, `New title: ${levelTitle(lv)}`)
+        : (n => (n ? tr(`Noch ${plural(n - lv, 'Level', 'Level')} bis „${levelTitle(n)}“`, `${plural(n - lv, 'level', 'levels')} to "${levelTitle(n)}"`) : null))(nextTitleLevel(lv))));
   }
 
   // 2./3./8. Je Übung: Rekord > Wiederholungsrekord > besser als letztes Mal (höchstens einer pro Übung)

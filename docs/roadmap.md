@@ -25,7 +25,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
    Neuanfang-Effekt (Montag / Monatsanfang / Neujahr: „Neue Woche, neues Ziel“).
 
 ## Phase 2 – Belohnungssystem
-6. **Level-System:** Punkte für Trainings/Sätze/Ziel-Fortschritt → Level + Balken (Startseite/Profil), rückwirkend
+6. ✅ (22.11.2026) **Level-System:** Punkte für Trainings/Sätze/Ziel-Fortschritt → Level + Balken (Startseite/Profil), rückwirkend
    aus vorhandenen Daten berechnet, Level-Aufstieg wird im Summary gefeiert (nutzt 3).
 7. **Abzeichen:** Übersicht (alle sichtbar außer „geheimen“), rückwirkend berechnet. Meilensteine (10./50./100. Training,
    1 t an einem Tag, Ziel erreicht) + seltene Überraschungen (Frühaufsteher < 7 Uhr, alle Muskelgruppen in einer Woche …).
