@@ -15,7 +15,9 @@ data class GymSet(
     val weight: Double,
     val reps: Int,
     val time: Long,
-    val type: SetType = SetType.NORMAL
+    val type: SetType = SetType.NORMAL,
+    /** Wdh. in Reserve (0–4, 4 = „4+“), optional nach dem Satz abgefragt (Schritt 12); null = nicht angegeben. JSON "rir" nur wenn gesetzt. */
+    val rir: Int? = null
 ) {
     /** Arbeitssatz: zählt für Volumen, kcal, Ziel-Sätze und Heatmap (alles außer Aufwärmen). */
     val isWork: Boolean get() = type != SetType.WARMUP

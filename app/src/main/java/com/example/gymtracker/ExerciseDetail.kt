@@ -59,6 +59,8 @@ fun SetInput(
         if (weightText to repsText == prefill(type)) prefill(t).let { weightText = it.first; repsText = it.second }
         type = t
     }
+    // Nach einem Arbeitssatz: freiwillige Abfrage „Wdh. in Reserve“ (Effort.kt); ID des Satzes, null = keine Abfrage
+    var rirFor by remember(exercise) { mutableStateOf<Long?>(null) }
     // Übernommener Vorschlag überschreibt das Gewichtsfeld
     LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtW(weightOverride) }
 
@@ -159,7 +161,8 @@ fun SetInput(
             val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull() ?: if (timed) 0.0 else null
             val r = repsText.trim().toIntOrNull()
             if (w != null && w >= 0 && r != null && r > 0) { // wie EditSetDialog: kein negatives Gewicht
-                store.addSet(exercise, w, r, type)
+                val added = store.addSet(exercise, w, r, type)
+                rirFor = added.id.takeIf { type != SetType.WARMUP && !cardio && !timed }
                 // Nach dem Aufwärmen: Felder auf den Arbeitssatz umstellen
                 if (type == SetType.WARMUP) prefill(SetType.NORMAL).let { weightText = it.first; repsText = it.second }
                 type = SetType.NORMAL
@@ -191,6 +194,7 @@ fun SetInput(
     if (showWeight && !timed) SetHelpers(store, exercise, weightText) { w, r ->
         weightText = fmtW(w); repsText = r.toString(); type = SetType.WARMUP
     }
+    rirFor?.let { id -> RirPrompt(onPick = { store.setRir(id, it); rirFor = null }, onSkip = { rirFor = null }) }
     }
 }
 
@@ -280,6 +284,7 @@ fun SetRow(store: GymStore, set: GymSet, label: String, cardio: Boolean) {
         Text(label, color = if (set.isWork) Color.Unspecified else set.type.color, fontWeight = if (set.isWork) null else FontWeight.Bold)
         Text(" ${fmtSet(set, cardio)}", color = muted)
         if (set.type != SetType.WARMUP) SetTypeTag(set.type)
+        set.rir?.let { Text(" · " + rirLabel(it), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         Spacer(Modifier.weight(1f))
         Text(
             SimpleDateFormat("HH:mm", appLocale()).format(Date(set.time)),
@@ -292,7 +297,7 @@ fun SetRow(store: GymStore, set: GymSet, label: String, cardio: Boolean) {
             set = set,
             cardio = cardio,
             onDismiss = { editing = false },
-            onSave = { w, r, t -> store.updateSet(set, w, r, t); editing = false },
+            onSave = { w, r, t, rir -> store.updateSet(set, w, r, t, rir); editing = false },
             onDelete = {
                 store.deleteSet(set)
                 editing = false
@@ -311,12 +316,13 @@ fun EditSetDialog(
     set: GymSet,
     cardio: Boolean,
     onDismiss: () -> Unit,
-    onSave: (Double, Int, SetType) -> Unit,
+    onSave: (Double, Int, SetType, Int?) -> Unit,
     onDelete: () -> Unit
 ) {
     var weightText by remember { mutableStateOf(fmtW(set.weight)) }
     var repsText by remember { mutableStateOf(set.reps.toString()) }
     var type by remember { mutableStateOf(set.type) }
+    var rir by remember { mutableStateOf(set.rir) }
 
     val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull()
     val r = repsText.trim().toIntOrNull()
@@ -368,6 +374,11 @@ fun EditSetDialog(
                         }
                     }
                 }
+                // Wdh. in Reserve (optional, nur Kraft mit Wiederholungen)
+                if (!cardio && !isTimed(set.exercise) && type != SetType.WARMUP) {
+                    Text(tr("Wdh. in Reserve (optional)", "Reps in reserve (optional)"), style = MaterialTheme.typography.labelLarge)
+                    RirChips(rir) { rir = it }
+                }
                 // Löschen: rot, sofort (mit „Rückgängig“ in der Leiste unten)
                 TextButton(
                     onClick = onDelete,
@@ -380,7 +391,7 @@ fun EditSetDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(w!!, r!!, type) }, enabled = valid) { Text(tr("Speichern", "Save")) }
+            TextButton(onClick = { onSave(w!!, r!!, type, rir.takeIf { type != SetType.WARMUP }) }, enabled = valid) { Text(tr("Speichern", "Save")) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(tr("Abbrechen", "Cancel")) } }
     )
@@ -640,6 +651,8 @@ fun ExerciseProgress(allSets: List<GymSet>, cardio: Boolean, timed: Boolean) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        // Prozente vom 1RM (Effort.kt)
+        if (strength) OneRmTable(Math.round(history.maxOf { oneRepMax(it.weight, it.reps) } * 2) / 2.0)
     }
 }
 

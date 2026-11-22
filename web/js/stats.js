@@ -252,6 +252,17 @@ export function progressionSuggestion(store, name, before) {
   }
   const eq = equipmentOf(name);
   const step = eq === 'KURZHANTEL' || eq === 'KETTLEBELL' ? 2 : 2.5;
+  // Wdh. in Reserve (effort.js): noch ≥ 3 im Tank → gleich mehr Gewicht, auch ohne 8+ Wdh. (wie Progression.kt)
+  const rirs = atTop.map(s => s.rir).filter(r => r != null);
+  const minRir = rirs.length ? Math.min(...rirs) : null;
+  if (minRir != null && minRir >= 3 && !(atTop.length >= 2 && minReps >= 8)) {
+    const n = minRir >= 4 ? '4+' : minRir;
+    return {
+      title: tr(`Heute ${fmtW(top + step)} kg?`, `Try ${fmtW(top + step)} kg today?`),
+      reason: tr(`Letztes Mal bei ${fmtW(top)} kg noch ${n} Wdh. in Reserve – das geht schwerer`, `Last time at ${fmtW(top)} kg you had ${n} reps in reserve – go heavier`),
+      weight: top + step,
+    };
+  }
   if (atTop.length >= 2 && minReps >= 8) {
     return {
       title: tr(`Heute ${fmtW(top + step)} kg?`, `Try ${fmtW(top + step)} kg today?`),

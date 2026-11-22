@@ -39,7 +39,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 ## Phase 3 – Training verbessern
 11. ✅ (22.11.2026; Scheiben fest 25–1,25 kg, nur Stange wählbar) **Scheibenrechner** (Zielgewicht → Scheiben pro Seite; Stange + vorhandene Scheiben in den Einstellungen; in `SetInput`
     bei Langhantel) + **Aufwärm-Rampe** (aus Arbeitsgewicht 2–3 Aufwärmsätze, z. B. 40 % × 10, 60 % × 5, 80 % × 2).
-12. **RPE/RIR pro Satz** (optional) → genauerer 💡-Vorschlag in `Progression.kt`; **%-Tabelle zum 1RM** im Reiter Fortschritt.
+12. ✅ (22.11.2026, als RIR 0–4+) **RPE/RIR pro Satz** (optional) → genauerer 💡-Vorschlag in `Progression.kt`; **%-Tabelle zum 1RM** im Reiter Fortschritt.
 13. **Supersätze:** zwei Übungen im Workout verbinden, im Training automatischer Wechsel nach jedem Satz, Pause erst nach dem Paar.
 14. **Mehrwöchige Programme:** Blöcke (z. B. 4 Wochen Aufbau + 1 Woche Deload mit automatisch reduzierten Zielen),
     Erweiterung von `Plan.kt`; Deload-Hinweis kann RPE (12) und Erholungs-Check nutzen.

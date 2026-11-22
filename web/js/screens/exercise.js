@@ -1,6 +1,7 @@
 // Übungs-Bausteine und Übungsdetail – entspricht ExerciseDetail.kt, Progression.kt (UI) und ExerciseTile.
 
 import { setHelpers } from '../plates.js';
+import { rirLabel, rirChips, rirPrompt, oneRmTable } from '../effort.js';
 import { wikiFor, wikiContent } from '../wiki.js';
 import { musclesOf, muscleEditDialog, muscleSideCard, levelsOf } from '../bodymap.js';
 import { store } from '../store.js';
@@ -139,10 +140,13 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
       return;
     }
     st.watchStart = null;
-    store.addSet(name, w, r, st.type ?? 'NORMAL');
+    const added = store.addSet(name, w, r, st.type ?? 'NORMAL');
+    // Nach einem Arbeitssatz: freiwillige Abfrage „Wdh. in Reserve“ (effort.js)
+    st.rirFor = (st.type ?? 'NORMAL') !== 'WARMUP' && !cardio && !timed ? added.id : null; // Speichern hat schon neu gezeichnet → unten erneut
     if (st.type === 'WARMUP') Object.assign(st, prefillText(name, 'NORMAL', goalReps)); // nach dem Aufwärmen: Arbeitssatz
     st.type = 'NORMAL'; // nach jedem Satz wieder „Normal“
     onAdded();
+    rerender();
   };
 
   let watch = null;
@@ -184,7 +188,8 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
     // Schnell ändern ohne Tastatur: −/+ unter den Feldern (Gewicht ±2,5 kg; Wdh./Minuten ±1, Sekunden ±5) – wie SetInput in ExerciseDetail.kt
     stepRow(cardio, showWeight, timed, st),
     // Scheibenrechner + Aufwärm-Rampe (plates.js)
-    showWeight && !timed ? setHelpers(name, st.weight, (w, r) => { st.weight = fmtW(w); st.reps = String(r); st.type = 'WARMUP'; rerender(); }) : null);
+    showWeight && !timed ? setHelpers(name, st.weight, (w, r) => { st.weight = fmtW(w); st.reps = String(r); st.type = 'WARMUP'; rerender(); }) : null,
+    st.rirFor != null ? rirPrompt(n => { store.setRir(st.rirFor, n); st.rirFor = null; rerender(); }, () => { st.rirFor = null; rerender(); }) : null);
 }
 
 // ---------- Satz-Zeile + Bearbeiten ----------
@@ -209,6 +214,7 @@ export function setRow(set, label, cardio) {
     h('span', { class: ['set-label', 'st-' + type] }, label),
     h('span', null, ' ' + fmtSet(set, cardio)),
     type === 'DROP' || type === 'FAILURE' ? h('span', { class: ['set-tag', 'st-' + type] }, setTypeLabel(type)) : null,
+    set.rir != null ? h('small', { class: 'muted rir-tag' }, ' · ' + rirLabel(set.rir)) : null,
     h('span', { class: 'grow' }),
     h('small', { class: 'muted' }, fmtTime(set.time)));
 }
@@ -232,7 +238,7 @@ export function recordLine(allSets, cardio, timed) {
 }
 
 export function editSetDialog(set, cardio) {
-  const st = { weight: fmtW(set.weight), reps: String(set.reps), type: setTypeOf(set) };
+  const st = { weight: fmtW(set.weight), reps: String(set.reps), type: setTypeOf(set), rir: set.rir ?? null };
   openDialog(() => {
     const w = cardio ? 0 : parseNum(st.weight);
     const r = parseIntStrict(st.reps);
@@ -248,6 +254,9 @@ export function editSetDialog(set, cardio) {
       // Satz-Typ (nicht bei Cardio)
       cardio ? null : h('div', { class: 'chips wrap' },
         SET_TYPES.map(t => chip(setTypeLabel(t), st.type === t, () => { st.type = t; rerender(); }))),
+      // Wdh. in Reserve (optional, nur Kraft mit Wiederholungen) – wie EditSetDialog
+      !cardio && !isTimed(set.exercise) && st.type !== 'WARMUP'
+        ? [h('b', { class: 'small-title' }, tr('Wdh. in Reserve (optional)', 'Reps in reserve (optional)')), rirChips(st.rir, n => { st.rir = n; rerender(); })] : null,
       h('button', {
         class: 'btn text danger',
         // sofort löschen, unten „Rückgängig“ (wie EditSetDialog in ExerciseDetail.kt)
@@ -255,7 +264,7 @@ export function editSetDialog(set, cardio) {
       }, icon('delete', 18), tr('Eintrag löschen', 'Delete entry')),
     ], [
       { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
-      { label: tr('Speichern', 'Save'), disabled: !valid, onClick: () => { store.updateSet(set, w, r, st.type); closeDialog(); } },
+      { label: tr('Speichern', 'Save'), disabled: !valid, onClick: () => { store.updateSet(set, w, r, st.type, st.rir); closeDialog(); } },
     ], closeDialog);
   });
 }
@@ -374,6 +383,8 @@ function exerciseProgress(allSets, cardio, timed) {
       glassify(progressChart(values, title, unit)),
       h('div', { class: 'chart-dates muted' }, h('span', null, fmtShortDate(groups[0][0].time)), h('span', null, fmtShortDate(groups.at(-1)[0].time))),
     ] : muted(tr('Ab zwei Einträgen in dieser Einteilung erscheint hier ein Diagramm.', 'A chart appears once there are two entries for this grouping.')),
+    // Prozente vom 1RM (effort.js)
+    strength ? oneRmTable(Math.round(Math.max(...history.map(s => oneRepMax(s.weight, s.reps))) * 2) / 2) : null,
   ];
 }
 

@@ -52,6 +52,14 @@ fun progressionSuggestion(store: GymStore, name: String, before: Long): Suggesti
         Equipment.KURZHANTEL, Equipment.KETTLEBELL -> 2.0
         else -> 2.5
     }
+    // Wdh. in Reserve (Effort.kt): noch ≥ 3 im Tank → gleich mehr Gewicht, auch ohne 8+ Wdh.
+    val minRir = atTop.mapNotNull { it.rir }.minOrNull()
+    if (minRir != null && minRir >= 3 && !(atTop.size >= 2 && minReps >= 8)) return Suggestion(
+        tr("Heute ${fmtW(top + step)} kg?", "Try ${fmtW(top + step)} kg today?"),
+        tr("Letztes Mal bei ${fmtW(top)} kg noch ${if (minRir >= 4) "4+" else minRir} Wdh. in Reserve – das geht schwerer",
+            "Last time at ${fmtW(top)} kg you had ${if (minRir >= 4) "4+" else minRir} reps in reserve – go heavier"),
+        top + step
+    )
     return if (atTop.size >= 2 && minReps >= 8) {
         Suggestion(
             tr("Heute ${fmtW(top + step)} kg?", "Try ${fmtW(top + step)} kg today?"),

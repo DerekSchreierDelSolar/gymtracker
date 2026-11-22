@@ -731,3 +731,9 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .ramp-label { width: 32px; color: #e0a030; }
 .ramp-label.work { color: inherit; }
 .error-text { color: var(--error); }
+/* RIR + 1RM-Tabelle (effort.js) */
+.rir-prompt { padding: 4px 8px 10px 12px; margin-top: 6px; background: var(--container-high); }
+.rir-tag { margin-left: 2px; }
+.orm-table { display: flex; flex-direction: column; gap: 4px; }
+.orm-row { display: flex; align-items: center; }
+.orm-p { width: 64px; }

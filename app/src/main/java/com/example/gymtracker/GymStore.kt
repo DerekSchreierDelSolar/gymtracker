@@ -286,7 +286,8 @@ class GymStore(context: Context) {
                         weight = o.getDouble("weight"),
                         reps = o.getInt("reps"),
                         time = o.getLong("time"),
-                        type = SetType.parse(o.optString("type").ifEmpty { null })
+                        type = SetType.parse(o.optString("type").ifEmpty { null }),
+                        rir = if (o.has("rir")) o.optInt("rir", -1).takeIf { it in 0..10 } else null
                     )
                 )
             }
@@ -373,6 +374,7 @@ class GymStore(context: Context) {
             o.put("reps", set.reps)
             o.put("time", set.time)
             if (set.type != SetType.NORMAL) o.put("type", set.type.name) // nur abweichende Typen speichern
+            set.rir?.let { o.put("rir", it) }
             s.put(o)
         }
         root.put("sets", s)
@@ -599,17 +601,25 @@ class GymStore(context: Context) {
         save()
     }
 
-    fun addSet(exercise: String, weight: Double, reps: Int, type: SetType = SetType.NORMAL) {
+    fun addSet(exercise: String, weight: Double, reps: Int, type: SetType = SetType.NORMAL): GymSet {
         val now = System.currentTimeMillis()
-        sets.add(GymSet(now, exercise, weight, reps, now, type))
+        val s = GymSet(now, exercise, weight, reps, now, type)
+        sets.add(s)
         save()
+        return s
+    }
+
+    /** Wdh. in Reserve eines Satzes setzen (null = entfernen). */
+    fun setRir(id: Long, rir: Int?) {
+        val i = sets.indexOfFirst { it.id == id }
+        if (i >= 0) { sets[i] = sets[i].copy(rir = rir); save() }
     }
 
     /** Gewicht/Wiederholungen/Typ eines bestehenden Satzes ändern (Zeitpunkt bleibt gleich). */
-    fun updateSet(set: GymSet, weight: Double, reps: Int, type: SetType = set.type) {
+    fun updateSet(set: GymSet, weight: Double, reps: Int, type: SetType = set.type, rir: Int? = set.rir) {
         val i = sets.indexOf(set)
         if (i < 0) return
-        sets[i] = set.copy(weight = weight, reps = reps, type = type)
+        sets[i] = set.copy(weight = weight, reps = reps, type = type, rir = rir)
         save()
     }
 

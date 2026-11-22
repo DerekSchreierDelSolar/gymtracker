@@ -161,6 +161,11 @@
             "Below the set input there are two helpers: \"🏋 Plates\" (barbell exercises) shows which plates to load per side – pick the bar (20, 15, 10 or 7.5 kg) in the dialog, the app remembers it. \"🔥 Warm-up\" suggests 2–4 warm-up sets for the entered working weight (empty bar × 10, 40 % × 10, 60 % × 5, 80 % × 2); tap one to use it as a warm-up set."]
     },
     {
+      "keys": ["rir", "rpe", "in reserve", "wie schwer", "anstrengung", "1rm tabelle", "prozent", "prozente", "reps in reserve", "percent"],
+      "a": ["Nach jedem Arbeitssatz fragt die App freiwillig: „Wie viele Wdh. wären noch gegangen?“ (0 = bis zum Versagen, 4+ = noch viel Luft). Die Zahl steht als „RIR“ am Satz und lässt sich im Satz-Dialog ändern. Hattest du beim letzten Mal noch 3 oder mehr Wdh. in Reserve, schlägt 💡 gleich mehr Gewicht vor. Im Reiter „Fortschritt“ zeigt eine Tabelle, wie viel kg 95 %, 90 %, 85 % … deines geschätzten 1RM sind und für wie viele Wdh. das ungefähr reicht.",
+            "After each work set the app optionally asks \"How many more reps could you have done?\" (0 = to failure, 4+ = plenty left). It's shown as \"RIR\" on the set and can be changed in the set dialog. If you had 3 or more reps in reserve last time, 💡 suggests more weight right away. In the \"Progress\" tab a table shows how many kg 95 %, 90 %, 85 % … of your estimated 1RM are and roughly how many reps that's good for."]
+    },
+    {
       "keys": ["serie", "wochen in folge", "streak", "joker", "urlaub", "krank", "pause serie"],
       "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist. 🃏 Pro Monat gibt es einen Joker: Eine Woche ohne Training (Urlaub, krank) wird automatisch überbrückt, wenn du davor trainiert hast – erst zwei Pausenwochen am Stück beenden die Serie.",
             "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running. 🃏 Each month you get one joker: a week without training (holiday, sick) is bridged automatically if you trained before it – only two weeks off in a row end the streak."]

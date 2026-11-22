@@ -175,6 +175,8 @@ class GymStore {
         id: o.id, exercise: migrateName(o.exercise), weight: o.weight, reps: o.reps, time: o.time,
         // Satz-Typ nur speichern, wenn er nicht „Normal“ ist (wie Android)
         ...(SET_TYPES.includes(o.type) && o.type !== 'NORMAL' ? { type: o.type } : {}),
+        // Wdh. in Reserve (Schritt 12, wie GymSet.rir) nur wenn gültig
+        ...(Number.isInteger(o.rir) && o.rir >= 0 && o.rir <= 10 ? { rir: o.rir } : {}),
       }));
   }
 
@@ -434,15 +436,26 @@ class GymStore {
     let now = Date.now();
     // IDs müssen eindeutig sein (zwei Sätze in derselben Millisekunde)
     while (this.sets.some(s => s.id === now)) now++;
-    this.sets.push({ id: now, exercise, weight, reps, time: now, ...(type !== 'NORMAL' ? { type } : {}) });
+    const s = { id: now, exercise, weight, reps, time: now, ...(type !== 'NORMAL' ? { type } : {}) };
+    this.sets.push(s);
+    this.#save();
+    return s;
+  }
+
+  /** Wdh. in Reserve setzen (null = entfernen) – wie GymStore.setRir */
+  setRir(id, rir) {
+    const s = this.sets.find(x => x.id === id);
+    if (!s) return;
+    if (rir == null) delete s.rir; else s.rir = rir;
     this.#save();
   }
 
-  updateSet(set, weight, reps, type = setTypeOf(set)) {
+  updateSet(set, weight, reps, type = setTypeOf(set), rir = set.rir ?? null) {
     const s = this.sets.find(x => x.id === set.id);
     if (!s) return;
     s.weight = weight; s.reps = reps;
     if (type === 'NORMAL') delete s.type; else s.type = type;
+    if (rir == null || type === 'WARMUP') delete s.rir; else s.rir = rir;
     this.#save();
   }
 
