@@ -13,7 +13,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 1. ✅ (22.11.2026, Karte auf der Startseite statt im Profil-Dialog) **Langfristige Ziele im Profil.** Typen: Kraft (Übung + kg, über 1RM/Rekord), Ausdauer (Cardio-Übung + Minuten am Stück),
    Körpergewicht (Ziel-kg, Startwert merken), Gewohnheit („Ausdauer erhöhen“ = Cardio-Minuten/Woche,
    „gesund bleiben“ = Wochenziel-Quote + alle Muskelgruppen). JSON `goals`. Fortschritt in % als Karte auf der Startseite.
-2. **Erfolgs-Berechnung** (eine gemeinsame Funktion, z. B. `achievements(session)`): Rekorde, bester Vergleich mit
+2. ✅ (22.11.2026) **Erfolgs-Berechnung** (eine gemeinsame Funktion, z. B. `achievements(session)`): Rekorde, bester Vergleich mit
    letztem Mal (Volumen, Sätze, Gewicht), x. Training der Woche, Muskel nach Pause wieder dabei, Ziel-Fortschritt.
    Liefert immer mindestens einen Erfolg. Wird von 3, 5, 7 und 10 wiederverwendet.
 3. **Feier im SummaryScreen (Peak-End):** Konfetti (selbst gezeichnet: Compose-Canvas / CSS) + Vibration bei Rekorden,

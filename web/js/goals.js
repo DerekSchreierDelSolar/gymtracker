@@ -20,7 +20,7 @@ const typeInfo = t => TYPES().find(x => x[0] === t);
 const needsExercise = t => GOAL_NEEDS_EXERCISE.includes(t);
 
 /** Menge einer Ausdauer-Übung: Cardio in Minuten, Zeitübung in Sekunden (wie GymSet.reps). */
-const fmtAmount = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)} min` : `${fmtW(v)} s`);
+export const fmtAmount = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)} min` : `${fmtW(v)} s`);
 const topSets = ex => store.sets.filter(s => s.exercise === ex && isTop(s) && s.reps > 0);
 const metricOf = type => (type === 'ENDURANCE' ? s => s.reps : s => s.weight);
 
