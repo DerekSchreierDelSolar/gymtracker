@@ -7,8 +7,8 @@
     },
     {
       "keys": ["drop", "dropsatz", "drop satz", "aufwaermen", "aufwaermsatz", "warmup", "warm up", "versagen", "failure", "satztyp", "satz typ", "set type"],
-      "a": ["Links neben kg/Wdh. ist der Satz-Typ-Knopf: antippen schaltet N (Normal) → A (Aufwärmen) → D (Drop) → V (bis zum Versagen). Nach jedem Satz springt er auf Normal zurück.\n• Aufwärmsätze zählen nicht für Volumen, Ziel-Sätze, Heatmap und Rekorde.\n• Drop-Sätze zählen fürs Volumen, aber nicht für Rekorde.\n• Sätze bis zum Versagen zählen überall.",
-            "Left of kg/reps is the set-type button: tap to cycle N (normal) → W (warm-up) → D (drop) → F (to failure). It resets to normal after each set.\n• Warm-up sets don't count for volume, target sets, heatmap or records.\n• Drop sets count for volume but not for records.\n• Sets to failure count everywhere."]
+      "a": ["Links neben kg/Wdh. ist der Satz-Typ-Knopf: antippen schaltet N (Normal) → A (Aufwärmen) → D (Drop) → V (bis zum Versagen). Nach jedem Satz springt er auf Normal zurück; im Training ist beim ersten Satz einer Übung „Aufwärmen“ vorausgewählt.\n• Aufwärmsätze zählen nicht für Volumen, Ziel-Sätze, Heatmap und Rekorde.\n• Drop-Sätze zählen fürs Volumen, aber nicht für Rekorde.\n• Sätze bis zum Versagen zählen überall.",
+            "Left of kg/reps is the set-type button: tap to cycle N (normal) → W (warm-up) → D (drop) → F (to failure). It resets to normal after each set; in workout mode the first set of an exercise starts as warm-up.\n• Warm-up sets don't count for volume, target sets, heatmap or records.\n• Drop sets count for volume but not for records.\n• Sets to failure count everywhere."]
     },
     {
       "keys": ["bearbeiten", "aendern", "loeschen", "korrigieren", "falsch eingetragen", "edit", "delete", "wrong"],

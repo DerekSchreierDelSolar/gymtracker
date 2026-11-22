@@ -235,7 +235,8 @@ function exercisePage(w, start, name) {
     originalOf(name) ? h('div', { class: 'accent swap-note' }, tr(`Heute statt „${exName(originalOf(name))}“`, `Today instead of "${exName(originalOf(name))}"`)) : null,
     recordLine(store.setsFor(name), cardio, timed),
     h('div', { class: 'circle-row' }, reps, restCircle(), sets),
-    setInput(name, startRest),
+    // Übung in diesem Training noch nicht gemacht → erster Satz „Aufwärmen“
+    setInput(name, startRest, today.length ? null : start),
     noteButton(name),
     today.length ? [h('h2', { class: 'section' }, tr('Heute', 'Today')),
       setRows(today, cardio)] : null,

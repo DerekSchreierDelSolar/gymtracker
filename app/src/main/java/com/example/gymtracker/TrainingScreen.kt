@@ -391,7 +391,8 @@ fun TrainingExercisePage(
         }
 
         // Nach jedem eingetragenen Satz startet die Pause
-        item { SetInput(store, name, onAdded = onAdded) }
+        // Übung in diesem Training noch nicht gemacht → erster Satz „Aufwärmen“ (nicht bei Cardio/Zeitübungen)
+        item { SetInput(store, name, onAdded = onAdded, startWithWarmup = today.isEmpty() && !store.groupOf(name).isCardio && !isTimed(name)) }
         item { NoteButton(store, name) }
 
         // Heutige Sätze (neuester oben)

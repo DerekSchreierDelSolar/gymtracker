@@ -75,11 +75,14 @@ const mmss = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')
 /**
  * kg + Wdh. (bzw. Minuten bei Cardio, Sekunden bei Zeitübungen) mit Button.
  * onAdded: wird nach dem Eintragen aufgerufen (Trainingsmodus startet damit die Pause).
+ * warmupKey: im Training gesetzt (= Trainingsstart), wenn die Übung dort noch keinen Satz hat → erster Satz
+ * „Aufwärmen“ (wie startWithWarmup in ExerciseDetail.kt); einmal je Training, danach bleibt die Auswahl des Nutzers.
  */
-export function setInput(name, onAdded = () => {}) {
+export function setInput(name, onAdded = () => {}, warmupKey = null) {
   const cardio = isCardio(store.groupOf(name));
   const timed = isTimed(name);
   const st = inputState(name);
+  if (warmupKey != null && st.warmupKey !== warmupKey && !cardio && !timed) { st.type = 'WARMUP'; st.warmupKey = warmupKey; }
   const showWeight = !cardio && (!timed || equipmentOf(name) !== 'KOERPER');
   const idBase = 'in-' + name.replace(/\W+/g, '_');
 

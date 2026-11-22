@@ -30,13 +30,15 @@ import java.util.Date
  * Vorbelegt mit dem letzten Satz der Übung.
  * `remember(exercise)` setzt die Felder zurück, sobald eine andere Übung angezeigt wird.
  * `weightOverride`: wird gesetzt, wenn der Nutzer einen Gewichts-Vorschlag übernimmt.
+ * `startWithWarmup`: erster Satz ist vorausgewählt „Aufwärmen“ (Training: Übung heute noch nicht gemacht).
  */
 @Composable
 fun SetInput(
     store: GymStore,
     exercise: String,
     onAdded: () -> Unit = {},
-    weightOverride: Double? = null
+    weightOverride: Double? = null,
+    startWithWarmup: Boolean = false
 ) {
     Column { // Stoppuhr, Eingabezeile und −/+ untereinander
     val cardio = store.groupOf(exercise).isCardio
@@ -46,8 +48,8 @@ fun SetInput(
     var repsText by remember(exercise) { mutableStateOf(lastSet?.reps?.toString() ?: "") }
     // Übernommener Vorschlag überschreibt das Gewichtsfeld
     LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtW(weightOverride) }
-    // Satz-Typ des nächsten Satzes; springt nach jedem Satz auf Normal zurück
-    var type by remember(exercise) { mutableStateOf(SetType.NORMAL) }
+    // Satz-Typ des nächsten Satzes; springt nach jedem Satz auf Normal zurück (erster Satz im Training ggf. Aufwärmen)
+    var type by remember(exercise) { mutableStateOf(if (startWithWarmup) SetType.WARMUP else SetType.NORMAL) }
 
     // Stoppuhr für Zeitübungen: Startzeitpunkt (null = steht)
     var watchStart by remember(exercise) { mutableStateOf<Long?>(null) }

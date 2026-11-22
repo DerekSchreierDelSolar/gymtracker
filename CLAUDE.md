@@ -88,7 +88,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 - `GymSet.reps` ist je nach Übung: Wiederholungen | **Minuten** (Cardio, `group.isCardio`) | **Sekunden** (`isTimed(name)`).
   Cardio/Zeit zählen nicht ins Volumen (kg × Wdh.).
 - **Satz-Typen** (`SetType`: NORMAL, WARMUP, DROP, FAILURE; im JSON `"type"` nur bei ≠ NORMAL, Web: `s.type` fehlt = NORMAL).
-  `isWork` (alles außer Aufwärmen) → Volumen, kcal, Ziel-Sätze, Satzzahlen, Heatmap; `isTop` (Normal + Versagen) →
+  Im Training ist beim ersten Satz einer Übung (noch kein Satz seit Trainingsstart, nicht Cardio/Zeit) „Aufwärmen“ vorausgewählt (`SetInput(startWithWarmup)`, Web: `setInput(name, onAdded, warmupKey)`). `isWork` (alles außer Aufwärmen) → Volumen, kcal, Ziel-Sätze, Satzzahlen, Heatmap; `isTop` (Normal + Versagen) →
   Rekorde, 1RM, Fortschritt, 💡-Vorschlag, Wdh.-Ziel, Vergleich „letztes Mal“. Neue Auswertungen immer entsprechend filtern
   (`work()`/`top()` bzw. `isWork`/`isTop` in core.js). Satzliste: `setLabels()` (Arbeitssätze 1., 2. …, Aufwärmen „A“).
 - Kategorien (`MuscleGroup`): Brust, Rücken, Beine, Gluteus, Schultern, Bizeps, Trizeps, Unterarm, Bauch, Ganzkörper, Cardio, Sonstige. Früher gab es „Arme“ (`ARME`): beim Laden wird das für eigene Übungen per `migrateArmGroup()` nach Hauptmuskel auf Bizeps/Trizeps/Unterarm verteilt (Web: core.js). `groupOf()` nimmt für Katalog-Übungen immer die Katalog-Kategorie (gespeicherte Werte werden ignoriert). Neue Kategorie = enum in Model.kt + `MUSCLE_GROUPS` in core.js + `defaultMotion()`.
