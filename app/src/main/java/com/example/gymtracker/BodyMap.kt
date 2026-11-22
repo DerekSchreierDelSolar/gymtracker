@@ -807,6 +807,9 @@ fun MuscleHeatCard(store: GymStore, period: StatPeriod, onPeriod: (StatPeriod) -
     }
 }
 
+/** So viele Muskeln zeigt die Liste unter der Heatmap, bevor „Alle anzeigen“ nötig ist */
+const val MUSCLE_LIST_SHORT = 5
+
 /** „6,5“ bzw. „6“ – halbe Sätze kommen von Hilfsmuskeln. */
 fun fmtSets(v: Float): String = fmtW(Math.round(v * 2) / 2.0)
 
@@ -854,6 +857,10 @@ private fun MuscleHeatCardContent(
                     }
                 }
             }
+            // Liste nur mit den 5 stärksten Muskeln, Rest über „Alle anzeigen“ (Startseite bleibt kurz)
+            var showAll by remember { mutableStateOf(false) }
+            val sorted = score.entries.sortedByDescending { it.value }
+            val shown = if (showAll) sorted else sorted.take(MUSCLE_LIST_SHORT)
             if (load.isEmpty()) {
                 Text(empty, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
@@ -866,12 +873,12 @@ private fun MuscleHeatCardContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     HorizontalBars(
-                        score.entries.sortedByDescending { it.value }.map { muscleLabel(it.key) to it.value.toDouble() }
+                        shown.map { muscleLabel(it.key) to it.value.toDouble() }
                     ) { v -> "${Math.round(v / total * 100)} % · ${fmtSets(v.toFloat())}" }
                 } else
                 // Muskeln mit Prozent (relativ zum stärksten), stärkste zuerst
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    score.entries.sortedByDescending { it.value }.forEach { (id, _) ->
+                    shown.forEach { (id, _) ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             heatColor(load.getValue(id))?.let { LegendDot(it) }
                             Text(
@@ -880,6 +887,15 @@ private fun MuscleHeatCardContent(
                             )
                         }
                     }
+                }
+                if (sorted.size > MUSCLE_LIST_SHORT) TextButton(
+                    onClick = { showAll = !showAll },
+                    contentPadding = PaddingValues(horizontal = 0.dp)
+                ) {
+                    Text(
+                        if (showAll) tr("Weniger anzeigen", "Show less")
+                        else tr("Alle anzeigen (${sorted.size})", "Show all (${sorted.size})")
+                    )
                 }
                 if (showSets) Text(
                     tr("Summe: ", "Total: ") + fmtSets(score.values.sum()) + " " + tr("Muskel-Sätze", "muscle sets") +

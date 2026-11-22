@@ -39,9 +39,7 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
     var pickDay by remember { mutableStateOf(false) }
     var editEntry by remember { mutableStateOf<WeightEntry?>(null) } // im Diagramm angetippter Eintrag
 
-    // Verbrauch dieser Woche über alle Trainings (inkl. freier Trainings)
-    val weekSessions = allSessions(store).filter { it.start >= startOfWeek() }
-    val weekKcal = weekSessions.mapNotNull { sessionStats(store, it).kcal }.sum()
+    var showMet by remember { mutableStateOf(false) } // Erklärung der kcal-Schätzung (ⓘ)
 
     LazyColumn(
         modifier = modifier,
@@ -110,26 +108,25 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
             }
         }
 
-        // Kalorien diese Woche (dezent, damit das Gewicht im Vordergrund bleibt)
+        // Wozu das Gewicht dient (kcal-Schätzung). Der Wochen-Verbrauch selbst steht auf der Startseite;
+        // die Erklärung der MET-Methode liegt hinter ⓘ statt als Dauertext unten.
         item {
-            Card(Modifier.fillMaxWidth()) {
-                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("🔥", style = MaterialTheme.typography.headlineMedium)
-                    Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text(tr("Diese Woche", "This week"), style = MaterialTheme.typography.labelLarge)
-                        Text(
-                            if (last == null) tr(
-                                "Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.",
-                                "Log your weight and the app will estimate calories burned."
-                            ) else tr(
-                                "~$weekKcal kcal verbrannt · ${plural(weekSessions.size, "Trainingseinheit", "Trainingseinheiten")}",
-                                "~$weekKcal kcal burned · ${plural(weekSessions.size, "workout", "workouts")}"
-                            ),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("🔥", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    if (last == null) tr(
+                        "Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.",
+                        "Log your weight and the app will estimate calories burned."
+                    ) else tr(
+                        "Dein Gewicht fließt in die kcal-Schätzung ein (Startseite: „Diese Woche“).",
+                        "Your weight is used for the calorie estimate (home: \"This week\")."
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                IconAction(Ico.INFO, onClick = { showMet = true }, tint = MaterialTheme.colorScheme.primary)
             }
         }
 
@@ -159,17 +156,19 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
             }
         }
 
-        item {
-            Text(
-                tr(
-                    "Der Verbrauch ist eine Schätzung nach der MET-Methode (Körpergewicht × Dauer × Intensität der Übung). Cardio wird über die eingetragenen Minuten gerechnet, Krafttraining über die Trainingsdauer.",
-                    "Calories are estimated with the MET method (body weight × duration × exercise intensity). Cardio uses the logged minutes, strength training the workout duration."
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
+
+    if (showMet) AlertDialog(
+        onDismissRequest = { showMet = false },
+        title = { Text(tr("Wie wird der Verbrauch geschätzt?", "How are calories estimated?")) },
+        text = {
+            Text(tr(
+                "Nach der MET-Methode: Körpergewicht × Dauer × Intensität der Übung. Cardio wird über die eingetragenen Minuten gerechnet, Krafttraining über die Trainingsdauer. Mit vollständigem Profil (Einstellungen: Geschlecht, Geburtsjahr, Größe) nimmt die App statt des Körpergewichts deinen Grundumsatz – das ist genauer. Es bleibt eine Schätzung.",
+                "With the MET method: body weight × duration × exercise intensity. Cardio uses the logged minutes, strength training the workout duration. With a complete profile (settings: sex, birth year, height) the app uses your basal metabolic rate instead of body weight, which is more accurate. It is still an estimate."
+            ))
+        },
+        confirmButton = { TextButton(onClick = { showMet = false }) { Text("OK") } }
+    )
 
     editEntry?.let { e -> WeightEditDialog(store, e, onDismiss = { editEntry = null }) }
 

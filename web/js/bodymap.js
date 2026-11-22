@@ -379,6 +379,11 @@ export function muscleHeatCard(sets, period, onPeriod) {
 /** „6,5“ bzw. „6“ – halbe Sätze kommen von Hilfsmuskeln. */
 const fmtSets = v => fmtW(Math.round(v * 2) / 2);
 
+// Liste unter der Heatmap: nur die 5 stärksten Muskeln, Rest über „Alle anzeigen“ (wie MUSCLE_LIST_SHORT in BodyMap.kt).
+// Aufgeklappt-Zustand je Kartentitel, damit er das Neuzeichnen übersteht.
+const MUSCLE_LIST_SHORT = 5;
+const expandedHeat = new Set();
+
 /**
  * Karte mit Heatmap. score = Sätze je Region (regionScore): die Figur färbt Regionen, die Liste fasst je Muskel zusammen.
  * showSets = Summe der Sätze je Muskel (Trainingsübersicht), sonst Prozent.
@@ -388,6 +393,9 @@ export function heatCard({ title, score: regions, showSets, empty, header = null
   const score = muscleScoreOf(regions);
   const load = relativeLoad(score);
   const entries = Object.entries(score).sort((a, b) => b[1] - a[1]);
+  const showAll = expandedHeat.has(title);
+  const shown = showAll ? entries : entries.slice(0, MUSCLE_LIST_SHORT);
+  const toggle = () => { showAll ? expandedHeat.delete(title) : expandedHeat.add(title); rerender(); };
   const dot = c => h('i', { style: `background:${c}` });
   const total = Object.values(score).reduce((a, v) => a + v, 0);
   return h('div', { class: 'card pad-m heat-card' },
@@ -399,10 +407,14 @@ export function heatCard({ title, score: regions, showSets, empty, header = null
       ? [showSets
           // Trainingsübersicht: Anteil jedes Muskels an der Summe (zusammen 100 %) + Sätze
           ? [h('small', { class: 'muted' }, tr('Anteil am Training · Sätze', 'Share of workout · sets')),
-            horizontalBars(entries.map(([id, v]) => [muscleLabel(id), v]), v => `${Math.round((v / total) * 100)} % · ${fmtSets(v)}`)]
+            horizontalBars(shown.map(([id, v]) => [muscleLabel(id), v]), v => `${Math.round((v / total) * 100)} % · ${fmtSets(v)}`)]
           // sonst Prozent relativ zum stärksten Muskel
-          : h('div', { class: 'heat-list' }, entries.map(([id]) => h('span', null, dot(heatColor(load[id])),
+          : h('div', { class: 'heat-list' }, shown.map(([id]) => h('span', null, dot(heatColor(load[id])),
             `${muscleLabel(id)} ${Math.round(load[id] * 100)} %`))),
+        entries.length > MUSCLE_LIST_SHORT
+          ? h('button', { class: 'btn text show-all', onclick: toggle },
+            showAll ? tr('Weniger anzeigen', 'Show less') : tr(`Alle anzeigen (${entries.length})`, `Show all (${entries.length})`))
+          : null,
         showSets ? h('b', null, tr('Summe: ', 'Total: ') + `${fmtSets(total)} ` + tr('Muskel-Sätze', 'muscle sets') + ' · ' +
           plural(entries.length, tr('Muskel', 'muscle'), tr('Muskeln', 'muscles')) + tr(' (Hilfsmuskel zählt ½)', ' (secondary counts ½)')) : null]
       : h('p', { class: 'muted' }, empty));

@@ -451,8 +451,6 @@ function bodyTab() {
   const weights = store.weights;
   const last = weights[weights.length - 1];
   const first = weights[0];
-  const weekSessions = allSessions(store).filter(t => t.start >= startOfWeek());
-  const weekKcal = weekSessions.reduce((a, t) => a + (sessionStats(store, t).kcal ?? 0), 0);
   const shown = weights.slice(-30);
 
   const add = () => {
@@ -480,21 +478,26 @@ function bodyTab() {
     // Datum (leer = heute), im App-Format; Zukunft gesperrt
     h('label', { class: 'date-row' }, icon('calendar', 18), h('span', null, tr('Datum', 'Date')),
       dateField({ id: 'body-date', value: bodyInput.date || isoDay(Date.now()), max: isoDay(Date.now()), onchange: v => { bodyInput.date = v; } })),
-    // dezent (wie die übrigen Karten), damit das Gewicht im Vordergrund bleibt
-    h('div', { class: 'card row-card' }, h('span', { class: 'hint-emoji' }, '🔥'),
-      h('div', { class: 'grow' }, h('small', null, tr('Diese Woche', 'This week')),
-        h('b', null, last == null
-          ? tr('Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.', 'Log your weight and the app will estimate calories burned.')
-          : tr(`~${weekKcal} kcal verbrannt · ${plural(weekSessions.length, 'Trainingseinheit', 'Trainingseinheiten')}`,
-            `~${weekKcal} kcal burned · ${plural(weekSessions.length, 'workout', 'workouts')}`)))),
+    // Wozu das Gewicht dient (kcal-Schätzung). Der Wochen-Verbrauch steht auf der Startseite, die MET-Erklärung hinter ⓘ (wie BodyTab.kt)
+    h('div', { class: 'kcal-note' }, h('span', null, '🔥'),
+      muted(last == null
+        ? tr('Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.', 'Log your weight and the app will estimate calories burned.')
+        : tr('Dein Gewicht fließt in die kcal-Schätzung ein (Startseite: „Diese Woche“).', 'Your weight is used for the calorie estimate (home: "This week").'), 'grow'),
+      iconBtn('info', metDialog, { label: tr('Erklärung', 'Explanation'), cls: 'info-btn accent' })),
     // Gewichtsverlauf; Punkt antippen = Eintrag anpassen oder löschen (statt einer Liste) – wie BodyTab.kt
     weights.length ? chartCard(tr('Gewichtsverlauf', 'Weight trend'),
       `${fmtW(Math.min(...shown.map(w => w.kg)))} – ${fmtW(Math.max(...shown.map(w => w.kg)))} kg`,
       lineChart(shown.map(w => w.kg), 'kg', i => { hintUsed('weight'); weightEditDialog(shown[i]); }),
       h('div', { class: 'axis' }, h('small', null, fmtShortDate(shown[0].time)), shown.length > 1 ? h('small', null, fmtShortDate(shown[shown.length - 1].time)) : null),
-      showHint('weight') ? muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small') : null) : null,
-    muted(tr('Der Verbrauch ist eine Schätzung nach der MET-Methode (Körpergewicht × Dauer × Intensität der Übung). Cardio wird über die eingetragenen Minuten gerechnet, Krafttraining über die Trainingsdauer.',
-      'Calories are estimated with the MET method (body weight × duration × exercise intensity). Cardio uses the logged minutes, strength training the workout duration.'), 'small'));
+      showHint('weight') ? muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small') : null) : null);
+}
+
+/** Wie wird der Verbrauch geschätzt? (ⓘ im Körper-Tab) */
+function metDialog() {
+  openDialog(() => dialog(tr('Wie wird der Verbrauch geschätzt?', 'How are calories estimated?'),
+    h('p', null, tr('Nach der MET-Methode: Körpergewicht × Dauer × Intensität der Übung. Cardio wird über die eingetragenen Minuten gerechnet, Krafttraining über die Trainingsdauer. Mit vollständigem Profil (Einstellungen: Geschlecht, Geburtsjahr, Größe) nimmt die App statt des Körpergewichts deinen Grundumsatz – das ist genauer. Es bleibt eine Schätzung.',
+      'With the MET method: body weight × duration × exercise intensity. Cardio uses the logged minutes, strength training the workout duration. With a complete profile (settings: sex, birth year, height) the app uses your basal metabolic rate instead of body weight, which is more accurate. It is still an estimate.')),
+    [{ label: 'OK', onClick: closeDialog }], closeDialog));
 }
 
 

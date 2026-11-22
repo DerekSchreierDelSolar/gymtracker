@@ -426,6 +426,8 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .hscroll-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 .heat-legend { display: flex; justify-content: space-between; font-size: 12px; }
 .heat-list { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.heat-card .show-all { align-self: flex-start; padding-left: 0; }
+.kcal-note { display: flex; align-items: center; gap: 10px; }
 .heat-legend span, .heat-list span { display: inline-flex; align-items: center; gap: 6px; }
 .heat-legend i, .heat-list i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
