@@ -10,7 +10,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 0. ✅ **Bot-Fehler „einen“ ≈ „Eisen“** (erledigt 22.11.2026: Supplement-Suche `has(…, strict = true)` = Wörter unter 6 Buchstaben nur exakt; FAQ-Stichwörter „einen satz“/„satz ein“).
 
 ## Phase 1 – Ziele + Erfolgserlebnisse (Grundlage für alles Weitere)
-1. **Langfristige Ziele im Profil.** Typen: Kraft (Übung + kg, über 1RM/Rekord), Ausdauer (Cardio-Übung + Minuten am Stück),
+1. ✅ (22.11.2026, Karte auf der Startseite statt im Profil-Dialog) **Langfristige Ziele im Profil.** Typen: Kraft (Übung + kg, über 1RM/Rekord), Ausdauer (Cardio-Übung + Minuten am Stück),
    Körpergewicht (Ziel-kg, Startwert merken), Gewohnheit („Ausdauer erhöhen“ = Cardio-Minuten/Woche,
    „gesund bleiben“ = Wochenziel-Quote + alle Muskelgruppen). JSON `goals`. Fortschritt in % als Karte auf der Startseite.
 2. **Erfolgs-Berechnung** (eine gemeinsame Funktion, z. B. `achievements(session)`): Rekorde, bester Vergleich mit

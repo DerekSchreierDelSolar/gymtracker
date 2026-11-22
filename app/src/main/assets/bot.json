@@ -121,9 +121,14 @@
             "Many muscles are split into regions, e.g. upper/mid/lower chest or the three delt heads. The exercise info colors what the exercise trains: 🔴 main work, 🟠 moderate, 🟡 light. Incline bench press, for example, mainly trains the upper chest."]
     },
     {
-      "keys": ["wochenziel", "ziel aendern", "von 3", "trainings pro woche", "weekly goal"],
+      "keys": ["wochenziel", "ziel aendern", "wochenziel aendern", "von 3", "trainings pro woche", "weekly goal"],
       "a": ["Das Wochenziel (Standard: 3 Trainingseinheiten) steht oben auf der Startseite. Antippen ändert es. „5 von 3“ heißt: Ziel übertroffen. Gezählt werden gestartete Workouts und Tage mit freien Sätzen.",
             "The weekly goal (default: 3 workouts) is at the top of the home screen. Tap it to change. \"5 of 3\" means you beat your goal. Started workouts and days with free sets count."]
+    },
+    {
+      "keys": ["meine ziele", "ziel setzen", "ein ziel", "mir ein ziel", "langfristiges ziel", "langfristige ziele", "ziele", "100 kg", "abnehmen", "zunehmen", "gesund bleiben", "ausdauer steigern", "my goals", "set a goal", "long term goal", "goals"],
+      "a": ["Unter „🎯 Meine Ziele“ auf der Startseite setzt du dir langfristige Ziele: ein Gewicht bei einer Übung (z. B. 100 kg Bankdrücken), eine Zeit am Stück (z. B. 30 min laufen), ein Körpergewicht, Cardio-Minuten pro Woche oder „Gesund bleiben“ (in X Wochen das Wochenziel schaffen – verpasste Wochen machen nichts kaputt). Ein Balken zeigt, wie nah du dran bist. Ziel antippen = ändern oder löschen.",
+            "Under \"🎯 My goals\" on the home screen you set long-term goals: a weight on an exercise (e.g. 100 kg bench press), a time in one go (e.g. run 30 min), a body weight, cardio minutes per week or \"Stay healthy\" (hit your weekly goal in X weeks – missed weeks don't break anything). A bar shows how close you are. Tap a goal to change or delete it."]
     },
     {
       "keys": ["serie", "wochen in folge", "streak"],

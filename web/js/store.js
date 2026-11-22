@@ -9,6 +9,9 @@ import {
 } from './core.js';
 
 const KEY = 'gym_data';
+/** Zieltypen wie GoalType in Goals.kt; STRENGTH/ENDURANCE gehören zu einer Übung. */
+export const GOAL_TYPES = ['STRENGTH', 'ENDURANCE', 'BODYWEIGHT', 'CARDIO_WEEK', 'REGULAR'];
+export const GOAL_NEEDS_EXERCISE = ['STRENGTH', 'ENDURANCE'];
 const migrateName = n => RENAMED_EXERCISES[n] ?? n;
 
 // Sicherungskopien im localStorage (vor Import/Zurücksetzen, beschädigte Stände). Sie belegen jeweils so viel
@@ -35,6 +38,7 @@ class GymStore {
   weeklyGoal = 3;
   themeMode = 'system';
   profile = {};          // optional für genauere kcal: { sex: 'm'|'f', birthYear, height } – wie GymStore.profile
+  goals = [];            // langfristige Ziele { id, type, exercise?, target, start, created } – wie GymStore.goals (goals.js)
   #listeners = new Set();
 
   constructor() {
@@ -143,6 +147,14 @@ class GymStore {
     if (validYear(num(pr.birthYear))) this.profile.birthYear = num(pr.birthYear);
     if (validHeight(num(pr.height))) this.profile.height = num(pr.height);
 
+    // Ziele: unbekannter Typ, fehlende Übung oder Zielwert ≤ 0 → überspringen (wie GymStore.kt)
+    this.goals = objs(root.goals).filter(o => GOAL_TYPES.includes(o.type) && num(o.target) > 0 &&
+      (!GOAL_NEEDS_EXERCISE.includes(o.type) || typeof o.exercise === 'string')).map((o, i) => ({
+      id: num(o.id) ?? i, type: o.type,
+      ...(GOAL_NEEDS_EXERCISE.includes(o.type) ? { exercise: migrateName(o.exercise) } : {}),
+      target: o.target, start: num(o.start) ?? 0, created: num(o.created) ?? 0,
+    }));
+
     this.weights = objs(root.weights).filter(o => num(o.time) != null && num(o.kg) != null)
       .map(o => ({ time: o.time, kg: o.kg })).sort((a, b) => a.time - b.time);
     for (const [ex, days] of entries(root.notes)) {
@@ -186,6 +198,7 @@ class GymStore {
       },
       sets: this.sets,
       ...(Object.keys(this.profile).length ? { profile: this.profile } : {}),
+      ...(this.goals.length ? { goals: this.goals } : {}),
     };
   }
 
@@ -226,6 +239,7 @@ class GymStore {
     this.exercises = []; this.sets = []; this.groups = {}; this.workouts = []; this.sessions = []; this.weights = []; this.notes = {};
     CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
     this.profile = {};
+    this.goals = [];
   }
 
   markExported() { this.lastExport = Date.now(); this.#save(); }
@@ -509,6 +523,13 @@ class GymStore {
   /** time = gewählter Tag (Nachtragen); Liste bleibt nach Zeit sortiert */
   addWeight(kg, time = Date.now()) { this.weights.push({ time, kg }); this.weights.sort((a, b) => a.time - b.time); this.#save(); }
   /** Gelöschten Eintrag zurückholen („Rückgängig“) */
+  // ----- Ziele (goals.js) -----
+  addGoal(g) { this.goals.push(g); this.#save(); }
+  updateGoal(g) { const i = this.goals.findIndex(x => x.id === g.id); if (i >= 0) { this.goals[i] = g; this.#save(); } }
+  /** Löscht das Ziel, gibt die Position zurück (für „Rückgängig“). */
+  deleteGoal(g) { const i = this.goals.findIndex(x => x.id === g.id); if (i >= 0) { this.goals.splice(i, 1); this.#save(); } return i; }
+  restoreGoal(g, i) { if (this.goals.some(x => x.id === g.id)) return; this.goals.splice(Math.min(Math.max(i, 0), this.goals.length), 0, g); this.#save(); }
+
   restoreWeight(entry) { this.weights.push(entry); this.weights.sort((a, b) => a.time - b.time); this.#save(); }
   deleteWeight(entry) { this.weights = this.weights.filter(w => w !== entry); this.#save(); }
   /** Gewicht und ggf. Datum eines Eintrags ändern, Liste bleibt sortiert – wie updateWeight in GymStore.kt */

@@ -19,6 +19,8 @@ class GymStore(context: Context) {
     val sessions = mutableStateListOf<TrainingSession>()
     /** Gewichtsverlauf, älteste zuerst */
     val weights = mutableStateListOf<WeightEntry>()
+    /** Langfristige Ziele (Goals.kt), Reihenfolge = Anlegen. Vor init { load() }! */
+    val goals = mutableStateListOf<Goal>()
     /** Notizen pro Übung und Tag: "Übung|Tag" (Tag = dayKey) → Text. Vor init { load() }! */
     private val notes = mutableStateMapOf<String, String>()
     /** Standard-Pausenlänge in Sekunden (0 = kein Pausen-Timer). `private set`: nur über setRest() änderbar. */
@@ -161,7 +163,7 @@ class GymStore(context: Context) {
     }
 
     private fun clearAll() {
-        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear()
+        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear(); goals.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         profile = Profile()
     }
@@ -206,6 +208,17 @@ class GymStore(context: Context) {
                     heightCm = p.optInt("height", 0).takeIf { Profile.validHeight(it) }
                 )
             } ?: Profile()
+            // Ziele: unbekannter Typ, fehlende Übung oder Zielwert ≤ 0 → überspringen
+            val go = root.optJSONArray("goals") ?: JSONArray()
+            for (i in 0 until go.length()) {
+                val o = go.optJSONObject(i) ?: continue
+                val type = GoalType.parse(o.optString("type")) ?: continue
+                val ex = o.optString("exercise").ifEmpty { null }?.let { migrateName(it) }
+                val target = o.optDouble("target", 0.0)
+                if ((type.needsExercise && ex == null) || !(target > 0)) continue
+                goals.add(Goal(o.optLong("id", i.toLong()), type, ex.takeIf { type.needsExercise }, target,
+                    o.optDouble("start", 0.0).takeIf { !it.isNaN() } ?: 0.0, o.optLong("created", 0L)))
+            }
             val wo = root.optJSONArray("workouts") ?: JSONArray()
             for (i in 0 until wo.length()) {
                 val o = wo.getJSONObject(i)
@@ -336,6 +349,12 @@ class GymStore(context: Context) {
             profile.sex?.let { put("sex", it) }
             profile.birthYear?.let { put("birthYear", it) }
             profile.heightCm?.let { put("height", it) }
+        })
+        if (goals.isNotEmpty()) root.put("goals", JSONArray().also { arr ->
+            goals.forEach { g ->
+                arr.put(JSONObject().put("id", g.id).put("type", g.type.name).apply { g.exercise?.let { put("exercise", it) } }
+                    .put("target", g.target).put("start", g.start).put("created", g.created))
+            }
         })
         val s = JSONArray()
         sets.forEach { set ->
@@ -674,6 +693,28 @@ class GymStore(context: Context) {
         weights.sortBy { it.time }
         save()
         onWeightChange?.invoke(null, e)
+    }
+
+    // ----- Ziele (Goals.kt) -----
+
+    fun addGoal(g: Goal) { goals.add(g); save() }
+
+    fun updateGoal(g: Goal) {
+        val i = goals.indexOfFirst { it.id == g.id }
+        if (i >= 0) { goals[i] = g; save() }
+    }
+
+    /** Löscht das Ziel und gibt seine Position zurück (für „Rückgängig“). */
+    fun deleteGoal(g: Goal): Int {
+        val i = goals.indexOfFirst { it.id == g.id }
+        if (i >= 0) { goals.removeAt(i); save() }
+        return i
+    }
+
+    fun restoreGoal(g: Goal, index: Int) {
+        if (goals.any { it.id == g.id }) return
+        goals.add(index.coerceIn(0, goals.size), g)
+        save()
     }
 
     /** Gelöschten Eintrag zurückholen („Rückgängig“). */

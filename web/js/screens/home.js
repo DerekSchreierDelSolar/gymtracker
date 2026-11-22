@@ -17,6 +17,7 @@ import { screen, fab } from '../layout.js';
 import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { reviewCard } from '../review.js';
+import { goalsCard } from '../goals.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -240,6 +241,9 @@ function dashboardTab(onStartWorkout) {
         h('h2', null, tr('Willkommen! 👋', 'Welcome! 👋')),
         h('p', null, tr("So geht's: 1. Workout aus einer Vorlage anlegen · 2. Training starten · 3. Sätze eintragen.", 'How it works: 1. Create a workout from a template · 2. Start training · 3. Log your sets.')),
         h('button', { class: 'btn', onclick: newWorkoutDialog }, tr('Vorlage wählen', 'Choose a template'))),
+
+    // Langfristige Ziele (goals.js, wie GoalsCard in Goals.kt)
+    goalsCard(),
 
     backupDue ? h('div', { class: 'card hint' }, h('span', { class: 'hint-emoji' }, '💾'),
       h('div', { class: 'grow' }, h('b', null, tr('Backup machen', 'Make a backup')),

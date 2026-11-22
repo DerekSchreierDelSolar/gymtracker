@@ -210,6 +210,9 @@ fun DashboardTab(
             }
         }
 
+        // Langfristige Ziele (Goals.kt)
+        item { GoalsCard(store) }
+
         // Kennzahlen dieser Woche (mit Überschrift, damit der Zeitraum klar ist)
         item { Column {
             Text(

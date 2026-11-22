@@ -655,3 +655,21 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .hbars.wide .label { width: auto; white-space: normal; }
 .hbars.wide .value { width: auto; }
 .hbars.wide .track { grid-column: 1 / -1; grid-row: 2; flex: none; }
+
+/* Langfristige Ziele (goals.js) */
+.goals-card { padding: 8px 8px 12px 16px; }
+.goals-title { font-size: 16px; }
+.goals-empty { margin: 0 8px 0 0; }
+.goal-row { display: block; width: 100%; text-align: left; padding: 8px 8px 8px 0; border-radius: 8px; background: none; color: inherit; }
+.goal-head { display: flex; align-items: center; }
+.goal-head .grow { font-size: 14px; }
+.goal-emoji { width: 32px; flex: none; }
+.goal-short { color: var(--primary); font-size: 14px; margin-left: 8px; }
+.goal-bar { margin: 6px 0 4px 32px; height: 8px; border-radius: 4px; background: var(--container-high); overflow: hidden; }
+.goal-bar span { display: block; height: 100%; border-radius: 4px; background: var(--primary); }
+.goal-bar.done span { background: #4caf50; }
+.goal-detail { display: block; margin-left: 32px; }
+.goal-type { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 12px; margin-bottom: 8px; border-radius: 12px; background: var(--container-high); color: inherit; }
+.goal-type small { display: block; }
+.goal-type-emoji { font-size: 24px; width: 40px; flex: none; text-align: center; }
+.goal-pick-list { max-height: 300px; overflow-y: auto; }
