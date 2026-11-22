@@ -59,7 +59,9 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                 val tiles = buildList {
                     if (t.id >= 0) add(tr("Dauer", "Duration") to fmtDuration(t.end - t.start))
                     add(tr("Sätze", "Sets") to stats.sets.toString())
-                    stats.kcal?.let { add(tr("🔥 Verbrauch", "🔥 Burned") to "~$it kcal") }
+                    stats.kcal?.let {
+                        add((if (stats.kcalFromHr) tr("❤ Verbrauch", "❤ Burned") else tr("🔥 Verbrauch", "🔥 Burned")) to "~$it kcal")
+                    }
                     if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtVolume(stats.volume)} kg")
                     if (stats.cardioMinutes > 0) add("Cardio" to "${stats.cardioMinutes} min")
                 }
@@ -81,6 +83,9 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                     }
                 }
             }
+
+            // Puls (aus Health Connect, z. B. von einer Smartwatch)
+            t.hr?.let { hr -> item { HeartRateCard(store, t, hr, stats.kcalFromHr) } }
 
             // Heatmap: welche Muskeln dieses Training belastet hat (Summe der Sätze)
             val sessionSets = stats.results.flatMap { it.sets }
@@ -257,3 +262,49 @@ fun StatBox(label: String, value: String, modifier: Modifier = Modifier) {
 }
 
 
+
+/**
+ * Karte „Puls“: Ø / max / min, Verlauf je Minute und – mit Geburtsjahr im Profil – Zeit in den Pulszonen
+ * (Anteil an der geschätzten Maximalfrequenz 220 − Alter).
+ */
+@Composable
+fun HeartRateCard(store: GymStore, t: TrainingSession, hr: HeartRate, kcalFromHr: Boolean) {
+    val curve = hr.curve.filter { it > 0 }
+    ChartCard(
+        tr("❤ Puls", "❤ Heart rate"),
+        tr("Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm", "avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm")
+    ) {
+        if (curve.size >= 2) LineChart(curve.map { it.toDouble() }, "bpm", headline = "Ø ${hr.avg} bpm", dots = false)
+        val year = store.profile.birthYear
+        if (year != null && curve.isNotEmpty()) {
+            val age = java.util.Calendar.getInstance().apply { timeInMillis = t.start }.get(java.util.Calendar.YEAR) - year
+            val maxHr = (220 - age).coerceAtLeast(120)
+            val zones = listOf(
+                tr("1 Aufwärmen", "1 Warm-up"),
+                tr("2 Locker", "2 Easy"),
+                tr("3 Aerob", "3 Aerobic"),
+                tr("4 Schwelle", "4 Threshold"),
+                tr("5 Maximal", "5 Maximum")
+            )
+            // Minuten je Zone (jeder Wert der Kurve = eine Minute)
+            val minutes = IntArray(5)
+            curve.forEach { bpm -> minutes[(((bpm * 100 / maxHr) - 50) / 10).coerceIn(0, 4)]++ }
+            Spacer(Modifier.height(8.dp))
+            Text(tr("Pulszonen", "Heart rate zones"), style = MaterialTheme.typography.labelLarge)
+            Text(
+                tr("< 60 · 60–70 · 70–80 · 80–90 · > 90 % der max. Herzfrequenz (~$maxHr bpm = 220 − Alter)",
+                    "< 60 · 60–70 · 70–80 · 80–90 · > 90 % of max heart rate (~$maxHr bpm = 220 − age)"),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(4.dp))
+            HorizontalBars(zones.mapIndexed { i, z -> z to minutes[i].toDouble() }) { "${it.toInt()} min" }
+        }
+        val p = store.profile
+        if (!kcalFromHr && (p.sex == null || p.birthYear == null)) Text(
+            tr("Tipp: Mit Geschlecht und Geburtsjahr im Profil (Einstellungen) berechnet die App die kcal aus dem Puls.",
+                "Tip: with sex and birth year in your profile (settings) the app calculates calories from heart rate."),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}

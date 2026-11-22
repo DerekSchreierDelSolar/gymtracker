@@ -120,7 +120,8 @@ export function historyBars(values, labels, format) {
 
 /** Liniendiagramm (SVG); beschriftet ist nur der letzte Wert. */
 /** onTapPoint(i): Antippen wählt den nächsten Punkt (wie LineChart in Components.kt); dann reicht ein einzelner Punkt */
-export function lineChart(values, unit, onTapPoint = null) {
+/** opts.headline ersetzt die Beschriftung (Standard: letzter Wert), opts.dots = false zeichnet nur die Linie (viele Werte, z. B. Puls) */
+export function lineChart(values, unit, onTapPoint = null, { headline = null, dots: withDots = true } = {}) {
   if (values.length < (onTapPoint ? 1 : 2)) return null;
   const W = 320, H = 124, pad = 7;
   const mn = Math.min(...values), mx = Math.max(...values);
@@ -130,14 +131,14 @@ export function lineChart(values, unit, onTapPoint = null) {
   const pts = values.map((v, i) => [values.length > 1 ? pad + i * step : W / 2, pad + uh - ((v - lo) / (hi - lo)) * uh]);
   const grid = [0, 1, 2].map(k => `<line x1="0" x2="${W}" y1="${pad + (uh * k) / 2}" y2="${pad + (uh * k) / 2}" class="grid"/>`).join('');
   const path = `<polyline points="${pts.map(p => p.join(',')).join(' ')}" class="line"/>`;
-  const dots = pts.map((p, i) => {
+  const dots = !withDots ? '' : pts.map((p, i) => {
     const r = i === pts.length - 1 ? 5 : 3.5;
     return `<circle cx="${p[0]}" cy="${p[1]}" r="${r + 2}" class="dot-bg"/><circle cx="${p[0]}" cy="${p[1]}" r="${r}" class="dot"/>`;
   }).join('');
   // Achse links: Werte auf Höhe der drei Hilfslinien (wie LineChart in Components.kt)
   const axis = [hi, (hi + lo) / 2, lo].map(v => h('small', null, fmtW(Math.round(v * 10) / 10)));
   return h('div', { class: 'linechart' },
-    h('div', { class: 'vbars-value' }, `${fmtW(values[values.length - 1])} ${unit}`),
+    h('div', { class: 'vbars-value' }, headline ?? `${fmtW(values[values.length - 1])} ${unit}`),
     h('div', { class: 'linechart-body' },
       h('div', { class: 'linechart-axis' }, axis),
       h('div', {

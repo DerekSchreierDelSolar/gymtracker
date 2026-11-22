@@ -11,7 +11,7 @@ import {
 import { sessionStats } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import {
-  h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, percentRing, onTick, muted, icon, iconBtn, showHint, hintUsed,
+  h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, lineChart, percentRing, onTick, muted, icon, iconBtn, showHint, hintUsed,
 } from '../ui.js';
 import { nav, update, go, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
@@ -279,13 +279,36 @@ export function trainingBar(w) {
 
 // ---------- Übersicht nach dem Training ----------
 
+/** Karte „Puls“ (wie HeartRateCard in SummaryScreen.kt): Ø/max/min, Verlauf je Minute, Pulszonen mit Geburtsjahr */
+function heartRateCard(t, kcalFromHr) {
+  const hr = t.hr, curve = hr.curve.filter(v => v > 0), p = store.profile;
+  let zones = null;
+  if (p.birthYear && curve.length) {
+    const maxHr = Math.max(120, 220 - (new Date(t.start).getFullYear() - p.birthYear));
+    const minutes = [0, 0, 0, 0, 0];
+    for (const bpm of curve) minutes[Math.min(4, Math.max(0, Math.floor((Math.floor(bpm * 100 / maxHr) - 50) / 10)))]++;
+    const names = [tr('1 Aufwärmen', '1 Warm-up'), tr('2 Locker', '2 Easy'), tr('3 Aerob', '3 Aerobic'),
+      tr('4 Schwelle', '4 Threshold'), tr('5 Maximal', '5 Maximum')];
+    zones = [h('b', null, tr('Pulszonen', 'Heart rate zones')),
+      muted(tr(`< 60 · 60–70 · 70–80 · 80–90 · > 90 % der max. Herzfrequenz (~${maxHr} bpm = 220 − Alter)`,
+        `< 60 · 60–70 · 70–80 · 80–90 · > 90 % of max heart rate (~${maxHr} bpm = 220 − age)`), 'small'),
+      horizontalBars(names.map((n, i) => [n, minutes[i]]), v => `${v} min`)];
+  }
+  return chartCard(tr('❤ Puls', '❤ Heart rate'),
+    tr(`Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`, `avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`),
+    curve.length >= 2 ? lineChart(curve, 'bpm', null, { headline: `Ø ${hr.avg} bpm`, dots: false }) : null,
+    zones,
+    !kcalFromHr && (!p.sex || !p.birthYear) ? muted(tr('Tipp: Mit Geschlecht und Geburtsjahr im Profil (Einstellungen) berechnet die App die kcal aus dem Puls.',
+      'Tip: with sex and birth year in your profile (settings) the app calculates calories from heart rate.'), 'small') : null);
+}
+
 export function summaryScreen(t, onDone) {
   const stats = sessionStats(store, t);
   const sessionSets = stats.results.flatMap(r => r.sets);
   const tiles = [];
   if (t.id >= 0) tiles.push([tr('Dauer', 'Duration'), fmtDuration(t.end - t.start)]);
   tiles.push([tr('Sätze', 'Sets'), String(stats.sets)]);
-  if (stats.kcal != null) tiles.push([tr('🔥 Verbrauch', '🔥 Burned'), `~${stats.kcal} kcal`]);
+  if (stats.kcal != null) tiles.push([stats.kcalFromHr ? tr('❤ Verbrauch', '❤ Burned') : tr('🔥 Verbrauch', '🔥 Burned'), `~${stats.kcal} kcal`]);
   if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtVolume(stats.volume)} kg`]);
   if (stats.cardioMinutes > 0) tiles.push(['Cardio', `${stats.cardioMinutes} min`]);
 
@@ -323,6 +346,7 @@ export function summaryScreen(t, onDone) {
       h('div', { class: 'stat-grid' }, tiles.map(([l, v]) => statBox(l, v))),
       stats.kcal == null ? muted(tr('Tipp: Trag unter „Körper“ dein Gewicht ein, dann schätzt die App den Kalorienverbrauch.',
         'Tip: enter your weight under "Body" and the app will estimate calories burned.'), 'small') : null,
+      t.hr ? heartRateCard(t, stats.kcalFromHr) : null,
       sessionSets.length ? heatCard({
         title: tr('Trainierte Muskeln', 'Trained muscles'), score: regionScore(sessionSets), showSets: true,
         empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),

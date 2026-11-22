@@ -80,6 +80,15 @@ class GymStore {
     const objs = x => arr(x).filter(o => o && typeof o === 'object' && !Array.isArray(o));
     const entries = o => Object.entries(obj(o)).filter(([k]) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype');
     const num = x => (typeof x === 'number' && Number.isFinite(x) ? x : null);
+    // Puls eines Trainings (aus Health Connect, nur Android) – wie HeartRate.fromJson in Model.kt
+    const heartRate = o => {
+      if (!o || typeof o !== 'object') return null;
+      const avg = Math.round(num(o.avg) ?? 0), max = Math.round(num(o.max) ?? 0);
+      if (avg < 20 || avg > 250 || max < avg || max > 250) return null;
+      const min = Math.min(avg, Math.max(0, Math.round(num(o.min) ?? avg)));
+      const curve = arr(o.curve).map(v => Math.min(250, Math.max(0, Math.round(num(v) ?? 0))));
+      return { avg, max, min, curve };
+    };
     const intMap = o => Object.fromEntries(entries(o).map(([k, v]) => [migrateName(k), Number(v) || 0]));
     const names = x => arr(x).filter(n => typeof n === 'string').map(migrateName);
 
@@ -129,6 +138,7 @@ class GymStore {
       id: o.id, workoutId: o.workoutId, workoutName: String(o.workoutName ?? ''),
       exercises: names(o.exercises),
       start: o.start, end: o.end, targets: intMap(o.targets),
+      ...(heartRate(o.hr) ? { hr: heartRate(o.hr) } : {}),
     }));
     this.sets = objs(root.sets)
       .filter(o => typeof o.exercise === 'string' && num(o.weight) != null && num(o.reps) != null && num(o.time) != null)

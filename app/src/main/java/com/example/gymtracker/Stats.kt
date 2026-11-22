@@ -30,7 +30,9 @@ data class SessionStats(
     val cardioMinutes: Int,
     val records: Int,
     /** Geschätzter Verbrauch; null, wenn noch kein Körpergewicht eingetragen ist */
-    val kcal: Int?
+    val kcal: Int?,
+    /** true = kcal aus dem Puls berechnet (heartRateKcal), sonst MET-Schätzung */
+    val kcalFromHr: Boolean = false
 ) {
     /** Erledigte Ziel-Sätze (pro Übung höchstens das Ziel) */
     val done: Int get() = results.sumOf { it.counted }
@@ -106,6 +108,24 @@ fun kcalPerMetHour(store: GymStore, kg: Double, time: Long): Double =
  * Kraft: restliche Trainingszeit × 5 MET; beim freien Training (keine echte Dauer)
  * 2,5 Minuten pro Satz inkl. Pause. Mit Profil: × Grundumsatz/24 statt × kg (kcalPerMetHour).
  */
+/**
+ * Verbrauch aus dem Puls (Formel nach Keytel et al. 2005, kcal/min aus Ø-Puls, Gewicht, Alter, Geschlecht) über die
+ * Trainingsdauer. Genauer als MET, weil die tatsächliche Anstrengung zählt. Braucht Puls, Körpergewicht, Geschlecht
+ * und Geburtsjahr; sonst null (→ MET-Schätzung).
+ */
+fun heartRateKcal(store: GymStore, t: TrainingSession): Int? {
+    val hr = t.hr ?: return null
+    val p = store.profile
+    val kg = store.weightAt(t.start) ?: return null
+    val sex = p.sex ?: return null
+    val year = p.birthYear ?: return null
+    val age = (Calendar.getInstance().apply { timeInMillis = t.start }.get(Calendar.YEAR) - year).coerceAtLeast(10)
+    val perMin = if (sex == "m") (-55.0969 + 0.6309 * hr.avg + 0.1988 * kg + 0.2017 * age) / 4.184
+    else (-20.4022 + 0.4472 * hr.avg - 0.1263 * kg + 0.074 * age) / 4.184
+    val minutes = (t.end - t.start) / 60000.0
+    return Math.round(perMin * minutes).toInt().takeIf { it > 0 }
+}
+
 fun estimateKcal(store: GymStore, t: TrainingSession, results: List<ExerciseResult>): Int? {
     val kg = store.weightAt(t.start)?.let { kcalPerMetHour(store, it, t.start) } ?: return null
     val cardio = results.filter { it.group.isCardio }.map { it.copy(sets = it.sets.work()) }
@@ -141,7 +161,8 @@ fun sessionStats(store: GymStore, t: TrainingSession): SessionStats {
         volume = strength.sumOf { it.weight * it.reps },
         cardioMinutes = cardio.sumOf { it.reps },
         records = results.count { it.record },
-        kcal = estimateKcal(store, t, results)
+        kcal = heartRateKcal(store, t) ?: estimateKcal(store, t, results),
+        kcalFromHr = heartRateKcal(store, t) != null
     )
 }
 

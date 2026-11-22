@@ -203,7 +203,7 @@ fun ProgressChart(values: List<Double>, title: String, unit: String, colors: Car
  * onTapPoint: Antippen wählt den nächstgelegenen Punkt (Index); dann reicht auch ein einzelner Punkt.
  */
 @Composable
-fun LineChart(values: List<Double>, unit: String, onTapPoint: ((Int) -> Unit)? = null) {
+fun LineChart(values: List<Double>, unit: String, onTapPoint: ((Int) -> Unit)? = null, headline: String? = null, dots: Boolean = true) {
     if (values.size < (if (onTapPoint != null) 1 else 2)) return
     val color = MaterialTheme.colorScheme.primary
     val grid = MaterialTheme.colorScheme.outlineVariant
@@ -216,7 +216,7 @@ fun LineChart(values: List<Double>, unit: String, onTapPoint: ((Int) -> Unit)? =
     val hi = max + span * 0.1
     Column {
         Text(
-            "${fmtW(values.last())} $unit",
+            headline ?: "${fmtW(values.last())} $unit",   // Standard: letzter Wert (z. B. aktuelles Gewicht)
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.align(Alignment.End)
         )
@@ -259,7 +259,7 @@ fun LineChart(values: List<Double>, unit: String, onTapPoint: ((Int) -> Unit)? =
                     Offset(if (values.size > 1) pad + i * stepX else size.width / 2, (pad + usableH - (v - lo) / (hi - lo) * usableH).toFloat())
                 }
                 points.zipWithNext { a, b -> drawLine(color, a, b, 2.dp.toPx(), StrokeCap.Round) }
-                points.forEachIndexed { i, pt ->
+                if (dots) points.forEachIndexed { i, pt ->   // dots = false: nur Linie (viele Werte, z. B. Puls)
                     val r = if (i == points.lastIndex) 5.dp.toPx() else 3.5.dp.toPx()
                     drawCircle(surface, r + 2.dp.toPx(), pt) // Ring in Hintergrundfarbe trennt Punkt von Linie
                     drawCircle(color, r, pt)

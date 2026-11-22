@@ -235,7 +235,8 @@ class GymStore(context: Context) {
                         exercises = (0 until list.length()).map { migrateName(list.getString(it)) },
                         start = o.getLong("start"),
                         end = o.getLong("end"),
-                        targets = o.optJSONObject("targets").toIntMap().mapKeys { migrateName(it.key) }
+                        targets = o.optJSONObject("targets").toIntMap().mapKeys { migrateName(it.key) },
+                        hr = HeartRate.fromJson(o.optJSONObject("hr"))
                     )
                 )
             }
@@ -292,6 +293,7 @@ class GymStore(context: Context) {
             o.put("start", t.start)
             o.put("end", t.end)
             o.put("targets", t.targets.toJson())
+            t.hr?.let { o.put("hr", it.toJson()) }
             se.put(o)
         }
         root.put("sessions", se)
@@ -606,6 +608,14 @@ class GymStore(context: Context) {
     }
 
     fun session(id: Long): TrainingSession? = sessions.firstOrNull { it.id == id }
+
+    /** Puls zu einem Training speichern (aus Health Connect). */
+    fun setHeartRate(id: Long, hr: HeartRate) {
+        val i = sessions.indexOfFirst { it.id == id }
+        if (i < 0 || sessions[i].hr == hr) return
+        sessions[i] = sessions[i].copy(hr = hr)
+        save()
+    }
 
     // ----- Freies Training (Sätze ohne gestartetes Workout) -----
 

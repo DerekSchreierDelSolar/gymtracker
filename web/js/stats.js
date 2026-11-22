@@ -41,6 +41,18 @@ export function kcalPerMetHour(store, kg, time) {
   return bmr != null ? bmr / 24 : kg;
 }
 
+/** Verbrauch aus dem Puls (Keytel et al. 2005), wie heartRateKcal in Stats.kt; null ohne Puls/Gewicht/Geschlecht/Geburtsjahr */
+export function heartRateKcal(store, t) {
+  const hr = t.hr, p = store.profile, kg = store.weightAt(t.start);
+  if (!hr || kg == null || !p.sex || !p.birthYear) return null;
+  const age = Math.max(10, new Date(t.start).getFullYear() - p.birthYear);
+  const perMin = p.sex === 'm'
+    ? (-55.0969 + 0.6309 * hr.avg + 0.1988 * kg + 0.2017 * age) / 4.184
+    : (-20.4022 + 0.4472 * hr.avg - 0.1263 * kg + 0.074 * age) / 4.184;
+  const kcal = Math.round(perMin * (t.end - t.start) / 60000);
+  return kcal > 0 ? kcal : null;
+}
+
 export function estimateKcal(store, t, results) {
   const w = store.weightAt(t.start);
   if (w == null) return null;
@@ -72,7 +84,8 @@ export function sessionStats(store, t) {
     volume: sum(strength, s => s.weight * s.reps),
     cardioMinutes: sum(cardio, s => s.reps),
     records: results.filter(r => r.record).length,
-    kcal: estimateKcal(store, t, results),
+    kcal: heartRateKcal(store, t) ?? estimateKcal(store, t, results),
+    kcalFromHr: heartRateKcal(store, t) != null,
   };
 }
 

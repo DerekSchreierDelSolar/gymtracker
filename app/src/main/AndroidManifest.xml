@@ -13,6 +13,8 @@
     <!-- Health Connect: Trainings und verbrannte kcal eintragen -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED" />
+    <!-- Health Connect: Puls während des Trainings lesen (z. B. von einer Smartwatch) -->
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
 
     <application
         android:allowBackup="true"

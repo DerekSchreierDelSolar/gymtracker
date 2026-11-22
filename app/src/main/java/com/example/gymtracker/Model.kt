@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import org.json.JSONArray
 import org.json.JSONObject
 
 // ---------- Daten ----------
@@ -226,8 +227,42 @@ data class TrainingSession(
     val start: Long,
     val end: Long,
     /** Ziel-Sätze zum Zeitpunkt des Trainings (Kopie aus dem Workout) */
-    val targets: Map<String, Int> = emptyMap()
+    val targets: Map<String, Int> = emptyMap(),
+    /** Puls während des Trainings (aus Health Connect, z. B. von einer Smartwatch), null = unbekannt */
+    val hr: HeartRate? = null
 )
+
+/**
+ * Puls eines Trainings: Durchschnitt, Maximum, Minimum und Verlauf (Ø je Minute ab Trainingsstart, 0 = keine Messung).
+ * Im JSON als `hr` = { avg, max, min, curve } – nur wenn vorhanden.
+ */
+data class HeartRate(val avg: Int, val max: Int, val min: Int, val curve: List<Int>) {
+    fun toJson(): JSONObject = JSONObject().put("avg", avg).put("max", max).put("min", min).put("curve", JSONArray(curve))
+
+    companion object {
+        /** Aus dem JSON lesen; Ungültiges → null (alte oder fremde Dateien bleiben lesbar) */
+        fun fromJson(o: JSONObject?): HeartRate? {
+            if (o == null) return null
+            val avg = o.optInt("avg", 0)
+            val max = o.optInt("max", 0)
+            if (avg !in 20..250 || max !in avg..250) return null
+            val c = o.optJSONArray("curve") ?: JSONArray()
+            return HeartRate(avg, max, o.optInt("min", avg).coerceIn(0, avg), (0 until c.length()).map { c.optInt(it, 0).coerceIn(0, 250) })
+        }
+
+        /** Aus Messwerten (Zeit in ms, Schläge/min) im Zeitraum start..end */
+        fun of(samples: List<Pair<Long, Int>>, start: Long, end: Long): HeartRate? {
+            val s = samples.filter { it.first in start..end && it.second in 25..250 }
+            if (s.size < 5) return null
+            val minutes = ((end - start) / 60_000L).toInt() + 1
+            val curve = (0 until minutes).map { m ->
+                s.filter { ((it.first - start) / 60_000L).toInt() == m }.map { it.second }
+                    .takeIf { it.isNotEmpty() }?.average()?.let { Math.round(it).toInt() } ?: 0
+            }
+            return HeartRate(Math.round(s.map { it.second }.average()).toInt(), s.maxOf { it.second }, s.minOf { it.second }, curve)
+        }
+    }
+}
 
 /** Map<String, Int> ↔ JSONObject (für targets) */
 fun JSONObject?.toIntMap(): Map<String, Int> {
