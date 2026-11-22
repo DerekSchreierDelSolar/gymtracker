@@ -10,7 +10,7 @@ import {
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
 import { exerciseIconHtml, muscleIconHtml, exerciseImageUrl } from '../pictograms.js';
-import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, undoToast, categoryRow } from '../ui.js';
+import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, showHint, hintUsed, undoToast, categoryRow } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
 
@@ -96,9 +96,12 @@ export function workoutScreen(w, onStart) {
     enableDrag(list, w);
     content = h('div', { class: 'pad list-bottom' },
       daysRow(w),
-      muted(tr('Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.',
-        'Tip: drag the handle on the right (or long-press a row) to change the order.'), 'small'),
+      // Bedienhinweis nur, bis einmal umsortiert wurde (Hints)
+      showHint('drag') ? muted(tr('Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.',
+        'Tip: drag the handle on the right (or long-press a row) to change the order.'), 'small') : null,
       list,
+      // Beschrifteter Knopf statt nur Stift oben (wie WorkoutScreen.kt)
+      h('button', { class: 'btn outline wide add-exercises', onclick: () => go({ pick: true }) }, icon('add'), tr('Übungen hinzufügen / bearbeiten', 'Add / edit exercises')),
       history.length ? [
         h('h2', { class: 'section' }, tr('Letzte Trainingseinheiten', 'Recent sessions')),
         h('div', { class: 'stack' }, history.map(t => {
@@ -118,7 +121,6 @@ export function workoutScreen(w, onStart) {
   return screen({
     title: w.name, back: true, key: 'workout-' + w.id,
     actions: [
-      iconBtn('edit', () => go({ pick: true }), { label: tr('Übungen wählen', 'Choose exercises') }),
       iconBtn('copy', () => { const c = store.duplicateWorkout(w.id); if (c) { update({ workoutId: c.id }); toast(tr('Kopie angelegt', 'Copy created')); } }, { label: tr('Kopieren', 'Duplicate') }),
       iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') }),
     ],
@@ -127,21 +129,41 @@ export function workoutScreen(w, onStart) {
   });
 }
 
-/** Eine Übung im Workout als Listenzeile: Bild, Name, letzter Satz + Ziel-Sätze, Griff (wie WorkoutExerciseRow in WorkoutScreens.kt) */
+/** Eine Übung im Workout als Listenzeile: Bild, Name, letzter Satz, Ziel-Pille (antippbar), Griff (wie WorkoutExerciseRow in WorkoutScreens.kt) */
 function exerciseRow(w, name) {
   const g = store.groupOf(name), last = store.setsFor(name)[0], target = store.targetFor(w, name);
-  const sub = [last ? fmtSet(last, isCardio(g)) : '–',
-    target > 0 ? tr('Ziel ', 'Goal ') + plural(target, tr('Satz', 'set'), tr('Sätze', 'sets')) : null].filter(Boolean).join(' · ');
+  const sub = last ? tr('Zuletzt ', 'Last ') + fmtSet(last, isCardio(g)) : '–';
   return h('button', {
     class: 'ex-row', 'data-name': name, style: `--tint:${groupColor(g)}`,
     onclick: e => {
       if (e.currentTarget.dataset.justDragged || e.target.closest('.drag-handle')) return; // nach dem Ziehen / am Griff nicht öffnen
+      if (e.target.closest('.target-pill')) { targetDialog(w, name); return; }
       go({ exercise: name });
     },
   },
   h('span', { html: exerciseIconHtml(name, g, 44) }),
-  h('div', { class: 'grow' }, h('b', null, exName(name)), h('small', null, sub)),
+  h('div', { class: 'grow' }, h('b', null, exName(name)), h('small', null, sub),
+    // Ziel-Sätze immer sichtbar („Ziel: –“ = optional) und direkt antippbar (span, da die Zeile selbst ein button ist)
+    h('span', { class: 'target-pill', role: 'button' }, tr('Ziel: ', 'Goal: ') + (target === 0 ? '–' : targetLabel(target, g)) + ' ✎')),
   h('span', { class: 'drag-handle', 'aria-label': tr('Ziehen', 'Drag') }, icon('drag')));
+}
+
+/** Ziel-Sätze einer Übung direkt aus der Workout-Liste ändern (wie der Ziel-Dialog in WorkoutExerciseRow) */
+function targetDialog(w, name) {
+  openDialog(() => {
+    const g = store.groupOf(name), target = store.targetFor(w, name);
+    return dialog(exName(name), targetStepper(w, name, target, g), [{ label: 'OK', onClick: closeDialog }], closeDialog);
+  });
+}
+
+/** „Ziel-Sätze  − 3 Sätze +“ (wie TargetStepper in WorkoutScreens.kt) */
+function targetStepper(w, name, target, g) {
+  return h('div', { class: 'pick-bar-row' },
+    h('div', { class: 'grow' }, h('b', null, tr('Ziel-Sätze', 'Target sets')), muted('0 = optional', 'small')),
+    h('span', { class: 'stepper' },
+      h('button', { class: 'step tonal', onclick: () => store.setTarget(w.id, name, target - 1), disabled: target <= 0 }, '−'),
+      h('span', { class: 'step-value wide' }, targetLabel(target, g)),
+      h('button', { class: 'step tonal', onclick: () => store.setTarget(w.id, name, target + 1), disabled: target >= 20 }, '+')));
 }
 
 /**
@@ -206,6 +228,7 @@ function enableDrag(list, workout) {
       clearTimeout(timer); timer = null;
       if (!dragging) return;
       dragging = false;
+      hintUsed('drag');
       row.style.transition = 'transform .15s ease-out';
       row.style.transform = '';
       row.classList.remove('dragging');
@@ -294,12 +317,7 @@ export function workoutExercisePage(w, name) {
   const m = musclesOf(name);
   const bar = added
     ? h('div', { class: 'pick-bar' },
-      h('div', { class: 'pick-bar-row' },
-        h('div', { class: 'grow' }, h('b', null, tr('Ziel-Sätze', 'Target sets')), muted('0 = optional', 'small')),
-        h('span', { class: 'stepper' },
-          h('button', { class: 'step tonal', onclick: () => store.setTarget(w.id, name, target - 1), disabled: target <= 0 }, '−'),
-          h('span', { class: 'step-value wide' }, targetLabel(target, g)),
-          h('button', { class: 'step tonal', onclick: () => store.setTarget(w.id, name, target + 1), disabled: target >= 20 }, '+'))),
+      targetStepper(w, name, target, g),
       h('button', { class: 'btn text danger pick-remove', onclick: () => store.toggleInWorkout(w.id, name) }, tr('Aus dem Workout entfernen', 'Remove from workout')))
     : h('div', { class: 'pick-bar' },
       h('button', {

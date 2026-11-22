@@ -141,7 +141,7 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                     tr("Gewichtsverlauf", "Weight trend"),
                     "${fmtW(shown.minOf { it.kg })} – ${fmtW(shown.maxOf { it.kg })} kg"
                 ) {
-                    LineChart(shown.map { it.kg }, "kg", onTapPoint = { editEntry = shown[it] })
+                    LineChart(shown.map { it.kg }, "kg", onTapPoint = { editEntry = shown[it]; Hints.used(Hints.WEIGHT) })
                     Row(Modifier.fillMaxWidth()) {
                         Text(fmtShortDate(shown.first().time), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -149,7 +149,7 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                         if (shown.size > 1) Text(fmtShortDate(shown.last().time), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text(
+                    if (Hints.show(Hints.WEIGHT)) Text(
                         tr("Punkt antippen zum Anpassen oder Löschen", "Tap a point to edit or delete"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

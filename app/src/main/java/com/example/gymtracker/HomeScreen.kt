@@ -32,6 +32,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
@@ -469,12 +471,22 @@ fun ExerciseGrid(
     val groups = store.exercises.map { store.groupOf(it) }.distinct().sortedBy { it.ordinal }
     val equipment = store.exercises.mapNotNull { equipmentOf(it) }.distinct().sortedBy { it.ordinal }
     val visible = store.exercises.filter { filter.matches(it, store.groupOf(it)) }
-    // Gedrückt halten → sofort aus „Meine Übungen“ entfernen (Workouts und Verlauf bleiben), mit „Rückgängig“
+    // Aus „Meine Übungen“ entfernen (Workouts und Verlauf bleiben), mit „Rückgängig“
     fun remove(name: String) {
         val index = store.removeFromList(name)
         Undo.show(tr("„${exName(name)}“ entfernt – bleibt in Workouts und Verlauf", "\"${exName(name)}\" removed – stays in workouts and history")) {
             store.restoreToList(name, index)
         }
+    }
+    // Gedrückt halten → Menü (Öffnen / Zu Workout hinzufügen / Aus Liste entfernen) statt sofort zu entfernen
+    var menuFor by rememberSaveable { mutableStateOf<String?>(null) }
+    menuFor?.let { name ->
+        ExerciseMenuSheet(
+            store, name,
+            onOpen = { menuFor = null; onOpen(name) },
+            onRemove = { menuFor = null; remove(name) },
+            onDismiss = { menuFor = null }
+        )
     }
 
     Column(modifier) {
@@ -484,10 +496,10 @@ fun ExerciseGrid(
             return@Column
         }
         TileGrid(Modifier.weight(1f).fillMaxWidth()) {
-            // Hinweis auf die sonst unsichtbaren Gesten
-            item(key = "hint", span = { GridItemSpan(maxLineSpan) }) {
+            // Hinweis auf die sonst unsichtbare Geste – nur bis zum ersten Gedrückthalten
+            if (Hints.show(Hints.LIST)) item(key = "hint", span = { GridItemSpan(maxLineSpan) }) {
                 Text(
-                    tr("Tippen = öffnen · gedrückt halten = aus der Liste entfernen", "Tap = open · long-press = remove from list"),
+                    tr("Tippen = öffnen · gedrückt halten = weitere Aktionen", "Tap = open · long-press = more actions"),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -505,8 +517,81 @@ fun ExerciseGrid(
                     ExerciseTile(
                         name, group, store.setsFor(name).firstOrNull(),
                         onClick = { onOpen(name) },
-                        onLongClick = { remove(name) }
+                        onLongClick = { Hints.used(Hints.LIST); menuFor = name }
                     )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Menü einer Übungskachel (gedrückt halten): Öffnen, zu einem Workout hinzufügen (✓ = schon drin, antippen = an/aus),
+ * aus „Meine Übungen“ entfernen. Web: exerciseMenu in home.js.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExerciseMenuSheet(store: GymStore, name: String, onOpen: () -> Unit, onRemove: () -> Unit, onDismiss: () -> Unit) {
+    var pickWorkout by rememberSaveable { mutableStateOf(false) }
+    val group = store.groupOf(name)
+    @Composable
+    fun Action(icon: Ico, text: String, color: Color = MaterialTheme.colorScheme.onSurface, onClick: () -> Unit) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .clickable(onClick = onClick)
+                .padding(vertical = 14.dp, horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AppIcon(icon, tint = color)
+            Spacer(Modifier.width(16.dp))
+            Text(text, color = color, modifier = Modifier.weight(1f))
+        }
+    }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)) {
+                ExerciseIcon(name, group, Modifier.size(40.dp))
+                Spacer(Modifier.width(12.dp))
+                Text(exName(name), style = MaterialTheme.typography.titleMedium)
+            }
+            if (!pickWorkout) {
+                Action(Ico.CHEVRON, tr("Öffnen", "Open"), onClick = onOpen)
+                Action(Ico.ADD, tr("Zu Workout hinzufügen", "Add to workout"), onClick = { pickWorkout = true })
+                Action(Ico.DELETE, tr("Aus der Liste entfernen", "Remove from list"), MaterialTheme.colorScheme.error, onClick = onRemove)
+                Text(
+                    tr("Workouts und Verlauf bleiben erhalten.", "Workouts and history are kept."),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 48.dp)
+                )
+            } else if (store.workouts.isEmpty()) {
+                Text(
+                    tr("Noch keine Workouts – leg eins im Tab „Workouts“ an.", "No workouts yet – create one in the \"Workouts\" tab."),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(8.dp)
+                )
+            } else {
+                Text(tr("Zu welchem Workout?", "Which workout?"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp, bottom = 4.dp))
+                store.workouts.forEach { w ->
+                    val inside = name in w.exercises
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.medium)
+                            .clickable {
+                                store.toggleInWorkout(w.id, name)
+                                // wie in WorkoutExercisePage: Standard-Ziel 3 Sätze (Cardio 1×)
+                                if (!inside) store.setTarget(w.id, name, if (group.isCardio) 1 else 3)
+                            }
+                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(w.name, modifier = Modifier.weight(1f))
+                        if (inside) Text("✓ " + tr("drin", "added"), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                        else AppIcon(Ico.ADD, tint = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
         }

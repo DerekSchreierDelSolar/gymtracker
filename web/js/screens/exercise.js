@@ -10,7 +10,7 @@ import {
 } from '../core.js';
 import { progressionSuggestion } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
-import { h, icon, iconBtn, chip, dialog, textField, progressChart, onTick, muted, undoToast } from '../ui.js';
+import { h, icon, iconBtn, chip, dialog, textField, progressChart, onTick, muted, undoToast, showHint, hintUsed } from '../ui.js';
 import { nav, rerender, openDialog, closeDialog, goBack } from '../nav.js';
 import { screen } from '../layout.js';
 
@@ -202,7 +202,7 @@ export function setRows(list, cardio) {
 /** Satz-Zeile; ganze Zeile antippen = bearbeiten (kein Stift-Symbol). `label` = „1.“ … bzw. „A“. */
 export function setRow(set, label, cardio) {
   const type = setTypeOf(set);
-  return h('div', { class: ['set-row', 'tap', !isWork(set) && 'warmup'], role: 'button', onclick: () => editSetDialog(set, cardio) },
+  return h('div', { class: ['set-row', 'tap', !isWork(set) && 'warmup'], role: 'button', onclick: () => { hintUsed('set'); editSetDialog(set, cardio); } },
     h('span', { class: ['set-label', 'st-' + type] }, label),
     h('span', null, ' ' + fmtSet(set, cardio)),
     type === 'DROP' || type === 'FAILURE' ? h('span', { class: ['set-tag', 'st-' + type] }, setTypeLabel(type)) : null,
@@ -297,7 +297,7 @@ export function exerciseDetailScreen(name) {
       setInput(name),
       noteButton(name),
       days.size ? h('div', null, h('h2', { class: 'section' }, tr('Verlauf', 'History')),
-        muted(tr('Satz antippen zum Bearbeiten', 'Tap a set to edit'), 'small')) : null,
+        showHint('set') ? muted(tr('Satz antippen zum Bearbeiten', 'Tap a set to edit'), 'small') : null) : null,
       [...days.entries()].map(([day, list]) => historyDayCard(day, list, cardio, timed)),
     ];
   } else if (tab === 1) content = exerciseProgress(history, cardio, timed);

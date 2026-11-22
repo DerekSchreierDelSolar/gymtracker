@@ -254,3 +254,25 @@ export function categoryRow(groupKey, label, iconHtml, color, total, added, onCl
         (added ? tr(` · ${added} ausgewählt`, ` · ${added} selected`) : ''))),
     h('span', { class: 'muted' }, icon('chevron')));
 }
+
+// ---------- Bedienhinweise nur bis zur ersten Nutzung (wie Hints.kt) ----------
+// Gemerkt im localStorage `gym_hints` (gerätegebunden, nicht im Export). Schlüssel wie in Hints.kt:
+// list, drag, rest, weekGoal, weight, set
+const HINTS_KEY = 'gym_hints';
+let hintsDone = null;
+function hintsSet() {
+  if (!hintsDone) {
+    try { hintsDone = new Set(JSON.parse(localStorage.getItem(HINTS_KEY) ?? '[]').filter(k => typeof k === 'string')); }
+    catch { hintsDone = new Set(); }
+  }
+  return hintsDone;
+}
+/** true = Hinweis noch zeigen */
+export const showHint = key => !hintsSet().has(key);
+/** Geste wurde benutzt → Hinweis beim nächsten Neuaufbau ausblenden */
+export function hintUsed(key) {
+  const s = hintsSet();
+  if (s.has(key)) return;
+  s.add(key);
+  try { localStorage.setItem(HINTS_KEY, JSON.stringify([...s])); } catch { /* privat-Modus: nur für diese Sitzung */ }
+}

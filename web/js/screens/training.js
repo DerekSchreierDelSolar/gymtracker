@@ -11,7 +11,7 @@ import {
 import { sessionStats } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import {
-  h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, percentRing, onTick, muted, icon, iconBtn,
+  h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, percentRing, onTick, muted, icon, iconBtn, showHint, hintUsed,
 } from '../ui.js';
 import { nav, update, go, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
@@ -113,7 +113,7 @@ let lastTickSecond = null;
 function restCircle() {
   const el = circleStat(true, () => {
     if (nav.restEnd != null && nav.restEnd > Date.now()) update({ restEnd: null });
-    else store.setRest(REST_OPTIONS[(REST_OPTIONS.indexOf(store.restSeconds) + 1) % REST_OPTIONS.length]);
+    else { hintUsed('rest'); store.setRest(REST_OPTIONS[(REST_OPTIONS.indexOf(store.restSeconds) + 1) % REST_OPTIONS.length]); }
   });
   const refresh = () => {
     const now = Date.now();
@@ -132,7 +132,8 @@ function restCircle() {
     } else {
       el.classList.remove('final');
       const sec = store.restSeconds;
-      el.set(sec > 0 ? 1 : 0, sec > 0 ? fmtDuration(sec * 1000) : tr('Aus', 'Off'), tr('Pause', 'Rest'), 'var(--primary)');
+      el.set(sec > 0 ? 1 : 0, sec > 0 ? fmtDuration(sec * 1000) : tr('Aus', 'Off'),
+        showHint('rest') ? tr('Pause · tippen zum Ändern', 'Rest · tap to change') : tr('Pause ✎', 'Rest ✎'), 'var(--primary)');
     }
   };
   refresh();
@@ -190,8 +191,8 @@ export function trainingScreen(w, onFinish) {
       h('div', { class: 'hscroll' }, w.exercises.map((e, i) => {
         const count = countOf(e), goal = store.targetFor(w, e);
         const done = goal === 0 ? count > 0 : count >= goal;
-        // ✓ = Ziel erreicht, • = angefangen (mind. ein Satz), sonst nur der Name (wie TrainingScreen.kt)
-        const el = chip((done ? '✓ ' : count > 0 ? '• ' : '') + exName(e), i === index, () => setIndex(i));
+        // Stand auf einen Blick: ✓ = Ziel erreicht, sonst „2/4“ bzw. „2“ (wie trainingChipLabel in TrainingScreen.kt)
+        const el = chip(chipLabel(exName(e), count, goal, done), i === index, () => setIndex(i));
         if (i === index) el.dataset.autoscroll = '1';
         return el;
       }))),
@@ -373,4 +374,11 @@ function alternativesSheet(w, start, name) {
               h('small', { class: 'muted' }, tr(`${pct} % ähnlich`, `${pct} % similar`) + (last ? ' · ' + tr('zuletzt ', 'last ') + fmtSet(last, isCardio(g)) : ''))),
             wikiButton(alt));
         }) : muted(tr('Keine ähnlichen Übungen gefunden (für diese Übung sind keine Muskeln hinterlegt).', 'No similar exercises found (no muscles are set for this exercise).'))))));
+}
+
+/** Chip-Text im Training: „✓ Name“, „Name 2/4“, „Name 2“ (optional) bzw. nur „Name“ (wie trainingChipLabel). */
+function chipLabel(name, count, goal, done) {
+  if (done) return `✓ ${name}`;
+  if (goal > 0) return `${name} ${count}/${goal}`;
+  return count > 0 ? `${name} ${count}` : name;
 }

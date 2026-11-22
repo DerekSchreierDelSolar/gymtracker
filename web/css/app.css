@@ -618,3 +618,15 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .deficiency-badge { font-size: 13px; padding: 3px 10px; border-radius: 99px; background: color-mix(in srgb, var(--primary) 15%, transparent); }
 .supp-summary { font-size: 17px; line-height: 1.4; }
 .stat-caption { display: block; margin: 0 4px -2px; }
+
+/* Menü einer Übungskachel (gedrückt halten), wie ExerciseMenuSheet */
+.menu-head { display: flex; align-items: center; gap: 12px; padding: 0 4px 8px; font-size: 17px; }
+.menu-action { display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 8px; border: none; background: none;
+  color: var(--text); font: inherit; font-size: 16px; text-align: left; border-radius: 12px; cursor: pointer; }
+.menu-action:active { background: var(--container-high); }
+.menu-action.danger { color: var(--error); }
+.menu-note { padding-left: 48px; margin-top: -4px; }
+.primary-text { color: var(--primary); }
+/* Ziel-Sätze in der Workout-Liste: antippbare Pille (wie Surface in WorkoutExerciseRow) */
+.target-pill { display: block; width: fit-content; margin-top: 4px; padding: 4px 10px; border: none; border-radius: 999px; font: inherit; font-size: 13px;
+  background: var(--primary-container); color: var(--on-primary-container); cursor: pointer; }

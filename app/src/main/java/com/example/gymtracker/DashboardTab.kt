@@ -125,7 +125,7 @@ fun DashboardTab(
                 Modifier
                     .fillMaxWidth()
                     .clip(MaterialTheme.shapes.medium)
-                    .clickable { editGoal = true }
+                    .clickable { editGoal = true; Hints.used(Hints.WEEK_GOAL) }
             ) {
                 Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                     PercentRing((weekSessions.size.toFloat() / goal).coerceAtMost(1f), Modifier.size(84.dp))
@@ -146,8 +146,10 @@ fun DashboardTab(
                             ) else tr("Starte deine Serie!", "Start your streak!"),
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        Text(
-                            if (weekSessions.size >= goal) tr("Ziel $goal/Woche · tippen zum Ändern", "Goal $goal/week · tap to change")
+                        // „tippen zum Ändern“ nur, bis das Ziel einmal geöffnet wurde (Hints)
+                        val hint = Hints.show(Hints.WEEK_GOAL)
+                        if (hint || weekSessions.size >= goal) Text(
+                            if (weekSessions.size >= goal) tr("Ziel $goal/Woche", "Goal $goal/week") + (if (hint) tr(" · tippen zum Ändern", " · tap to change") else "")
                             else tr("Tippen, um das Ziel zu ändern", "Tap to change goal"),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)

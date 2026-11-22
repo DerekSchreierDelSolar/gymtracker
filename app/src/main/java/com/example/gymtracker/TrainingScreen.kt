@@ -111,15 +111,36 @@ fun TrainingScreen(
     // Training verlassen → Countdown-Benachrichtigung entfernen
     DisposableEffect(Unit) { onDispose { RestTimer.cancel(context) } }
     // Ab Android 13 einmalig um Erlaubnis für Benachrichtigungen bitten (für den Pausen-Timer)
+    // Vorher kurz erklären, wofür – sonst erscheint der System-Dialog ohne Zusammenhang beim Trainingsstart.
     val askNotify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    var explainNotify by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         val prefs = context.getSharedPreferences("rest", Context.MODE_PRIVATE)
         if (Build.VERSION.SDK_INT >= 33 && !prefs.getBoolean("asked", false) &&
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
             prefs.edit().putBoolean("asked", true).apply()
-            askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+            explainNotify = true
         }
+    }
+    if (explainNotify && Build.VERSION.SDK_INT >= 33) {
+        AlertDialog(
+            onDismissRequest = { explainNotify = false },
+            title = { Text(tr("Pause als Benachrichtigung", "Rest timer notification")) },
+            text = {
+                Text(tr(
+                    "Damit du die Pause auch siehst, wenn das Handy in der Tasche ist, zeigt GymTracker den Countdown als Benachrichtigung und meldet „Pause vorbei“. Dafür fragt Android gleich nach der Erlaubnis.",
+                    "So you can see your rest even with the phone in your pocket, GymTracker shows the countdown as a notification and tells you when the rest is over. Android will ask for permission next."
+                ))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    explainNotify = false
+                    askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }) { Text(tr("Weiter", "Continue")) }
+            },
+            dismissButton = { TextButton(onClick = { explainNotify = false }) { Text(tr("Nicht jetzt", "Not now")) } }
+        )
     }
     // Countdown-Ticks: bei 3, 2 und 1 Sekunde(n) Rest kurz vibrieren
     val restSecondsLeft = restEnd?.let { ((it - now + 999) / 1000).toInt() }
@@ -236,9 +257,8 @@ fun TrainingScreen(
                         FilterChip(
                             selected = i == index,
                             onClick = { onIndex(i) },
-                            // nur Name (+ ✓), ohne Satzzähler – der steht auf der Seite der Übung
-                            // ✓ = Ziel erreicht, • = angefangen (mind. ein Satz), sonst nur der Name
-                            label = { Text((if (done) "✓ " else if (count > 0) "• " else "") + exName(e)) }
+                            // Stand auf einen Blick: ✓ = Ziel erreicht, sonst „2/4“ (mit Ziel) bzw. „2“ (optional, angefangen)
+                            label = { Text(trainingChipLabel(exName(e), count, goal, done)) }
                         )
                     }
                 }
@@ -374,10 +394,14 @@ fun TrainingExercisePage(
                         progress = if (sec > 0) 1f else 0f,
                         color = MaterialTheme.colorScheme.primary,
                         value = if (sec > 0) fmtDuration(sec * 1000L) else tr("Aus", "Off"),
-                        label = tr("Pause", "Rest"),
+                        // „tippen zum Ändern“, bis die Pausenlänge einmal geändert wurde; danach reicht das ✎
+                        label = if (Hints.show(Hints.REST)) tr("Pause · tippen zum Ändern", "Rest · tap to change") else tr("Pause ✎", "Rest ✎"),
                         big = true,
                         // nächste Pausenlänge (Aus → 1 min → 90 s → 2 min → 3 min → Aus)
-                        onClick = { store.setRest(restOptions[(restOptions.indexOf(sec) + 1) % restOptions.size]) }
+                        onClick = {
+                            Hints.used(Hints.REST)
+                            store.setRest(restOptions[(restOptions.indexOf(sec) + 1) % restOptions.size])
+                        }
                     )
                 }
                 val reached = target > 0 && todayWork >= target
@@ -427,6 +451,14 @@ fun TrainingExercisePage(
             item(key = "hist_$day") { HistoryDayCard(store, day, daySets, cardio, timed) }
         }
     }
+}
+
+/** Chip-Text im Training: „✓ Name“ (Ziel erreicht), „Name 2/4“, „Name 2“ (optional) bzw. nur „Name“. Web: chipLabel in training.js. */
+fun trainingChipLabel(name: String, count: Int, goal: Int, done: Boolean): String = when {
+    done -> "✓ $name"
+    goal > 0 -> "$name $count/$goal"
+    count > 0 -> "$name $count"
+    else -> name
 }
 
 /**

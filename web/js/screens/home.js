@@ -10,7 +10,7 @@ import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, wee
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, dateField, isoDay, timeOfIsoDay, statBox, chartCard, horizontalBars, historyBars, lineChart,
-  percentRing, ring, muted, toast, groupHeader, undoToast,
+  percentRing, ring, muted, toast, groupHeader, undoToast, showHint, hintUsed,
 } from '../ui.js';
 import { nav, go, update, rerender, openDialog, closeDialog, onSwipe } from '../nav.js';
 import { screen, fab } from '../layout.js';
@@ -210,7 +210,7 @@ function dashboardTab(onStartWorkout) {
         h('small', null, tr('In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet GymTracker wie eine normale App.',
           'In Safari tap "Share", then "Add to Home Screen". GymTracker then opens like a regular app.')))) : null,
 
-    h('button', { class: 'card week-card', onclick: weeklyGoalDialog },
+    h('button', { class: 'card week-card', onclick: () => { hintUsed('weekGoal'); weeklyGoalDialog(); } },
       percentRing(Math.min(1, weekSessions.length / goal), 84),
       h('div', { class: 'grow' },
         h('small', { class: 'muted' }, tr('Diese Woche', 'This week')),
@@ -219,8 +219,10 @@ function dashboardTab(onStartWorkout) {
           : tr(`${weekSessions.length} von ${goal} Trainingseinheiten`, `${weekSessions.length} of ${goal} workouts`)),
         h('span', null, streak > 0 ? '🔥 ' + tr(`${plural(streak, 'Woche', 'Wochen')} in Folge`, `${plural(streak, 'week', 'weeks')} in a row`)
           : tr('Starte deine Serie!', 'Start your streak!')),
-        h('small', { class: 'muted' }, weekSessions.length >= goal ? tr(`Ziel ${goal}/Woche · tippen zum Ändern`, `Goal ${goal}/week · tap to change`)
-          : tr('Tippen, um das Ziel zu ändern', 'Tap to change goal')))),
+        // „tippen zum Ändern“ nur, bis das Ziel einmal geöffnet wurde (Hints)
+        showHint('weekGoal') || weekSessions.length >= goal ? h('small', { class: 'muted' }, weekSessions.length >= goal
+          ? tr(`Ziel ${goal}/Woche`, `Goal ${goal}/week`) + (showHint('weekGoal') ? tr(' · tippen zum Ändern', ' · tap to change') : '')
+          : tr('Tippen, um das Ziel zu ändern', 'Tap to change goal')) : null)),
 
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
       h('div', { class: 'grow' },
@@ -305,16 +307,53 @@ function exerciseGrid() {
   const visible = store.exercises.filter(n => matches(nav.listFilter, n, store.groupOf(n)));
   if (!visible.length) return noFilterResults('list');
   return h('div', { class: 'pad list-bottom' },
-    muted(tr('Tippen = öffnen · gedrückt halten = aus der Liste entfernen', 'Tap = open · long-press = remove from list'), 'small'),
+    // Hinweis auf die sonst unsichtbare Geste – nur bis zum ersten Gedrückthalten (Hints)
+    showHint('list') ? muted(tr('Tippen = öffnen · gedrückt halten = weitere Aktionen', 'Tap = open · long-press = more actions'), 'small') : null,
     GROUP_KEYS.map(g => {
     const names = sortByName(visible.filter(n => store.groupOf(n) === g), exName); // alphabetisch
     if (!names.length) return null;
     return [groupHeader(g), h('div', { class: 'tile-grid' },
-      names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { onLongPress: () => removeExercise(n) })))];
+      names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { onLongPress: () => { hintUsed('list'); exerciseMenu(n); } })))];
   }));
 }
 
-/** Gedrückt halten → sofort aus „Meine Übungen“ entfernen, mit „Rückgängig“ (wie ExerciseGrid in HomeScreen.kt) */
+/**
+ * Menü einer Übungskachel (gedrückt halten): Öffnen, zu einem Workout hinzufügen (✓ = schon drin, antippen = an/aus),
+ * aus „Meine Übungen“ entfernen (wie ExerciseMenuSheet in HomeScreen.kt).
+ */
+let menuPickWorkout = false;
+function exerciseMenu(name) {
+  menuPickWorkout = false;
+  const g = store.groupOf(name);
+  const action = (ic, label, onClick, cls = '') => h('button', { class: `menu-action ${cls}`, onclick: onClick }, icon(ic), h('span', null, label));
+  openDialog(() => h('div', { class: 'dialog-backdrop sheet-backdrop', onclick: e => { if (e.target === e.currentTarget) closeDialog(); } },
+    h('div', { class: 'sheet', role: 'dialog' },
+      h('div', { class: 'sheet-handle', onclick: closeDialog }),
+      h('div', { class: 'sheet-body' },
+        h('div', { class: 'menu-head' }, h('span', { html: exerciseIconHtml(name, g, 40) }), h('b', null, exName(name))),
+        !menuPickWorkout ? [
+          action('chevron', tr('Öffnen', 'Open'), () => { closeDialog(); go({ exercise: name }); }),
+          action('add', tr('Zu Workout hinzufügen', 'Add to workout'), () => { menuPickWorkout = true; rerender(); }),
+          action('delete', tr('Aus der Liste entfernen', 'Remove from list'), () => { closeDialog(); removeExercise(name); }, 'danger'),
+          muted(tr('Workouts und Verlauf bleiben erhalten.', 'Workouts and history are kept.'), 'small menu-note'),
+        ] : !store.workouts.length
+          ? muted(tr('Noch keine Workouts – leg eins im Tab „Workouts“ an.', 'No workouts yet – create one in the "Workouts" tab.'))
+          : [
+            h('h3', null, tr('Zu welchem Workout?', 'Which workout?')),
+            store.workouts.map(w => {
+              const inside = w.exercises.includes(name);
+              return h('button', {
+                class: 'menu-action', onclick: () => {
+                  store.toggleInWorkout(w.id, name);
+                  // wie WorkoutExercisePage: Standard-Ziel 3 Sätze (Cardio 1×)
+                  if (!inside) store.setTarget(w.id, name, isCardio(g) ? 1 : 3);
+                },
+              }, h('span', { class: 'grow' }, w.name), inside ? h('b', { class: 'primary-text' }, '✓ ' + tr('drin', 'added')) : icon('add'));
+            }),
+          ]))));
+}
+
+/** Aus „Meine Übungen“ entfernen, mit „Rückgängig“ (wie ExerciseGrid in HomeScreen.kt) */
 function removeExercise(name) {
   const index = store.removeFromList(name);
   undoToast(tr(`„${exName(name)}“ entfernt – bleibt in Workouts und Verlauf`, `"${exName(name)}" removed – stays in workouts and history`),
@@ -451,9 +490,9 @@ function bodyTab() {
     // Gewichtsverlauf; Punkt antippen = Eintrag anpassen oder löschen (statt einer Liste) – wie BodyTab.kt
     weights.length ? chartCard(tr('Gewichtsverlauf', 'Weight trend'),
       `${fmtW(Math.min(...shown.map(w => w.kg)))} – ${fmtW(Math.max(...shown.map(w => w.kg)))} kg`,
-      lineChart(shown.map(w => w.kg), 'kg', i => weightEditDialog(shown[i])),
+      lineChart(shown.map(w => w.kg), 'kg', i => { hintUsed('weight'); weightEditDialog(shown[i]); }),
       h('div', { class: 'axis' }, h('small', null, fmtShortDate(shown[0].time)), shown.length > 1 ? h('small', null, fmtShortDate(shown[shown.length - 1].time)) : null),
-      muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small')) : null,
+      showHint('weight') ? muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small') : null) : null,
     muted(tr('Der Verbrauch ist eine Schätzung nach der MET-Methode (Körpergewicht × Dauer × Intensität der Übung). Cardio wird über die eingetragenen Minuten gerechnet, Krafttraining über die Trainingsdauer.',
       'Calories are estimated with the MET method (body weight × duration × exercise intensity). Cardio uses the logged minutes, strength training the workout duration.'), 'small'));
 }

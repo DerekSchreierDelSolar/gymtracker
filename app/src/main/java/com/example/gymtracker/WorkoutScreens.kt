@@ -2,6 +2,7 @@ package com.example.gymtracker
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
@@ -199,6 +200,7 @@ fun WorkoutScreen(
     }
 
     fun endDrag() {
+        Hints.used(Hints.DRAG)
         dragKey = null
         dragY = 0f
         store.saveNow()
@@ -241,7 +243,6 @@ fun WorkoutScreen(
                 title = { Text(workout.name, style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
                 actions = {
-                    IconAction(Ico.EDIT, onClick = onEdit)
                     IconAction(Ico.COPY, onClick = onDuplicate)
                     IconAction(Ico.DELETE, onClick = { confirmDelete = true })
                 }
@@ -281,7 +282,8 @@ fun WorkoutScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item { WorkoutDaysRow(store, workout, Modifier.padding(bottom = 8.dp)) }
-                item {
+                // Bedienhinweis nur, bis einmal umsortiert wurde
+                if (Hints.show(Hints.DRAG)) item {
                     Text(
                         tr(
                             "Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.",
@@ -332,6 +334,14 @@ fun WorkoutScreen(
                             )
                         }
                     )
+                }
+                // Beschrifteter Knopf statt nur Stift oben: öffnet WorkoutPickerScreen
+                item {
+                    OutlinedButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
+                        AppIcon(Ico.ADD)
+                        Spacer(Modifier.width(8.dp))
+                        Text(tr("Übungen hinzufügen / bearbeiten", "Add / edit exercises"))
+                    }
                 }
                 // Bisherige Trainings dieses Workouts
                 if (history.isNotEmpty()) {
@@ -410,6 +420,13 @@ fun WorkoutExerciseRow(
     val group = store.groupOf(name)
     val last = store.setsFor(name).firstOrNull()
     val target = store.targetFor(workout, name)
+    var editTarget by remember { mutableStateOf(false) }
+    if (editTarget) AlertDialog(
+        onDismissRequest = { editTarget = false },
+        title = { Text(exName(name)) },
+        text = { TargetStepper(target, group, onChange = { store.setTarget(workout.id, name, it) }) },
+        confirmButton = { TextButton(onClick = { editTarget = false }) { Text("OK") } }
+    )
     Card(
         modifier
             .fillMaxWidth()
@@ -426,14 +443,25 @@ fun WorkoutExerciseRow(
             Column(Modifier.weight(1f)) {
                 Text(exName(name), style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Text(
-                    listOfNotNull(
-                        last?.let { fmtSet(it, group.isCardio) } ?: "–",
-                        if (target > 0) tr("Ziel ", "Goal ") + plural(target, tr("Satz", "set"), tr("Sätze", "sets")) else null
-                    ).joinToString(" · "),
+                    last?.let { tr("Zuletzt ", "Last ") + fmtSet(it, group.isCardio) } ?: "–",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
+                // Ziel-Sätze immer sichtbar („Ziel: –“ = optional) und direkt antippbar
+                Spacer(Modifier.height(4.dp))
+                Surface(
+                    onClick = { editTarget = true },
+                    shape = RoundedCornerShape(50),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Text(
+                        tr("Ziel: ", "Goal: ") + (if (target == 0) "–" else targetLabel(target, group)) + " ✎",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
             }
             // Griff: große Tippfläche (48 dp), sofort ziehbar
             Box(handleModifier.size(48.dp), contentAlignment = Alignment.Center) {
@@ -578,6 +606,39 @@ private fun targetLabel(target: Int, group: MuscleGroup): String = when {
     else -> plural(target, tr("Satz", "set"), tr("Sätze", "sets"))
 }
 
+/** „Ziel-Sätze  − 3 Sätze +“ (0 = optional, max. 20) – Workout bearbeiten und Ziel-Dialog in der Workout-Liste. */
+@Composable
+fun TargetStepper(target: Int, group: MuscleGroup, onChange: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(tr("Ziel-Sätze", "Target sets"), style = MaterialTheme.typography.titleSmall)
+            Text(
+                tr("0 = optional", "0 = optional"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        FilledTonalButton(
+            onClick = { onChange(target - 1) },
+            enabled = target > 0,
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.size(48.dp)
+        ) { Text("−", style = MaterialTheme.typography.titleLarge) }
+        Text(
+            targetLabel(target, group),
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(88.dp)
+        )
+        FilledTonalButton(
+            onClick = { onChange(target + 1) },
+            enabled = target < 20,
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.size(48.dp)
+        ) { Text("+", style = MaterialTheme.typography.titleLarge) }
+    }
+}
+
 /**
  * Übung beim Bearbeiten eines Workouts: wie der Reiter „Info“ der Übungsdetails (Bild im Hintergrund,
  * Muskeln vorne/hinten, Anleitung), unten eine feste Leiste: „Zum Workout hinzufügen“ bzw. Ziel-Sätze + Entfernen.
@@ -615,34 +676,7 @@ fun WorkoutExercisePage(store: GymStore, workout: Workout, name: String, onBack:
                 Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
                     Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp)) {
                         if (added) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    Text(tr("Ziel-Sätze", "Target sets"), style = MaterialTheme.typography.titleSmall)
-                                    Text(
-                                        tr("0 = optional", "0 = optional"),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                FilledTonalButton(
-                                    onClick = { store.setTarget(workout.id, name, target - 1) },
-                                    enabled = target > 0,
-                                    contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier.size(48.dp)
-                                ) { Text("−", style = MaterialTheme.typography.titleLarge) }
-                                Text(
-                                    targetLabel(target, group),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.width(88.dp)
-                                )
-                                FilledTonalButton(
-                                    onClick = { store.setTarget(workout.id, name, target + 1) },
-                                    enabled = target < 20,
-                                    contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier.size(48.dp)
-                                ) { Text("+", style = MaterialTheme.typography.titleLarge) }
-                            }
+                            TargetStepper(target, group, onChange = { store.setTarget(workout.id, name, it) })
                             TextButton(
                                 onClick = { store.toggleInWorkout(workout.id, name) },
                                 modifier = Modifier.align(Alignment.End)

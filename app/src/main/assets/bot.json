@@ -17,8 +17,8 @@
     },
     {
       "keys": ["uebung entfernen", "uebung loeschen", "entfernen", "ausblenden", "remove exercise", "delete exercise", "remove", "hide"],
-      "a": ["Im Tab „Übungen“ eine Kachel gedrückt halten: Die Übung verschwindet sofort (unten „Rückgängig“) aus deiner Liste, bleibt aber in deinen Workouts, und der Verlauf bleibt erhalten. Über den Katalog kannst du sie wieder hinzufügen. Ganz löschen (mit allen Sätzen) geht in der Übung oben über das Papierkorb-Symbol.",
-            "In the \"Exercises\" tab long-press a tile: the exercise disappears right away (\"Undo\" at the bottom) from your list but stays in your workouts, and your history is kept. Add it again from the catalog. To delete it completely (with all sets), open the exercise and use the trash icon at the top."]
+      "a": ["Im Tab „Übungen“ eine Kachel gedrückt halten: Ein Menü erscheint mit „Öffnen“, „Zu Workout hinzufügen“ und „Aus der Liste entfernen“. Entfernen nimmt die Übung nur aus deiner Liste (unten „Rückgängig“) – sie bleibt in deinen Workouts, und der Verlauf bleibt erhalten. Über den Katalog kannst du sie wieder hinzufügen. Ganz löschen (mit allen Sätzen) geht in der Übung oben über das Papierkorb-Symbol.",
+            "In the \"Exercises\" tab long-press a tile: a menu offers \"Open\", \"Add to workout\" and \"Remove from list\". Removing only takes it off your list (\"Undo\" at the bottom) – it stays in your workouts, and your history is kept. Add it again from the catalog. To delete it completely (with all sets), open the exercise and use the trash icon at the top."]
     },
     {
       "keys": ["notiz", "notizen", "note", "notes", "kommentar"],
@@ -67,8 +67,8 @@
     },
     {
       "keys": ["zielsaetze", "ziel saetze", "ziel", "target sets", "target", "optional"],
-      "a": ["Im Workout kannst du pro Übung Ziel-Sätze festlegen: Workout öffnen → Stift oben → Übung antippen → unten mit − / + einstellen. 0 bedeutet „optional“. Der Prozentwert eines Trainings sagt, wie viele Ziel-Sätze du geschafft hast (mehr als das Ziel zählt nicht extra).",
-            "In a workout you can set target sets per exercise: open the workout → pencil at the top → tap an exercise → adjust with − / + at the bottom. 0 means \"optional\". A session's percentage shows how many target sets you completed (extra sets don't count beyond the target)."]
+      "a": ["Im Workout kannst du pro Übung Ziel-Sätze festlegen: Workout öffnen → in der Liste auf „Ziel: …“ unter der Übung tippen → mit − / + einstellen (oder über „Übungen hinzufügen / bearbeiten“ → Übung antippen). 0 bedeutet „optional“. Der Prozentwert eines Trainings sagt, wie viele Ziel-Sätze du geschafft hast (mehr als das Ziel zählt nicht extra).",
+            "In a workout you can set target sets per exercise: open the workout → tap \"Goal: …\" below an exercise → adjust with − / + (or via \"Add / edit exercises\" → tap an exercise). 0 means \"optional\". A session's percentage shows how many target sets you completed (extra sets don't count beyond the target)."]
     },
     {
       "keys": ["weiter mit", "naechstes workout", "reihenfolge", "continue with", "next workout"],

@@ -267,7 +267,7 @@ fun SetRow(store: GymStore, set: GymSet, label: String, cardio: Boolean) {
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .clickable { editing = true }
+            .clickable { editing = true; Hints.used(Hints.SET) }
             .padding(vertical = 10.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -456,7 +456,7 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                     if (days.isNotEmpty()) item {
                         Column(Modifier.padding(top = 8.dp)) {
                             Text(tr("Verlauf", "History"), style = MaterialTheme.typography.titleMedium)
-                            Text(
+                            if (Hints.show(Hints.SET)) Text(
                                 tr("Satz antippen zum Bearbeiten", "Tap a set to edit"),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
