@@ -10,6 +10,9 @@
     <!-- Health Connect (Android 14+): Körpergewicht lesen/schreiben, Erlaubnis erteilt der Nutzer in Health Connect -->
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <!-- Health Connect: Trainings und verbrannte kcal eintragen -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
+    <uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED" />
 
     <application
         android:allowBackup="true"

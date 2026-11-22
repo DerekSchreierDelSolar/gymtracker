@@ -589,6 +589,9 @@ class GymStore(context: Context) {
      * Training abschließen. Gibt die gespeicherte Session zurück,
      * oder null, wenn kein einziger Satz eingetragen wurde (dann wird nichts gespeichert).
      */
+    /** Nach jedem abgeschlossenen Training (MainActivity: Health-Connect-Abgleich). */
+    var onTrainingFinished: (() -> Unit)? = null
+
     fun finishTraining(workout: Workout, start: Long): TrainingSession? {
         val end = System.currentTimeMillis()
         if (workout.exercises.all { setsBetween(it, start, end).isEmpty() }) return null
@@ -598,6 +601,7 @@ class GymStore(context: Context) {
         )
         sessions.add(t)
         save()
+        onTrainingFinished?.invoke()
         return t
     }
 

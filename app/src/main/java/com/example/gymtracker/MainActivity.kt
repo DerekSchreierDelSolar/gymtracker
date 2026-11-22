@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
         AutoBackup.load(applicationContext)
         HealthSync.load(applicationContext)
         store.onWeightChange = { old, new -> HealthSync.onWeightChange(applicationContext, old, new) }
+        store.onTrainingFinished = { if (HealthSync.enabled) HealthSync.sync(applicationContext, store) }
         Wiki.load(applicationContext)
         MuscleWiki.load(applicationContext)
         SupplementWiki.load(applicationContext)
