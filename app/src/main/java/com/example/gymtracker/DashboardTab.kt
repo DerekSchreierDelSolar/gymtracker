@@ -212,6 +212,8 @@ fun DashboardTab(
 
         // Langfristige Ziele (Goals.kt)
         item { GoalsCard(store) }
+        // Nächste erreichbare Meilensteine (Milestones.kt)
+        item { MilestonesCard(store) }
 
         // Kennzahlen dieser Woche (mit Überschrift, damit der Zeitraum klar ist)
         item { Column {

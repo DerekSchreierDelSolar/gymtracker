@@ -18,7 +18,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
    Liefert immer mindestens einen Erfolg. Wird von 3, 5, 7 und 10 wiederverwendet.
 3. ✅ (22.11.2026) **Feier im SummaryScreen (Peak-End):** Konfetti (selbst gezeichnet: Compose-Canvas / CSS) + Vibration bei Rekorden,
    Erfolge aus 2 groß oben, Bezug zum Ziel („Noch 7,5 kg bis 100 kg – vor 3 Monaten waren es noch 20“).
-4. **Meilensteine auf der Startseite:** nächste erreichbare Schritte („noch 2,5 kg bis 100 kg Kniebeuge“,
+4. ✅ (22.11.2026) **Meilensteine auf der Startseite:** nächste erreichbare Schritte („noch 2,5 kg bis 100 kg Kniebeuge“,
    „noch 1 Training bis Wochenziel“), bevorzugt passend zum Ziel.
 5. **Der Morgen danach:** Zeile auf der Startseite zum letzten Training („Gestern: 12 Sätze, Rekord bei Rudern 💪“);
    Erinnerung mit Vorfreude statt Pflicht („Heute Beine – letztes Mal 90 kg, schaffst du 92,5?“ über `Progression.kt`);

@@ -18,6 +18,7 @@ import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { reviewCard } from '../review.js';
 import { goalsCard } from '../goals.js';
+import { milestonesCard } from '../milestones.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -244,6 +245,7 @@ function dashboardTab(onStartWorkout) {
 
     // Langfristige Ziele (goals.js, wie GoalsCard in Goals.kt)
     goalsCard(),
+    milestonesCard(),
 
     backupDue ? h('div', { class: 'card hint' }, h('span', { class: 'hint-emoji' }, '💾'),
       h('div', { class: 'grow' }, h('b', null, tr('Backup machen', 'Make a backup')),
