@@ -7,11 +7,13 @@ import { tr, exName, fmtW, fmtDate, fmtVolume, plural, isTimed, isCardio, isTop,
 import { allSessions, sessionStats } from './stats.js';
 import { goalProgress, goalTitle, fmtAmount } from './goals.js';
 import { levelUpIn, levelTitle, nextTitleLevel } from './levels.js';
+import { badgesIn } from './badges.js';
 
 /** Art → [Emoji, Feiern?] – Reihenfolge = Wichtigkeit (wie AchievementKind) */
 export const ACHIEVEMENT_KINDS = {
   GOAL_REACHED: ['🏆', true],
   LEVEL_UP: ['⭐', true],
+  BADGE: ['🏅', true],
   RECORD: ['🥇', true],
   REP_RECORD: ['🔁', false],
   GOAL_PROGRESS: ['🎯', false],
@@ -61,6 +63,9 @@ export function achievements(t, stats = sessionStats(store, t)) {
       levelTitle(lv) !== levelTitle(lv - 1) ? tr(`Neuer Titel: ${levelTitle(lv)}`, `New title: ${levelTitle(lv)}`)
         : (n => (n ? tr(`Noch ${plural(n - lv, 'Level', 'Level')} bis „${levelTitle(n)}“`, `${plural(n - lv, 'level', 'levels')} to "${levelTitle(n)}"`) : null))(nextTitleLevel(lv))));
   }
+
+  // Neue Abzeichen (badges.js)
+  for (const b of badgesIn(t)) out.push(item('BADGE', tr(`Neues Abzeichen: ${b.name} ${b.emoji}`, `New badge: ${b.name} ${b.emoji}`), b.desc));
 
   // 2./3./8. Je Übung: Rekord > Wiederholungsrekord > besser als letztes Mal (höchstens einer pro Übung)
   for (const r of results) {

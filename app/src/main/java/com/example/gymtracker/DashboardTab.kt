@@ -163,6 +163,7 @@ fun DashboardTab(
 
         // Level (Levels.kt)
         item { LevelCard(store) }
+        item { BadgesCard(store) }
 
         // Erholungs-Check (Recovery.kt, nur mit Health Connect und Daten von heute)
         if (Recovery.rating() != null) item { RecoveryCard() }

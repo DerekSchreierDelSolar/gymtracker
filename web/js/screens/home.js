@@ -21,6 +21,7 @@ import { goalsCard } from '../goals.js';
 import { milestonesCard } from '../milestones.js';
 import { morningCard, anticipation } from '../morning.js';
 import { levelCard } from '../levels.js';
+import { badgesCard } from '../badges.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -235,6 +236,7 @@ function dashboardTab(onStartWorkout) {
 
     // Level (levels.js)
     levelCard(),
+    badgesCard(),
 
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
       h('div', { class: 'grow' },

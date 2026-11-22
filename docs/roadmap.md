@@ -27,7 +27,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 ## Phase 2 – Belohnungssystem
 6. ✅ (22.11.2026) **Level-System:** Punkte für Trainings/Sätze/Ziel-Fortschritt → Level + Balken (Startseite/Profil), rückwirkend
    aus vorhandenen Daten berechnet, Level-Aufstieg wird im Summary gefeiert (nutzt 3).
-7. **Abzeichen:** Übersicht (alle sichtbar außer „geheimen“), rückwirkend berechnet. Meilensteine (10./50./100. Training,
+7. ✅ (22.11.2026) **Abzeichen:** Übersicht (alle sichtbar außer „geheimen“), rückwirkend berechnet. Meilensteine (10./50./100. Training,
    1 t an einem Tag, Ziel erreicht) + seltene Überraschungen (Frühaufsteher < 7 Uhr, alle Muskelgruppen in einer Woche …).
    Neues Abzeichen im Summary (nutzt 2 + 3).
 8. **Serie mit Joker:** Serie bleibt wochenbasiert, 1 Joker pro Monat (Urlaub/krank), damit sie nicht an einer Woche zerbricht.

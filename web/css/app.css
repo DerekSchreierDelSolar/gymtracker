@@ -708,3 +708,11 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .level-card small { display: block; }
 .level-bar { margin: 8px 0 0; }
 .xp-row { padding: 3px 0; }
+/* Abzeichen (badges.js) */
+.badges-latest { font-size: 22px; }
+.award-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 6px; max-height: 60vh; overflow-y: auto; }
+.award { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; }
+.award.locked { opacity: .45; }
+.award-emoji { font-size: 30px; }
+.award b { font-size: 13px; }
+.award small { font-size: 11px; }

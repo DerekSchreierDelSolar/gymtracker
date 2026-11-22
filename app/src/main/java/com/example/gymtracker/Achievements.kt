@@ -10,6 +10,7 @@ package com.example.gymtracker
 enum class AchievementKind(val emoji: String, val big: Boolean) {
     GOAL_REACHED("🏆", true),
     LEVEL_UP("⭐", true),
+    BADGE("🏅", true),
     RECORD("🥇", true),
     REP_RECORD("🔁", false),
     GOAL_PROGRESS("🎯", false),
@@ -72,6 +73,11 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
         out += Achievement(AchievementKind.LEVEL_UP, tr("Level $lv erreicht!", "Level $lv reached!"),
             if (levelTitle(lv) != levelTitle(lv - 1)) tr("Neuer Titel: ${levelTitle(lv)}", "New title: ${levelTitle(lv)}")
             else nextTitleLevel(lv)?.let { n -> tr("Noch ${plural(n - lv, "Level", "Level")} bis „${levelTitle(n)}“", "${plural(n - lv, "level", "levels")} to \"${levelTitle(n)}\"") })
+    }
+
+    // Neue Abzeichen (Badges.kt)
+    badgesIn(store, t).forEach { b ->
+        out += Achievement(AchievementKind.BADGE, tr("Neues Abzeichen: ${b.name} ${b.emoji}", "New badge: ${b.name} ${b.emoji}"), b.desc)
     }
 
     // 2./3./8. Je Übung: Rekord > Wiederholungsrekord > besser als letztes Mal (höchstens einer pro Übung)
