@@ -631,11 +631,19 @@ class GymStore(context: Context) {
 
     // ----- Körpergewicht -----
 
+    /**
+     * Wird bei jeder Gewichtsänderung durch den Nutzer aufgerufen (alt, neu; null = nicht vorhanden).
+     * Setzt MainActivity für den Health-Connect-Abgleich – GymStore selbst kennt Health Connect nicht.
+     */
+    var onWeightChange: ((WeightEntry?, WeightEntry?) -> Unit)? = null
+
     /** Gewicht eintragen; `time` = gewählter Tag (Nachtragen), Liste bleibt nach Zeit sortiert. */
     fun addWeight(kg: Double, time: Long = System.currentTimeMillis()) {
-        weights.add(WeightEntry(time, kg))
+        val e = WeightEntry(time, kg)
+        weights.add(e)
         weights.sortBy { it.time }
         save()
+        onWeightChange?.invoke(null, e)
     }
 
     /** Gelöschten Eintrag zurückholen („Rückgängig“). */
@@ -643,18 +651,30 @@ class GymStore(context: Context) {
         weights.add(entry)
         weights.sortBy { it.time }
         save()
+        onWeightChange?.invoke(null, entry)
     }
 
     fun deleteWeight(entry: WeightEntry) {
         weights.remove(entry)
         save()
+        onWeightChange?.invoke(entry, null)
     }
 
     /** Gewicht und ggf. Datum eines Eintrags ändern; Liste bleibt nach Zeit sortiert. */
     fun updateWeight(entry: WeightEntry, kg: Double, time: Long = entry.time) {
         val i = weights.indexOf(entry)
         if (i < 0) return
-        weights[i] = WeightEntry(time, kg)
+        val e = WeightEntry(time, kg)
+        weights[i] = e
+        weights.sortBy { it.time }
+        save()
+        onWeightChange?.invoke(entry, e)
+    }
+
+    /** Einträge aus Health Connect übernehmen (ohne onWeightChange – sie kommen ja von dort). */
+    fun importWeights(list: List<WeightEntry>) {
+        if (list.isEmpty()) return
+        weights.addAll(list)
         weights.sortBy { it.time }
         save()
     }

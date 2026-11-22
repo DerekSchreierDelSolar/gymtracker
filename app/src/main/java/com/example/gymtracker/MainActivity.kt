@@ -27,6 +27,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         store = GymStore(applicationContext)
         AutoBackup.load(applicationContext)
+        HealthSync.load(applicationContext)
+        store.onWeightChange = { old, new -> HealthSync.onWeightChange(applicationContext, old, new) }
         Wiki.load(applicationContext)
         MuscleWiki.load(applicationContext)
         SupplementWiki.load(applicationContext)
@@ -67,6 +69,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         RestTimer.appVisible = true
+        HealthSync.syncIfDue(applicationContext, store) // Gewicht von anderen Apps (z. B. Waage) holen
     }
 
     /** App geht in den Hintergrund (auch beim Wechsel zu einer anderen App): ggf. automatisch sichern. */

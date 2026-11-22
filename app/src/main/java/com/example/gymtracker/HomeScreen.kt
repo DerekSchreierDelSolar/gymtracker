@@ -402,6 +402,8 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
                 ReminderSettings()
                 Spacer(Modifier.height(8.dp))
+                HealthSettings(store)
+                Spacer(Modifier.height(8.dp))
                 HorizontalDivider()
                 // Fortschritt zurücksetzen (rot, mit Nachfrage und danach „Rückgängig“)
                 Text(tr("Fortschritt", "Progress"), style = MaterialTheme.typography.titleSmall)

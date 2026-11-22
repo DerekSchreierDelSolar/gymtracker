@@ -171,6 +171,11 @@
             "Open a workout and pick its \"Training days\" (Mon–Sun) at the top. The home screen then shows it as \"Today\" or \"Next\". Android: ⋮ → Settings → turn on \"Workout reminder\" and choose a time – on planned days you get a notification if you haven't trained yet."]
     },
     {
+      "keys": ["health connect", "google fit", "samsung health", "fitbit", "apple health", "health", "gesundheit", "waage", "smarte waage", "synchronisieren", "abgleichen", "sync", "scale"],
+      "a": ["Android 14+: ⋮ → Einstellungen → „Health Connect“ einschalten und das Gewicht erlauben. Dann wird dein Körpergewicht in beide Richtungen abgeglichen: Werte einer smarten Waage oder anderer Apps (Samsung Health, Fitbit …) erscheinen im Tab „Körper“, deine Einträge landen auch in Health Connect. Abgeglichen wird beim Öffnen der App oder über „Jetzt abgleichen“. Auf dem iPhone (Web-Version) geht das leider nicht – Apple Health ist für Web-Apps gesperrt.",
+            "Android 14+: ⋮ → Settings → turn on \"Health Connect\" and allow weight. Your body weight is then synced both ways: values from a smart scale or other apps (Samsung Health, Fitbit …) appear in the \"Body\" tab, and your entries are saved to Health Connect too. Syncing happens when you open the app or via \"Sync now\". On iPhone (web version) this isn't possible – Apple Health is closed to web apps."]
+    },
+    {
       "keys": ["zuruecksetzen", "fortschritt loeschen", "alles loeschen", "neu anfangen", "von vorne", "reset", "reset progress", "delete all", "start over"],
       "a": ["⋮ → Einstellungen → ganz unten „Fortschritt zurücksetzen“: löscht alle Sätze, Trainingseinheiten, Notizen und Gewichtseinträge. Übungen und Workouts bleiben. Danach kannst du es kurz rückgängig machen; sicherer ist vorher ⋮ → „Daten exportieren“.",
             "⋮ → Settings → at the bottom \"Reset progress\": deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay. You can undo it right after; safer is ⋮ → \"Export data\" first."]
