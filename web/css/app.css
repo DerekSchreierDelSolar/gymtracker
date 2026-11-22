@@ -593,3 +593,6 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .review-line { display: flex; gap: 8px; margin: 0; line-height: 1.4; }
 .review-line span { flex: none; width: 22px; }
 .linechart .tappable { cursor: pointer; }
+/* Datumsfeld im App-Format (dateField in ui.js): sichtbarer Text, unsichtbares natives Feld darüber */
+.date-field { position: relative; display: inline-block; color: var(--text); border: 1px solid var(--outline-variant); border-radius: 8px; padding: 6px 10px; }
+.date-field input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }

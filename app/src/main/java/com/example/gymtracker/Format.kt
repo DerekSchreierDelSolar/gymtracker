@@ -16,10 +16,10 @@ fun fmtW(w: Double): String =
 fun plural(n: Int, one: String, many: String): String = "$n ${if (n == 1) one else many}"
 
 fun fmtDate(t: Long): String =
-    SimpleDateFormat(tr("dd.MM.yyyy", "MM/dd/yyyy"), appLocale()).format(Date(t))
+    SimpleDateFormat(tr("dd.MM.yyyy", "dd/MM/yyyy"), appLocale()).format(Date(t))
 
 fun fmtDateTime(t: Long): String =
-    SimpleDateFormat(tr("dd.MM.yyyy, HH:mm 'Uhr'", "MM/dd/yyyy, h:mm a"), appLocale()).format(Date(t))
+    SimpleDateFormat(tr("dd.MM.yyyy, HH:mm 'Uhr'", "dd/MM/yyyy, HH:mm"), appLocale()).format(Date(t))
 
 /** Dauer als „m:ss“ bzw. „h:mm:ss“. */
 fun fmtDuration(ms: Long): String {

@@ -11,7 +11,7 @@ export function setAppLanguage(lang) { appLanguage = lang === 'en' ? 'en' : 'de'
 export const isEnglish = () => appLanguage === 'en';
 /** Text in der aktuellen Sprache – beide Varianten stehen direkt nebeneinander im Code. */
 export const tr = (de, en) => (appLanguage === 'en' ? en : de);
-const locale = () => (isEnglish() ? 'en-US' : 'de-DE');
+const locale = () => (isEnglish() ? 'en-GB' : 'de-DE'); // europäisches Datumsformat auch auf Englisch
 
 // ---------- Muskelgruppen & Geräte (Reihenfolge = enum-Reihenfolge in Kotlin) ----------
 
@@ -82,7 +82,7 @@ const pad2 = n => String(n).padStart(2, '0');
 export function fmtDate(t) {
   const d = new Date(t);
   return isEnglish()
-    ? `${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}/${d.getFullYear()}`
+    ? `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`
     : `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 export function fmtTime(t) {
@@ -91,16 +91,12 @@ export function fmtTime(t) {
 }
 export function fmtDateTime(t) {
   const d = new Date(t);
-  if (isEnglish()) {
-    const h = d.getHours() % 12 || 12;
-    return `${fmtDate(t)}, ${h}:${pad2(d.getMinutes())} ${d.getHours() < 12 ? 'AM' : 'PM'}`;
-  }
-  return `${fmtDate(t)}, ${fmtTime(t)} Uhr`;
+  return isEnglish() ? `${fmtDate(t)}, ${fmtTime(t)}` : `${fmtDate(t)}, ${fmtTime(t)} Uhr`;
 }
-/** Kurzes Datum für Achsen („18.11.“ bzw. „11/18“). */
+/** Kurzes Datum für Achsen („18.11.“ bzw. „18/11“). */
 export function fmtShortDate(t) {
   const d = new Date(t);
-  return isEnglish() ? `${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}` : `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.`;
+  return isEnglish() ? `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}` : `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.`;
 }
 /** Dauer als „m:ss“ bzw. „h:mm:ss“. */
 export function fmtDuration(ms) {

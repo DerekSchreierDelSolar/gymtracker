@@ -586,7 +586,7 @@ fun ExerciseTile(
                 style = MaterialTheme.typography.labelLarge.copy(
                     hyphens = Hyphens.Auto,
                     lineBreak = LineBreak.Paragraph,
-                    localeList = LocaleList(tr("de-DE", "en-US"))
+                    localeList = LocaleList(tr("de-DE", "en-GB"))
                 ),
                 textAlign = TextAlign.Center,
                 minLines = 2,

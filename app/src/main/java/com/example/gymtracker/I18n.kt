@@ -20,7 +20,7 @@ val isEnglish: Boolean get() = appLanguage == "en"
 fun tr(de: String, en: String): String = if (isEnglish) en else de
 
 /** Locale für Datums-/Zahlenformate (Monats- und Wochentagsnamen, Dezimaltrenner). */
-fun appLocale(): Locale = if (isEnglish) Locale.US else Locale.GERMANY
+fun appLocale(): Locale = if (isEnglish) Locale.UK else Locale.GERMANY // europäisches Datumsformat auch auf Englisch
 
 
 

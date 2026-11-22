@@ -209,7 +209,7 @@ fun CalendarTab(
                 clear(); set(selectedDay / 10000, selectedDay / 100 % 100 - 1, selectedDay % 100)
             }
             Text(
-                SimpleDateFormat(tr("EEEE, dd.MM.yyyy", "EEEE, MM/dd/yyyy"), appLocale()).format(c.time),
+                SimpleDateFormat(tr("EEEE, dd.MM.yyyy", "EEEE, dd/MM/yyyy"), appLocale()).format(c.time),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 8.dp)
             )

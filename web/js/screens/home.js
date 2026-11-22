@@ -9,7 +9,7 @@ import {
 import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
 import {
-  h, icon, iconBtn, chip, dialog, textField, statBox, chartCard, horizontalBars, historyBars, lineChart,
+  h, icon, iconBtn, chip, dialog, textField, dateField, isoDay, timeOfIsoDay, statBox, chartCard, horizontalBars, historyBars, lineChart,
   percentRing, ring, muted, toast, groupHeader, undoToast,
 } from '../ui.js';
 import { nav, go, update, rerender, openDialog, closeDialog, onSwipe } from '../nav.js';
@@ -420,7 +420,7 @@ function bodyTab() {
     // Plausibilitätsprüfung gegen Tippfehler (z. B. 824 statt 82,4)
     if (kg != null && kg >= 20 && kg <= 400) {
       // gewählter Tag 12:00 Ortszeit (Tag stimmt in jeder Zeitzone), sonst jetzt
-      const t = bodyInput.date && bodyInput.date !== isoDay(Date.now()) ? new Date(bodyInput.date + 'T12:00').getTime() : Date.now();
+      const t = bodyInput.date && bodyInput.date !== isoDay(Date.now()) ? timeOfIsoDay(bodyInput.date) : Date.now();
       store.addWeight(kg, t);
       bodyInput.value = ''; bodyInput.date = '';
       document.activeElement?.blur();
@@ -437,9 +437,9 @@ function bodyTab() {
     h('div', { class: 'row' },
       textField({ id: 'body-kg', label: tr('Gewicht in kg', 'Weight in kg') + (last ? tr(' · zuletzt ', ' · last ') + fmtW(last.kg) : ''), value: bodyInput.value, inputmode: 'decimal', oninput: v => { bodyInput.value = v; }, onenter: add }),
       h('button', { class: 'btn', onclick: add }, tr('Eintragen', 'Log'))),
-    // Datum (leer = heute); natives Datumsfeld, Zukunft gesperrt
+    // Datum (leer = heute), im App-Format; Zukunft gesperrt
     h('label', { class: 'date-row' }, icon('calendar', 18), h('span', null, tr('Datum', 'Date')),
-      h('input', { id: 'body-date', type: 'date', value: bodyInput.date || isoDay(Date.now()), max: isoDay(Date.now()), oninput: e => { bodyInput.date = e.target.value; } })),
+      dateField({ id: 'body-date', value: bodyInput.date || isoDay(Date.now()), max: isoDay(Date.now()), onchange: v => { bodyInput.date = v; } })),
     // dezent (wie die übrigen Karten), damit das Gewicht im Vordergrund bleibt
     h('div', { class: 'card row-card' }, h('span', { class: 'hint-emoji' }, '🔥'),
       h('div', { class: 'grow' }, h('small', null, tr('Diese Woche', 'This week')),
@@ -458,29 +458,30 @@ function bodyTab() {
 }
 
 
-/** Gewichtseintrag aus dem Diagramm: anpassen oder löschen (mit „Rückgängig“) – wie WeightEditDialog in BodyTab.kt */
+/** Gewichtseintrag aus dem Diagramm: Gewicht und Datum anpassen oder löschen (mit „Rückgängig“) – wie WeightEditDialog in BodyTab.kt */
 function weightEditDialog(entry) {
-  const st = { text: fmtW(entry.kg) };
+  const st = { text: fmtW(entry.kg), day: isoDay(entry.time) };
+  const save = kg => { store.updateWeight(entry, kg, st.day === isoDay(entry.time) ? entry.time : timeOfIsoDay(st.day)); closeDialog(); };
   const valid = () => { const kg = parseNum(st.text); return kg != null && kg >= 20 && kg <= 400 ? kg : null; };
-  openDialog(() => dialog(fmtDate(entry.time), [
+  openDialog(() => dialog(tr('Eintrag bearbeiten', 'Edit entry'), [
     textField({
       id: 'weight-edit', label: tr('Gewicht in kg', 'Weight in kg'), value: st.text, inputmode: 'decimal',
       error: valid() == null ? ' ' : null,
       oninput: v => { st.text = v; rerender(); },
-      onenter: () => { const kg = valid(); if (kg != null) { store.updateWeight(entry, kg); closeDialog(); } },
+      onenter: () => { const kg = valid(); if (kg != null) save(kg); },
     }),
+    h('label', { class: 'date-row' }, icon('calendar', 18),
+      dateField({ id: 'weight-edit-date', value: st.day, max: isoDay(Date.now()), onchange: v => { st.day = v; } })),
   ], [
     { label: tr('Löschen', 'Delete'), danger: true, onClick: () => {
       closeDialog();
       store.deleteWeight(entry);
       undoToast(tr('Eintrag gelöscht', 'Entry deleted'), () => store.restoreWeight(entry));
     } },
-    { label: tr('Speichern', 'Save'), disabled: valid() == null, onClick: () => { const kg = valid(); if (kg != null) { store.updateWeight(entry, kg); closeDialog(); } } },
+    { label: tr('Speichern', 'Save'), disabled: valid() == null, onClick: () => { const kg = valid(); if (kg != null) save(kg); } },
   ], closeDialog));
 }
 
-/** „2026-11-21“ für <input type="date"> (Ortszeit) */
-const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
 function resetDialog() {
   openDialog(() => dialog(tr('Fortschritt zurücksetzen?', 'Reset progress?'),

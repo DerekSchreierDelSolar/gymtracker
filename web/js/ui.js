@@ -2,7 +2,7 @@
 // h(tag, props, ...kinder) baut DOM-Elemente – ähnlich wie React.createElement, nur direkt echte Elemente.
 // Die App zeichnet bei jeder Änderung den aktuellen Bildschirm neu (siehe app.js → render()).
 
-import { fmtW, completionColor, groupLabel, groupColor, tr, plural } from './core.js';
+import { fmtW, fmtDate, completionColor, groupLabel, groupColor, tr, plural } from './core.js';
 
 export function h(tag, props, ...children) {
   const el = tag === 'svg' || props?.svg ? document.createElementNS('http://www.w3.org/2000/svg', tag) : document.createElement(tag);
@@ -179,6 +179,33 @@ export function textField({ id, label, value, oninput, type = 'text', inputmode,
     }),
     h('span', null, label),
     error ? h('small', null, error) : null);
+}
+
+// ---------- Datum ----------
+
+/** „2026-11-21“ (Ortszeit) für <input type="date"> */
+export const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+/** „2026-11-21“ → 12:00 Ortszeit (stimmt in jeder Zeitzone, wie DayPickerDialog) */
+export const timeOfIsoDay = iso => new Date(iso + 'T12:00').getTime();
+
+/**
+ * Datumsfeld, das immer im App-Format anzeigt (TT.MM.JJJJ bzw. TT/MM/JJJJ) – das native Feld zeigt sonst das
+ * Format des Browsers (z. B. MM/DD/YYYY). Darüber liegt unsichtbar das echte <input type="date">: Antippen öffnet
+ * den Kalender des Systems. value/max = „JJJJ-MM-TT“; onchange(iso). Zukunft sperren mit max = isoDay(Date.now()).
+ */
+export function dateField({ id, value, max, onchange }) {
+  return h('span', { class: 'date-field' },
+    h('span', { class: 'date-text' }, fmtDate(timeOfIsoDay(value))),
+    h('input', {
+      id, type: 'date', value, max, 'aria-label': tr('Datum', 'Date'),
+      onclick: e => { try { e.target.showPicker?.(); } catch { /* ältere Browser: Standardverhalten */ } },
+      oninput: e => {
+        const v = e.target.value;
+        if (!v || (max && v > max)) return; // leer gelöscht oder Zukunft → ignorieren
+        e.target.previousSibling.textContent = fmtDate(timeOfIsoDay(v)); // ohne Neuaufbau aktualisieren
+        onchange(v);
+      },
+    }));
 }
 
 // ---------- Takt (Stoppuhr, Trainingsuhr, Pausen-Timer) ----------

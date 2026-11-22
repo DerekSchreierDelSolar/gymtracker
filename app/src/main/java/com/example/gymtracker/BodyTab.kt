@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -171,58 +173,108 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
 
     editEntry?.let { e -> WeightEditDialog(store, e, onDismiss = { editEntry = null }) }
 
-    // Datum wählen (Material-Kalender). Er liefert Mitternacht in UTC → als 12:00 Ortszeit speichern,
-    // damit der Tag in jeder Zeitzone stimmt. Zukunft ist nicht wählbar.
-    if (pickDay) {
+    // Datum fürs Nachtragen; heute = null
+    if (pickDay) DayPickerDialog(
+        initial = day ?: System.currentTimeMillis(),
+        onPicked = { t -> day = t.takeIf { dayKey(it) != dayKey(System.currentTimeMillis()) } },
+        onDismiss = { pickDay = false }
+    )
+}
+
+/**
+ * Tag wählen (Material-Kalender) in Sprache und Datumsformat der App (TT.MM.JJJJ bzw. TT/MM/JJJJ),
+ * unabhängig von der Systemsprache. Zukunft ist nicht wählbar.
+ * Der Kalender rechnet in UTC-Mitternacht → onPicked bekommt 12:00 Ortszeit des Tages (stimmt in jeder Zeitzone).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DayPickerDialog(initial: Long, onPicked: (Long) -> Unit, onDismiss: () -> Unit) {
+    // Ortsdatum von initial als UTC-Mitternacht (so erwartet es der DatePicker)
+    val local = Calendar.getInstance().apply { timeInMillis = initial }
+    val initialUtc = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC")).apply {
+        clear()
+        set(local.get(Calendar.YEAR), local.get(Calendar.MONTH), local.get(Calendar.DAY_OF_MONTH))
+    }.timeInMillis
+    // Der DatePicker liest Sprache und Datumsformat aus LocalConfiguration → auf die App-Sprache setzen
+    val base = LocalConfiguration.current
+    val config = remember(base, appLanguage) { Configuration(base).apply { setLocale(appLocale()) } }
+    CompositionLocalProvider(LocalConfiguration provides config) {
         val state = rememberDatePickerState(
-            initialSelectedDateMillis = System.currentTimeMillis(),
+            initialSelectedDateMillis = initialUtc,
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis <= System.currentTimeMillis()
             }
         )
         DatePickerDialog(
-            onDismissRequest = { pickDay = false },
+            onDismissRequest = onDismiss,
             confirmButton = {
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { utc ->
                         val u = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC")).apply { timeInMillis = utc }
-                        day = Calendar.getInstance().apply {
+                        onPicked(Calendar.getInstance().apply {
                             set(u.get(Calendar.YEAR), u.get(Calendar.MONTH), u.get(Calendar.DAY_OF_MONTH), 12, 0, 0)
                             set(Calendar.MILLISECOND, 0)
-                        }.timeInMillis.takeIf { dayKey(it) != dayKey(System.currentTimeMillis()) } // heute = null
+                        }.timeInMillis)
                     }
-                    pickDay = false
+                    onDismiss()
                 }) { Text("OK") }
             },
-            dismissButton = { TextButton(onClick = { pickDay = false }) { Text(tr("Abbrechen", "Cancel")) } }
-        ) { DatePicker(state) }
+            dismissButton = { TextButton(onClick = onDismiss) { Text(tr("Abbrechen", "Cancel")) } }
+        ) {
+            // Titel und Kopfzeile selbst setzen: der Standard nimmt die Systemsprache („Nov 22, 2026“).
+            // Ohne Stift-Umschalter, weil auch die Texteingabe das System-Datumsformat erwartet.
+            val selectedLocal = state.selectedDateMillis?.let { utc ->
+                val u = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC")).apply { timeInMillis = utc }
+                Calendar.getInstance().apply { set(u.get(Calendar.YEAR), u.get(Calendar.MONTH), u.get(Calendar.DAY_OF_MONTH), 12, 0, 0) }.timeInMillis
+            }
+            DatePicker(
+                state,
+                title = {
+                    Text(tr("Datum wählen", "Select date"), style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp))
+                },
+                headline = {
+                    Text(selectedLocal?.let { fmtDate(it) } ?: "–", style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, bottom = 12.dp))
+                },
+                showModeToggle = false
+            )
+        }
     }
 }
 
-
-
-/** Gewichtseintrag aus dem Diagramm: Gewicht anpassen oder löschen (mit „Rückgängig“). */
+/** Gewichtseintrag aus dem Diagramm: Gewicht und Datum anpassen oder löschen (mit „Rückgängig“). */
 @Composable
 private fun WeightEditDialog(store: GymStore, entry: WeightEntry, onDismiss: () -> Unit) {
     var text by remember(entry) { mutableStateOf(fmtW(entry.kg)) }
+    var time by remember(entry) { mutableLongStateOf(entry.time) }
+    var pickDay by remember { mutableStateOf(false) }
     val kg = text.replace(',', '.').toDoubleOrNull()?.takeIf { it in 20.0..400.0 } // wie beim Eintragen
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(fmtDate(entry.time)) },
+        title = { Text(tr("Eintrag bearbeiten", "Edit entry")) },
         text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text(tr("Gewicht in kg", "Weight in kg")) },
-                isError = kg == null,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text(tr("Gewicht in kg", "Weight in kg")) },
+                    isError = kg == null,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                // Datum ändern (gleicher Kalender wie beim Nachtragen)
+                TextButton(onClick = { pickDay = true }) {
+                    AppIcon(Ico.CALENDAR, Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(fmtDate(time))
+                }
+            }
         },
         confirmButton = {
             TextButton(enabled = kg != null, onClick = {
-                kg?.let { store.updateWeight(entry, it) }
+                kg?.let { store.updateWeight(entry, it, time) }
                 onDismiss()
             }) { Text(tr("Speichern", "Save")) }
         },
@@ -234,4 +286,5 @@ private fun WeightEditDialog(store: GymStore, entry: WeightEntry, onDismiss: () 
             }) { Text(tr("Löschen", "Delete"), color = MaterialTheme.colorScheme.error) }
         }
     )
+    if (pickDay) DayPickerDialog(time, onPicked = { time = it }, onDismiss = { pickDay = false })
 }

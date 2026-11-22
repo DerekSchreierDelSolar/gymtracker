@@ -650,11 +650,12 @@ class GymStore(context: Context) {
         save()
     }
 
-    /** Gewicht eines Eintrags ändern (Datum bleibt). */
-    fun updateWeight(entry: WeightEntry, kg: Double) {
+    /** Gewicht und ggf. Datum eines Eintrags ändern; Liste bleibt nach Zeit sortiert. */
+    fun updateWeight(entry: WeightEntry, kg: Double, time: Long = entry.time) {
         val i = weights.indexOf(entry)
         if (i < 0) return
-        weights[i] = entry.copy(kg = kg)
+        weights[i] = WeightEntry(time, kg)
+        weights.sortBy { it.time }
         save()
     }
 

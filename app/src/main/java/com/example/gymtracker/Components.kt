@@ -173,9 +173,9 @@ fun HistoryBars(values: List<Double>, labels: List<String>, format: (Double) -> 
     }
 }
 
-/** Kurzes Datum für Achsen-Beschriftungen („18.11.“ bzw. „11/18“). */
+/** Kurzes Datum für Achsen-Beschriftungen („18.11.“ bzw. „18/11“). */
 fun fmtShortDate(t: Long): String =
-    SimpleDateFormat(tr("dd.MM.", "MM/dd"), appLocale()).format(Date(t))
+    SimpleDateFormat(tr("dd.MM.", "dd/MM"), appLocale()).format(Date(t))
 
 // ---------- Diagramm ----------
 
