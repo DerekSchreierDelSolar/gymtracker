@@ -9,6 +9,15 @@ import {
 } from './core.js';
 
 const KEY = 'gym_data';
+/** Körpermaße: Typ → [Einheit, min, max, de, en] (wie MeasureType in Measures.kt) */
+export const MEASURE_TYPES = {
+  WAIST: ['cm', 40, 250, 'Taille', 'Waist'],
+  CHEST: ['cm', 40, 250, 'Brust', 'Chest'],
+  ARM: ['cm', 10, 80, 'Arm', 'Arm'],
+  HIP: ['cm', 40, 250, 'Hüfte', 'Hips'],
+  THIGH: ['cm', 20, 120, 'Oberschenkel', 'Thigh'],
+  BODYFAT: ['%', 2, 70, 'Körperfett', 'Body fat'],
+};
 /** Zieltypen wie GoalType in Goals.kt; STRENGTH/ENDURANCE gehören zu einer Übung. */
 export const GOAL_TYPES = ['STRENGTH', 'ENDURANCE', 'BODYWEIGHT', 'CARDIO_WEEK', 'REGULAR'];
 export const GOAL_NEEDS_EXERCISE = ['STRENGTH', 'ENDURANCE'];
@@ -38,6 +47,7 @@ class GymStore {
   weeklyGoal = 3;
   themeMode = 'system';
   profile = {};          // optional für genauere kcal: { sex: 'm'|'f', birthYear, height } – wie GymStore.profile
+  measures = [];         // Körpermaße [{ time, type, value }] (measures.js) – wie GymStore.measures
   cycle = null;          // Trainingsblock mit Deload { start, weeks } (cycle.js) – wie GymStore.cycle
   goals = [];            // langfristige Ziele { id, type, exercise?, target, start, created } – wie GymStore.goals (goals.js)
   #listeners = new Set();
@@ -74,17 +84,17 @@ class GymStore {
    * Übungen, Workouts und Einstellungen bleiben. Vorheriger Stand zusätzlich unter „gym_data_before_reset“.
    */
   resetProgress() {
-    const snap = { sets: this.sets, sessions: this.sessions, weights: this.weights, notes: this.notes };
+    const snap = { sets: this.sets, sessions: this.sessions, weights: this.weights, notes: this.notes, measures: this.measures };
     const old = localStorage.getItem(KEY);
     if (old) storeItem('gym_data_before_reset', old, { dropCopies: false });
-    this.sets = []; this.sessions = []; this.weights = []; this.notes = {};
+    this.sets = []; this.sessions = []; this.weights = []; this.notes = {}; this.measures = [];
     this.#save();
     return snap;
   }
 
   /** „Rückgängig“ nach resetProgress() */
   restoreProgress(s) {
-    Object.assign(this, { sets: s.sets, sessions: s.sessions, weights: s.weights, notes: s.notes });
+    Object.assign(this, { sets: s.sets, sessions: s.sessions, weights: s.weights, notes: s.notes, measures: s.measures ?? [] });
     this.#save();
   }
 
@@ -150,6 +160,11 @@ class GymStore {
     if (validYear(num(pr.birthYear))) this.profile.birthYear = num(pr.birthYear);
     if (validHeight(num(pr.height))) this.profile.height = num(pr.height);
 
+    // Körpermaße: unbekannter Typ oder Wert außerhalb des Bereichs → überspringen (wie GymStore.kt)
+    this.measures = objs(root.measures).filter(o => typeof o.type === 'string' && Object.hasOwn(MEASURE_TYPES, o.type) && num(o.time) != null && num(o.value) != null
+      && o.value >= MEASURE_TYPES[o.type][1] && o.value <= MEASURE_TYPES[o.type][2]).map(o => ({ time: o.time, type: o.type, value: o.value }))
+      .sort((a, b) => a.time - b.time);
+
     // Trainingsblock (wie GymStore.kt): Wochen 2–8
     const cy = obj(root.cycle);
     this.cycle = num(cy.start) != null && Number.isInteger(cy.weeks) && cy.weeks >= 2 && cy.weeks <= 8 ? { start: cy.start, weeks: cy.weeks } : null;
@@ -212,6 +227,7 @@ class GymStore {
       ...(Object.keys(this.profile).length ? { profile: this.profile } : {}),
       ...(this.goals.length ? { goals: this.goals } : {}),
       ...(this.cycle ? { cycle: this.cycle } : {}),
+      ...(this.measures.length ? { measures: this.measures } : {}),
     };
   }
 
@@ -254,6 +270,7 @@ class GymStore {
     this.profile = {};
     this.goals = [];
     this.cycle = null;
+    this.measures = [];
   }
 
   markExported() { this.lastExport = Date.now(); this.#save(); }
@@ -566,6 +583,18 @@ class GymStore {
   /** Löscht das Ziel, gibt die Position zurück (für „Rückgängig“). */
   deleteGoal(g) { const i = this.goals.findIndex(x => x.id === g.id); if (i >= 0) { this.goals.splice(i, 1); this.#save(); } return i; }
   restoreGoal(g, i) { if (this.goals.some(x => x.id === g.id)) return; this.goals.splice(Math.min(Math.max(i, 0), this.goals.length), 0, g); this.#save(); }
+
+  // ----- Körpermaße (measures.js) -----
+  addMeasure(type, value, time = Date.now()) { this.measures.push({ time, type, value }); this.measures.sort((a, b) => a.time - b.time); this.#save(); }
+  updateMeasure(m, value, time = m.time) {
+    const i = this.measures.indexOf(m);
+    if (i < 0) return;
+    this.measures[i] = { time, type: m.type, value };
+    this.measures.sort((a, b) => a.time - b.time);
+    this.#save();
+  }
+  deleteMeasure(m) { this.measures = this.measures.filter(x => x !== m); this.#save(); }
+  restoreMeasure(m) { this.measures.push(m); this.measures.sort((a, b) => a.time - b.time); this.#save(); }
 
   restoreWeight(entry) { this.weights.push(entry); this.weights.sort((a, b) => a.time - b.time); this.#save(); }
   deleteWeight(entry) { this.weights = this.weights.filter(w => w !== entry); this.#save(); }

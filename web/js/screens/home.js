@@ -22,6 +22,7 @@ import { milestonesCard } from '../milestones.js';
 import { morningCard, anticipation } from '../morning.js';
 import { levelCard } from '../levels.js';
 import { cycleSettings, cycleLine } from '../cycle.js';
+import { measuresCard } from '../measures.js';
 import { badgesCard } from '../badges.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
@@ -519,7 +520,9 @@ function bodyTab() {
       `${fmtW(Math.min(...shown.map(w => w.kg)))} – ${fmtW(Math.max(...shown.map(w => w.kg)))} kg`,
       lineChart(shown.map(w => w.kg), 'kg', i => { hintUsed('weight'); weightEditDialog(shown[i]); }),
       h('div', { class: 'axis' }, h('small', null, fmtShortDate(shown[0].time)), shown.length > 1 ? h('small', null, fmtShortDate(shown[shown.length - 1].time)) : null),
-      showHint('weight') ? muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small') : null) : null);
+      showHint('weight') ? muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small') : null) : null,
+    // Körpermaße + Körperfett (measures.js)
+    measuresCard());
 }
 
 /** Wie wird der Verbrauch geschätzt? (ⓘ im Körper-Tab) */

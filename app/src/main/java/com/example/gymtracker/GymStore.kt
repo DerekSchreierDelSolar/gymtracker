@@ -19,6 +19,8 @@ class GymStore(context: Context) {
     val sessions = mutableStateListOf<TrainingSession>()
     /** Gewichtsverlauf, älteste zuerst */
     val weights = mutableStateListOf<WeightEntry>()
+    /** Körpermaße + Körperfett (Measures.kt), älteste zuerst. Vor init { load() }! */
+    val measures = mutableStateListOf<Measure>()
     /** Langfristige Ziele (Goals.kt), Reihenfolge = Anlegen. Vor init { load() }! */
     val goals = mutableStateListOf<Goal>()
     /** Notizen pro Übung und Tag: "Übung|Tag" (Tag = dayKey) → Text. Vor init { load() }! */
@@ -169,7 +171,7 @@ class GymStore(context: Context) {
     }
 
     private fun clearAll() {
-        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear(); goals.clear()
+        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear(); goals.clear(); measures.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         profile = Profile()
         cycle = null
@@ -258,6 +260,16 @@ class GymStore(context: Context) {
                     WeightEntry(o.getLong("time"), o.getDouble("kg"))
                 }.sortedBy { it.time }
             )
+            // Körpermaße: unbekannter Typ oder Wert außerhalb des Bereichs → überspringen
+            val me = root.optJSONArray("measures") ?: JSONArray()
+            for (i in 0 until me.length()) {
+                val o = me.optJSONObject(i) ?: continue
+                val t = MeasureType.parse(o.optString("type")) ?: continue
+                val v = o.optDouble("value", Double.NaN)
+                if (!o.has("time") || v.isNaN() || v !in t.min..t.max) continue
+                measures.add(Measure(o.getLong("time"), t, v))
+            }
+            measures.sortBy { it.time }
             // Notizen: { "Übung": { "20261119": "Text" } }
             val no = root.optJSONObject("notes") ?: JSONObject()
             no.keys().forEach { ex ->
@@ -342,6 +354,9 @@ class GymStore(context: Context) {
         root.put("sessions", se)
         root.put("weights", JSONArray().also { arr ->
             weights.forEach { arr.put(JSONObject().put("time", it.time).put("kg", it.kg)) }
+        })
+        if (measures.isNotEmpty()) root.put("measures", JSONArray().also { arr ->
+            measures.forEach { arr.put(JSONObject().put("time", it.time).put("type", it.type.name).put("value", it.value)) }
         })
         root.put("notes", JSONObject().also { o ->
             notes.forEach { (key, text) ->
@@ -543,7 +558,8 @@ class GymStore(context: Context) {
     /** Gesicherter Stand vor dem Zurücksetzen (für „Rückgängig“) */
     class ProgressSnapshot(
         val sets: List<GymSet>, val sessions: List<TrainingSession>,
-        val weights: List<WeightEntry>, val notes: Map<String, String>
+        val weights: List<WeightEntry>, val notes: Map<String, String>,
+        val measures: List<Measure> = emptyList()
     )
 
     /**
@@ -552,9 +568,9 @@ class GymStore(context: Context) {
      * gym_data_before_reset.json kopiert (wie beim Import). Gibt den alten Stand zurück.
      */
     fun resetProgress(): ProgressSnapshot {
-        val snap = ProgressSnapshot(sets.toList(), sessions.toList(), weights.toList(), notes.toMap())
+        val snap = ProgressSnapshot(sets.toList(), sessions.toList(), weights.toList(), notes.toMap(), measures.toList())
         if (file.exists()) runCatching { file.copyTo(File(file.parentFile, "gym_data_before_reset.json"), overwrite = true) }
-        sets.clear(); sessions.clear(); weights.clear(); notes.clear()
+        sets.clear(); sessions.clear(); weights.clear(); notes.clear(); measures.clear()
         save()
         return snap
     }
@@ -565,6 +581,7 @@ class GymStore(context: Context) {
         sessions.clear(); sessions.addAll(s.sessions)
         weights.clear(); weights.addAll(s.weights)
         notes.clear(); notes.putAll(s.notes)
+        measures.clear(); measures.addAll(s.measures)
         save()
     }
 
@@ -726,6 +743,28 @@ class GymStore(context: Context) {
         weights.sortBy { it.time }
         save()
         onWeightChange?.invoke(null, e)
+    }
+
+    // ----- Körpermaße (Measures.kt) -----
+
+    fun addMeasure(type: MeasureType, value: Double, time: Long = System.currentTimeMillis()) {
+        measures.add(Measure(time, type, value)); measures.sortBy { it.time }; save()
+    }
+
+    fun updateMeasure(m: Measure, value: Double, time: Long = m.time) {
+        val i = measures.indexOf(m)
+        if (i < 0) return
+        measures[i] = m.copy(value = value, time = time); measures.sortBy { it.time }; save()
+    }
+
+    fun deleteMeasure(m: Measure) { measures.remove(m); save() }
+
+    fun restoreMeasure(m: Measure) { measures.add(m); measures.sortBy { it.time }; save() }
+
+    /** Werte aus Health Connect übernehmen (Duplikate werden vorher aussortiert). */
+    fun importMeasures(list: List<Measure>) {
+        if (list.isEmpty()) return
+        measures.addAll(list); measures.sortBy { it.time }; save()
     }
 
     // ----- Ziele (Goals.kt) -----

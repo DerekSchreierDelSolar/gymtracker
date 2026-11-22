@@ -743,3 +743,8 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .cycle-settings { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .cycle-settings small { display: block; }
 .cycle-settings .stepper { justify-content: space-between; } .cycle-settings .step-value { flex: 1; width: auto; text-align: center; }
+/* Körpermaße (measures.js) */
+.measures-card { display: flex; flex-direction: column; gap: 10px; }
+.scroll-chips { overflow-x: auto; flex-wrap: nowrap; }
+.measure-now { display: flex; align-items: baseline; gap: 10px; }
+.measure-now b { font-size: 24px; }

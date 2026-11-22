@@ -14,6 +14,7 @@ import android.health.connect.datatypes.Metadata
 import android.health.connect.datatypes.Record
 import android.health.connect.datatypes.HeartRateRecord
 import android.health.connect.datatypes.WeightRecord
+import android.health.connect.datatypes.BodyFatRecord
 import android.health.connect.datatypes.units.Mass
 import android.content.pm.PackageManager
 import android.os.Build
@@ -67,7 +68,8 @@ object HealthSync {
         HealthPermissions.READ_WEIGHT, HealthPermissions.WRITE_WEIGHT,
         HealthPermissions.WRITE_EXERCISE, HealthPermissions.WRITE_ACTIVE_CALORIES_BURNED,
         HealthPermissions.READ_HEART_RATE,
-        HealthPermissions.READ_RESTING_HEART_RATE, HealthPermissions.READ_HEART_RATE_VARIABILITY, HealthPermissions.READ_SLEEP
+        HealthPermissions.READ_RESTING_HEART_RATE, HealthPermissions.READ_HEART_RATE_VARIABILITY, HealthPermissions.READ_SLEEP,
+        HealthPermissions.READ_BODY_FAT
     )
 
     /** Abgleich eingeschaltet? (Compose-State für die Einstellungen) */
@@ -104,6 +106,7 @@ object HealthSync {
     fun canReadResting(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_RESTING_HEART_RATE)
     fun canReadHrv(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_HEART_RATE_VARIABILITY)
     fun canReadSleep(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_SLEEP)
+    fun canReadBodyFat(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_BODY_FAT)
     /** Mindestens eine Berechtigung erteilt? */
     fun anyGranted(context: Context) = Build.VERSION.SDK_INT >= 34 && PERMISSIONS.any { granted(context, it) }
     /** Alle Berechtigungen erteilt? */
@@ -172,7 +175,9 @@ object HealthSync {
         var workouts = 0
         // Ablauf als Kette von Rückrufen (die Health-Connect-Aufrufe sind asynchron, ähnlich Promises in JS)
         val readStep = {
-            if (canRead(app)) readForeign(app, m, store) { done(app, it, workouts) } else done(app, 0, workouts)
+            // Körperfett anderer Apps (Measures.kt), danach fremdes Gewicht
+            val weightStep = { if (canRead(app)) readForeign(app, m, store) { done(app, it, workouts) } else done(app, 0, workouts) }
+            if (canReadBodyFat(app)) readBodyFat(app, m, store) { weightStep() } else weightStep()
         }
         val heartStep = { next: () -> Unit ->
             if (canReadHeartRate(app)) readHeartRates(app, m, store, next) else next()
@@ -289,6 +294,38 @@ object HealthSync {
                 })
         }
         next(0)
+    }
+
+    /** Körperfett-Werte (z. B. smarte Waage) der letzten 2 Jahre lesen; neue als Körpermaß übernehmen (Duplikat ±1 min / 0,1 %). */
+    @RequiresApi(34)
+    private fun readBodyFat(context: Context, m: HealthConnectManager, store: GymStore, onDone: () -> Unit) {
+        val p = prefs(context)
+        val seen = p.getStringSet("seenFat", emptySet())!!.toMutableSet()
+        val found = mutableListOf<Measure>()
+        val req = ReadRecordsRequestUsingFilters.Builder(BodyFatRecord::class.java)
+            .setTimeRangeFilter(TimeInstantRangeFilter.Builder()
+                .setStartTime(Instant.now().minusSeconds(730L * 86400)).setEndTime(Instant.now().plusSeconds(86400)).build())
+            .setPageSize(1000).build()
+        m.readRecords(req, context.mainExecutor,
+            object : OutcomeReceiver<ReadRecordsResponse<BodyFatRecord>, HealthConnectException> {
+                override fun onResult(r: ReadRecordsResponse<BodyFatRecord>) {
+                    for (rec in r.records) {
+                        if (rec.metadata.id in seen) continue
+                        seen += rec.metadata.id
+                        val v = Math.round(rec.percentage.value * 10) / 10.0
+                        val e = Measure(rec.time.toEpochMilli(), MeasureType.BODYFAT, v)
+                        if (v !in MeasureType.BODYFAT.min..MeasureType.BODYFAT.max) continue
+                        val dup = (store.measures + found).any {
+                            it.type == MeasureType.BODYFAT && kotlin.math.abs(it.time - e.time) < 60_000 && kotlin.math.abs(it.value - v) < 0.1
+                        }
+                        if (!dup) found += e
+                    }
+                    p.edit().putStringSet("seenFat", seen).apply()
+                    store.importMeasures(found)
+                    onDone()
+                }
+                override fun onError(e: HealthConnectException) = onDone()
+            })
     }
 
     /** Alle Gewichts-Einträge lesen (seitenweise), neue von anderen Apps in den Store übernehmen. */
@@ -414,7 +451,8 @@ fun HealthSettings(store: GymStore) {
                     tr("Puls lesen", "Read heart rate") to HealthSync.canReadHeartRate(context),
                     tr("Ruhepuls lesen", "Read resting HR") to HealthSync.canReadResting(context),
                     tr("HRV lesen", "Read HRV") to HealthSync.canReadHrv(context),
-                    tr("Schlaf lesen", "Read sleep") to HealthSync.canReadSleep(context)
+                    tr("Schlaf lesen", "Read sleep") to HealthSync.canReadSleep(context),
+                    tr("Körperfett lesen", "Read body fat") to HealthSync.canReadBodyFat(context)
                 )
             }
             // FlowRow: ganze Einträge umbrechen statt mitten im Text

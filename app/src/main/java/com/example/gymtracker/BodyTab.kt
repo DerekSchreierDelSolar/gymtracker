@@ -156,6 +156,9 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
             }
         }
 
+        // Körpermaße + Körperfett (Measures.kt)
+        item { MeasuresCard(store) }
+
     }
 
     if (showMet) AlertDialog(

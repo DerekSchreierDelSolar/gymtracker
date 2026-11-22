@@ -45,9 +45,9 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
     Erweiterung von `Plan.kt`; Deload-Hinweis kann RPE (12) und Erholungs-Check nutzen.
 
 ## Phase 4 – Körper + Auswertung
-15. **Körpermaße** (Taille, Arm, Brust …) als weitere Kurven im Tab „Körper“ + **Körperfett/Muskelmasse** aus Health Connect.
+15. ✅ (22.11.2026) **Körpermaße** (Taille, Arm, Brust …) als weitere Kurven im Tab „Körper“ + **Körperfett/Muskelmasse** aus Health Connect.
     Passt auch als Zieltyp in 1 (z. B. Taillenumfang).
-16. **Relative Kraft** (eigener Rekord × Körpergewicht, nur für dich, kein Vergleich mit anderen).
+16. ❌ (gestrichen) **Relative Kraft** (eigener Rekord × Körpergewicht, nur für dich, kein Vergleich mit anderen).
 17. **Jahresrückblick („Wrapped“):** Gesamtvolumen, häufigste Übung, größter Rekord-Sprung, längste Serie, erreichte Ziele,
     Abzeichen + Level des Jahres (nutzt 1–10 und `Review.kt`).
 
