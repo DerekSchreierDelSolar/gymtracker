@@ -163,9 +163,24 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
 Ernährungstagebuch, Körpermaße, Fortschrittsfotos,
 Supersätze,
 Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen pro Übung + Tag: umgesetzt in 1.2, `notes` im JSON = { Übung: { dayKey: Text } }. Satz-Typen: umgesetzt nach 1.2. Trainingsplan mit Wochentagen + Erinnerung: umgesetzt nach 1.5, Erinnerung nur Android. Pausen-Timer als Benachrichtigung: umgesetzt (UX-Runde), nur Android. Genauere kcal mit Profil, Wochen-/Monatsrückblick, Muskel-Wiki: umgesetzt 22.11.2026.)
-- **KI-Coach/Chatbot** (besprochen 19.11.2026, zurückgestellt): Chat mit Trainingsdaten-Zusammenfassung als Kontext.
-  Offene Punkte: Kosten/Datenschutz (Daten gehen an Anbieter), Modellwahl, API-Schlüssel nur lokal in den
-  Einstellungen (nie im öffentlichen Repo), Android ohne neue Abhängigkeit per HTTP vs. offizielles SDK.
+- **KI-Coach/Chatbot** (besprochen 19.11. + 22.11.2026, zurückgestellt). Achtung: App hat bisher **keine `INTERNET`-Berechtigung**
+  (komplett offline) – Coach wäre die erste Funktion, die Daten nach außen schickt.
+  - *Stufen:* 1) Chat im „Fragen“-Bildschirm (Schalter „KI-Coach“, Blasen aus BotTab wiederverwenden) mit Daten-Zusammenfassung
+    als Kontext (4–8 Wochen: Sätze/Volumen je Muskel, Rekorde, Wochenziel, Gewicht, optional Erholung/Puls); lokaler Bot bleibt
+    Fallback (offline/ohne Schlüssel, unsichere Treffer → KI). 2) Tool Use, nur lesend (`verlauf(übung, zeitraum)`, `trainings(von, bis)`,
+    `muskelBelastung`, `erholungHeute`). 3) Aktionen mit Bestätigung + Undo (Workout erstellen/ändern, Ziel-Sätze, Plan-Tage, Deload;
+    Nachfolger von WorkoutWizard). 4) Proaktiv: Feedback im SummaryScreen, Text im Rückblick, Hinweis aus Erholungs-Check.
+    Extras: Spracheingabe per `RecognizerIntent` (ohne Bibliothek), später Fotos (Vision).
+  - *Technik:* Android reines HTTP (`HttpURLConnection` + `org.json`, Streaming/SSE) statt offiziellem SDK (keine Dependencies);
+    neu `Coach.kt` (Kontext, Aufruf, Tools), Web `coach.js` (`fetch`; Schlüssel im Browser oder kleiner Proxy, z. B. Cloudflare Worker),
+    Eintrag in bot.json. Prompt-Caching für festen Teil (Anweisungen, Katalog).
+  - *Braucht:* Anthropic-Konto + API-Schlüssel (Prepaid-Guthaben = Kostendeckel), Schlüssel nur lokal in den Einstellungen
+    (gerätegebunden, nicht im Export, nie im Repo).
+  - *Kosten* (≈ 5k Tokens Kontext + 500 Antwort, Preise 11/2026): Haiku 5.5 ~0,1 ct/Frage, Sonnet 5.5 ~1,5 ct, Opus 5.5 ~3 ct;
+    Modell in den Einstellungen umschaltbar.
+  - *Offen:* Standardmodell, Web mit Proxy oder Schlüssel im Browser; Datenschutz (Zustimmung einmalig + je Kategorie,
+    Health-Connect-Daten eigenes Opt-in; für Play Store HC-Richtlinien zur Weitergabe an Dritte prüfen); Systemprompt mit
+    Grenzen (keine Diagnosen, bei Schmerzen zum Arzt) + Hinweis in der Oberfläche.
 - **UX-Analyse 22.11.2026 – noch offen** (erledigt nach 1.9: Erklärung vor der Benachrichtigungs-Erlaubnis, Trainings-Chips mit Stand `trainingChipLabel`, Pause-Kreis „tippen zum Ändern“, Kachel-Menü `ExerciseMenuSheet` / `exerciseMenu`, Knopf „Übungen hinzufügen / bearbeiten“ statt Stift, antippbare Ziel-Pille + `TargetStepper` in der Workout-Liste, `Hints`, Training minimieren; erledigt in 1.9: Vorbelegung Aufwärmen/Wdh.-Ziel, „Diese Woche“ über Kennzahlen,
   Tausenderpunkt `fmtVolume`, Kachel-Name zweigeteilt, ▶ in der Workout-Liste, verpasst = roter Ring):
   - *Klein:* weitere Übungsfotos (Mischung Foto/Piktogramm wirkt uneinheitlich; braucht Bilder vom Nutzer)
