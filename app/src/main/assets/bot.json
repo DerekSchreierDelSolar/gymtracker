@@ -87,8 +87,8 @@
     },
     {
       "keys": ["wiki", "anleitung", "erklaerung", "guide"],
-      "a": ["Das Übungs-Wiki erklärt Ausführung, Tipps und Muskeln jeder Übung. Du findest es im Tab „Übungen“ (Buch-Symbol oben), über ⓘ neben einer Übung oder im Reiter „Info“ – oder frag mich einfach, z. B. „Wie mache ich Kreuzheben?“.",
-            "The exercise wiki explains technique, tips and muscles. Find it in the \"Exercises\" tab (book icon), via ⓘ next to an exercise or in the \"Info\" tab – or just ask me, e.g. \"How do I deadlift?\"."]
+      "a": ["Das Übungs-Wiki erklärt Ausführung, Tipps und Muskeln jeder Übung. Du findest es oben rechts (Buch-Symbol, in jedem Tab), über ⓘ neben einer Übung oder im Reiter „Info“ – oder frag mich einfach, z. B. „Wie mache ich Kreuzheben?“.",
+            "The exercise wiki explains technique, tips and muscles. Find it at the top right (book icon, on every main tab), via ⓘ next to an exercise or in the \"Info\" tab – or just ask me, e.g. \"How do I deadlift?\"."]
     },
     {
       "keys": ["muskel wiki", "muskelwiki", "muskel lexikon", "anatomie", "medizinische infos", "muscle wiki", "anatomy", "medical info"],

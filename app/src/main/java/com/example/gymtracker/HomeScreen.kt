@@ -127,8 +127,9 @@ fun HomeScreen(
                 actions = {
                     // Suche + Filter nur im Übungen-Bereich (und nur, wenn es Übungen gibt)
                     if (tab == 1 && store.exercises.isNotEmpty()) FilterActions(listUi, listFilter, onListFilter)
-                    // Übungs-Wiki direkt aus dem Übungen-Bereich erreichbar (sonst über ⋮)
-                    if (tab == 1) IconAction(Ico.BOOK, onClick = onWiki)
+                    // Wiki und Fragen immer direkt erreichbar (auf allen Tabs)
+                    IconAction(Ico.BOOK, onClick = onWiki)
+                    IconAction(Ico.CHAT, onClick = onBot)
                     // ⋮-Menü: Box ist der Anker, an dem sich das DropdownMenu ausrichtet
                     Box {
                         IconAction(Ico.MORE, onClick = { menuOpen = true })
@@ -137,16 +138,6 @@ fun HomeScreen(
                                 text = { Text(tr("Einstellungen", "Settings")) },
                                 leadingIcon = { AppIcon(Ico.SETTINGS) },
                                 onClick = { menuOpen = false; showSettings = true }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(tr("Wiki", "Wiki")) },
-                                leadingIcon = { AppIcon(Ico.BOOK) },
-                                onClick = { menuOpen = false; onWiki() }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(tr("Fragen", "Ask")) },
-                                leadingIcon = { AppIcon(Ico.CHAT) },
-                                onClick = { menuOpen = false; onBot() }
                             )
                             HorizontalDivider()
                             DropdownMenuItem(
