@@ -31,7 +31,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
    1 t an einem Tag, Ziel erreicht) + seltene Überraschungen (Frühaufsteher < 7 Uhr, alle Muskelgruppen in einer Woche …).
    Neues Abzeichen im Summary (nutzt 2 + 3).
 8. ✅ (22.11.2026) **Serie mit Joker:** Serie bleibt wochenbasiert, 1 Joker pro Monat (Urlaub/krank), damit sie nicht an einer Woche zerbricht.
-9. **Meerschweinchen:** zufällige Sprüche im Summary (Pool DE/EN, selten Spezialbild); Optik ändert sich mit dem Level
+9. ✅ Sprüche umgesetzt 22.11.2026 (Quotes.kt / quotes.js: 22 Sprüche, Auswahl nach Training, pro Training fest, ~5 % selten mit ✨). **OFFEN – Bilder (macht der Nutzer per KI, wenn er kann):** Spezialbilder für die seltenen Sprüche (Meerschweinchen mit goldener Gurke 🌟, vornehmes Meerschweinchen mit Zylinder 🎩) und Level-Optik (ab Level 5 Stirnband, 10 Hantel, 20 Gürtel/Kraftpose, 30 Eisen-Look, 40 Muskel-Meerschwein, 50 Krone) im Stil des App-Icons; danach in QuoteBubble / LevelCard einbauen. **Meerschweinchen:** zufällige Sprüche im Summary (Pool DE/EN, selten Spezialbild); Optik ändert sich mit dem Level
    (Stirnband, Hantel …). Braucht Bilder → zusammen mit den Übungsbildern per KI erzeugen.
 10. **Identität im Rückblick:** „9 von 10 Wochen Ziel geschafft – das ist Routine“, Statistik über dich
     (Lieblingsübung, typische Trainingszeit, stärkste Muskelgruppe) in `Review.kt`.

@@ -38,6 +38,8 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
         ) {
             // Erfolge (Achievements.kt) – das Erste, was man nach dem Training sieht
             item { AchievementsCard(wins, fresh = celebrate) }
+            // Meerschweinchen-Spruch (Quotes.kt)
+            item { QuoteBubble(remember(t.id, stats.sets) { quoteFor(store, t, wins, stats) }) }
 
             // Direkt nach dem Training: Fortschritt der Ziele, zu denen es beigetragen hat
             val touched = if (celebrate) goalsTouched(store, stats) else emptyList()

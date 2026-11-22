@@ -18,6 +18,7 @@ import { screen } from '../layout.js';
 import { setInput, setRows, historyDayCard, recordLine, noteButton } from './exercise.js';
 import { achievements } from '../achievements.js';
 import { achievementsCard, goalsTouched, goalsCard, celebrateOnce } from '../celebration.js';
+import { quoteFor, quoteBubble } from '../quotes.js';
 
 // ---------- Ton, Vibration, Bildschirm an ----------
 
@@ -361,6 +362,7 @@ export function summaryScreen(t, onDone) {
     actions: [h('button', { class: 'btn text', onclick: onDone }, tr('Fertig', 'Done'))],
     content: h('div', { class: 'stack pad' },
       achievementsCard(wins, celebrate, t.id),
+      quoteBubble(quoteFor(t, wins, stats)), // Meerschweinchen-Spruch (quotes.js)
       celebrate ? goalsCard(goalsTouched(stats)) : null,
       h('div', null,
         h('h2', { class: 'headline' }, t.workoutName),
