@@ -16,7 +16,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 2. ✅ (22.11.2026) **Erfolgs-Berechnung** (eine gemeinsame Funktion, z. B. `achievements(session)`): Rekorde, bester Vergleich mit
    letztem Mal (Volumen, Sätze, Gewicht), x. Training der Woche, Muskel nach Pause wieder dabei, Ziel-Fortschritt.
    Liefert immer mindestens einen Erfolg. Wird von 3, 5, 7 und 10 wiederverwendet.
-3. **Feier im SummaryScreen (Peak-End):** Konfetti (selbst gezeichnet: Compose-Canvas / CSS) + Vibration bei Rekorden,
+3. ✅ (22.11.2026) **Feier im SummaryScreen (Peak-End):** Konfetti (selbst gezeichnet: Compose-Canvas / CSS) + Vibration bei Rekorden,
    Erfolge aus 2 groß oben, Bezug zum Ziel („Noch 7,5 kg bis 100 kg – vor 3 Monaten waren es noch 20“).
 4. **Meilensteine auf der Startseite:** nächste erreichbare Schritte („noch 2,5 kg bis 100 kg Kniebeuge“,
    „noch 1 Training bis Wochenziel“), bevorzugt passend zum Ziel.

@@ -673,3 +673,24 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .goal-type small { display: block; }
 .goal-type-emoji { font-size: 24px; width: 40px; flex: none; text-align: center; }
 .goal-pick-list { max-height: 300px; overflow-y: auto; }
+
+/* Feier im Summary (celebration.js) */
+.wins-card { padding: 16px; background: var(--primary-container); color: var(--on-primary-container); }
+.wins-card.big { background: var(--tertiary-container); color: var(--on-tertiary-container); }
+.wins-card .muted { color: inherit; opacity: .75; }
+.wins-head { display: block; opacity: .75; font-weight: 600; margin-bottom: 4px; }
+.wins-top { display: flex; align-items: center; gap: 12px; }
+.wins-top-emoji { font-size: 40px; }
+.wins-top-title { font-size: 20px; }
+.wins-top .grow span { font-size: 15px; }
+.wins-card hr { border: none; border-top: 1px solid currentColor; opacity: .2; margin: 12px 0 2px; }
+.wins-row { display: flex; gap: 8px; padding-top: 10px; }
+.wins-emoji { width: 32px; flex: none; font-size: 18px; }
+.wins-row small { display: block; }
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1000; }
+.confetti span { position: absolute; top: -20px; border-radius: 2px; animation-name: confetti-fall; animation-timing-function: linear; animation-fill-mode: both; }
+@keyframes confetti-fall {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(var(--sway), 105vh) rotate(var(--spin)); opacity: 0; }
+}

@@ -39,7 +39,7 @@ function finishTraining() {
   if (s) s.exercises.push(...Object.keys(nav.swaps ?? {}).filter(o => !s.exercises.includes(o) && store.setsBetween(o, nav.trainingStart, Infinity).length));
   const t = s ? store.finishTraining(s, nav.trainingStart) : null;
   keepScreenOn(false);
-  update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, trainingIndex: 0, restEnd: null, swaps: {}, summaryId: t?.id ?? null });
+  update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, trainingIndex: 0, restEnd: null, swaps: {}, summaryId: t?.id ?? null, celebrateId: t?.id ?? null });
 }
 
 // ---------- Welcher Bildschirm? ----------
@@ -75,7 +75,7 @@ function currentScreen() {
 setBackHandler(() => {
   if (nav.dialog) { closeDialog(); return false; }
   if (nav.menuOpen) { update({ menuOpen: false }); return false; }
-  if (nav.summaryId != null) { update({ summaryId: null }); return true; }
+  if (nav.summaryId != null) { update({ summaryId: null, celebrateId: null }); return true; }
   const trainingVisible = nav.trainingStart != null && nav.trainingOpen;
   if (trainingVisible && nav.editInTraining != null) {
     if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }

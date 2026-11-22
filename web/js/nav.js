@@ -32,6 +32,7 @@ export const nav = {
   restEnd: null,         // Pausen-Timer: Endzeitpunkt (ms)
   restTotal: 0,
   summaryId: null,
+  celebrateId: null,     // Übersicht direkt nach dem Training → feiern (celebration.js), wie GymApp.celebrateId
   calMonth: monthIndex(Date.now()),
   calDay: dayKey(Date.now()),
   listFilter: emptyFilter(),

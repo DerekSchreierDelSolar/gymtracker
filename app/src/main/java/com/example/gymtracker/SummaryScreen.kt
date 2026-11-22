@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -13,9 +14,15 @@ import androidx.compose.ui.unit.dp
 /** Übersicht nach dem Training (auch später aus „Letzte Trainings“ aufrufbar). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
+fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = false, onDone: () -> Unit) {
     val stats = sessionStats(store, t)
+    val wins = remember(t.id, stats.sets) { achievements(store, t, stats) }
+    // Konfetti + Vibration nur einmal direkt nach dem Training und nur bei großen Erfolgen (Rekord, Ziel, Wochenziel, Meilenstein)
+    var confetti by rememberSaveable(t.id) { mutableStateOf(celebrate && wins.any { it.big }) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    LaunchedEffect(t.id) { if (confetti) celebrateVibration(context) }
 
+    Box(Modifier.fillMaxSize()) {
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(tr("Trainingsübersicht", "Workout summary")) },
@@ -29,6 +36,20 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Erfolge (Achievements.kt) – das Erste, was man nach dem Training sieht
+            item { AchievementsCard(wins, fresh = celebrate) }
+
+            // Direkt nach dem Training: Fortschritt der Ziele, zu denen es beigetragen hat
+            val touched = if (celebrate) goalsTouched(store, stats) else emptyList()
+            if (touched.isNotEmpty()) item {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 8.dp)) {
+                        Text(tr("🎯 Deine Ziele", "🎯 Your goals"), style = MaterialTheme.typography.titleMedium)
+                        touched.forEach { GoalRow(store, it) }
+                    }
+                }
+            }
+
             item {
                 Text(t.workoutName, style = MaterialTheme.typography.headlineSmall)
                 Text(
@@ -140,27 +161,6 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                 }
             }
 
-            if (stats.records > 0) {
-                item {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            "🏆 " + plural(
-                                stats.records,
-                                tr("neue Bestleistung", "new personal record"),
-                                tr("neue Bestleistungen", "new personal records")
-                            ) + "!",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(14.dp)
-                        )
-                    }
-                }
-            }
-
             items(stats.results, key = { it.name }) { r ->
                 val cardio = r.group.isCardio
                 Card(Modifier.fillMaxWidth()) {
@@ -206,6 +206,8 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                 Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) { Text(tr("Fertig", "Done")) }
             }
         }
+    }
+    if (confetti) ConfettiOverlay { confetti = false }
     }
 }
 

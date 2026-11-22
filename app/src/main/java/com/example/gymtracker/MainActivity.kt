@@ -114,6 +114,8 @@ fun GymApp(store: GymStore) {
     var editInTraining by rememberSaveable { mutableStateOf<String?>(null) }
     // Geöffnete Trainings-Übersicht
     var summaryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Übersicht direkt nach dem Training (nicht aus dem Kalender) → feiern (Celebration.kt)
+    var celebrateId by rememberSaveable { mutableStateOf<Long?>(null) }
     // Kalender: angezeigter Monat und gewählter Tag. Hier oben gespeichert, damit sie erhalten
     // bleiben, wenn man aus dem Kalender eine Trainingsübersicht öffnet und zurückkommt.
     var calMonth by rememberSaveable { mutableIntStateOf(monthIndex(System.currentTimeMillis())) }
@@ -188,8 +190,8 @@ fun GymApp(store: GymStore) {
         ) {
             when {
                 summary != null -> {
-                    BackHandler { summaryId = null }
-                    SummaryScreen(store, summary, onDone = { summaryId = null })
+                    BackHandler { summaryId = null; celebrateId = null }
+                    SummaryScreen(store, summary, celebrate = summary.id == celebrateId, onDone = { summaryId = null; celebrateId = null })
                 }
                 // Workout während des laufenden Trainings bearbeiten (Training läuft weiter, Zurück = zurück ins Training)
                 trainingVisible && editInTraining != null -> {
@@ -222,6 +224,7 @@ fun GymApp(store: GymStore) {
                             val t = store.finishTraining(withSets, start)
                             resetTraining()
                             summaryId = t?.id
+                            celebrateId = t?.id
                         }
                     )
                 }

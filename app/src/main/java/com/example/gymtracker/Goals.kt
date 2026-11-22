@@ -219,36 +219,40 @@ fun GoalsCard(store: GymStore) {
                     modifier = Modifier.padding(end = 8.dp)
                 )
             }
-            items.forEach { (g, p) ->
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { edit = g }
-                        .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (p.reachedAt != null) "🏆" else g.type.emoji, modifier = Modifier.width(32.dp))
-                        Text(goalTitle(store, g), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                        Text(p.short,
-                            style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    ProgressBar(p.fraction, Modifier.padding(start = 32.dp), done = p.reachedAt != null)
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        (if (p.reachedAt == null) p.value + " · " else "") + p.detail,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 32.dp)
-                    )
-                }
-            }
+            items.forEach { (g, p) -> GoalRow(store, g, p) { edit = g } }
         }
     }
 
     if (create) GoalDialog(store, null) { create = false }
     edit?.let { g -> GoalDialog(store, g) { edit = null } }
+}
+
+/** Ein Ziel mit Balken (Startseite, Summary). onClick = null: nicht antippbar. */
+@Composable
+fun GoalRow(store: GymStore, g: Goal, p: GoalProgress = goalProgress(store, g), onClick: (() -> Unit)? = null) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.small)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(if (p.reachedAt != null) "🏆" else g.type.emoji, modifier = Modifier.width(32.dp))
+            Text(goalTitle(store, g), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            Text(p.short,
+                style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        }
+        Spacer(Modifier.height(6.dp))
+        ProgressBar(p.fraction, Modifier.padding(start = 32.dp), done = p.reachedAt != null)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            (if (p.reachedAt == null) p.value + " · " else "") + p.detail,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 32.dp)
+        )
+    }
 }
 
 /** Übungen, die zum Zieltyp passen: Kraft = mit Gewicht, Ausdauer = Cardio oder Zeitübung. */

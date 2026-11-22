@@ -175,7 +175,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
   if (stats.sets > 0) parts.push(plural(stats.sets, tr('Satz', 'set'), tr('Sätze', 'sets')));
   if (stats.volume > 0) parts.push(tr(`${fmtVolume(stats.volume)} kg bewegt`, `${fmtVolume(stats.volume)} kg moved`));
   if (stats.cardioMinutes > 0) parts.push(`${stats.cardioMinutes} min Cardio`);
-  if (t.id >= 0 && t.end > t.start) parts.push(`${Math.round((t.end - t.start) / 60000)} min`);
+  if (t.id >= 0 && t.end - t.start >= 60000) parts.push(`${Math.round((t.end - t.start) / 60000)} min`);
   out.push(item('SESSION', tr('Training geschafft', 'Workout done'), parts.join(' · ') || null));
 
   // stabil sortieren: innerhalb einer Art bleibt die Reihenfolge der Übungen

@@ -16,6 +16,8 @@ import {
 import { nav, update, go, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
 import { screen } from '../layout.js';
 import { setInput, setRows, historyDayCard, recordLine, noteButton } from './exercise.js';
+import { achievements } from '../achievements.js';
+import { achievementsCard, goalsTouched, goalsCard, celebrateOnce } from '../celebration.js';
 
 // ---------- Ton, Vibration, Bildschirm an ----------
 
@@ -321,6 +323,10 @@ function heartRateCard(t, kcalFromHr) {
 
 export function summaryScreen(t, onDone) {
   const stats = sessionStats(store, t);
+  // Erfolge (achievements.js); direkt nach dem Training feiern: Konfetti bei großen Erfolgen + Ziele (wie SummaryScreen.kt)
+  const celebrate = nav.celebrateId === t.id;
+  const wins = achievements(t, stats);
+  if (celebrate && wins.some(a => a.big)) setTimeout(() => celebrateOnce(t.id), 50);
   const sessionSets = stats.results.flatMap(r => r.sets);
   const tiles = [];
   if (t.id >= 0) tiles.push([tr('Dauer', 'Duration'), fmtDuration(t.end - t.start)]);
@@ -354,6 +360,8 @@ export function summaryScreen(t, onDone) {
     title: tr('Trainingsübersicht', 'Workout summary'), back: true, onBack: onDone, key: 'summary-' + t.id,
     actions: [h('button', { class: 'btn text', onclick: onDone }, tr('Fertig', 'Done'))],
     content: h('div', { class: 'stack pad' },
+      achievementsCard(wins, celebrate, t.id),
+      celebrate ? goalsCard(goalsTouched(stats)) : null,
       h('div', null,
         h('h2', { class: 'headline' }, t.workoutName),
         muted(fmtDateTime(t.start)),
@@ -373,8 +381,6 @@ export function summaryScreen(t, onDone) {
       volumeItems.length >= 2 ? chartCard(tr('Volumen pro Übung', 'Volume per exercise'), tr('Gewicht × Wiederholungen', 'Weight × reps'),
         horizontalBars(volumeItems, v => `${fmtVolume(v)} kg`, true)) : null,
       trend,
-      stats.records > 0 ? h('div', { class: 'card record-card' }, '🏆 ' + plural(stats.records,
-        tr('neue Bestleistung', 'new personal record'), tr('neue Bestleistungen', 'new personal records')) + '!') : null,
       stats.results.map(r => {
         const cardio = isCardio(r.group);
         const met = r.target > 0 && r.sets.filter(isWork).length >= r.target;

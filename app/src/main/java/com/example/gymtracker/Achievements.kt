@@ -198,7 +198,7 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
         if (stats.sets > 0) add(plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")))
         if (stats.volume > 0) add(tr("${fmtVolume(stats.volume)} kg bewegt", "${fmtVolume(stats.volume)} kg moved"))
         if (stats.cardioMinutes > 0) add("${stats.cardioMinutes} min Cardio")
-        if (t.id >= 0 && t.end > t.start) add("${Math.round((t.end - t.start) / 60000.0)} min")
+        if (t.id >= 0 && t.end - t.start >= 60_000) add("${Math.round((t.end - t.start) / 60000.0)} min")
     }
     out += Achievement(AchievementKind.SESSION, tr("Training geschafft", "Workout done"), parts.joinToString(" · ").ifEmpty { null })
 

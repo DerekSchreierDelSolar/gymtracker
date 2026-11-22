@@ -124,13 +124,18 @@ export function goalsCard() {
       h('button', { class: 'btn text', onclick: () => goalDialog(null) }, tr('+ Ziel', '+ Goal'))),
     items.length ? null : muted(tr('Setz dir ein langfristiges Ziel – z. B. 100 kg Bankdrücken, 30 min laufen oder 10 kg abnehmen. Hier siehst du dann, wie nah du dran bist.',
       "Set yourself a long-term goal – e.g. 100 kg bench press, run 30 min or lose 10 kg. You'll see here how close you are."), 'goals-empty'),
-    items.map(([g, p]) => h('button', { class: 'goal-row', onclick: () => goalDialog(g) },
-      h('div', { class: 'goal-head' },
-        h('span', { class: 'goal-emoji' }, p.reachedAt ? '🏆' : typeInfo(g.type)[1]),
-        h('b', { class: 'grow' }, goalTitle(g)),
-        h('b', { class: 'goal-short' }, p.short)),
-      h('div', { class: ['goal-bar', p.reachedAt && 'done'] }, h('span', { style: `width:${Math.round(p.fraction * 100)}%` })),
-      h('small', { class: 'muted goal-detail' }, (p.reachedAt ? '' : p.value + ' · ') + p.detail))));
+    items.map(([g, p]) => goalRow(g, p, () => goalDialog(g))));
+}
+
+/** Ein Ziel mit Balken (Startseite, Summary) – wie GoalRow. onClick = null: nicht antippbar. */
+export function goalRow(g, p = goalProgress(g), onClick = null) {
+  return h(onClick ? 'button' : 'div', { class: 'goal-row', onclick: onClick },
+    h('div', { class: 'goal-head' },
+      h('span', { class: 'goal-emoji' }, p.reachedAt ? '🏆' : typeInfo(g.type)[1]),
+      h('b', { class: 'grow' }, goalTitle(g)),
+      h('b', { class: 'goal-short' }, p.short)),
+    h('div', { class: ['goal-bar', p.reachedAt && 'done'] }, h('span', { style: `width:${Math.round(p.fraction * 100)}%` })),
+    h('small', { class: 'muted goal-detail' }, (p.reachedAt ? '' : p.value + ' · ') + p.detail));
 }
 
 /** Übungen, die zum Zieltyp passen: Kraft = mit Gewicht, Ausdauer = Cardio oder Zeitübung. */
