@@ -190,8 +190,8 @@ fun SetInput(
         }
         Spacer(Modifier.width(56.dp + 8.dp)) // unter dem ＋
     }
-    // Scheibenrechner + Aufwärm-Rampe (Plates.kt)
-    if (showWeight && !timed) SetHelpers(store, exercise, weightText) { w, r ->
+    // Aufwärm-Rampe (Warmup.kt)
+    if (showWeight && !timed) SetHelpers(exercise, weightText) { w, r ->
         weightText = fmtW(w); repsText = r.toString(); type = SetType.WARMUP
     }
     rirFor?.let { id -> RirPrompt(onPick = { store.setRir(id, it); rirFor = null }, onSkip = { rirFor = null }) }

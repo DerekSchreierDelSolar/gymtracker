@@ -156,9 +156,9 @@
             "You earn badges automatically for milestones: 1st, 10th, 50th, 100th and 250th workout, 4 or 12 weeks in a row, 10 weeks with your weekly goal, records, 10 t in one day, 100 t in total, a goal reached, all major muscle groups in one week, 30 min of cardio or 2 min on a timed exercise in one go and 25 different exercises. On top there are 7 secret surprises that are only revealed once you earn them. Tap the \"🏅 Badges\" card on the home screen to see them all; a new badge is celebrated after the workout."]
     },
     {
-      "keys": ["scheiben", "scheibenrechner", "waerme", "aufwaermen", "hantelscheiben", "auflegen", "stange", "aufwaermrampe", "aufwaermsaetze", "plates", "plate calculator", "warm up sets"],
-      "a": ["Unter der Satz-Eingabe gibt es zwei Helfer: „🏋 Scheiben“ (bei Langhantel-Übungen) zeigt, welche Scheiben du pro Seite auflegen musst – die Stange (20, 15, 10 oder 7,5 kg) wählst du im Dialog, die App merkt sie sich. „🔥 Aufwärmen“ schlägt zum eingetragenen Arbeitsgewicht 2–4 Aufwärmsätze vor (leere Stange × 10, 40 % × 10, 60 % × 5, 80 % × 2); antippen übernimmt den Satz als Aufwärmsatz.",
-            "Below the set input there are two helpers: \"🏋 Plates\" (barbell exercises) shows which plates to load per side – pick the bar (20, 15, 10 or 7.5 kg) in the dialog, the app remembers it. \"🔥 Warm-up\" suggests 2–4 warm-up sets for the entered working weight (empty bar × 10, 40 % × 10, 60 % × 5, 80 % × 2); tap one to use it as a warm-up set."]
+      "keys": ["waerme", "aufwaermen", "aufwaermrampe", "aufwaermsaetze", "warm up sets", "warm-up"],
+      "a": ["Unter der Satz-Eingabe schlägt „🔥 Aufwärmen“ zum eingetragenen Arbeitsgewicht 2–4 Aufwärmsätze vor (bei Langhantel leere Stange × 10, dann 40 % × 10, 60 % × 5, 80 % × 2). Antippen übernimmt den Satz als Aufwärmsatz.",
+            "Below the set input, \"🔥 Warm-up\" suggests 2–4 warm-up sets for the entered working weight (barbell: empty bar × 10, then 40 % × 10, 60 % × 5, 80 % × 2). Tap one to use it as a warm-up set."]
     },
     {
       "keys": ["rir", "rpe", "in reserve", "wie schwer", "anstrengung", "1rm tabelle", "prozent", "prozente", "reps in reserve", "percent"],

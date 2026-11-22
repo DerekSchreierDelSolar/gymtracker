@@ -1,6 +1,6 @@
 // Übungs-Bausteine und Übungsdetail – entspricht ExerciseDetail.kt, Progression.kt (UI) und ExerciseTile.
 
-import { setHelpers } from '../plates.js';
+import { setHelpers } from '../warmup.js';
 import { rirLabel, rirChips, rirPrompt, oneRmTable } from '../effort.js';
 import { wikiFor, wikiContent } from '../wiki.js';
 import { musclesOf, muscleEditDialog, muscleSideCard, levelsOf } from '../bodymap.js';
@@ -187,7 +187,7 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
       h('button', { class: 'btn plus', onclick: add, 'aria-label': cardio ? tr('Eintragen', 'Log') : tr('Satz hinzufügen', 'Add set') }, '+')),
     // Schnell ändern ohne Tastatur: −/+ unter den Feldern (Gewicht ±2,5 kg; Wdh./Minuten ±1, Sekunden ±5) – wie SetInput in ExerciseDetail.kt
     stepRow(cardio, showWeight, timed, st),
-    // Scheibenrechner + Aufwärm-Rampe (plates.js)
+    // Aufwärm-Rampe (warmup.js)
     showWeight && !timed ? setHelpers(name, st.weight, (w, r) => { st.weight = fmtW(w); st.reps = String(r); st.type = 'WARMUP'; rerender(); }) : null,
     st.rirFor != null ? rirPrompt(n => { store.setRir(st.rirFor, n); st.rirFor = null; rerender(); }, () => { st.rirFor = null; rerender(); }) : null);
 }
