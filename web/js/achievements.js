@@ -4,7 +4,7 @@
 
 import { store } from './store.js';
 import { tr, exName, fmtW, fmtDate, fmtVolume, plural, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, groupLabel } from './core.js';
-import { allSessions, sessionStats } from './stats.js';
+import { allSessions, sessionStats, streakFrom } from './stats.js';
 import { goalProgress, goalTitle, fmtAmount } from './goals.js';
 import { levelUpIn, levelTitle, nextTitleLevel } from './levels.js';
 import { badgesIn } from './badges.js';
@@ -179,10 +179,13 @@ export function achievements(t, stats = sessionStats(store, t)) {
 
   // 10. Serie: erstes Training der Woche verlängert die Serie (Wochen in Folge mit Training)
   if (pos === 1) {
-    const weeks = new Set(all.filter(s => s.start <= t.end).map(s => startOfWeek(s.start)));
-    let w = weekStart, n = 0;
-    while (weeks.has(w)) { n++; w = startOfWeek(addDays(w, -7)); }
-    if (n >= 2) out.push(item('STREAK', tr(`${n} Wochen in Folge`, `${n} weeks in a row`), tr('Deine Serie läuft weiter', 'Your streak continues')));
+    const s = streakFrom(new Set(all.filter(x => x.start <= t.end).map(x => startOfWeek(x.start))), weekStart); // mit Joker
+    const n = s.weeks;
+    if (n >= 2) {
+      out.push(item('STREAK', tr(`${n} Wochen in Folge`, `${n} weeks in a row`), s.jokers > 0
+        ? tr('Deine Serie läuft weiter – der Joker hat sie gerettet 🃏', 'Your streak continues – saved by a joker 🃏')
+        : tr('Deine Serie läuft weiter', 'Your streak continues')));
+    }
   }
 
   // 12. Immer: das Training selbst

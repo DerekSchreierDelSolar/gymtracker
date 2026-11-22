@@ -3,7 +3,7 @@
 
 import { store } from './store.js';
 import { tr, exName, fmtW, plural, isTimed, isCardio, isTop, isWork, startOfWeek, addDays } from './core.js';
-import { allSessions } from './stats.js';
+import { allSessions, streakFrom } from './stats.js';
 import { goalProgress, fmtAmount } from './goals.js';
 import { h } from './ui.js';
 
@@ -81,9 +81,7 @@ export function nextMilestones(limit = 3) {
 
   // Serie: diese Woche noch nicht trainiert, aber letzte Woche → mit einem Training wächst die Serie
   if (thisWeek === 0) {
-    const weeks = new Set(sessions.map(t => startOfWeek(t.start)));
-    let w = prevWeek(week), n = 0;
-    while (weeks.has(w)) { n++; w = prevWeek(w); }
+    const n = streakFrom(new Set(sessions.map(t => startOfWeek(t.start))), prevWeek(week)).weeks; // mit Joker
     if (n >= 1) out.push({ emoji: '🔥', title: tr(`Ein Training diese Woche → ${n + 1} Wochen in Folge`, `One workout this week → ${n + 1} weeks in a row`), detail: null, fraction: 0.9 });
   }
 

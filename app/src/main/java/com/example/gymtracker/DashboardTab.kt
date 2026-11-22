@@ -50,15 +50,40 @@ fun nextWorkoutAfter(workouts: List<Workout>, lastId: Long?): Workout? {
         ?: workouts[i]
 }
 
-/** Wochen in Folge mit mindestens einem Training (die laufende Woche zählt, wenn schon trainiert). */
-fun weekStreak(store: GymStore): Int {
+/** Serie: Wochen in Folge (inkl. Joker-Wochen); `jokers` = davon per Joker überbrückt, `lastJoker` = Woche des jüngsten Jokers. */
+data class Streak(val weeks: Int, val jokers: Int, val lastJoker: Long?)
+
+private fun monthOf(t: Long): Int = Calendar.getInstance().apply { timeInMillis = t }.let { it.get(Calendar.YEAR) * 12 + it.get(Calendar.MONTH) }
+
+/**
+ * Serie ab Woche `from` rückwärts (Roadmap Schritt 8, „Serie ohne Angst“). Joker: pro Kalendermonat (des Wochen-Montags)
+ * überbrückt eine Woche ohne Training die Serie, wenn die Woche davor trainiert wurde – also nur einzelne Lücken.
+ * Joker-Wochen zählen mit. Web: streakFrom in stats.js.
+ */
+fun streakFrom(weeks: Set<Long>, from: Long): Streak {
+    var w = from
+    var n = 0
+    var jokers = 0
+    var last: Long? = null
+    val used = mutableSetOf<Int>()
+    while (true) {
+        if (w in weeks) n++
+        else if (monthOf(w) !in used && previousWeek(w) in weeks) { used += monthOf(w); jokers++; n++; if (last == null) last = w }
+        else break
+        w = previousWeek(w)
+    }
+    return Streak(n, jokers, last)
+}
+
+/** Aktuelle Serie (die laufende Woche zählt, wenn schon trainiert; sonst endet sie nicht sofort). */
+fun weekStreakInfo(store: GymStore): Streak {
     val weeks = allSessions(store).map { startOfWeek(it.start) }.toSet()
     var w = startOfWeek()
-    if (w !in weeks) w = previousWeek(w) // diese Woche noch nichts → Serie endet nicht sofort
-    var n = 0
-    while (w in weeks) { n++; w = previousWeek(w) }
-    return n
+    if (w !in weeks) w = previousWeek(w)
+    return streakFrom(weeks, w)
 }
+
+fun weekStreak(store: GymStore): Int = weekStreakInfo(store).weeks
 
 fun previousWeek(weekStart: Long): Long =
     Calendar.getInstance().apply { timeInMillis = weekStart; add(Calendar.DAY_OF_MONTH, -7) }.timeInMillis
@@ -101,7 +126,10 @@ fun DashboardTab(
     val weekStart = startOfWeek()
     val weekSessions = sessions.filter { it.start >= weekStart }
     val weekStats = weekSessions.map { sessionStats(store, it) }
-    val streak = weekStreak(store)
+    val streakInfo = weekStreakInfo(store)
+    val streak = streakInfo.weeks
+    // Joker in den letzten 2 Wochen eingesetzt → in der Karte erwähnen
+    val jokerRecent = streakInfo.lastJoker?.let { it >= previousWeek(previousWeek(weekStart)) } == true
     val goal = store.weeklyGoal
     var editGoal by remember { mutableStateOf(false) }
     // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
@@ -146,7 +174,7 @@ fun DashboardTab(
                             if (streak > 0) "🔥 " + tr(
                                 "${plural(streak, "Woche", "Wochen")} in Folge",
                                 "${plural(streak, "week", "weeks")} in a row"
-                            ) else tr("Starte deine Serie!", "Start your streak!"),
+                            ) + (if (jokerRecent) tr(" · 🃏 Joker hat sie gerettet", " · 🃏 saved by a joker") else "") else tr("Starte deine Serie!", "Start your streak!"),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         // „tippen zum Ändern“ nur, bis das Ziel einmal geöffnet wurde (Hints)
@@ -309,19 +337,26 @@ fun DashboardTab(
             onDismissRequest = { editGoal = false },
             title = { Text(tr("Wochenziel", "Weekly goal")) },
             text = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = { store.changeWeeklyGoal(goal - 1) }, enabled = goal > 1) {
-                        Text("−", style = MaterialTheme.typography.headlineMedium)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TextButton(onClick = { store.changeWeeklyGoal(goal - 1) }, enabled = goal > 1) {
+                            Text("−", style = MaterialTheme.typography.headlineMedium)
+                        }
+                        Text(
+                            tr("$goal × pro Woche", "$goal × per week"),
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(onClick = { store.changeWeeklyGoal(goal + 1) }, enabled = goal < 14) {
+                            Text("+", style = MaterialTheme.typography.headlineMedium)
+                        }
                     }
                     Text(
-                        tr("$goal × pro Woche", "$goal × per week"),
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
+                        tr("🔥 Serie = Wochen in Folge mit mindestens einem Training. 🃏 Ein Joker pro Monat überbrückt eine Woche Pause (Urlaub, krank) – die Serie bleibt.",
+                            "🔥 Streak = weeks in a row with at least one workout. 🃏 One joker per month bridges a week off (holiday, sick) – the streak stays."),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    TextButton(onClick = { store.changeWeeklyGoal(goal + 1) }, enabled = goal < 14) {
-                        Text("+", style = MaterialTheme.typography.headlineMedium)
-                    }
                 }
             },
             confirmButton = { TextButton(onClick = { editGoal = false }) { Text("OK") } }

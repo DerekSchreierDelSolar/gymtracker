@@ -3,10 +3,10 @@
 import { store } from '../store.js';
 import {
   tr, exName, sortByName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDuration, fmtShortDate, fmtWeek, plural, isCardio, isEnglish, groupLabel,
-  GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
+  GROUP_KEYS, startOfWeek, addDays, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
 } from '../core.js';
-import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick, dueToday } from '../stats.js';
+import { allSessions, sessionStats, recordEvents, weekStreakInfo, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick, dueToday } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, dateField, isoDay, timeOfIsoDay, statBox, chartCard, horizontalBars, historyBars, lineChart,
@@ -190,7 +190,10 @@ function dashboardTab(onStartWorkout) {
   const sessions = allSessions(store);
   const weekSessions = sessions.filter(t => t.start >= startOfWeek());
   const weekStats = weekSessions.map(t => sessionStats(store, t));
-  const streak = weekStreak(store);
+  const streakInfo = weekStreakInfo(store);
+  const streak = streakInfo.weeks;
+  // Joker in den letzten 2 Wochen eingesetzt → in der Karte erwähnen (wie DashboardTab.kt)
+  const jokerRecent = streakInfo.lastJoker != null && streakInfo.lastJoker >= startOfWeek(addDays(startOfWeek(), -14));
   const goal = store.weeklyGoal;
   const lastSession = store.sessions.reduce((a, t) => (!a || t.start > a.start ? t : a), null);
   // Schnellstart: mit Trainingsplan „Heute dran“ bzw. das nächste geplante Workout, sonst „Weiter mit“
@@ -228,6 +231,7 @@ function dashboardTab(onStartWorkout) {
         h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Trainingseinheit', 'workout'), tr('Trainingseinheiten', 'workouts')) + ' ✓'
           : tr(`${weekSessions.length} von ${goal} Trainingseinheiten`, `${weekSessions.length} of ${goal} workouts`)),
         h('span', null, streak > 0 ? '🔥 ' + tr(`${plural(streak, 'Woche', 'Wochen')} in Folge`, `${plural(streak, 'week', 'weeks')} in a row`)
+          + (jokerRecent ? tr(' · 🃏 Joker hat sie gerettet', ' · 🃏 saved by a joker') : '')
           : tr('Starte deine Serie!', 'Start your streak!')),
         // „tippen zum Ändern“ nur, bis das Ziel einmal geöffnet wurde (Hints)
         showHint('weekGoal') || weekSessions.length >= goal ? h('small', { class: 'muted' }, weekSessions.length >= goal
@@ -301,11 +305,13 @@ function dashboardTab(onStartWorkout) {
 function weeklyGoalDialog() {
   openDialog(() => {
     const goal = store.weeklyGoal;
-    return dialog(tr('Wochenziel', 'Weekly goal'),
+    return dialog(tr('Wochenziel', 'Weekly goal'), [
       h('div', { class: 'stepper big' },
         h('button', { class: 'step', disabled: goal <= 1, onclick: () => store.changeWeeklyGoal(goal - 1) }, '−'),
         h('b', { class: 'step-value' }, tr(`${goal} × pro Woche`, `${goal} × per week`)),
         h('button', { class: 'step', disabled: goal >= 14, onclick: () => store.changeWeeklyGoal(goal + 1) }, '+')),
+      muted(tr('🔥 Serie = Wochen in Folge mit mindestens einem Training. 🃏 Ein Joker pro Monat überbrückt eine Woche Pause (Urlaub, krank) – die Serie bleibt.',
+        '🔥 Streak = weeks in a row with at least one workout. 🃏 One joker per month bridges a week off (holiday, sick) – the streak stays.'), 'small')],
       [{ label: 'OK', onClick: closeDialog }], closeDialog);
   });
 }

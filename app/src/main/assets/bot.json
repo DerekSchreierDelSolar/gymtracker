@@ -156,9 +156,9 @@
             "You earn badges automatically for milestones: 1st, 10th, 50th, 100th and 250th workout, 4 or 12 weeks in a row, 10 weeks with your weekly goal, records, 10 t in one day, 100 t in total, a goal reached, all major muscle groups in one week, 30 min of cardio or 2 min on a timed exercise in one go and 25 different exercises. On top there are 7 secret surprises that are only revealed once you earn them. Tap the \"🏅 Badges\" card on the home screen to see them all; a new badge is celebrated after the workout."]
     },
     {
-      "keys": ["serie", "wochen in folge", "streak"],
-      "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist.",
-            "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running."]
+      "keys": ["serie", "wochen in folge", "streak", "joker", "urlaub", "krank", "pause serie"],
+      "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist. 🃏 Pro Monat gibt es einen Joker: Eine Woche ohne Training (Urlaub, krank) wird automatisch überbrückt, wenn du davor trainiert hast – erst zwei Pausenwochen am Stück beenden die Serie.",
+            "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running. 🃏 Each month you get one joker: a week without training (holiday, sick) is bridged automatically if you trained before it – only two weeks off in a row end the streak."]
     },
     {
       "keys": ["kalender", "ring", "ringe", "abgeschlossen", "calendar", "rings"],

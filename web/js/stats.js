@@ -168,15 +168,34 @@ export function planPick(store) {
   return null;
 }
 
-/** Wochen in Folge mit mind. einem Training (die laufende Woche zählt, wenn schon trainiert). */
-export function weekStreak(store) {
+/**
+ * Serie ab Woche `from` rückwärts (Roadmap Schritt 8, wie streakFrom in DashboardTab.kt): pro Kalendermonat überbrückt
+ * ein Joker eine Woche ohne Training, wenn die Woche davor trainiert wurde. Joker-Wochen zählen mit.
+ * → { weeks, jokers, lastJoker }
+ */
+export function streakFrom(weeks, from) {
+  const prevWeek = w => startOfWeek(addDays(w, -7));
+  const monthOf = w => { const d = new Date(w); return d.getFullYear() * 12 + d.getMonth(); };
+  const used = new Set();
+  let w = from, n = 0, jokers = 0, lastJoker = null;
+  for (;;) {
+    if (weeks.has(w)) n++;
+    else if (!used.has(monthOf(w)) && weeks.has(prevWeek(w))) { used.add(monthOf(w)); jokers++; n++; lastJoker ??= w; }
+    else break;
+    w = prevWeek(w);
+  }
+  return { weeks: n, jokers, lastJoker };
+}
+
+/** Aktuelle Serie (die laufende Woche zählt, wenn schon trainiert; sonst endet sie nicht sofort). */
+export function weekStreakInfo(store) {
   const weeks = new Set(allSessions(store).map(t => startOfWeek(t.start)));
   let w = startOfWeek();
-  if (!weeks.has(w)) w = addDays(w, -7);
-  let n = 0;
-  while (weeks.has(w)) { n++; w = addDays(w, -7); }
-  return n;
+  if (!weeks.has(w)) w = startOfWeek(addDays(w, -7));
+  return streakFrom(weeks, w);
 }
+
+export const weekStreak = store => weekStreakInfo(store).weeks;
 
 /** Volumen pro Woche der letzten `count` Wochen, älteste zuerst: [[wochenstart, kg], …]. */
 export function weeklyVolumes(store, count) {

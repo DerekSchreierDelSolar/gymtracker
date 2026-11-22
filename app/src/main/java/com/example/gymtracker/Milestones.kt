@@ -102,10 +102,7 @@ fun nextMilestones(store: GymStore, limit: Int = 3): List<Milestone> {
 
     // Serie: diese Woche noch nicht trainiert, aber letzte Woche → mit einem Training wächst die Serie
     if (thisWeek == 0) {
-        val weeks = sessions.map { startOfWeek(it.start) }.toSet()
-        var w = previousWeek(week)
-        var n = 0
-        while (w in weeks) { n++; w = previousWeek(w) }
+        val n = streakFrom(sessions.map { startOfWeek(it.start) }.toSet(), previousWeek(week)).weeks // mit Joker
         if (n >= 1) out += Milestone("🔥", tr("Ein Training diese Woche → ${n + 1} Wochen in Folge", "One workout this week → ${n + 1} weeks in a row"),
             null, 0.9f)
     }

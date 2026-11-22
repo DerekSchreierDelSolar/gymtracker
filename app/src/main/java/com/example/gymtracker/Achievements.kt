@@ -199,12 +199,11 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
 
     // 10. Serie: erstes Training der Woche verlängert die Serie (Wochen in Folge mit Training)
     if (pos == 1) {
-        val weeks = all.filter { it.start <= t.end }.map { startOfWeek(it.start) }.toSet()
-        var w = weekStart
-        var n = 0
-        while (w in weeks) { n++; w = previousWeek(w) }
+        val s = streakFrom(all.filter { it.start <= t.end }.map { startOfWeek(it.start) }.toSet(), weekStart)
+        val n = s.weeks
         if (n >= 2) out += Achievement(AchievementKind.STREAK, tr("$n Wochen in Folge", "$n weeks in a row"),
-            tr("Deine Serie läuft weiter", "Your streak continues"))
+            if (s.jokers > 0) tr("Deine Serie läuft weiter – der Joker hat sie gerettet 🃏", "Your streak continues – saved by a joker 🃏")
+            else tr("Deine Serie läuft weiter", "Your streak continues"))
     }
 
     // 12. Immer: das Training selbst

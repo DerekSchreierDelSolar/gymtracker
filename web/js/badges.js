@@ -3,7 +3,7 @@
 
 import { store } from './store.js';
 import { tr, fmtDate, isTimed, isCardio, isWork, dayKey, startOfWeek, addDays } from './core.js';
-import { allSessions, recordEvents, weekdayOf } from './stats.js';
+import { allSessions, recordEvents, weekdayOf, streakFrom } from './stats.js';
 import { goalProgress } from './goals.js';
 import { h, dialog } from './ui.js';
 import { openDialog, closeDialog } from './nav.js';
@@ -50,12 +50,11 @@ export function earnedBadges() {
   const byWeek = new Map();
   for (const t of sessions) { const w = startOfWeek(t.start); if (!byWeek.has(w)) byWeek.set(w, []); byWeek.get(w).push(t); }
   const weeks = [...byWeek.keys()].sort((a, b) => a - b);
-  let run = 0, prev = null;
+  const weekSet = new Set(weeks);
   for (const w of weeks) {
-    run = prev != null && startOfWeek(addDays(w, -7)) === prev ? run + 1 : 1;
-    prev = w;
-    if (run === 4) earn('streak4', byWeek.get(w)[0].start);
-    if (run === 12) earn('streak12', byWeek.get(w)[0].start);
+    const run = streakFrom(weekSet, w).weeks; // mit Joker (stats.js)
+    if (run >= 4) earn('streak4', byWeek.get(w)[0].start);
+    if (run >= 12) earn('streak12', byWeek.get(w)[0].start);
   }
   earn('week10', weeks.map(w => byWeek.get(w)[store.weeklyGoal - 1]?.start).filter(t => t != null)[9]);
 

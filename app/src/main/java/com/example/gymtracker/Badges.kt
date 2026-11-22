@@ -64,13 +64,10 @@ fun earnedBadges(store: GymStore): Map<String, Long> {
 
     // Wochen in Folge / Wochenziel
     val byWeek = sessions.groupBy { startOfWeek(it.start) }.toSortedMap()
-    var run = 0
-    var prev: Long? = null
     for ((w, l) in byWeek) {
-        run = if (prev != null && previousWeek(w) == prev) run + 1 else 1
-        prev = w
-        if (run == 4 && "streak4" !in out) earn("streak4", l.first().start)
-        if (run == 12 && "streak12" !in out) earn("streak12", l.first().start)
+        val run = streakFrom(byWeek.keys, w).weeks // mit Joker (DashboardTab.kt)
+        if (run >= 4 && "streak4" !in out) earn("streak4", l.first().start)
+        if (run >= 12 && "streak12" !in out) earn("streak12", l.first().start)
     }
     earn("week10", byWeek.values.mapNotNull { it.getOrNull(store.weeklyGoal - 1)?.start }.getOrNull(9))
 

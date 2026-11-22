@@ -30,7 +30,7 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 7. ✅ (22.11.2026) **Abzeichen:** Übersicht (alle sichtbar außer „geheimen“), rückwirkend berechnet. Meilensteine (10./50./100. Training,
    1 t an einem Tag, Ziel erreicht) + seltene Überraschungen (Frühaufsteher < 7 Uhr, alle Muskelgruppen in einer Woche …).
    Neues Abzeichen im Summary (nutzt 2 + 3).
-8. **Serie mit Joker:** Serie bleibt wochenbasiert, 1 Joker pro Monat (Urlaub/krank), damit sie nicht an einer Woche zerbricht.
+8. ✅ (22.11.2026) **Serie mit Joker:** Serie bleibt wochenbasiert, 1 Joker pro Monat (Urlaub/krank), damit sie nicht an einer Woche zerbricht.
 9. **Meerschweinchen:** zufällige Sprüche im Summary (Pool DE/EN, selten Spezialbild); Optik ändert sich mit dem Level
    (Stirnband, Hantel …). Braucht Bilder → zusammen mit den Übungsbildern per KI erzeugen.
 10. **Identität im Rückblick:** „9 von 10 Wochen Ziel geschafft – das ist Routine“, Statistik über dich
