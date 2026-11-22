@@ -6,7 +6,7 @@ import {
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
 } from '../core.js';
-import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick } from '../stats.js';
+import { allSessions, sessionStats, recordEvents, weekStreak, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick, dueToday } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, dateField, isoDay, timeOfIsoDay, statBox, chartCard, horizontalBars, historyBars, lineChart,
@@ -19,6 +19,7 @@ import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { reviewCard } from '../review.js';
 import { goalsCard } from '../goals.js';
 import { milestonesCard } from '../milestones.js';
+import { morningCard, anticipation } from '../morning.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -214,6 +215,9 @@ function dashboardTab(onStartWorkout) {
         h('small', null, tr('In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet GymTracker wie eine normale App.',
           'In Safari tap "Share", then "Add to Home Screen". GymTracker then opens like a regular app.')))) : null,
 
+    // Der Morgen danach: Neuanfang + letztes Training (morning.js)
+    morningCard(),
+
     h('button', { class: 'card week-card', onclick: () => { hintUsed('weekGoal'); weeklyGoalDialog(); } },
       percentRing(Math.min(1, weekSessions.length / goal), 84),
       h('div', { class: 'grow' },
@@ -233,7 +237,9 @@ function dashboardTab(onStartWorkout) {
         h('small', null, pick?.title ?? tr('Weiter mit', 'Continue with')),
         h('h2', null, next.name),
         h('small', null, plural(next.exercises.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) +
-          (store.sessionsFor(next.id)[0] ? tr(' · zuletzt ', ' · last ') + fmtDate(store.sessionsFor(next.id)[0].start) : ''))),
+          (store.sessionsFor(next.id)[0] ? tr(' · zuletzt ', ' · last ') + fmtDate(store.sessionsFor(next.id)[0].start) : '')),
+        // Vorfreude statt Pflicht: Vorschlag fürs Training (morning.js); „heute“ nur, wenn es heute dran ist
+        (a => (a ? h('small', { class: 'anticipation' }, '💡 ' + a) : null))(anticipation(next, !pick || dueToday(store)?.id === next.id))),
       next.exercises.length ? h('button', {
         class: 'play-btn', 'aria-label': tr('Training starten', 'Start workout'),
         onclick: e => { e.stopPropagation(); onStartWorkout(next.id); },

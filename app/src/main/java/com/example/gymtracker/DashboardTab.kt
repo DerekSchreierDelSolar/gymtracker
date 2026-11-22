@@ -119,6 +119,9 @@ fun DashboardTab(
         contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Der Morgen danach: Neuanfang + letztes Training (Morning.kt)
+        item { MorningCard(store) }
+
         // Wochenziel + Serie
         item {
             Card(
@@ -184,6 +187,11 @@ fun DashboardTab(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
+                            // Vorfreude statt Pflicht: Vorschlag fürs heutige Training (Morning.kt)
+                            anticipation(store, nextWorkout, today = pick == null || dueToday(store)?.id == nextWorkout.id)?.let {
+                                Text("💡 $it", style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.padding(top = 4.dp))
+                            }
                         }
                         if (nextWorkout.exercises.isNotEmpty()) {
                             FilledIconButton(onClick = { onStartWorkout(nextWorkout.id) }, modifier = Modifier.size(56.dp)) {

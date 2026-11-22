@@ -124,7 +124,7 @@ object Reminder {
     }
 
     /** Benachrichtigung „Heute dran: Push-Tag“; Tippen öffnet die App. */
-    fun notify(context: Context, workout: Workout) {
+    fun notify(context: Context, workout: Workout, store: GymStore? = null) {
         val nm = context.getSystemService(NotificationManager::class.java)
         if (Build.VERSION.SDK_INT >= 26) {
             nm.createNotificationChannel(NotificationChannel(CHANNEL, tr("Trainings-Erinnerung", "Workout reminder"), NotificationManager.IMPORTANCE_DEFAULT))
@@ -133,11 +133,14 @@ object Reminder {
             context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        val text = store?.let { anticipation(it, workout) } ?: tr("Tippe, um dein Training zu starten.", "Tap to start your workout.")
         @Suppress("DEPRECATION")
         val b = if (Build.VERSION.SDK_INT >= 26) android.app.Notification.Builder(context, CHANNEL) else android.app.Notification.Builder(context)
         val n = b.setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(tr("Heute dran: ", "Today: ") + workout.name + " 💪")
-            .setContentText(tr("Tippe, um dein Training zu starten.", "Tap to start your workout."))
+            // Vorfreude statt Pflicht (Morning.kt): Montag/Monatsanfang als Neuanfang, Text mit dem Vorschlag fürs Training
+            .setContentTitle((store?.let { s -> freshStart(s)?.let { tr("Neuer Anfang: ", "Fresh start: ") } } ?: tr("Heute dran: ", "Today: ")) + workout.name + " 💪")
+            .setContentText(text)
+            .setStyle(android.app.Notification.BigTextStyle().bigText(text))
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()
@@ -150,7 +153,7 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED && Reminder.enabled(context)) {
             val store = GymStore(context.applicationContext) // lädt die Daten und stellt die App-Sprache ein
-            dueToday(store)?.let { Reminder.notify(context, it) }
+            dueToday(store)?.let { Reminder.notify(context, it, store) }
         }
         Reminder.schedule(context) // nächsten Tag planen
     }

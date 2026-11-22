@@ -142,7 +142,7 @@ export function nextWorkoutAfter(workouts, lastId) {
 /** Wochentag 1 = Montag … 7 = Sonntag */
 export const weekdayOf = (t = Date.now()) => ((new Date(t).getDay() + 6) % 7) + 1;
 export const weekdayShort = d => tr(['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][d - 1], ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][d - 1]);
-const weekdayLong = d => tr(['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'][d - 1],
+export const weekdayLong = d => tr(['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'][d - 1],
   ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][d - 1]);
 export const daysLabel = days => [...days].sort().map(weekdayShort).join(' · ');
 

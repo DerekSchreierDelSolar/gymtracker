@@ -141,6 +141,11 @@
             "The \"🏁 Up next\" card on the home screen shows the three milestones you're closest to: round weights on your most frequent and goal exercises (e.g. \"2.5 kg to 80 kg squat\"), the next workout count (10th, 25th, 50th …), total volume in tonnes, your weekly goal (when only one is missing), your streak and your cardio goal."]
     },
     {
+      "keys": ["gestern", "letztes training", "neue woche", "neuer monat", "neues jahr", "schaffst du", "vorschlag erinnerung", "yesterday", "last workout", "fresh start"],
+      "a": ["Oben auf der Startseite erinnert dich eine Karte an dein letztes Training (bis zu 3 Tage zurück) mit dem besten Erfolg, z. B. „Gestern: Neuer Rekord Kniebeugen“. Montags, am Monatsanfang und Anfang Januar steht dort ein Hinweis auf den Neuanfang, solange du in dem Zeitraum noch nicht trainiert hast. In der Karte mit dem nächsten Workout steht ein Vorschlag wie „Letztes Mal 75 kg Kniebeugen – schaffst du heute 77,5?“, und genau diesen Satz zeigt auch die Trainings-Erinnerung.",
+            "At the top of the home screen a card recalls your last workout (up to 3 days back) with its best win, e.g. \"Yesterday: New record squat\". On Mondays, at the start of a month and in early January it shows a fresh-start note as long as you haven't trained in that period yet. The next-workout card shows a suggestion like \"Last time 75 kg squat – can you do 77.5 today?\", and the workout reminder uses the same sentence."]
+    },
+    {
       "keys": ["serie", "wochen in folge", "streak"],
       "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist.",
             "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running."]

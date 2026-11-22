@@ -696,3 +696,9 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 }
 .milestones-card { padding-top: 14px; }
 .milestones-card > .goals-title { display: block; }
+/* Der Morgen danach (morning.js) */
+.morning-card { padding: 12px 16px; background: var(--container-high); display: flex; flex-direction: column; gap: 6px; }
+.morning-label { display: block; opacity: .75; }
+.morning-title { display: block; font-size: 14px; }
+.morning-detail { display: block; }
+.primary-card .anticipation { display: block; margin-top: 4px; }
