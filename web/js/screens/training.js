@@ -8,7 +8,7 @@ import {
   tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
   goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort, parseIntStrict,
 } from '../core.js';
-import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames } from '../stats.js';
+import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames, setHeartRates } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import {
   h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, lineChart, percentRing, onTick, muted, icon, iconBtn, showHint, hintUsed,
@@ -279,6 +279,26 @@ export function trainingBar(w) {
 
 // ---------- Übersicht nach dem Training ----------
 
+/** Karte „Puls pro Satz“ (wie SetHeartCard in SummaryScreen.kt) */
+function setHeartCard(items) {
+  const groups = new Map();
+  for (const it of items) (groups.get(it.set.exercise) ?? groups.set(it.set.exercise, []).get(it.set.exercise)).push(it);
+  const drops = items.filter(i => i.after60 != null).map(i => i.peak - i.after60);
+  return chartCard(tr('❤ Puls pro Satz', '❤ Heart rate per set'), tr('Spitze → 1 min später · vor dem nächsten Satz', 'Peak → 1 min later · before the next set'),
+    [...groups].map(([ex, list]) => [
+      h('b', { class: 'set-heart-ex' }, exName(ex)),
+      list.map(i => h('div', { class: 'set-heart-row' },
+        h('small', { class: 'muted set-heart-label' }, i.label),
+        h('span', { class: 'grow' }, `${i.peak}` + (i.after60 != null ? ` → ${i.after60} (−${i.peak - i.after60})` : '') + ' bpm'),
+        i.beforeNext != null ? h('small', { class: i.recovered === false ? 'error' : 'muted' },
+          (i.recovered === false ? '⚠ ' : '') + tr(`vor nächstem: ${i.beforeNext}`, `before next: ${i.beforeNext}`)) : null)),
+    ]),
+    drops.length ? h('small', null, tr(`Ø Erholung 1 min nach dem Satz: −${Math.round(drops.reduce((a, b) => a + b, 0) / drops.length)} bpm (über 12 normal, ab 20 gut trainiert)`,
+      `Avg recovery 1 min after the set: −${Math.round(drops.reduce((a, b) => a + b, 0) / drops.length)} bpm (above 12 normal, 20+ well trained)`)) : null,
+    items.some(i => i.recovered === false) ? muted(tr('⚠ = Puls vor dem nächsten Satz noch nicht einmal halb gesunken – die Pause war evtl. zu kurz.',
+      "⚠ = heart rate hadn't even dropped halfway before the next set – the rest may have been too short."), 'small') : null);
+}
+
 /** Karte „Puls“ (wie HeartRateCard in SummaryScreen.kt): Ø/max/min, Verlauf je Minute, Pulszonen mit Geburtsjahr */
 function heartRateCard(t, kcalFromHr) {
   const hr = t.hr, curve = hr.curve.filter(v => v > 0), p = store.profile;
@@ -344,6 +364,7 @@ export function summaryScreen(t, onDone) {
       stats.kcal == null ? muted(tr('Tipp: Trag unter „Körper“ dein Gewicht ein, dann schätzt die App den Kalorienverbrauch.',
         'Tip: enter your weight under "Body" and the app will estimate calories burned.'), 'small') : null,
       t.hr ? heartRateCard(t, stats.kcalFromHr) : null,
+      (sh => (sh.length ? setHeartCard(sh) : null))(setHeartRates(store, t, stats.results)),
       sessionSets.length ? heatCard({
         title: tr('Trainierte Muskeln', 'Trained muscles'), score: regionScore(sessionSets), showSets: true,
         empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),

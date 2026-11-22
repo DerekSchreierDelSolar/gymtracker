@@ -158,6 +158,9 @@ fun DashboardTab(
             }
         }
 
+        // Erholungs-Check (Recovery.kt, nur mit Health Connect und Daten von heute)
+        if (Recovery.rating() != null) item { RecoveryCard() }
+
         // Weiter mit … (Schnellstart)
         if (nextWorkout != null) {
             item {

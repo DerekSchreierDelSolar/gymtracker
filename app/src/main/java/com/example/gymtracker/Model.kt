@@ -236,30 +236,61 @@ data class TrainingSession(
  * Puls eines Trainings: Durchschnitt, Maximum, Minimum und Verlauf (Ø je Minute ab Trainingsstart, 0 = keine Messung).
  * Im JSON als `hr` = { avg, max, min, curve } – nur wenn vorhanden.
  */
-data class HeartRate(val avg: Int, val max: Int, val min: Int, val curve: List<Int>) {
+data class HeartRate(
+    val avg: Int, val max: Int, val min: Int, val curve: List<Int>,
+    /** Fein: Ø je 10 Sekunden ab Trainingsstart (0 = keine Messung) – für den Puls pro Satz. Leer bei älteren Daten. */
+    val fine: List<Int> = emptyList()
+) {
     fun toJson(): JSONObject = JSONObject().put("avg", avg).put("max", max).put("min", min).put("curve", JSONArray(curve))
+        .also { if (fine.isNotEmpty()) it.put("fine", JSONArray(fine)) }
+
+    /** Puls zum Zeitpunkt `time` (aus `fine`, nächster Messwert im Umkreis von 10 s), null = keine Messung */
+    fun at(start: Long, time: Long): Int? {
+        val i = ((time - start) / FINE_STEP).toInt()
+        return listOf(i, i - 1, i + 1).firstNotNullOfOrNull { fine.getOrNull(it)?.takeIf { v -> v > 0 } }
+    }
+
+    /** Höchster Puls im Zeitraum from..to (aus `fine`) samt Zeitpunkt, null = keine Messung */
+    fun peak(start: Long, from: Long, to: Long): Pair<Int, Long>? = indicesIn(start, from, to)
+        .filter { fine[it] > 0 }.maxByOrNull { fine[it] }?.let { fine[it] to start + it * FINE_STEP }
+
+    /** Niedrigster Puls im Zeitraum from..to (aus `fine`), null = keine Messung */
+    fun low(start: Long, from: Long, to: Long): Int? = indicesIn(start, from, to).map { fine[it] }.filter { it > 0 }.minOrNull()
+
+    private fun indicesIn(start: Long, from: Long, to: Long): IntRange =
+        ((from - start) / FINE_STEP).toInt().coerceAtLeast(0)..((to - start) / FINE_STEP).toInt().coerceAtMost(fine.lastIndex)
 
     companion object {
+        /** Auflösung von `fine` in ms */
+        const val FINE_STEP = 10_000L
+
+        private fun JSONArray?.ints(): List<Int> = if (this == null) emptyList() else (0 until length()).map { optInt(it, 0).coerceIn(0, 250) }
+
         /** Aus dem JSON lesen; Ungültiges → null (alte oder fremde Dateien bleiben lesbar) */
         fun fromJson(o: JSONObject?): HeartRate? {
             if (o == null) return null
             val avg = o.optInt("avg", 0)
             val max = o.optInt("max", 0)
             if (avg !in 20..250 || max !in avg..250) return null
-            val c = o.optJSONArray("curve") ?: JSONArray()
-            return HeartRate(avg, max, o.optInt("min", avg).coerceIn(0, avg), (0 until c.length()).map { c.optInt(it, 0).coerceIn(0, 250) })
+            return HeartRate(avg, max, o.optInt("min", avg).coerceIn(0, avg), o.optJSONArray("curve").ints(), o.optJSONArray("fine").ints())
+        }
+
+        /** Ø je Abschnitt der Länge `step` ab `start` (0 = keine Messung) */
+        private fun buckets(s: List<Pair<Long, Int>>, start: Long, end: Long, step: Long): List<Int> {
+            val sums = LongArray(((end - start) / step).toInt() + 1)
+            val counts = IntArray(sums.size)
+            s.forEach { (t, bpm) -> val i = ((t - start) / step).toInt(); sums[i] += bpm.toLong(); counts[i]++ }
+            return sums.indices.map { if (counts[it] > 0) Math.round(sums[it].toDouble() / counts[it]).toInt() else 0 }
         }
 
         /** Aus Messwerten (Zeit in ms, Schläge/min) im Zeitraum start..end */
         fun of(samples: List<Pair<Long, Int>>, start: Long, end: Long): HeartRate? {
             val s = samples.filter { it.first in start..end && it.second in 25..250 }
             if (s.size < 5) return null
-            val minutes = ((end - start) / 60_000L).toInt() + 1
-            val curve = (0 until minutes).map { m ->
-                s.filter { ((it.first - start) / 60_000L).toInt() == m }.map { it.second }
-                    .takeIf { it.isNotEmpty() }?.average()?.let { Math.round(it).toInt() } ?: 0
-            }
-            return HeartRate(Math.round(s.map { it.second }.average()).toInt(), s.maxOf { it.second }, s.minOf { it.second }, curve)
+            return HeartRate(
+                Math.round(s.map { it.second }.average()).toInt(), s.maxOf { it.second }, s.minOf { it.second },
+                buckets(s, start, end, 60_000L), buckets(s, start, end, FINE_STEP)
+            )
         }
     }
 }

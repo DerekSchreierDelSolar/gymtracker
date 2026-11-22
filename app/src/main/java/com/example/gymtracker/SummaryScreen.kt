@@ -86,6 +86,9 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
 
             // Puls (aus Health Connect, z. B. von einer Smartwatch)
             t.hr?.let { hr -> item { HeartRateCard(store, t, hr, stats.kcalFromHr) } }
+            // Puls pro Satz: Spitze, Erholung nach 1 min, vor dem nächsten Satz (braucht feine Pulsdaten)
+            val setHearts = setHeartRates(store, t, stats.results)
+            if (setHearts.isNotEmpty()) item { SetHeartCard(setHearts) }
 
             // Heatmap: welche Muskeln dieses Training belastet hat (Summe der Sätze)
             val sessionSets = stats.results.flatMap { it.sets }
@@ -295,6 +298,56 @@ fun HeartRateCard(store: GymStore, t: TrainingSession, hr: HeartRate, kcalFromHr
                 "Tip: with sex and birth year in your profile (settings) the app calculates calories from heart rate."),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/**
+ * Karte „Puls pro Satz“: je Übung und Satz Spitze → 1 min später (Erholung) und Puls vor dem nächsten Satz;
+ * ⚠ = vor dem nächsten Satz nicht einmal halb zurück zur Ausgangslage (Pause evtl. zu kurz).
+ */
+@Composable
+fun SetHeartCard(items: List<SetHeart>) {
+    val warn = MaterialTheme.colorScheme.error
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val drops = items.mapNotNull { it.drop60 }
+    ChartCard(
+        tr("❤ Puls pro Satz", "❤ Heart rate per set"),
+        tr("Spitze → 1 min später · vor dem nächsten Satz", "Peak → 1 min later · before the next set")
+    ) {
+        // Nach Übung gruppiert, in der Reihenfolge des Trainings
+        items.groupBy { it.set.exercise }.forEach { (exercise, list) ->
+            Text(exName(exercise), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp))
+            list.forEach { h ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(h.label, style = MaterialTheme.typography.bodySmall, color = muted, modifier = Modifier.width(28.dp))
+                    Text(
+                        "${h.peak}" + (h.after60?.let { " → $it (−${h.peak - it})" } ?: "") + " bpm",
+                        style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f)
+                    )
+                    h.beforeNext?.let {
+                        Text(
+                            (if (h.recovered == false) "⚠ " else "") + tr("vor nächstem: $it", "before next: $it"),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (h.recovered == false) warn else muted
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        if (drops.isNotEmpty()) {
+            val avg = Math.round(drops.average()).toInt()
+            Text(
+                tr("Ø Erholung 1 min nach dem Satz: −$avg bpm", "Avg recovery 1 min after the set: −$avg bpm") +
+                    tr(" (über 12 normal, ab 20 gut trainiert)", " (above 12 normal, 20+ well trained)"),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        if (items.any { it.recovered == false }) Text(
+            tr("⚠ = Puls vor dem nächsten Satz noch nicht einmal halb gesunken – die Pause war evtl. zu kurz.",
+                "⚠ = heart rate hadn't even dropped halfway before the next set – the rest may have been too short."),
+            style = MaterialTheme.typography.bodySmall, color = muted
         )
     }
 }

@@ -66,7 +66,8 @@ object HealthSync {
     val PERMISSIONS = arrayOf(
         HealthPermissions.READ_WEIGHT, HealthPermissions.WRITE_WEIGHT,
         HealthPermissions.WRITE_EXERCISE, HealthPermissions.WRITE_ACTIVE_CALORIES_BURNED,
-        HealthPermissions.READ_HEART_RATE
+        HealthPermissions.READ_HEART_RATE,
+        HealthPermissions.READ_RESTING_HEART_RATE, HealthPermissions.READ_HEART_RATE_VARIABILITY, HealthPermissions.READ_SLEEP
     )
 
     /** Abgleich eingeschaltet? (Compose-State für die Einstellungen) */
@@ -100,6 +101,9 @@ object HealthSync {
     fun canWriteWorkouts(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.WRITE_EXERCISE)
     fun canWriteKcal(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.WRITE_ACTIVE_CALORIES_BURNED)
     fun canReadHeartRate(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_HEART_RATE)
+    fun canReadResting(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_RESTING_HEART_RATE)
+    fun canReadHrv(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_HEART_RATE_VARIABILITY)
+    fun canReadSleep(context: Context) = Build.VERSION.SDK_INT >= 34 && granted(context, HealthPermissions.READ_SLEEP)
     /** Mindestens eine Berechtigung erteilt? */
     fun anyGranted(context: Context) = Build.VERSION.SDK_INT >= 34 && PERMISSIONS.any { granted(context, it) }
     /** Alle Berechtigungen erteilt? */
@@ -178,8 +182,12 @@ object HealthSync {
                 HealthWorkouts.sync(app, m, store, onDone = { workouts = it; readStep() }, onError = ::fail)
             else readStep()
         }
-        // Reihenfolge: Gewicht schreiben → Puls holen (ändert ggf. die kcal) → Trainings schreiben → fremdes Gewicht lesen
-        val afterWeights = { heartStep { workoutStep() } }
+        // Erholungs-Check (Recovery.kt): Ruhepuls, HRV, Schlaf
+        val recoveryStep = { next: () -> Unit ->
+            if (canReadResting(app) || canReadHrv(app) || canReadSleep(app)) Recovery.read(app, m, next) else next()
+        }
+        // Reihenfolge: Gewicht schreiben → Puls holen (ändert ggf. die kcal) → Erholung → Trainings schreiben → fremdes Gewicht lesen
+        val afterWeights = { heartStep { recoveryStep { workoutStep() } } }
         if (canWrite(app) && own.isNotEmpty()) insert(app, m, own.map(::record), { afterWeights() }, ::fail)
         else afterWeights()
     }
@@ -256,7 +264,7 @@ object HealthSync {
     private fun readHeartRates(context: Context, m: HealthConnectManager, store: GymStore, onDone: () -> Unit) {
         val now = System.currentTimeMillis()
         val todo = store.sessions.filter {
-            it.id >= 0 && it.end > now - 7 * 86_400_000L && (it.hr == null || it.end > now - 86_400_000L)
+            it.id >= 0 && it.end > now - 7 * 86_400_000L && (it.hr == null || it.hr.fine.isEmpty() || it.end > now - 86_400_000L)
         }
         fun next(i: Int) {
             if (i >= todo.size) { onDone(); return }
@@ -371,8 +379,8 @@ fun HealthSettings(store: GymStore) {
             Column(Modifier.weight(1f)) {
                 Text("Health Connect", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    tr("Körpergewicht abgleichen, Trainings eintragen, Puls übernehmen – für Samsung Health, Fitbit, Google Fit, Smartwatches, smarte Waagen …",
-                        "Sync body weight, log workouts, import heart rate – for Samsung Health, Fitbit, Google Fit, smartwatches, smart scales …"),
+                    tr("Körpergewicht abgleichen, Trainings eintragen, Puls und Erholung übernehmen – für Samsung Health, Fitbit, Google Fit, Smartwatches, smarte Waagen …",
+                        "Sync body weight, log workouts, import heart rate and recovery – for Samsung Health, Fitbit, Google Fit, smartwatches, smart scales …"),
                     style = small, color = muted
                 )
             }
@@ -403,7 +411,10 @@ fun HealthSettings(store: GymStore) {
                     tr("Gewicht eintragen", "Write weight") to HealthSync.canWrite(context),
                     tr("Trainings eintragen", "Write workouts") to HealthSync.canWriteWorkouts(context),
                     tr("kcal eintragen", "Write calories") to HealthSync.canWriteKcal(context),
-                    tr("Puls lesen", "Read heart rate") to HealthSync.canReadHeartRate(context)
+                    tr("Puls lesen", "Read heart rate") to HealthSync.canReadHeartRate(context),
+                    tr("Ruhepuls lesen", "Read resting HR") to HealthSync.canReadResting(context),
+                    tr("HRV lesen", "Read HRV") to HealthSync.canReadHrv(context),
+                    tr("Schlaf lesen", "Read sleep") to HealthSync.canReadSleep(context)
                 )
             }
             // FlowRow: ganze Einträge umbrechen statt mitten im Text
@@ -478,18 +489,20 @@ class HealthPrivacyActivity : ComponentActivity() {
                         Text(tr("GymTracker & Health Connect", "GymTracker & Health Connect"),
                             style = MaterialTheme.typography.headlineSmall)
                         Text(tr(
-                            "GymTracker nutzt Health Connect nur für Körpergewicht, Trainings und Puls.\n\n" +
+                            "GymTracker nutzt Health Connect nur für Körpergewicht, Trainings, Puls und Erholung.\n\n" +
                                 "• Gewicht lesen: Werte anderer Apps (z. B. einer smarten Waage) erscheinen im Tab „Körper“ und verbessern die Kalorien-Schätzung.\n" +
                                 "• Gewicht eintragen: Gewicht, das du in GymTracker einträgst, wird auch in Health Connect gespeichert.\n" +
                                 "• Trainings und kcal eintragen: deine Trainings (Übungen, Sätze, Dauer) und der geschätzte Verbrauch erscheinen in anderen Fitness-Apps.\n" +
-                                "• Puls lesen: Pulswerte während deiner Trainings (z. B. von einer Smartwatch) erscheinen in der Trainingsübersicht und machen die Kalorien genauer.\n\n" +
+                                "• Puls lesen: Pulswerte während deiner Trainings (z. B. von einer Smartwatch) erscheinen in der Trainingsübersicht und machen die Kalorien genauer.\n" +
+                                "• Ruhepuls, HRV und Schlaf lesen: daraus zeigt die Startseite, wie gut du heute erholt bist.\n\n" +
                                 "GymTracker hat keinen Server und sendet nichts ins Internet. Welche anderen Apps die Daten in Health Connect sehen, legst du dort selbst fest. " +
                                 "Du kannst die Berechtigungen jederzeit in Health Connect entziehen oder den Abgleich in den Einstellungen ausschalten.",
-                            "GymTracker uses Health Connect only for body weight, workouts and heart rate.\n\n" +
+                            "GymTracker uses Health Connect only for body weight, workouts, heart rate and recovery.\n\n" +
                                 "• Read weight: values from other apps (e.g. a smart scale) appear in the \"Body\" tab and improve the calorie estimate.\n" +
                                 "• Write weight: weight you log in GymTracker is also saved to Health Connect.\n" +
                                 "• Write workouts and calories: your workouts (exercises, sets, duration) and the estimated calories appear in other fitness apps.\n" +
-                                "• Read heart rate: heart rate during your workouts (e.g. from a smartwatch) appears in the workout summary and makes calories more accurate.\n\n" +
+                                "• Read heart rate: heart rate during your workouts (e.g. from a smartwatch) appears in the workout summary and makes calories more accurate.\n" +
+                                "• Read resting heart rate, HRV and sleep: the home screen uses them to show how well recovered you are today.\n\n" +
                                 "GymTracker has no server and sends nothing to the internet. You decide in Health Connect which other apps can see the data. " +
                                 "You can revoke the permissions in Health Connect at any time or turn off syncing in the settings."
                         ))

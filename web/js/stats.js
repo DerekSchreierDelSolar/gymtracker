@@ -2,7 +2,7 @@
 
 import { STRENGTH_MET, MINUTES_PER_SET } from './data.js';
 import {
-  isCardio, isTimed, profileComplete, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays, isWork, isTop,
+  isCardio, isTimed, profileComplete, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays, isWork, isTop, setLabels,
 } from './core.js';
 
 const sum = (arr, f = x => x) => arr.reduce((a, x) => a + f(x), 0);
@@ -266,4 +266,53 @@ export function heartZoneMinutes(hr, maxHr) {
   const minutes = [0, 0, 0, 0, 0];
   for (const bpm of hr.curve) if (bpm > 0) minutes[Math.min(4, Math.max(0, Math.floor((Math.floor(bpm * 100 / maxHr) - 50) / 10)))]++;
   return minutes;
+}
+
+// ---------- Puls pro Satz (wie setHeartRates in Stats.kt) ----------
+
+const FINE_STEP = 10000;
+/** Puls zum Zeitpunkt (nächster Messwert im Umkreis von 10 s), null = keine Messung */
+function hrAt(hr, start, time) {
+  const i = Math.floor((time - start) / FINE_STEP);
+  for (const j of [i, i - 1, i + 1]) if (hr.fine[j] > 0) return hr.fine[j];
+  return null;
+}
+const hrIdx = (hr, start, from, to) => {
+  const out = [];
+  for (let i = Math.max(0, Math.floor((from - start) / FINE_STEP)); i <= Math.min(hr.fine.length - 1, Math.floor((to - start) / FINE_STEP)); i++)
+    if (hr.fine[i] > 0) out.push(i);
+  return out;
+};
+
+/**
+ * Puls pro Kraftsatz: { set, label, peak, after60, beforeNext, recovered } – Spitze am Satzende, 1 min danach,
+ * tiefster Wert vor dem nächsten Satz; recovered = false → vor dem nächsten Satz nicht einmal halb erholt.
+ */
+export function setHeartRates(store, t, results) {
+  const hr = t.hr;
+  if (!hr?.fine?.length) return [];
+  const all = results.flatMap(r => r.sets).sort((a, b) => a.time - b.time);
+  const labels = new Map();
+  for (const r of results) {
+    const s = [...r.sets].sort((a, b) => a.time - b.time);
+    setLabels(s).forEach((l, i) => labels.set(s[i], l));
+  }
+  const out = [];
+  all.forEach((s, i) => {
+    if (isCardio(store.groupOf(s.exercise))) return;
+    const idx = hrIdx(hr, t.start, s.time - 60000, s.time + 30000);
+    if (!idx.length) return;
+    const pi = idx.reduce((a, b) => (hr.fine[b] > hr.fine[a] ? b : a));
+    const peak = hr.fine[pi], peakTime = t.start + pi * FINE_STEP;
+    const after60 = hrAt(hr, t.start, peakTime + 60000);
+    const next = all[i + 1];
+    let beforeNext = null;
+    if (next && next.time - 45000 - (s.time + 30000) >= 10000) {
+      const w = hrIdx(hr, t.start, s.time + 30000, next.time - 45000);
+      if (w.length) beforeNext = Math.min(...w.map(j => hr.fine[j]));
+    }
+    const recovered = beforeNext == null ? null : peak - hr.min <= 5 || (peak - beforeNext) * 2 >= peak - hr.min;
+    out.push({ set: s, label: labels.get(s) ?? '', peak, after60, beforeNext, recovered });
+  });
+  return out;
 }

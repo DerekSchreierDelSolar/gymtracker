@@ -86,8 +86,9 @@ class GymStore {
       const avg = Math.round(num(o.avg) ?? 0), max = Math.round(num(o.max) ?? 0);
       if (avg < 20 || avg > 250 || max < avg || max > 250) return null;
       const min = Math.min(avg, Math.max(0, Math.round(num(o.min) ?? avg)));
-      const curve = arr(o.curve).map(v => Math.min(250, Math.max(0, Math.round(num(v) ?? 0))));
-      return { avg, max, min, curve };
+      const ints = a => arr(a).map(v => Math.min(250, Math.max(0, Math.round(num(v) ?? 0))));
+      const curve = ints(o.curve), fine = ints(o.fine);   // fine = Ø je 10 s (Puls pro Satz), fehlt bei älteren Daten
+      return fine.length ? { avg, max, min, curve, fine } : { avg, max, min, curve };
     };
     const intMap = o => Object.fromEntries(entries(o).map(([k, v]) => [migrateName(k), Number(v) || 0]));
     const names = x => arr(x).filter(n => typeof n === 'string').map(migrateName);

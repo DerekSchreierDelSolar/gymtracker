@@ -196,3 +196,34 @@ fun heartZoneMinutes(hr: HeartRate, maxHr: Int): IntArray {
     hr.curve.filter { it > 0 }.forEach { bpm -> minutes[(((bpm * 100 / maxHr) - 50) / 10).coerceIn(0, 4)]++ }
     return minutes
 }
+
+// ---------- Puls pro Satz ----------
+
+/**
+ * Puls zu einem Satz (aus `HeartRate.fine`): Spitze am Satzende, Puls 1 Minute danach und tiefster Puls vor dem
+ * nächsten Satz. `recovered` = vor dem nächsten Satz mindestens halb zurück zur Ausgangslage (Minimum des Trainings);
+ * false → Pause evtl. zu kurz, null = kein nächster Satz/keine Messung.
+ */
+data class SetHeart(val set: GymSet, val label: String, val peak: Int, val after60: Int?, val beforeNext: Int?, val recovered: Boolean?) {
+    /** Erholung in der ersten Minute (Spitze − Puls 1 min später), null = keine Messung */
+    val drop60: Int? get() = after60?.let { peak - it }
+}
+
+/** Puls pro Kraftsatz eines Trainings; leer ohne feine Pulsdaten. Satzende ≈ Zeitpunkt des Eintragens. */
+fun setHeartRates(store: GymStore, t: TrainingSession, results: List<ExerciseResult>): List<SetHeart> {
+    val hr = t.hr ?: return emptyList()
+    if (hr.fine.isEmpty()) return emptyList()
+    val all = results.flatMap { it.sets }.sortedBy { it.time }
+    val labels = results.flatMap { r -> r.sets.sortedBy { it.time }.let { s -> s.zip(setLabels(s)) } }.toMap()
+    return all.mapIndexedNotNull { i, s ->
+        if (store.groupOf(s.exercise).isCardio) return@mapIndexedNotNull null
+        // Spitze: kurz vor bis kurz nach dem Eintragen (der Puls steigt nach dem Satz oft noch etwas)
+        val (peak, peakTime) = hr.peak(t.start, s.time - 60_000L, s.time + 30_000L) ?: return@mapIndexedNotNull null
+        val after = hr.at(t.start, peakTime + 60_000L)
+        val next = all.getOrNull(i + 1)
+        // Vor dem nächsten Satz: tiefster Wert der Pause (der nächste Satz beginnt ca. 45 s vor seinem Eintragen)
+        val before = next?.let { n -> if (n.time - 45_000L - (s.time + 30_000L) >= 10_000L) hr.low(t.start, s.time + 30_000L, n.time - 45_000L) else null }
+        val recovered = before?.let { b -> peak - hr.min <= 5 || (peak - b) * 2 >= peak - hr.min }
+        SetHeart(s, labels[s] ?: "", peak, after, before, recovered)
+    }
+}

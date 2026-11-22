@@ -99,6 +99,7 @@ const pool = () => [
   tr('Verletzungen am Beinbeuger', 'Hamstring injuries'),
   tr('Wie war mein Puls beim letzten Training?', 'What was my heart rate last workout?'),
   tr('Was ist Health Connect?', 'What is Health Connect?'),
+  tr('Wie erholt bin ich heute?', 'How recovered am I today?'),
   tr('Wie viel Kreatin soll ich nehmen?', 'How much creatine should I take?'),
   tr('Bringen BCAA etwas?', 'Do BCAAs work?'),
 ];
@@ -121,9 +122,18 @@ const HEART = [['puls'], ['herzfrequenz'], ['heart', 'rate'], ['pulse']];
 /** Dann ist eine Erklärung gemeint („Wie berechnet die App kcal aus meinem Puls?“) */
 const EXPLAIN = ['kcal', 'kalorien', 'calories', 'berechnet', 'berechnen', 'calculated', 'zonen', 'zones', 'warum', 'why'].map(w => [w]);
 const STATUS = ['verbunden', 'status', 'aktiv', 'eingeschaltet', 'connected', 'active', 'laeuft', 'funktioniert', 'working'].map(w => [w]);
+const RECOVERY = ['erholt', 'erholung', 'ausgeruht', 'fit', 'recovered', 'recovery', 'rested'].map(w => [w]);
+const TODAY = [['bin', 'ich'], ['heute'], ['mein'], ['meine'], ['today'], ['am', 'i'], ['my']];
+const SETS = [['saetzen'], ['satz'], ['sets'], ['set']];
 
 function personalAnswer(words) {
   if (hasAny(words, MINE) && hasAny(words, HEART) && !hasAny(words, EXPLAIN)) return heartAnswer();
+  // Erholungs-Check (Ruhepuls/HRV/Schlaf) gibt es nur in der Android-App
+  if (hasAny(words, RECOVERY) && hasAny(words, TODAY) && !hasAny(words, EXPLAIN) && !hasAny(words, SETS)) return {
+    bot: true,
+    text: tr('Den Erholungs-Check (Ruhepuls, HRV, Schlaf von deiner Smartwatch) gibt es nur in der Android-App – er braucht Health Connect. Frag mich gern „Was zeigt der Erholungs-Check?“.',
+      'The recovery check (resting heart rate, HRV, sleep from your smartwatch) is only in the Android app – it needs Health Connect. Feel free to ask "What does the recovery check show?".'),
+  };
   // Health Connect gibt es nur in der Android-App
   if (has(words, ['health', 'connect']) && hasAny(words, STATUS)) return {
     bot: true,

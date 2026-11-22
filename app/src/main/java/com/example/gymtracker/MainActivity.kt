@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
         store = GymStore(applicationContext)
         AutoBackup.load(applicationContext)
         HealthSync.load(applicationContext)
+        Recovery.load(applicationContext)
         store.onWeightChange = { old, new -> HealthSync.onWeightChange(applicationContext, old, new) }
         store.onTrainingFinished = { if (HealthSync.enabled) HealthSync.sync(applicationContext, store) }
         Wiki.load(applicationContext)

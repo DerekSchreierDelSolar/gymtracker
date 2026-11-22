@@ -167,7 +167,8 @@ object Bot {
             tr("Wie dehne ich die Waden?", "How do I stretch my calves?"),
             tr("Verletzungen am Beinbeuger", "Hamstring injuries"),
             tr("Wie war mein Puls beim letzten Training?", "What was my heart rate last workout?"),
-            tr("Was ist Health Connect?", "What is Health Connect?")
+            tr("Was ist Health Connect?", "What is Health Connect?"),
+            tr("Wie erholt bin ich heute?", "How recovered am I today?")
         )
 
     /** „Erstelle mir ein Workout“ immer zuerst, danach eine zufällige Auswahl */
@@ -378,7 +379,35 @@ object Bot {
         val s = store ?: return null
         if (hasAny(words, mineWords) && hasAny(words, heartWords) && !hasAny(words, explainWords)) return heartAnswer(s)
         if (has(words, listOf("health", "connect")) && hasAny(words, statusWords)) return statusAnswer(s)
+        if (hasAny(words, recoveryWords) && hasAny(words, todayWords) && !hasAny(words, explainWords) &&
+            !hasAny(words, listOf(listOf("saetzen"), listOf("satz"), listOf("sets"), listOf("set")))) return recoveryAnswer()
         return null
+    }
+
+    private val recoveryWords = listOf("erholt", "erholung", "ausgeruht", "fit", "recovered", "recovery", "rested").map { listOf(it) }
+    private val todayWords = listOf(listOf("bin", "ich"), listOf("heute"), listOf("mein"), listOf("meine"), listOf("today"), listOf("am", "i"), listOf("my"))
+
+    /** „Wie erholt bin ich heute?“ → Ampel aus dem Erholungs-Check (Recovery.kt) */
+    private fun recoveryAnswer(): BotMessage {
+        val c = appContext
+        val r = Recovery.rating()
+        if (r == null) return BotMessage(false, when {
+            c == null || !HealthSync.available(c) -> tr(
+                "Den Erholungs-Check gibt es mit Health Connect ab Android 14 – auf diesem Gerät leider nicht.",
+                "The recovery check needs Health Connect (Android 14+) – not available on this device.")
+            !HealthSync.enabled || !(HealthSync.canReadResting(c) || HealthSync.canReadHrv(c) || HealthSync.canReadSleep(c)) -> tr(
+                "Dafür brauche ich Ruhepuls, HRV oder Schlaf von deiner Smartwatch: Einstellungen → „Health Connect“ einschalten und „Ruhepuls“, „HRV“ und „Schlaf lesen“ erlauben.",
+                "For that I need resting heart rate, HRV or sleep from your smartwatch: Settings → turn on \"Health Connect\" and allow \"Read resting HR\", \"Read HRV\" and \"Read sleep\".")
+            else -> tr(
+                "Von heute liegen noch keine Werte vor. Trägt deine Uhr nachts und liefert ihre App an Health Connect? Nach dem nächsten Abgleich (App öffnen) schaue ich wieder nach.",
+                "There's no data from today yet. Do you wear your watch at night and does its app send data to Health Connect? I'll check again at the next sync (open the app).")
+        })
+        val text = buildString {
+            append(Recovery.message(r.level))
+            r.parts.forEach { p -> append("\n${p.icon} ${p.label}: ${p.value}" + (p.compare?.let { " – $it" } ?: "")) }
+            append(tr("\nNur eine Orientierung – hör auch auf dein Gefühl.", "\nJust a guide – listen to your body too."))
+        }
+        return BotMessage(false, text)
     }
 
     /** „Wie war mein Puls beim letzten Training?“ → letztes Training mit Puls, Zonen, kcal, Vergleich */
