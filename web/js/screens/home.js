@@ -21,6 +21,7 @@ import { goalsCard } from '../goals.js';
 import { milestonesCard } from '../milestones.js';
 import { morningCard, anticipation } from '../morning.js';
 import { levelCard } from '../levels.js';
+import { cycleSettings, cycleLine } from '../cycle.js';
 import { badgesCard } from '../badges.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
@@ -173,6 +174,7 @@ function settingsDialog() {
     h('b', { class: 'small-title' }, tr('Sprache', 'Language')),
     h('div', { class: 'chips' }, [['de', 'Deutsch'], ['en', 'English']].map(([l, label]) => chip(label, appLanguage === l, () => store.setLanguage(l)))),
     profileSettings(),
+    cycleSettings(),
     // Fortschritt zurücksetzen (wie SettingsDialog in HomeScreen.kt): Nachfrage, danach „Rückgängig“
     h('hr'),
     h('b', { class: 'small-title' }, tr('Fortschritt', 'Progress')),
@@ -233,6 +235,8 @@ function dashboardTab(onStartWorkout) {
         h('span', null, streak > 0 ? '🔥 ' + tr(`${plural(streak, 'Woche', 'Wochen')} in Folge`, `${plural(streak, 'week', 'weeks')} in a row`)
           + (jokerRecent ? tr(' · 🃏 Joker hat sie gerettet', ' · 🃏 saved by a joker') : '')
           : tr('Starte deine Serie!', 'Start your streak!')),
+        // Trainingsblock (cycle.js)
+        (l => (l ? h('small', { class: 'accent' }, l) : null))(cycleLine()),
         // „tippen zum Ändern“ nur, bis das Ziel einmal geöffnet wurde (Hints)
         showHint('weekGoal') || weekSessions.length >= goal ? h('small', { class: 'muted' }, weekSessions.length >= goal
           ? tr(`Ziel ${goal}/Woche`, `Goal ${goal}/week`) + (showHint('weekGoal') ? tr(' · tippen zum Ändern', ' · tap to change') : '')

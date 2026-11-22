@@ -133,7 +133,7 @@ fun GymApp(store: GymStore) {
     val start = trainingStart
     val trainingWorkout = trainingWorkoutId?.let { store.workout(it) }
     // Nur für dieses Training getauschte Übungen (Original → Alternative); das Workout selbst bleibt unverändert
-    val session = trainingWorkout?.let { sessionWorkout(it, swaps) }
+    val session = trainingWorkout?.let { sessionWorkout(it, swaps, isDeload(store)) }
 
     fun resetTraining() {
         trainingStart = null
@@ -313,11 +313,12 @@ fun GymApp(store: GymStore) {
 
 
 /** Workout für das laufende Training: getauschte Übungen ersetzt, Ziel-Sätze von der Original-Übung übernommen. */
-fun sessionWorkout(w: Workout, swaps: Map<String, String>): Workout {
-    if (swaps.isEmpty()) return w
+fun sessionWorkout(w: Workout, swaps: Map<String, String>, deload: Boolean = false): Workout {
+    if (swaps.isEmpty() && !deload) return w
     return w.copy(
         exercises = w.exercises.map { swaps[it] ?: it },
-        targets = w.targets.mapKeys { (k, _) -> swaps[k] ?: k },
+        // Deload-Woche (Cycle.kt): halbe Ziel-Sätze; fehlende Einträge = Standard 0 (optional) bleiben so
+        targets = w.targets.mapKeys { (k, _) -> swaps[k] ?: k }.mapValues { (_, t) -> if (deload) deloadTarget(t) else t },
         links = w.links.map { swaps[it] ?: it }.toSet()
     )
 }

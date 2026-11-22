@@ -10,6 +10,7 @@ import { workoutScreen, workoutPickerScreen, workoutExercisePage, catalogScreen 
 import { wikiScreen } from './wiki.js';
 import { botScreen } from './bot.js';
 import { trainingScreen, summaryScreen, trainingBar, restWatch, keepScreenOn, unlockAudio } from './screens/training.js';
+import { isDeload, deloadTarget } from './cycle.js';
 
 const root = document.getElementById('app');
 
@@ -169,12 +170,13 @@ navigator.storage?.persist?.();
 render();
 
 /** Workout fürs laufende Training: getauschte Übungen ersetzt, Ziele übernommen (wie sessionWorkout in MainActivity.kt) */
-function sessionWorkout(w, swaps = {}) {
-  if (!Object.keys(swaps).length) return w;
+function sessionWorkout(w, swaps = {}, deload = isDeload()) {
+  if (!Object.keys(swaps).length && !deload) return w;
   return {
     ...w,
     exercises: w.exercises.map(e => swaps[e] ?? e),
-    targets: Object.fromEntries(Object.entries(w.targets).map(([k, v]) => [swaps[k] ?? k, v])),
+    // Deload-Woche (cycle.js): halbe Ziel-Sätze
+    targets: Object.fromEntries(Object.entries(w.targets).map(([k, v]) => [swaps[k] ?? k, deload ? deloadTarget(v) : v])),
     links: (w.links ?? []).map(e => swaps[e] ?? e),
   };
 }

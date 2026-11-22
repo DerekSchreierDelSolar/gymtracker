@@ -1,6 +1,7 @@
 // Auswertungen: entspricht Stats.kt, Progression.kt und den Berechnungen aus DashboardTab.kt.
 
 import { STRENGTH_MET, MINUTES_PER_SET } from './data.js';
+import { isDeload as cycleIsDeload } from './cycle.js';
 import {
   isCardio, isTimed, profileComplete, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays, isWork, isTop, setLabels,
 } from './core.js';
@@ -252,6 +253,15 @@ export function progressionSuggestion(store, name, before) {
   }
   const eq = equipmentOf(name);
   const step = eq === 'KURZHANTEL' || eq === 'KETTLEBELL' ? 2 : 2.5;
+  // Deload-Woche (cycle.js): leichter statt schwerer
+  if (cycleIsDeload()) {
+    const d = Math.floor(top * 0.6 / 2.5 + 0.5) * 2.5;
+    return {
+      title: `Deload: ${fmtW(d)} kg`,
+      reason: tr(`Leichte Woche – ca. 60 % von ${fmtW(top)} kg und weniger Sätze, damit du dich erholst`, `Light week – about 60 % of ${fmtW(top)} kg and fewer sets so you recover`),
+      weight: d,
+    };
+  }
   // Wdh. in Reserve (effort.js): noch ≥ 3 im Tank → gleich mehr Gewicht, auch ohne 8+ Wdh. (wie Progression.kt)
   const rirs = atTop.map(s => s.rir).filter(r => r != null);
   const minRir = rirs.length ? Math.min(...rirs) : null;

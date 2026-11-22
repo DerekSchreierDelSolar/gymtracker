@@ -48,6 +48,12 @@ class GymStore(context: Context) {
     var weeklyGoal by mutableIntStateOf(3)
         private set
 
+    /** Trainingsblock mit Deload (Cycle.kt), null = aus. Vor init { load() }! */
+    var cycle by mutableStateOf<TrainingCycle?>(null)
+        private set
+
+    fun changeCycle(c: TrainingCycle?) { cycle = c; save() }
+
     /** Optionales Profil für genauere Kalorien (Stats.kt). Vor init { load() }! */
     var profile by mutableStateOf(Profile())
         private set
@@ -166,6 +172,7 @@ class GymStore(context: Context) {
         exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear(); goals.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         profile = Profile()
+        cycle = null
     }
 
     private fun readFrom(root: JSONObject) {
@@ -208,6 +215,10 @@ class GymStore(context: Context) {
                     heightCm = p.optInt("height", 0).takeIf { Profile.validHeight(it) }
                 )
             } ?: Profile()
+            cycle = root.optJSONObject("cycle")?.let { c ->
+                val w = c.optInt("weeks", 0)
+                if (c.has("start") && w in 2..8) TrainingCycle(c.getLong("start"), w) else null
+            }
             // Ziele: unbekannter Typ, fehlende Übung oder Zielwert ≤ 0 → überspringen
             val go = root.optJSONArray("goals") ?: JSONArray()
             for (i in 0 until go.length()) {
@@ -353,6 +364,7 @@ class GymStore(context: Context) {
             profile.birthYear?.let { put("birthYear", it) }
             profile.heightCm?.let { put("height", it) }
         })
+        cycle?.let { root.put("cycle", JSONObject().put("start", it.start).put("weeks", it.weeks)) }
         if (goals.isNotEmpty()) root.put("goals", JSONArray().also { arr ->
             goals.forEach { g ->
                 arr.put(JSONObject().put("id", g.id).put("type", g.type.name).apply { g.exercise?.let { put("exercise", it) } }

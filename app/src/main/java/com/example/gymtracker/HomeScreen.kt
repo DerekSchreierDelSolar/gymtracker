@@ -406,6 +406,8 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
                 AutoBackupSettings(store)
                 Spacer(Modifier.height(8.dp))
+                CycleSettings(store)
+                Spacer(Modifier.height(8.dp))
                 ReminderSettings()
                 Spacer(Modifier.height(8.dp))
                 HealthSettings(store)

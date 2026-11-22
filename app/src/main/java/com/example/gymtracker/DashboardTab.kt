@@ -177,6 +177,8 @@ fun DashboardTab(
                             ) + (if (jokerRecent) tr(" · 🃏 Joker hat sie gerettet", " · 🃏 saved by a joker") else "") else tr("Starte deine Serie!", "Start your streak!"),
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        // Trainingsblock (Cycle.kt)
+                        cycleLine(store)?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary) }
                         // „tippen zum Ändern“ nur, bis das Ziel einmal geöffnet wurde (Hints)
                         val hint = Hints.show(Hints.WEEK_GOAL)
                         if (hint || weekSessions.size >= goal) Text(

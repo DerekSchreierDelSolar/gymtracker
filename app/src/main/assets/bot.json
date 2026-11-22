@@ -171,6 +171,11 @@
             "In a workout, \"+ Superset\" appears between two exercises: tap to link them (🔗), tap again to unlink. Several linked in a row form a giant set. During training the app jumps to the next exercise of the group after each work set; the rest timer only starts after the last one, then it goes back to the first until all target sets are done. Warm-up sets don't trigger a jump. Moving a linked exercise removes its link."]
     },
     {
+      "keys": ["deload", "deloadwoche", "trainingsblock", "block", "periodisierung", "leichte woche", "uebertraining", "programm", "training block", "overtraining"],
+      "a": ["In den Einstellungen kannst du einen „Trainingsblock mit Deload“ einschalten: 2–8 Wochen Aufbau (Standard 4), danach eine leichte Woche, dann beginnt der Block von vorn. In der Deload-Woche halbiert die App im Training die Ziel-Sätze und schlägt bei 💡 ca. 60 % des Gewichts vor – das Workout selbst bleibt unverändert. Die Wochenziel-Karte zeigt, in welcher Woche du bist.",
+            "In the settings you can switch on a \"Training block with deload\": 2–8 weeks of building (default 4), then a light week, then the block starts over. In the deload week the app halves the target sets during training and 💡 suggests about 60 % of your weight – the workout itself stays unchanged. The weekly-goal card shows which week you're in."]
+    },
+    {
       "keys": ["serie", "wochen in folge", "streak", "joker", "urlaub", "krank", "pause serie"],
       "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist. 🃏 Pro Monat gibt es einen Joker: Eine Woche ohne Training (Urlaub, krank) wird automatisch überbrückt, wenn du davor trainiert hast – erst zwei Pausenwochen am Stück beenden die Serie.",
             "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running. 🃏 Each month you get one joker: a week without training (holiday, sick) is bridged automatically if you trained before it – only two weeks off in a row end the streak."]

@@ -38,6 +38,7 @@ class GymStore {
   weeklyGoal = 3;
   themeMode = 'system';
   profile = {};          // optional für genauere kcal: { sex: 'm'|'f', birthYear, height } – wie GymStore.profile
+  cycle = null;          // Trainingsblock mit Deload { start, weeks } (cycle.js) – wie GymStore.cycle
   goals = [];            // langfristige Ziele { id, type, exercise?, target, start, created } – wie GymStore.goals (goals.js)
   #listeners = new Set();
 
@@ -149,6 +150,10 @@ class GymStore {
     if (validYear(num(pr.birthYear))) this.profile.birthYear = num(pr.birthYear);
     if (validHeight(num(pr.height))) this.profile.height = num(pr.height);
 
+    // Trainingsblock (wie GymStore.kt): Wochen 2–8
+    const cy = obj(root.cycle);
+    this.cycle = num(cy.start) != null && Number.isInteger(cy.weeks) && cy.weeks >= 2 && cy.weeks <= 8 ? { start: cy.start, weeks: cy.weeks } : null;
+
     // Ziele: unbekannter Typ, fehlende Übung oder Zielwert ≤ 0 → überspringen (wie GymStore.kt)
     this.goals = objs(root.goals).filter(o => GOAL_TYPES.includes(o.type) && num(o.target) > 0 &&
       (!GOAL_NEEDS_EXERCISE.includes(o.type) || typeof o.exercise === 'string')).map((o, i) => ({
@@ -206,6 +211,7 @@ class GymStore {
       sets: this.sets,
       ...(Object.keys(this.profile).length ? { profile: this.profile } : {}),
       ...(this.goals.length ? { goals: this.goals } : {}),
+      ...(this.cycle ? { cycle: this.cycle } : {}),
     };
   }
 
@@ -247,6 +253,7 @@ class GymStore {
     CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
     this.profile = {};
     this.goals = [];
+    this.cycle = null;
   }
 
   markExported() { this.lastExport = Date.now(); this.#save(); }
@@ -381,6 +388,8 @@ class GymStore {
     w.targets[exercise] = Math.min(20, Math.max(0, target));
     this.#save();
   }
+
+  changeCycle(c) { this.cycle = c; this.#save(); }
 
   /** Übung mit der nächsten zum Supersatz verbinden bzw. lösen (supersets.js) */
   toggleLink(workoutId, exercise) {

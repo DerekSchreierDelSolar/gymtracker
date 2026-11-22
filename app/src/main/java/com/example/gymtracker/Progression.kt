@@ -52,6 +52,12 @@ fun progressionSuggestion(store: GymStore, name: String, before: Long): Suggesti
         Equipment.KURZHANTEL, Equipment.KETTLEBELL -> 2.0
         else -> 2.5
     }
+    // Deload-Woche (Cycle.kt): leichter statt schwerer
+    if (isDeload(store)) return Suggestion(
+        tr("Deload: ${fmtW(deloadWeight(top))} kg", "Deload: ${fmtW(deloadWeight(top))} kg"),
+        tr("Leichte Woche – ca. 60 % von ${fmtW(top)} kg und weniger Sätze, damit du dich erholst", "Light week – about 60 % of ${fmtW(top)} kg and fewer sets so you recover"),
+        deloadWeight(top)
+    )
     // Wdh. in Reserve (Effort.kt): noch ≥ 3 im Tank → gleich mehr Gewicht, auch ohne 8+ Wdh.
     val minRir = atTop.mapNotNull { it.rir }.minOrNull()
     if (minRir != null && minRir >= 3 && !(atTop.size >= 2 && minReps >= 8)) return Suggestion(
