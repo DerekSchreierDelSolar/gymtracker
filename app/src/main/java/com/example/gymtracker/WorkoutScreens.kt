@@ -200,6 +200,9 @@ fun WorkoutScreen(
     }
 
     fun endDrag() {
+        // onDragCancel kommt auch, wenn Compose die Gesten-Coroutine abbricht (z. B. Bildschirm verlassen),
+        // ohne dass gezogen wurde → nur nach echtem Ziehen als „benutzt“ merken
+        if (dragKey == null) return
         Hints.used(Hints.DRAG)
         dragKey = null
         dragY = 0f
