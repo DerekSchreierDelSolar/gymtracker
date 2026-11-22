@@ -275,20 +275,10 @@ fun HeartRateCard(store: GymStore, t: TrainingSession, hr: HeartRate, kcalFromHr
         tr("Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm", "avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm")
     ) {
         if (curve.size >= 2) LineChart(curve.map { it.toDouble() }, "bpm", headline = "Ø ${hr.avg} bpm", dots = false)
-        val year = store.profile.birthYear
-        if (year != null && curve.isNotEmpty()) {
-            val age = java.util.Calendar.getInstance().apply { timeInMillis = t.start }.get(java.util.Calendar.YEAR) - year
-            val maxHr = (220 - age).coerceAtLeast(120)
-            val zones = listOf(
-                tr("1 Aufwärmen", "1 Warm-up"),
-                tr("2 Locker", "2 Easy"),
-                tr("3 Aerob", "3 Aerobic"),
-                tr("4 Schwelle", "4 Threshold"),
-                tr("5 Maximal", "5 Maximum")
-            )
-            // Minuten je Zone (jeder Wert der Kurve = eine Minute)
-            val minutes = IntArray(5)
-            curve.forEach { bpm -> minutes[(((bpm * 100 / maxHr) - 50) / 10).coerceIn(0, 4)]++ }
+        val maxHr = maxHeartRate(store, t.start)
+        if (maxHr != null && curve.isNotEmpty()) {
+            val zones = heartZoneNames()
+            val minutes = heartZoneMinutes(hr, maxHr)
             Spacer(Modifier.height(8.dp))
             Text(tr("Pulszonen", "Heart rate zones"), style = MaterialTheme.typography.labelLarge)
             Text(

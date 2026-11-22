@@ -8,7 +8,7 @@ import {
   tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
   goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort, parseIntStrict,
 } from '../core.js';
-import { sessionStats } from '../stats.js';
+import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import {
   h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, lineChart, percentRing, onTick, muted, icon, iconBtn, showHint, hintUsed,
@@ -283,12 +283,9 @@ export function trainingBar(w) {
 function heartRateCard(t, kcalFromHr) {
   const hr = t.hr, curve = hr.curve.filter(v => v > 0), p = store.profile;
   let zones = null;
-  if (p.birthYear && curve.length) {
-    const maxHr = Math.max(120, 220 - (new Date(t.start).getFullYear() - p.birthYear));
-    const minutes = [0, 0, 0, 0, 0];
-    for (const bpm of curve) minutes[Math.min(4, Math.max(0, Math.floor((Math.floor(bpm * 100 / maxHr) - 50) / 10)))]++;
-    const names = [tr('1 Aufwärmen', '1 Warm-up'), tr('2 Locker', '2 Easy'), tr('3 Aerob', '3 Aerobic'),
-      tr('4 Schwelle', '4 Threshold'), tr('5 Maximal', '5 Maximum')];
+  const maxHr = maxHeartRate(store, t.start);
+  if (maxHr && curve.length) {
+    const minutes = heartZoneMinutes(hr, maxHr), names = heartZoneNames();
     zones = [h('b', null, tr('Pulszonen', 'Heart rate zones')),
       muted(tr(`< 60 · 60–70 · 70–80 · 80–90 · > 90 % der max. Herzfrequenz (~${maxHr} bpm = 220 − Alter)`,
         `< 60 · 60–70 · 70–80 · 80–90 · > 90 % of max heart rate (~${maxHr} bpm = 220 − age)`), 'small'),

@@ -44,6 +44,10 @@ object Bot {
     /** Verlauf (bleibt erhalten, solange die App läuft) */
     val history = mutableStateListOf<BotMessage>()
 
+    /** Für persönliche Antworten („Wie war mein Puls?“): setzt BotTab. Kontext = Application-Context (kein Leak). */
+    var store: GymStore? = null
+    var appContext: Context? = null
+
     fun load(context: Context) {
         if (faq.isNotEmpty()) return
         val o = JSONObject(context.assets.open("bot.json").bufferedReader().use { it.readText() })
@@ -161,7 +165,9 @@ object Bot {
             tr("Wie viel Kreatin soll ich nehmen?", "How much creatine should I take?"),
             tr("Bringen BCAA etwas?", "Do BCAAs work?"),
             tr("Wie dehne ich die Waden?", "How do I stretch my calves?"),
-            tr("Verletzungen am Beinbeuger", "Hamstring injuries")
+            tr("Verletzungen am Beinbeuger", "Hamstring injuries"),
+            tr("Wie war mein Puls beim letzten Training?", "What was my heart rate last workout?"),
+            tr("Was ist Health Connect?", "What is Health Connect?")
         )
 
     /** „Erstelle mir ein Workout“ immer zuerst, danach eine zufällige Auswahl */
@@ -331,6 +337,8 @@ object Bot {
         // Frage zum Muskel selbst („Was macht der Latissimus?“, „Wie dehne ich die Waden?“) → Muskel-Wiki
         val anatomy = anatomyWords.filterValues { hasAny(words, it) }.keys
         // Supplement genannt („Wie viel Kreatin?“) – außer eine Übung passt mit einer längeren Wortfolge
+        // Persönliche Fragen zu den eigenen Daten (Puls, Health-Connect-Status) vor allem anderen
+        personalAnswer(words)?.let { return it }
         val supp = findSupplement(words)
         return when {
             supp != null && (ex == null || supp.second.size >= ex.second.size) -> supplementAnswer(supp.first)
@@ -354,6 +362,103 @@ object Bot {
                 suggestions = suggestions
             )
         }
+    }
+
+    // ----- Persönliche Antworten aus den eigenen Daten -----
+
+    private val mineWords = listOf("mein", "meine", "meinen", "meinem", "meiner", "letzten", "letztes", "letzte", "my", "last").map { listOf(it) }
+    private val heartWords = listOf(listOf("puls"), listOf("herzfrequenz"), listOf("heart", "rate"), listOf("pulse"))
+    /** Dann ist eine Erklärung gemeint, keine persönliche Auswertung („Wie berechnet die App kcal aus meinem Puls?“) */
+    private val explainWords = listOf("kcal", "kalorien", "calories", "berechnet", "berechnen", "calculated", "zonen", "zones", "warum", "why")
+        .map { listOf(it) }
+    private val statusWords = listOf("verbunden", "status", "aktiv", "eingeschaltet", "connected", "active", "laeuft", "funktioniert", "working")
+        .map { listOf(it) }
+
+    private fun personalAnswer(words: List<String>): BotMessage? {
+        val s = store ?: return null
+        if (hasAny(words, mineWords) && hasAny(words, heartWords) && !hasAny(words, explainWords)) return heartAnswer(s)
+        if (has(words, listOf("health", "connect")) && hasAny(words, statusWords)) return statusAnswer(s)
+        return null
+    }
+
+    /** „Wie war mein Puls beim letzten Training?“ → letztes Training mit Puls, Zonen, kcal, Vergleich */
+    private fun heartAnswer(s: GymStore): BotMessage {
+        val withHr = s.sessions.filter { it.hr != null }.sortedByDescending { it.start }
+        val last = withHr.firstOrNull() ?: return BotMessage(false, noHeartReason())
+        val hr = last.hr!!
+        val stats = sessionStats(s, last)
+        val text = buildString {
+            append(tr("Dein letztes Training mit Puls: ${last.workoutName} am ${fmtDate(last.start)}\n",
+                "Your last workout with heart rate: ${last.workoutName} on ${fmtDate(last.start)}\n"))
+            append(tr("❤ Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm", "❤ avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm"))
+            maxHeartRate(s, last.start)?.let { maxHr ->
+                val minutes = heartZoneMinutes(hr, maxHr)
+                val top = minutes.indices.maxByOrNull { minutes[it] }
+                if (top != null && minutes[top] > 0) append(tr("\nMeiste Zeit in Zone ${heartZoneNames()[top]} (${minutes[top]} min)",
+                    "\nMost time in zone ${heartZoneNames()[top]} (${minutes[top]} min)"))
+            }
+            stats.kcal?.let {
+                append(if (stats.kcalFromHr) tr("\n🔥 ~$it kcal (aus dem Puls berechnet)", "\n🔥 ~$it kcal (calculated from heart rate)")
+                else tr("\n🔥 ~$it kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)",
+                    "\n🔥 ~$it kcal (MET estimate – with sex and birth year in your profile I use heart rate)"))
+            }
+            if (withHr.size >= 2) {
+                val recent = withHr.take(5)
+                val avg = Math.round(recent.map { it.hr!!.avg }.average())
+                append(tr("\nØ deiner letzten ${recent.size} Trainings mit Puls: $avg bpm (davor: ${withHr[1].hr!!.avg} bpm)",
+                    "\nAverage of your last ${recent.size} workouts with heart rate: $avg bpm (previous: ${withHr[1].hr!!.avg} bpm)"))
+            }
+            append(tr("\nMehr in der Trainingsübersicht (Kalender → Tag antippen).", "\nMore in the workout summary (calendar → tap the day)."))
+        }
+        return BotMessage(false, text)
+    }
+
+    /** Warum (noch) kein Puls da ist – je nach Gerät, Einstellung und Berechtigung */
+    private fun noHeartReason(): String {
+        val c = appContext
+        return when {
+            c == null || !HealthSync.available(c) -> tr(
+                "Ich habe noch zu keinem Training Pulswerte. Den Puls holt die App über Health Connect – das gibt es ab Android 14.",
+                "I don't have heart rate for any workout yet. The app gets heart rate via Health Connect – available from Android 14.")
+            !HealthSync.enabled -> tr(
+                "Ich habe noch keine Pulswerte. Schalte unter ⋮ → Einstellungen „Health Connect“ ein und erlaube „Puls lesen“ – dann hole ich den Puls deiner Smartwatch zu deinen Trainings.",
+                "I don't have heart rate data yet. Turn on \"Health Connect\" under ⋮ → Settings and allow \"Read heart rate\" – then I'll fetch your smartwatch heart rate for your workouts.")
+            !HealthSync.canReadHeartRate(c) -> tr(
+                "Health Connect ist an, aber „Puls lesen“ ist nicht erlaubt. Einstellungen → „Health Connect“ → „Fehlende erlauben“.",
+                "Health Connect is on, but \"Read heart rate\" isn't allowed. Settings → \"Health Connect\" → \"Allow missing\".")
+            else -> tr(
+                "Zu deinen Trainings der letzten 7 Tage habe ich noch keinen Puls gefunden. Prüfe, ob deine Uhr während des Trainings misst und ihre App (z. B. Samsung Health) Daten an Health Connect liefert. Uhren übertragen oft verzögert – ich schaue bei jedem Abgleich wieder nach.",
+                "I haven't found heart rate for your workouts of the last 7 days yet. Check that your watch measures during the workout and its app (e.g. Samsung Health) sends data to Health Connect. Watches often sync late – I check again at every sync.")
+        }
+    }
+
+    /** „Ist Health Connect verbunden?“ → Status, Berechtigungen, letzter Abgleich */
+    private fun statusAnswer(s: GymStore): BotMessage {
+        val c = appContext
+        if (c == null || !HealthSync.available(c)) return BotMessage(false, tr(
+            "Health Connect ist auf diesem Gerät nicht verfügbar – es gibt das erst ab Android 14.",
+            "Health Connect isn't available on this device – it requires Android 14."))
+        if (!HealthSync.enabled) return BotMessage(false, tr(
+            "Health Connect ist ausgeschaltet. Einschalten: ⋮ → Einstellungen → „Health Connect“.",
+            "Health Connect is turned off. Turn it on: ⋮ → Settings → \"Health Connect\"."))
+        val perms = listOf(
+            tr("Gewicht lesen", "read weight") to HealthSync.canRead(c),
+            tr("Gewicht eintragen", "write weight") to HealthSync.canWrite(c),
+            tr("Trainings eintragen", "write workouts") to HealthSync.canWriteWorkouts(c),
+            tr("kcal eintragen", "write calories") to HealthSync.canWriteKcal(c),
+            tr("Puls lesen", "read heart rate") to HealthSync.canReadHeartRate(c)
+        )
+        val text = buildString {
+            append(tr("Health Connect ist eingeschaltet.\n", "Health Connect is on.\n"))
+            append(perms.joinToString("\n") { (l, ok) -> (if (ok) "✓ " else "– ") + l })
+            if (HealthSync.lastSync > 0) append(tr("\nZuletzt abgeglichen: ", "\nLast sync: ") + fmtDateTime(HealthSync.lastSync))
+            HealthSync.error?.let { append(tr("\nLetzter Fehler: ", "\nLast error: ") + it) }
+            append(tr("\n${s.sessions.count { it.hr != null }} von ${s.sessions.size} Trainings haben Pulswerte.",
+                "\n${s.sessions.count { it.hr != null }} of ${s.sessions.size} workouts have heart rate."))
+            if (perms.any { !it.second }) append(tr("\nFehlendes kannst du in den Einstellungen mit „Fehlende erlauben“ freigeben.",
+                "\nYou can allow missing ones in Settings via \"Allow missing\"."))
+        }
+        return BotMessage(false, text)
     }
 
     /** Ausführung, Tipps und Muskeln einer Übung (je nach Frage nur ein Teil) */

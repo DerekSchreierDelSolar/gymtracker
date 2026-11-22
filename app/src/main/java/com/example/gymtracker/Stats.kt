@@ -171,3 +171,28 @@ fun allSessions(store: GymStore): List<TrainingSession> =
     store.sessions + store.freeSetsByDay().keys.mapNotNull { store.freeSession(it) }
 
 
+
+// ---------- Pulszonen ----------
+
+/** Geschätzte maximale Herzfrequenz (220 − Alter) zum Zeitpunkt `time`; null ohne Geburtsjahr im Profil. */
+fun maxHeartRate(store: GymStore, time: Long): Int? {
+    val year = store.profile.birthYear ?: return null
+    val age = Calendar.getInstance().apply { timeInMillis = time }.get(Calendar.YEAR) - year
+    return (220 - age).coerceAtLeast(120)
+}
+
+/** Namen der 5 Pulszonen (< 60, 60–70, 70–80, 80–90, > 90 % der max. Herzfrequenz). */
+fun heartZoneNames(): List<String> = listOf(
+    tr("1 Aufwärmen", "1 Warm-up"),
+    tr("2 Locker", "2 Easy"),
+    tr("3 Aerob", "3 Aerobic"),
+    tr("4 Schwelle", "4 Threshold"),
+    tr("5 Maximal", "5 Maximum")
+)
+
+/** Minuten je Pulszone (jeder Wert der Puls-Kurve = eine Minute, 0 = keine Messung). */
+fun heartZoneMinutes(hr: HeartRate, maxHr: Int): IntArray {
+    val minutes = IntArray(5)
+    hr.curve.filter { it > 0 }.forEach { bpm -> minutes[(((bpm * 100 / maxHr) - 50) / 10).coerceIn(0, 4)]++ }
+    return minutes
+}

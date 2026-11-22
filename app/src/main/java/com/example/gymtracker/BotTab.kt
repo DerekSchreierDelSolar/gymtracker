@@ -42,6 +42,9 @@ fun BotScreen(store: GymStore, onBack: () -> Unit, onOpenWorkout: (Long) -> Unit
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BotTab(modifier: Modifier, recent: String? = null, store: GymStore? = null, onOpenWorkout: (Long) -> Unit = {}) {
+    // Für persönliche Antworten (Puls, Health-Connect-Status)
+    Bot.store = store
+    Bot.appContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
     val messages = Bot.history
     if (messages.isEmpty()) messages.add(Bot.greeting(recent))
     var input by remember { mutableStateOf("") }

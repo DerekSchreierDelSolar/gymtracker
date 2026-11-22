@@ -248,3 +248,22 @@ export function progressionSuggestion(store, name, before) {
     weight: top,
   };
 }
+
+// ---------- Pulszonen (wie Stats.kt) ----------
+
+/** Geschätzte maximale Herzfrequenz (220 − Alter); null ohne Geburtsjahr im Profil. */
+export function maxHeartRate(store, time) {
+  const y = store.profile.birthYear;
+  return y ? Math.max(120, 220 - (new Date(time).getFullYear() - y)) : null;
+}
+
+/** Namen der 5 Pulszonen (< 60, 60–70, 70–80, 80–90, > 90 % der max. Herzfrequenz). */
+export const heartZoneNames = () => [tr('1 Aufwärmen', '1 Warm-up'), tr('2 Locker', '2 Easy'), tr('3 Aerob', '3 Aerobic'),
+  tr('4 Schwelle', '4 Threshold'), tr('5 Maximal', '5 Maximum')];
+
+/** Minuten je Pulszone (jeder Wert der Kurve = eine Minute, 0 = keine Messung). */
+export function heartZoneMinutes(hr, maxHr) {
+  const minutes = [0, 0, 0, 0, 0];
+  for (const bpm of hr.curve) if (bpm > 0) minutes[Math.min(4, Math.max(0, Math.floor((Math.floor(bpm * 100 / maxHr) - 50) / 10)))]++;
+  return minutes;
+}

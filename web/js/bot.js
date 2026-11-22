@@ -4,7 +4,9 @@
 import { BOT } from './bot-data.js';
 import { WIKI } from './wiki-data.js';
 import { CATALOG } from './data.js';
-import { tr, isEnglish, isCardio, exName, equipmentLabel } from './core.js';
+import { tr, isEnglish, isCardio, exName, equipmentLabel, fmtDate } from './core.js';
+import { store } from './store.js';
+import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames } from './stats.js';
 import { h, icon, chip } from './ui.js';
 import { rerender, go } from './nav.js';
 import { baseName, openWiki, mainExercisesFor, evidenceLabel } from './wiki.js';
@@ -95,6 +97,8 @@ const pool = () => [
   tr('Was macht der Latissimus?', 'What does the lat do?'),
   tr('Wie dehne ich die Waden?', 'How do I stretch my calves?'),
   tr('Verletzungen am Beinbeuger', 'Hamstring injuries'),
+  tr('Wie war mein Puls beim letzten Training?', 'What was my heart rate last workout?'),
+  tr('Was ist Health Connect?', 'What is Health Connect?'),
   tr('Wie viel Kreatin soll ich nehmen?', 'How much creatine should I take?'),
   tr('Bringen BCAA etwas?', 'Do BCAAs work?'),
 ];
@@ -110,8 +114,64 @@ const greeting = recent => ({
   suggestions: (s => recent ? [s[0], tr(`Wie mache ich ${recent}?`, `How do I do ${recent}?`), ...s.slice(1, 4)] : s)(suggestions()),
 });
 
+// ---------- Persönliche Antworten aus den eigenen Daten (wie Bot.kt) ----------
+
+const MINE = ['mein', 'meine', 'meinen', 'meinem', 'meiner', 'letzten', 'letztes', 'letzte', 'my', 'last'].map(w => [w]);
+const HEART = [['puls'], ['herzfrequenz'], ['heart', 'rate'], ['pulse']];
+/** Dann ist eine Erklärung gemeint („Wie berechnet die App kcal aus meinem Puls?“) */
+const EXPLAIN = ['kcal', 'kalorien', 'calories', 'berechnet', 'berechnen', 'calculated', 'zonen', 'zones', 'warum', 'why'].map(w => [w]);
+const STATUS = ['verbunden', 'status', 'aktiv', 'eingeschaltet', 'connected', 'active', 'laeuft', 'funktioniert', 'working'].map(w => [w]);
+
+function personalAnswer(words) {
+  if (hasAny(words, MINE) && hasAny(words, HEART) && !hasAny(words, EXPLAIN)) return heartAnswer();
+  // Health Connect gibt es nur in der Android-App
+  if (has(words, ['health', 'connect']) && hasAny(words, STATUS)) return {
+    bot: true,
+    text: tr('Health Connect gibt es nur in der Android-App – im Browser bzw. auf dem iPhone kann GymTracker nicht darauf zugreifen. Puls und Trainings aus einem Android-Export zeigt die Web-Version aber an.',
+      "Health Connect is only available in the Android app – in the browser or on iPhone GymTracker can't access it. The web version does show heart rate and workouts from an Android export."),
+  };
+  return null;
+}
+
+/** „Wie war mein Puls beim letzten Training?“ → letztes Training mit Puls, Zonen, kcal, Vergleich */
+function heartAnswer() {
+  const withHr = store.sessions.filter(s => s.hr).sort((a, b) => b.start - a.start);
+  const last = withHr[0];
+  if (!last) return {
+    bot: true,
+    text: tr('Ich habe noch zu keinem Training Pulswerte. Den Puls holt die Android-App über Health Connect (z. B. von einer Smartwatch); in der Web-Version erscheint er nach einem Import aus der Android-App.',
+      "I don't have heart rate for any workout yet. The Android app gets heart rate via Health Connect (e.g. from a smartwatch); in the web version it appears after importing from the Android app."),
+  };
+  const hr = last.hr, stats = sessionStats(store, last);
+  const lines = [
+    tr(`Dein letztes Training mit Puls: ${last.workoutName} am ${fmtDate(last.start)}`, `Your last workout with heart rate: ${last.workoutName} on ${fmtDate(last.start)}`),
+    tr(`❤ Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`, `❤ avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`),
+  ];
+  const maxHr = maxHeartRate(store, last.start);
+  if (maxHr) {
+    const minutes = heartZoneMinutes(hr, maxHr);
+    const top = minutes.indexOf(Math.max(...minutes));
+    if (minutes[top] > 0) lines.push(tr(`Meiste Zeit in Zone ${heartZoneNames()[top]} (${minutes[top]} min)`, `Most time in zone ${heartZoneNames()[top]} (${minutes[top]} min)`));
+  }
+  if (stats.kcal != null) lines.push(stats.kcalFromHr
+    ? tr(`🔥 ~${stats.kcal} kcal (aus dem Puls berechnet)`, `🔥 ~${stats.kcal} kcal (calculated from heart rate)`)
+    : tr(`🔥 ~${stats.kcal} kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)`,
+      `🔥 ~${stats.kcal} kcal (MET estimate – with sex and birth year in your profile I use heart rate)`));
+  if (withHr.length >= 2) {
+    const recent = withHr.slice(0, 5);
+    const avg = Math.round(recent.reduce((a, s) => a + s.hr.avg, 0) / recent.length);
+    lines.push(tr(`Ø deiner letzten ${recent.length} Trainings mit Puls: ${avg} bpm (davor: ${withHr[1].hr.avg} bpm)`,
+      `Average of your last ${recent.length} workouts with heart rate: ${avg} bpm (previous: ${withHr[1].hr.avg} bpm)`));
+  }
+  lines.push(tr('Mehr in der Trainingsübersicht (Kalender → Tag antippen).', 'More in the workout summary (calendar → tap the day).'));
+  return { bot: true, text: lines.join('\n') };
+}
+
 export function answer(question) {
   const words = tokens(question);
+  // Persönliche Fragen zu den eigenen Daten (Puls, Health-Connect-Status) vor allem anderen
+  const personal = personalAnswer(words);
+  if (personal) return personal;
   const ex = best(EXERCISES, words);
   const target = best(TARGETS, words);
   let faqHit = null, faqScore = 0;
