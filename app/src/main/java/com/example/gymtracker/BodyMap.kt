@@ -796,7 +796,7 @@ fun MuscleHeatCard(store: GymStore, period: StatPeriod, onPeriod: (StatPeriod) -
         title = tr("Trainierte Muskeln", "Trained muscles"),
         score = regionScore(period.filter(store.sets)),
         showSets = false,
-        empty = tr("Keine Trainings in diesem Zeitraum.", "No workouts in this period.")
+        empty = tr("Keine Trainingseinheiten in diesem Zeitraum.", "No workouts in this period.")
     ) {
         // 4 gleich breite Buttons über die volle Breite (kurze Beschriftung, damit alle passen)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {

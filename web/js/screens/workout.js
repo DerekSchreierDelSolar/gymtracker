@@ -95,7 +95,7 @@ export function workoutScreen(w, onStart) {
         'Tip: drag the handle on the right (or long-press a row) to change the order.'), 'small'),
       list,
       history.length ? [
-        h('h2', { class: 'section' }, tr('Letzte Trainings', 'Recent sessions')),
+        h('h2', { class: 'section' }, tr('Letzte Trainingseinheiten', 'Recent sessions')),
         h('div', { class: 'stack' }, history.map(t => {
           const s = sessionStats(store, t);
           return h('button', { class: 'card row-card', onclick: () => go({ summaryId: t.id }) },

@@ -135,8 +135,8 @@ fun DashboardTab(
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
                             // Ziel erreicht/übertroffen → nicht „5 von 3“, sondern „5 Trainings ✓“ (Ziel steht darunter)
-                            if (weekSessions.size >= goal) plural(weekSessions.size, tr("Training", "workout"), tr("Trainings", "workouts")) + " ✓"
-                            else tr("${weekSessions.size} von $goal Trainings", "${weekSessions.size} of $goal workouts"),
+                            if (weekSessions.size >= goal) plural(weekSessions.size, tr("Trainingseinheit", "workout"), tr("Trainingseinheiten", "workouts")) + " ✓"
+                            else tr("${weekSessions.size} von $goal Trainingseinheiten", "${weekSessions.size} of $goal workouts"),
                             style = MaterialTheme.typography.titleLarge
                         )
                         Text(
@@ -226,7 +226,7 @@ fun DashboardTab(
         if (volumes.any { it.second > 0 }) {
             item {
                 ChartCard(tr("Volumen pro Woche", "Weekly volume"), tr("Letzte 8 Wochen · aktuelle Woche hervorgehoben", "Last 8 weeks · current week highlighted")) {
-                    HistoryBars(volumes.map { it.second }, volumes.map { fmtShortDate(it.first) }) { "${fmtW(it)} kg" }
+                    HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtW(it)} kg" }
                 }
             }
         }
@@ -236,7 +236,7 @@ fun DashboardTab(
         if (kcalWeeks != null && kcalWeeks.any { it.second > 0 }) {
             item {
                 ChartCard(tr("🔥 Kalorien pro Woche", "🔥 Calories per week"), tr("Letzte 8 Wochen · geschätzt", "Last 8 weeks · estimated")) {
-                    HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtShortDate(it.first) }) { "~${it.toInt()} kcal" }
+                    HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${it.toInt()} kcal" }
                 }
             }
         }

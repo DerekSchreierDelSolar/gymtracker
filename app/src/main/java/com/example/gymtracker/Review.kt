@@ -142,13 +142,13 @@ fun ReviewCard(store: GymStore) {
             )
             if (r.now.sessions == 0) {
                 Text(
-                    tr("Keine Trainings in diesem Zeitraum.", "No workouts in this period."),
+                    tr("Keine Trainingseinheiten in diesem Zeitraum.", "No workouts in this period."),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 return@Column
             }
             Row {
-                ReviewStat(tr("Trainings", "Workouts"), r.now.sessions.toString(),
+                ReviewStat(tr("Einheiten", "Workouts"), r.now.sessions.toString(),
                     deltaOf(r.now.sessions.toDouble(), r.before.sessions.toDouble(), false), Modifier.weight(1f))
                 ReviewStat(tr("Sätze", "Sets"), r.now.sets.toString(),
                     deltaOf(r.now.sets.toDouble(), r.before.sets.toDouble(), false), Modifier.weight(1f))

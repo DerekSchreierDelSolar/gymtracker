@@ -75,9 +75,9 @@ export function reviewCard() {
       chip(tr('Letzte Woche', 'Last week'), period === 'WEEK', () => update({ reviewPeriod: 'WEEK' })),
       chip(tr('Letzter Monat', 'Last month'), period === 'MONTH', () => update({ reviewPeriod: 'MONTH' }))),
     h('small', { class: 'muted' }, `${fmtDate(r.start)} – ${fmtDate(r.end - 1)} · ${vs}`),
-    r.now.sessions === 0 ? h('p', { class: 'muted' }, tr('Keine Trainings in diesem Zeitraum.', 'No workouts in this period.')) : [
+    r.now.sessions === 0 ? h('p', { class: 'muted' }, tr('Keine Trainingseinheiten in diesem Zeitraum.', 'No workouts in this period.')) : [
       h('div', { class: 'review-grid' },
-        stat(tr('Trainings', 'Workouts'), String(r.now.sessions), deltaOf(r.now.sessions, r.before.sessions, false)),
+        stat(tr('Einheiten', 'Workouts'), String(r.now.sessions), deltaOf(r.now.sessions, r.before.sessions, false)),
         stat(tr('Sätze', 'Sets'), String(r.now.sets), deltaOf(r.now.sets, r.before.sets, false)),
         stat(tr('Volumen', 'Volume'), `${fmtW(r.now.volume)} kg`, deltaOf(r.now.volume, r.before.volume, true)),
         stat(tr('Trainingszeit', 'Training time'), r.now.duration > 0 ? fmtHoursMinutes(r.now.duration) : '–',

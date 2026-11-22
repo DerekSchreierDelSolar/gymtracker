@@ -97,7 +97,7 @@
     },
     {
       "keys": ["rueckblick", "wochenrueckblick", "monatsrueckblick", "letzte woche", "letzter monat", "vergleich vorwoche", "review", "last week", "last month"],
-      "a": ["Auf der Startseite zeigt die Karte „Rückblick“ die letzte abgeschlossene Woche bzw. den letzten Monat: Trainings, Sätze, Volumen, Trainingszeit und kcal mit Veränderung zum Zeitraum davor (grün = mehr, rot = weniger), dazu neue Rekorde, die meisttrainierten Muskeln und Muskeln, die du sonst trainierst, diesmal aber kaum (💤).",
+      "a": ["Auf der Startseite zeigt die Karte „Rückblick“ die letzte abgeschlossene Woche bzw. den letzten Monat: Trainingseinheiten, Sätze, Volumen, Trainingszeit und kcal mit Veränderung zum Zeitraum davor (grün = mehr, rot = weniger), dazu neue Rekorde, die meisttrainierten Muskeln und Muskeln, die du sonst trainierst, diesmal aber kaum (💤).",
             "On the home screen the \"Review\" card shows the last completed week or month: workouts, sets, volume, training time and calories with the change versus the period before (green = more, red = less), plus new records, your most-trained muscles and muscles you usually train but barely did this time (💤)."]
     },
     {
@@ -112,7 +112,7 @@
     },
     {
       "keys": ["wochenziel", "ziel aendern", "von 3", "trainings pro woche", "weekly goal"],
-      "a": ["Das Wochenziel (Standard: 3 Trainings) steht oben auf der Startseite. Antippen ändert es. „5 von 3“ heißt: Ziel übertroffen. Gezählt werden gestartete Workouts und Tage mit freien Sätzen.",
+      "a": ["Das Wochenziel (Standard: 3 Trainingseinheiten) steht oben auf der Startseite. Antippen ändert es. „5 von 3“ heißt: Ziel übertroffen. Gezählt werden gestartete Workouts und Tage mit freien Sätzen.",
             "The weekly goal (default: 3 workouts) is at the top of the home screen. Tap it to change. \"5 of 3\" means you beat your goal. Started workouts and days with free sets count."]
     },
     {
@@ -122,7 +122,7 @@
     },
     {
       "keys": ["kalender", "ring", "ringe", "abgeschlossen", "calendar", "rings"],
-      "a": ["Im Kalender hat jeder Trainingstag einen Ring: grün = 100 % der Ziel-Sätze, orange ≥ 50 %, rot < 50 %. Tag antippen zeigt die Trainings, darunter die Monatsübersicht mit Trainings und Kalorien.",
+      "a": ["Im Kalender hat jeder Trainingstag einen Ring: grün = 100 % der Ziel-Sätze, orange ≥ 50 %, rot < 50 %. Tag antippen zeigt die Trainingseinheiten, darunter die Monatsübersicht mit Trainingseinheiten und Kalorien.",
             "In the calendar each training day has a ring: green = 100% of target sets, orange ≥ 50%, red < 50%. Tap a day to see its sessions; below is the monthly summary with sessions and calories."]
     },
     {
@@ -132,7 +132,7 @@
     },
     {
       "keys": ["uebersicht", "zusammenfassung", "nach dem training", "summary", "vergleich", "comparison"],
-      "a": ["Nach „Beenden“ kommt die Trainingsübersicht: Ziel-Erfüllung, Sätze, Volumen, Cardio, Kalorien, Rekorde, Vergleich mit dem letzten Mal und die Muskeln in Prozent. Alte Trainings öffnest du über den Kalender.",
+      "a": ["Nach „Beenden“ kommt die Trainingsübersicht: Ziel-Erfüllung, Sätze, Volumen, Cardio, Kalorien, Rekorde, Vergleich mit dem letzten Mal und die Muskeln in Prozent. Alte Trainingseinheiten öffnest du über den Kalender.",
             "After \"Finish\" you get the summary: goal completion, sets, volume, cardio, calories, records, comparison with last time and muscles in percent. Open past sessions via the calendar."]
     },
     {
@@ -162,7 +162,7 @@
     },
     {
       "keys": ["zuruecksetzen", "fortschritt loeschen", "alles loeschen", "neu anfangen", "von vorne", "reset", "reset progress", "delete all", "start over"],
-      "a": ["⋮ → Einstellungen → ganz unten „Fortschritt zurücksetzen“: löscht alle Sätze, Trainings, Notizen und Gewichtseinträge. Übungen und Workouts bleiben. Danach kannst du es kurz rückgängig machen; sicherer ist vorher ⋮ → „Daten exportieren“.",
+      "a": ["⋮ → Einstellungen → ganz unten „Fortschritt zurücksetzen“: löscht alle Sätze, Trainingseinheiten, Notizen und Gewichtseinträge. Übungen und Workouts bleiben. Danach kannst du es kurz rückgängig machen; sicherer ist vorher ⋮ → „Daten exportieren“.",
             "⋮ → Settings → at the bottom \"Reset progress\": deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay. You can undo it right after; safer is ⋮ → \"Export data\" first."]
     },
     {

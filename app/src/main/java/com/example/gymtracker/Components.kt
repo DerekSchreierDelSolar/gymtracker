@@ -173,6 +173,17 @@ fun HistoryBars(values: List<Double>, labels: List<String>, format: (Double) -> 
     }
 }
 
+/** Kalenderwoche nach ISO 8601 (Woche beginnt Montag, KW 1 = Woche mit dem ersten Donnerstag): „KW 47“ bzw. „W47“. */
+fun fmtWeek(t: Long): String {
+    val c = java.util.Calendar.getInstance().apply {
+        firstDayOfWeek = java.util.Calendar.MONDAY
+        minimalDaysInFirstWeek = 4
+        timeInMillis = t
+    }
+    val w = c.get(java.util.Calendar.WEEK_OF_YEAR)
+    return tr("KW $w", "W$w")
+}
+
 /** Kurzes Datum für Achsen-Beschriftungen („18.11.“ bzw. „18/11“). */
 fun fmtShortDate(t: Long): String =
     SimpleDateFormat(tr("dd.MM.", "dd/MM"), appLocale()).format(Date(t))

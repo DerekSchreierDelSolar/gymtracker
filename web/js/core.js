@@ -93,6 +93,15 @@ export function fmtDateTime(t) {
   const d = new Date(t);
   return isEnglish() ? `${fmtDate(t)}, ${fmtTime(t)}` : `${fmtDate(t)}, ${fmtTime(t)} Uhr`;
 }
+/** Kalenderwoche nach ISO 8601 (wie fmtWeek in Components.kt): „KW 47“ bzw. „W47“ */
+export function fmtWeek(t) {
+  const d = new Date(t);
+  const day = (d.getDay() + 6) % 7;            // Mo = 0 … So = 6
+  const thu = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day + 3); // Donnerstag dieser Woche
+  const firstThu = new Date(thu.getFullYear(), 0, 4); // 4. Januar liegt immer in KW 1
+  const w = 1 + Math.round(((thu - firstThu) / 86400000 - 3 + ((firstThu.getDay() + 6) % 7)) / 7);
+  return isEnglish() ? `W${w}` : `KW ${w}`;
+}
 /** Kurzes Datum für Achsen („18.11.“ bzw. „18/11“). */
 export function fmtShortDate(t) {
   const d = new Date(t);

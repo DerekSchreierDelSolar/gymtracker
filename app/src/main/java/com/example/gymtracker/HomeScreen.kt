@@ -260,7 +260,7 @@ fun HomeScreen(
                         "• ${plural(info.exercises, tr("Übung", "exercise"), tr("Übungen", "exercises"))}\n" +
                         "• ${plural(info.sets, tr("Satz", "set"), tr("Sätze", "sets"))}\n" +
                         "• ${plural(info.workouts, "Workout", "Workouts")}\n" +
-                        "• ${plural(info.sessions, tr("Training", "session"), tr("Trainings", "sessions"))}\n\n" +
+                        "• ${plural(info.sessions, tr("Trainingseinheit", "session"), tr("Trainingseinheiten", "sessions"))}\n\n" +
                         tr(
                             "Deine aktuellen Daten werden dadurch ersetzt. Eine Kopie davon wird vorher in der App abgelegt.",
                             "Your current data will be replaced. A copy of it is kept in the app first."
@@ -404,7 +404,7 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
                 // Fortschritt zurücksetzen (rot, mit Nachfrage und danach „Rückgängig“)
                 Text(tr("Fortschritt", "Progress"), style = MaterialTheme.typography.titleSmall)
                 Text(
-                    tr("Löscht alle Sätze, Trainings, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.",
+                    tr("Löscht alle Sätze, Trainingseinheiten, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.",
                         "Deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay."),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -430,7 +430,7 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
             text = {
                 Text(
                     tr(
-                        "${plural(store.sets.size, "Satz", "Sätze")}, ${plural(store.sessions.size, "Training", "Trainings")} und ${plural(store.weights.size, "Gewichtseintrag", "Gewichtseinträge")} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.",
+                        "${plural(store.sets.size, "Satz", "Sätze")}, ${plural(store.sessions.size, "Trainingseinheit", "Trainingseinheiten")} und ${plural(store.weights.size, "Gewichtseintrag", "Gewichtseinträge")} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.",
                         "${plural(store.sets.size, "set", "sets")}, ${plural(store.sessions.size, "workout", "workouts")} and ${plural(store.weights.size, "weight entry", "weight entries")} will be deleted. Tip: back up first via ⋮ → \"Export data\"."
                     )
                 )

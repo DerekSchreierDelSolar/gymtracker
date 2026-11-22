@@ -332,7 +332,7 @@ fun WorkoutScreen(
                 if (history.isNotEmpty()) {
                     item {
                         Text(
-                            tr("Letzte Trainings", "Recent sessions"),
+                            tr("Letzte Trainingseinheiten", "Recent sessions"),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(top = 12.dp, start = 4.dp)
                         )

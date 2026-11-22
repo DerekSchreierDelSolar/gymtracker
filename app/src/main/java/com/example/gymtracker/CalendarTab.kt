@@ -185,14 +185,14 @@ fun CalendarTab(
         item {
             val monthSessions = allSessions.filter { dayKey(it.start) / 100 == year * 100 + m + 1 }
             val text = if (monthSessions.isEmpty()) {
-                tr("Keine Trainings in diesem Monat", "No workouts this month")
+                tr("Keine Trainingseinheiten in diesem Monat", "No workouts this month")
             } else {
                 val avg = Math.round(monthSessions.map { statsBySession.getValue(it.id).completion }.average() * 100)
                 val days = monthSessions.map { dayKey(it.start) }.distinct().size
                 val n = monthSessions.size
                 val kcal = monthSessions.mapNotNull { statsBySession.getValue(it.id).kcal }.sum()
                 tr(
-                    "${plural(n, "Training", "Trainings")} an ${plural(days, "Tag", "Tagen")} · Ø $avg % abgeschlossen",
+                    "${plural(n, "Trainingseinheit", "Trainingseinheiten")} an ${plural(days, "Tag", "Tagen")} · Ø $avg % abgeschlossen",
                     "${plural(n, "workout", "workouts")} on ${plural(days, "day", "days")} · avg. $avg % completed"
                 ) + (if (kcal > 0) " · 🔥 ~$kcal kcal" else "")
             }

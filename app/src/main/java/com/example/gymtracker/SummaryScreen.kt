@@ -120,7 +120,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, onDone: () -> Unit) {
                         ChartCard(
                             tr("Verlauf: ${t.workoutName}", "Trend: ${t.workoutName}"),
                             when {
-                                change == null -> tr("Volumen der letzten Trainings", "Volume of recent sessions")
+                                change == null -> tr("Volumen der letzten Trainingseinheiten", "Volume of recent sessions")
                                 change >= 0 -> tr("+$change % Volumen gegenüber letztem Mal", "+$change % volume vs. last time")
                                 else -> tr("$change % Volumen gegenüber letztem Mal", "$change % volume vs. last time")
                             }

@@ -123,7 +123,7 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                                 "Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.",
                                 "Log your weight and the app will estimate calories burned."
                             ) else tr(
-                                "~$weekKcal kcal verbrannt · ${plural(weekSessions.size, "Training", "Trainings")}",
+                                "~$weekKcal kcal verbrannt · ${plural(weekSessions.size, "Trainingseinheit", "Trainingseinheiten")}",
                                 "~$weekKcal kcal burned · ${plural(weekSessions.size, "workout", "workouts")}"
                             ),
                             style = MaterialTheme.typography.titleMedium

@@ -273,7 +273,7 @@ export function summaryScreen(t, onDone) {
       const prev = vols[vols.length - 2];
       const change = prev > 0 ? Math.round(((vols[vols.length - 1] - prev) / prev) * 100) : null;
       trend = chartCard(tr(`Verlauf: ${t.workoutName}`, `Trend: ${t.workoutName}`),
-        change == null ? tr('Volumen der letzten Trainings', 'Volume of recent sessions')
+        change == null ? tr('Volumen der letzten Trainingseinheiten', 'Volume of recent sessions')
           : change >= 0 ? tr(`+${change} % Volumen gegenüber letztem Mal`, `+${change} % volume vs. last time`)
             : tr(`${change} % Volumen gegenüber letztem Mal`, `${change} % volume vs. last time`),
         historyBars(vols, hist.map(x => fmtShortDate(x.start)), v => `${fmtW(v)} kg`));

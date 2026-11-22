@@ -2,7 +2,7 @@
 
 import { store } from '../store.js';
 import {
-  tr, exName, sortByName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, plural, isCardio, isEnglish, groupLabel,
+  tr, exName, sortByName, fmtSet, fmtW, fmtDate, fmtDuration, fmtShortDate, fmtWeek, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
 } from '../core.js';
@@ -111,7 +111,7 @@ function importData() {
         h('li', null, plural(info.exercises, tr('Übung', 'exercise'), tr('Übungen', 'exercises'))),
         h('li', null, plural(info.sets, tr('Satz', 'set'), tr('Sätze', 'sets'))),
         h('li', null, plural(info.workouts, 'Workout', 'Workouts')),
-        h('li', null, plural(info.sessions, tr('Training', 'session'), tr('Trainings', 'sessions')))),
+        h('li', null, plural(info.sessions, tr('Trainingseinheit', 'session'), tr('Trainingseinheiten', 'sessions')))),
       h('p', null, tr('Deine aktuellen Daten werden dadurch ersetzt. Eine Kopie davon wird vorher in der App abgelegt.',
         'Your current data will be replaced. A copy of it is kept in the app first.')),
     ], [
@@ -169,7 +169,7 @@ function settingsDialog() {
     // Fortschritt zurücksetzen (wie SettingsDialog in HomeScreen.kt): Nachfrage, danach „Rückgängig“
     h('hr'),
     h('b', { class: 'small-title' }, tr('Fortschritt', 'Progress')),
-    muted(tr('Löscht alle Sätze, Trainings, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.', 'Deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay.'), 'small'),
+    muted(tr('Löscht alle Sätze, Trainingseinheiten, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.', 'Deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay.'), 'small'),
     h('div', null, h('button', { class: 'btn outline danger-outline', onclick: resetDialog }, icon('delete', 18), tr('Fortschritt zurücksetzen', 'Reset progress'))),
   ], [{ label: 'OK', onClick: closeDialog }], closeDialog));
 }
@@ -215,8 +215,8 @@ function dashboardTab(onStartWorkout) {
       h('div', { class: 'grow' },
         h('small', { class: 'muted' }, tr('Diese Woche', 'This week')),
         // Ziel erreicht/übertroffen → „5 Trainings ✓“ statt „5 von 3“ (wie DashboardTab.kt)
-        h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Training', 'workout'), tr('Trainings', 'workouts')) + ' ✓'
-          : tr(`${weekSessions.length} von ${goal} Trainings`, `${weekSessions.length} of ${goal} workouts`)),
+        h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Trainingseinheit', 'workout'), tr('Trainingseinheiten', 'workouts')) + ' ✓'
+          : tr(`${weekSessions.length} von ${goal} Trainingseinheiten`, `${weekSessions.length} of ${goal} workouts`)),
         h('span', null, streak > 0 ? '🔥 ' + tr(`${plural(streak, 'Woche', 'Wochen')} in Folge`, `${plural(streak, 'week', 'weeks')} in a row`)
           : tr('Starte deine Serie!', 'Start your streak!')),
         h('small', { class: 'muted' }, weekSessions.length >= goal ? tr(`Ziel ${goal}/Woche · tippen zum Ändern`, `Goal ${goal}/week · tap to change`)
@@ -255,12 +255,12 @@ function dashboardTab(onStartWorkout) {
 
     volumes.some(v => v[1] > 0) ? chartCard(tr('Volumen pro Woche', 'Weekly volume'),
       tr('Letzte 8 Wochen · aktuelle Woche hervorgehoben', 'Last 8 weeks · current week highlighted'),
-      historyBars(volumes.map(v => v[1]), volumes.map(v => fmtShortDate(v[0])), v => `${fmtW(v)} kg`)) : null,
+      historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtW(v)} kg`)) : null,
 
     // geschätzter Kalorienverbrauch pro Woche (nur mit Körpergewicht) – wie DashboardTab.kt
     (k => k && k.some(v => v[1] > 0) ? chartCard(tr('🔥 Kalorien pro Woche', '🔥 Calories per week'),
       tr('Letzte 8 Wochen · geschätzt', 'Last 8 weeks · estimated'),
-      historyBars(k.map(v => v[1]), k.map(v => fmtShortDate(v[0])), v => `~${Math.round(v)} kcal`)) : null)(weeklyKcal(store, 8)),
+      historyBars(k.map(v => v[1]), k.map(v => fmtWeek(v[0])), v => `~${Math.round(v)} kcal`)) : null)(weeklyKcal(store, 8)),
 
     groupItems.length ? chartCard(tr('Sätze pro Muskelgruppe', 'Sets per muscle group'), periodLabel(nav.statPeriod),
       horizontalBars(groupItems, v => String(v))) : null,
@@ -363,13 +363,13 @@ function calendarTab() {
 
   const monthSessions = sessions.filter(t => Math.floor(dayKey(t.start) / 100) === year * 100 + m + 1);
   let monthText;
-  if (!monthSessions.length) monthText = tr('Keine Trainings in diesem Monat', 'No workouts this month');
+  if (!monthSessions.length) monthText = tr('Keine Trainingseinheiten in diesem Monat', 'No workouts this month');
   else {
     const avg = Math.round((monthSessions.reduce((a, t) => a + stats.get(t.id).completion, 0) / monthSessions.length) * 100);
     const days = new Set(monthSessions.map(t => dayKey(t.start))).size;
     const n = monthSessions.length;
     const kcal = monthSessions.reduce((a, t) => a + (stats.get(t.id).kcal ?? 0), 0);
-    monthText = tr(`${plural(n, 'Training', 'Trainings')} an ${plural(days, 'Tag', 'Tagen')} · Ø ${avg} % abgeschlossen`,
+    monthText = tr(`${plural(n, 'Trainingseinheit', 'Trainingseinheiten')} an ${plural(days, 'Tag', 'Tagen')} · Ø ${avg} % abgeschlossen`,
       `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg} % completed`) + (kcal > 0 ? ` · 🔥 ~${kcal} kcal` : '');
   }
   const daySessions = (byDay.get(nav.calDay) ?? []).slice().sort((a, b) => a.start - b.start);
@@ -445,7 +445,7 @@ function bodyTab() {
       h('div', { class: 'grow' }, h('small', null, tr('Diese Woche', 'This week')),
         h('b', null, last == null
           ? tr('Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.', 'Log your weight and the app will estimate calories burned.')
-          : tr(`~${weekKcal} kcal verbrannt · ${plural(weekSessions.length, 'Training', 'Trainings')}`,
+          : tr(`~${weekKcal} kcal verbrannt · ${plural(weekSessions.length, 'Trainingseinheit', 'Trainingseinheiten')}`,
             `~${weekKcal} kcal burned · ${plural(weekSessions.length, 'workout', 'workouts')}`)))),
     // Gewichtsverlauf; Punkt antippen = Eintrag anpassen oder löschen (statt einer Liste) – wie BodyTab.kt
     weights.length ? chartCard(tr('Gewichtsverlauf', 'Weight trend'),
@@ -486,7 +486,7 @@ function weightEditDialog(entry) {
 function resetDialog() {
   openDialog(() => dialog(tr('Fortschritt zurücksetzen?', 'Reset progress?'),
     h('p', null, tr(
-      `${plural(store.sets.length, 'Satz', 'Sätze')}, ${plural(store.sessions.length, 'Training', 'Trainings')} und ${plural(store.weights.length, 'Gewichtseintrag', 'Gewichtseinträge')} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.`,
+      `${plural(store.sets.length, 'Satz', 'Sätze')}, ${plural(store.sessions.length, 'Trainingseinheit', 'Trainingseinheiten')} und ${plural(store.weights.length, 'Gewichtseintrag', 'Gewichtseinträge')} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.`,
       `${plural(store.sets.length, 'set', 'sets')}, ${plural(store.sessions.length, 'workout', 'workouts')} and ${plural(store.weights.length, 'weight entry', 'weight entries')} will be deleted. Tip: back up first via ⋮ → "Export data".`)),
     [
       { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
