@@ -207,5 +207,30 @@ Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen
     (Blöcke z. B. 4 Wochen Aufbau + 1 Woche Deload mit automatisch reduzierten Zielen, Erweiterung von `Plan.kt`)
   - *Groß:* Widget über klassische `RemoteViews` (ohne Glance); Fortschrittsfotos lokal in `filesDir` mit Vorher/Nachher-Schieberegler
     (Backup-Frage klären, nicht ins JSON); Ernährung eher aus Health Connect lesen statt eigenem Tagebuch
+- **Motivation / Belohnung** (besprochen 22.11.2026, Nutzer findet alle Ideen gut, nicht umgesetzt). Grundsatz: positive
+  Verstärkung, keine Schuld-/Verlustangst-Mechanik (kein „Du hast versagt“, Ruhetage nie bestrafen). Empfohlenes erstes Paket: 1 + 3 + 5.
+  1. *Peak-End im SummaryScreen:* Konfetti (selbst gezeichnet, Compose-Canvas / CSS) + Vibration bei Rekorden; immer mindestens
+     einen Erfolg zeigen (bester Vergleich: Volumen vs. letztes Mal, x. Training der Woche, Muskel wieder dabei)
+  2. *Variable Belohnung:* seltene, vorher unbekannte Abzeichen (Frühaufsteher < 7 Uhr, 1 t an einem Tag, 100. Training, alle
+     Muskelgruppen in einer Woche …); zufällige Meerschweinchen-Sprüche, selten Spezialbild
+  3. *Fortschritt sichtbar:* nächste Meilensteine („noch 2,5 kg bis 100 kg Kniebeuge“, „noch 1 Training bis Wochenziel“);
+     Level-System (Volumen/Trainings → Level + Balken), Meerschweinchen verändert sich mit Level (Stirnband, Hantel …)
+  4. *Identität:* Texte wie „9 von 10 Wochen Ziel geschafft – das ist Routine“, Statistik über dich im Rückblick
+     (Lieblingsübung, typische Trainingszeit, stärkste Muskelgruppe)
+  5. *Morgen danach:* Zeile auf der Startseite zum letzten Training („Gestern: 12 Sätze, Rekord bei Rudern“); Erinnerung mit
+     Vorfreude statt Pflicht („Heute Beine – letztes Mal 90 kg, schaffst du 92,5?“ über `Progression.kt`); Neuanfang-Effekt
+     (Montag/Monatsanfang/Neujahr)
+  6. *Serie ohne Angst:* Serie bleibt wochenbasiert; 1 Joker pro Monat (Urlaub/krank), damit sie nicht an einer Woche zerbricht
+  - *Langfristige Ziele im Profil* (Idee des Nutzers): z. B. „100 kg Bankdrücken“, „30 min am Stück laufen“, „20 kg abnehmen“,
+    „Ausdauer erhöhen“, „gesund bleiben“. Typen: Kraft (Übung + kg, über 1RM/Rekord), Cardio (Übung + Minuten), Gewicht
+    (Ziel-kg aus Körpergewicht), Gewohnheit (Ausdauer = Cardio-Minuten/Woche, gesund bleiben = Wochenziel-Quote + alle
+    Muskelgruppen). Fortschritt in % auf der Startseite; positive Meldungen (1, 3, 5) richten sich nach dem Ziel
+    („noch 7,5 kg bis 100 kg“). Speichern im JSON (`goals`, in `readFrom`/`toJson`/`importJson`, Web gleich).
+  - *Vergleich mit anderen* (Idee des Nutzers, „nur 1 % schaffen 100 kg Bankdrücken“): Achtung, belastbare Zahlen über die
+    Gesamtbevölkerung gibt es kaum; vorhandene Tabellen (Strength Standards nach Körpergewicht/Geschlecht, z. B. ExRx,
+    Sammlungen von Kraftsport-Apps) beruhen auf trainierenden Nutzern, nicht auf allen Menschen, Lizenz prüfen. Besser: Stufen
+    nach Vielfachem des Körpergewichts (Anfänger / Fortgeschritten / Erfahren / Elite) statt erfundener Prozentzahlen, Text
+    ehrlich formulieren („stärker als die meisten Trainierenden“). Braucht Geschlecht + Gewicht aus dem Profil.
+  - *Abzeichen + Level* zusammen mit 2/3 umsetzen (Abzeichen-Übersicht im Profil/Einstellungen, rückwirkend aus vorhandenen Daten berechnen).
 - **Play-Store-Veröffentlichung** (besprochen 22.11.2026, nicht umgesetzt): Anforderungen und To-dos in `docs/play-store.md`
   (u. a. Package-Name statt `com.example`, `.aab`, Datenschutzerklärung, 12 Tester × 14 Tage, Bildrechte).
