@@ -756,6 +756,23 @@ fun regionScore(sets: List<GymSet>): Map<String, Float> {
     return score
 }
 
+/**
+ * Geplante Belastung eines Workouts je Region: jede Übung zählt mit ihren Ziel-Sätzen
+ * (Ziel 0 = optional → 1 Satz), gewichtet wie regionScore (Hauptarbeit 1 / mittel 0,5 / leicht 0,25).
+ */
+fun workoutRegionScore(w: Workout): Map<String, Float> {
+    val score = HashMap<String, Float>()
+    for (name in w.exercises.distinct()) {
+        val levels = musclesOf(name)?.levels() ?: continue
+        val n = (w.targets[name] ?: 0).coerceAtLeast(1)
+        for ((r, v) in levels) {
+            val wgt = when (stageOf(v)) { 1f -> 1f; 0.6f -> 0.5f; else -> 0.25f }
+            score[r] = (score[r] ?: 0f) + wgt * n
+        }
+    }
+    return score
+}
+
 /** Sätze je Muskel = seine am stärksten belastete Region (eine Bank-Serie zählt also 1 für die Brust). */
 fun muscleScoreOf(regionScore: Map<String, Float>): Map<String, Float> =
     regionScore.entries.groupBy({ muscleOfRegion(it.key) }, { it.value }).mapValues { it.value.max() }

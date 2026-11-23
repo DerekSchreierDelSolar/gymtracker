@@ -232,8 +232,8 @@
     },
     {
       "keys": ["trainingsplan", "plan", "wochentag", "wochentage", "trainingstage", "erinnerung", "benachrichtigung", "heute dran", "schedule", "weekday", "training days", "reminder", "notification"],
-      "a": ["Öffne ein Workout und wähle oben die „Trainingstage“ (Mo–So). Auf der Startseite steht es dann als „Heute dran“ bzw. „Als Nächstes“. Android: ⋮ → Einstellungen → „Trainings-Erinnerung“ einschalten und Uhrzeit wählen – an geplanten Tagen kommt eine Benachrichtigung, wenn du noch nicht trainiert hast.",
-            "Open a workout and pick its \"Training days\" (Mon–Sun) at the top. The home screen then shows it as \"Today\" or \"Next\". Android: ⋮ → Settings → turn on \"Workout reminder\" and choose a time – on planned days you get a notification if you haven't trained yet."]
+      "a": ["Öffne ein Workout, wechsle zum Reiter „Überblick“ und wähle die „Trainingstage“ (Mo–So). Auf der Startseite steht es dann als „Heute dran“ bzw. „Als Nächstes“. Android: ⋮ → Einstellungen → „Trainings-Erinnerung“ einschalten und Uhrzeit wählen – an geplanten Tagen kommt eine Benachrichtigung, wenn du noch nicht trainiert hast.",
+            "Open a workout, switch to the \"Overview\" tab and pick its \"Training days\" (Mon–Sun). The home screen then shows it as \"Today\" or \"Next\". Android: ⋮ → Settings → turn on \"Workout reminder\" and choose a time – on planned days you get a notification if you haven't trained yet."]
     },
     {
       "keys": ["welche daten teilt", "welche daten liest", "welche daten schreibt", "welche daten health", "daten uebertragen", "werden uebertragen", "was wird uebertragen", "was wird geteilt", "datenschutz health connect", "datenschutz health", "daten teilen", "which data", "what data", "what is shared", "privacy health", "datenschutz bei health connect", "health connect datenschutz", "sicher health connect", "health connect sicher", "ist health connect sicher", "is health connect safe"],

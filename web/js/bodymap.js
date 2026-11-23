@@ -334,6 +334,24 @@ export function regionScore(sets) {
   return score;
 }
 
+/**
+ * Geplante Belastung eines Workouts je Region: jede Übung zählt mit ihren Ziel-Sätzen (0 = optional → 1),
+ * gewichtet wie regionScore (wie workoutRegionScore in BodyMap.kt).
+ */
+export function workoutRegionScore(w) {
+  const score = {};
+  for (const name of new Set(w.exercises)) {
+    const m = musclesOf(name);
+    if (!m) continue;
+    const n = Math.max(1, w.targets?.[name] ?? 0);
+    for (const [r, v] of Object.entries(levelsOf(m))) {
+      const st = stageOf(v);
+      score[r] = (score[r] ?? 0) + (st === 1 ? 1 : st === 0.6 ? 0.5 : 0.25) * n;
+    }
+  }
+  return score;
+}
+
 /** Sätze je Muskel = seine am stärksten belastete Region. */
 export function muscleScoreOf(regionScore) {
   const out = {};

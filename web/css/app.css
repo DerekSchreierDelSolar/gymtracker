@@ -545,6 +545,7 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 
 /* ---------- Trainingsplan ---------- */
 .plan-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.card > .plan-row { margin-bottom: 0; }
 .plan-days { display: block; font-weight: 600; }
 
 /* ---------- Workout: Übungen als Liste mit Ziehen ---------- */

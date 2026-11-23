@@ -94,6 +94,8 @@ fun GymApp(store: GymStore) {
     var showSettings by rememberSaveable { mutableStateOf(false) } // Einstellungen (SettingsScreen.kt)
     var showBot by rememberSaveable { mutableStateOf(false) }   // „Fragen“ (früher ein Tab, jetzt über ⋮ / Wiki)
     var workoutId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Reiter im Workout (0 = Übungen, 1 = Überblick); liegt hier, damit er beim Zurückkehren aus Übung/Training erhalten bleibt
+    var workoutTab by rememberSaveable(workoutId) { mutableIntStateOf(0) }
     var pickForWorkout by rememberSaveable { mutableStateOf(false) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
     // Laufendes Training: Startzeit (null = kein Training), Workout und aktuelle Übung.
@@ -256,7 +258,9 @@ fun GymApp(store: GymStore) {
                         onStart = { startTraining(workout.id) },
                         onOpenSession = { summaryId = it },
                         onDuplicate = { store.duplicateWorkout(workout.id)?.let { workoutId = it.id } },
-                        running = start != null && trainingWorkoutId == workout.id
+                        running = start != null && trainingWorkoutId == workout.id,
+                        tab = workoutTab,
+                        onTab = { workoutTab = it }
                     )
                 }
                 showCatalog -> {

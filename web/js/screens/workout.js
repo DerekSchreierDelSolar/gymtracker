@@ -1,7 +1,7 @@
 // Workouts, Übungsauswahl, Katalog – entspricht WorkoutScreens.kt und CatalogScreen.kt.
 
 import { wikiButton, wikiFor, wikiContent } from '../wiki.js';
-import { musclePicker, musclesOf, muscleSideCard, levelsOf } from '../bodymap.js';
+import { musclePicker, musclesOf, muscleSideCard, levelsOf, heatCard, workoutRegionScore } from '../bodymap.js';
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import { fmtVol,
@@ -77,6 +77,38 @@ function daysRow(w) {
 
 // ---------- Ein Workout ----------
 
+// Gewählter Reiter je Workout (0 = Übungen, 1 = Überblick), übersteht das Neuzeichnen (wie workoutTab in GymApp)
+const workoutTabOf = {};
+
+/** Reiter „Überblick“: Trainingstage, beanspruchte Muskeln (Heatmap), letzte Trainingseinheiten (wie WorkoutOverview) */
+function workoutOverview(w, history) {
+  return h('div', { class: 'pad stack list-bottom' },
+    h('div', { class: 'card pad-m' }, daysRow(w)),
+    // Heatmap: welche Muskeln die Übungen dieses Workouts beanspruchen (gewichtet nach Ziel-Sätzen)
+    w.exercises.length ? heatCard({
+      title: tr('Beanspruchte Muskeln', 'Muscles worked'),
+      score: workoutRegionScore(w),
+      showSets: false,
+      empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),
+      header: muted(tr('Aus den Übungen dieses Workouts, gewichtet nach Ziel-Sätzen (Hilfsmuskel zählt ½).',
+        "From this workout's exercises, weighted by target sets (secondary counts ½)."), 'small'),
+    }) : null,
+    h('h2', { class: 'section' }, tr('Letzte Trainingseinheiten', 'Recent sessions')),
+    history.length
+      ? h('div', { class: 'stack' }, history.map(t => {
+        const s = sessionStats(store, t);
+        return h('button', { class: 'card row-card', onclick: () => go({ summaryId: t.id }) },
+          h('div', { class: 'grow' },
+            h('b', null, fmtDateTime(t.start)),
+            h('small', { class: 'muted' }, `${s.percent} % · ${fmtDuration(t.end - t.start)} · ` +
+              plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) +
+              (s.volume > 0 ? ` · ${fmtVol(s.volume)}` : '') + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)} kcal` : ''))),
+          s.records > 0 ? h('span', null, `🏆 ${s.records}`) : null,
+          icon('chevron'));
+      }))
+      : muted(tr('Mit diesem Workout wurde noch nicht trainiert.', 'No sessions with this workout yet.')));
+}
+
 /** running = ein (minimiertes) Training mit diesem Workout läuft → „Training fortsetzen“ */
 export function workoutScreen(w, onStart, running = false) {
   const history = store.sessionsFor(w.id);
@@ -88,41 +120,30 @@ export function workoutScreen(w, onStart, running = false) {
       { label: tr('Löschen', 'Delete'), danger: true, onClick: () => { closeDialog(); store.deleteWorkout(w.id); goBack(); } },
     ], closeDialog));
 
+  const tab = workoutTabOf[w.id] ?? 0;
   let content;
-  if (!w.exercises.length) {
+  if (tab === 1) {
+    content = workoutOverview(w, history);
+  } else if (!w.exercises.length) {
     content = h('div', { class: 'pad stack' },
       h('p', null, tr('Dieses Workout hat noch keine Übungen.', 'This workout has no exercises yet.')),
-      h('div', null, h('button', { class: 'btn', onclick: () => go({ pick: true }) }, tr('Übungen auswählen', 'Choose exercises'))),
-      daysRow(w));
+      h('div', null, h('button', { class: 'btn', onclick: () => go({ pick: true }) }, tr('Übungen auswählen', 'Choose exercises'))));
   } else {
     const list = h('div', { class: 'ex-list' }, w.exercises.map((name, i) => exerciseRow(w, name, i < w.exercises.length - 1)));
     enableDrag(list, w);
     content = h('div', { class: 'pad list-bottom' },
-      daysRow(w),
       // Bedienhinweis nur, bis einmal umsortiert wurde (Hints)
       showHint('drag') ? muted(tr('Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.',
         'Tip: drag the handle on the right (or long-press a row) to change the order.'), 'small') : null,
       list,
       // Beschrifteter Knopf statt nur Stift oben (wie WorkoutScreen.kt)
-      h('button', { class: 'btn outline wide add-exercises', onclick: () => go({ pick: true }) }, icon('add'), tr('Übungen hinzufügen / bearbeiten', 'Add / edit exercises')),
-      history.length ? [
-        h('h2', { class: 'section' }, tr('Letzte Trainingseinheiten', 'Recent sessions')),
-        h('div', { class: 'stack' }, history.map(t => {
-          const s = sessionStats(store, t);
-          return h('button', { class: 'card row-card', onclick: () => go({ summaryId: t.id }) },
-            h('div', { class: 'grow' },
-              h('b', null, fmtDateTime(t.start)),
-              h('small', { class: 'muted' }, `${s.percent} % · ${fmtDuration(t.end - t.start)} · ` +
-                plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) +
-                (s.volume > 0 ? ` · ${fmtVol(s.volume)}` : '') + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)} kcal` : ''))),
-            s.records > 0 ? h('span', null, `🏆 ${s.records}`) : null,
-            icon('chevron'));
-        })),
-      ] : null);
+      h('button', { class: 'btn outline wide add-exercises', onclick: () => go({ pick: true }) }, icon('add'), tr('Übungen hinzufügen / bearbeiten', 'Add / edit exercises')));
   }
 
   return screen({
-    title: w.name, back: true, key: 'workout-' + w.id,
+    title: w.name, back: true, key: `workout-${w.id}-${tab}`,
+    top: h('div', { class: 'tab-row' }, [tr('Übungen', 'Exercises'), tr('Überblick', 'Overview')].map((label, i) =>
+      h('button', { class: ['tab', i === tab && 'selected'], onclick: () => { workoutTabOf[w.id] = i; rerender(); } }, label))),
     actions: [
       iconBtn('copy', () => { const c = store.duplicateWorkout(w.id); if (c) { update({ workoutId: c.id }); toast(tr('Kopie angelegt', 'Copy created')); } }, { label: tr('Kopieren', 'Duplicate') }),
       iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') }),

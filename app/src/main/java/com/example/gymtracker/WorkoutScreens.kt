@@ -153,13 +153,17 @@ fun WorkoutScreen(
     onOpenSession: (Long) -> Unit,
     onDuplicate: () -> Unit,
     /** Läuft gerade (minimiert) ein Training mit diesem Workout? → „Training fortsetzen“ */
-    running: Boolean = false
+    running: Boolean = false,
+    /** Reiter: 0 = Übungen, 1 = Überblick (Trainingstage, Muskeln, letzte Trainings); Zustand liegt in GymApp */
+    tab: Int = 0,
+    onTab: (Int) -> Unit = {}
 ) {
     var confirmDelete by remember { mutableStateOf(false) }
     val history = store.sessionsFor(workout.id)
 
     // ----- Drag & Drop zum Umsortieren (Liste) -----
     val listState = rememberLazyListState()
+    val overviewState = rememberLazyListState()
     var dragKey by remember { mutableStateOf<String?>(null) }  // gerade gezogene Übung
     var dragY by remember { mutableFloatStateOf(0f) }          // senkrechte Verschiebung gegenüber ihrem Listenplatz
     val haptic = LocalHapticFeedback.current
@@ -244,14 +248,25 @@ fun WorkoutScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(workout.name, style = MaterialTheme.typography.headlineSmall) },
-                navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
-                actions = {
-                    IconAction(Ico.COPY, onClick = onDuplicate)
-                    IconAction(Ico.DELETE, onClick = { confirmDelete = true })
+            Column {
+                TopAppBar(
+                    title = { Text(workout.name, style = MaterialTheme.typography.headlineSmall) },
+                    navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
+                    actions = {
+                        IconAction(Ico.COPY, onClick = onDuplicate)
+                        IconAction(Ico.DELETE, onClick = { confirmDelete = true })
+                    }
+                )
+                PrimaryTabRow(selectedTabIndex = tab) {
+                    listOf(tr("Übungen", "Exercises"), tr("Überblick", "Overview")).forEachIndexed { i, label ->
+                        Tab(
+                            selected = tab == i, onClick = { onTab(i) },
+                            text = { Text(label, maxLines = 1) },
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            )
+            }
         },
         floatingActionButton = {
             if (workout.exercises.isNotEmpty()) {
@@ -262,7 +277,7 @@ fun WorkoutScreen(
                     icon = { AppIcon(Ico.PLAY) },
                     text = { Text(if (running) tr("Training fortsetzen", "Resume workout") else tr("Training starten", "Start workout")) },
                     // beim Scrollen nur noch das Symbol → verdeckt keinen Text
-                    expanded = listState.firstVisibleItemIndex == 0
+                    expanded = (if (tab == 0) listState else overviewState).firstVisibleItemIndex == 0
                 )
             }
         }
@@ -270,13 +285,13 @@ fun WorkoutScreen(
         val modifier = Modifier
             .padding(padding)
             .fillMaxSize()
-        if (workout.exercises.isEmpty()) {
+        if (tab == 1) {
+            WorkoutOverview(store, workout, history, overviewState, modifier, onOpenSession)
+        } else if (workout.exercises.isEmpty()) {
             Column(modifier.padding(16.dp)) {
                 Text(tr("Dieses Workout hat noch keine Übungen.", "This workout has no exercises yet."))
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = onEdit) { Text(tr("Übungen auswählen", "Choose exercises")) }
-                Spacer(Modifier.height(16.dp))
-                WorkoutDaysRow(store, workout)
             }
         } else {
             LazyColumn(
@@ -286,7 +301,6 @@ fun WorkoutScreen(
                 contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item { WorkoutDaysRow(store, workout, Modifier.padding(bottom = 8.dp)) }
                 // Bedienhinweis nur, bis einmal umsortiert wurde
                 if (Hints.show(Hints.DRAG)) item {
                     Text(
@@ -353,40 +367,6 @@ fun WorkoutScreen(
                         Text(tr("Übungen hinzufügen / bearbeiten", "Add / edit exercises"))
                     }
                 }
-                // Bisherige Trainings dieses Workouts
-                if (history.isNotEmpty()) {
-                    item {
-                        Text(
-                            tr("Letzte Trainingseinheiten", "Recent sessions"),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(top = 12.dp, start = 4.dp)
-                        )
-                    }
-                    items(history, key = { "s_${it.id}" }) { t ->
-                        val stats = sessionStats(store, t)
-                        Card(
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable { onOpenSession(t.id) }
-                        ) {
-                            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    Text(fmtDateTime(t.start), style = MaterialTheme.typography.titleSmall)
-                                    Text(
-                                        "${stats.percent} % · ${fmtDuration(t.end - t.start)} · " +
-                                            plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                            (if (stats.volume > 0) " · ${fmtVol(stats.volume)}" else "") +
-                                            (stats.kcal?.let { " · 🔥 ${fmtKcal(it)} kcal" } ?: ""),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                if (stats.records > 0) Text("🏆 ${stats.records}")
-                                AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -414,6 +394,88 @@ fun WorkoutScreen(
                 TextButton(onClick = { confirmDelete = false }) { Text(tr("Abbrechen", "Cancel")) }
             }
         )
+    }
+}
+
+/** Reiter „Überblick“ eines Workouts: Trainingstage, beanspruchte Muskeln (Heatmap) und letzte Trainingseinheiten. */
+@Composable
+private fun WorkoutOverview(
+    store: GymStore,
+    workout: Workout,
+    history: List<TrainingSession>,
+    state: androidx.compose.foundation.lazy.LazyListState,
+    modifier: Modifier,
+    onOpenSession: (Long) -> Unit
+) {
+    LazyColumn(
+        modifier,
+        state = state,
+        // unten Platz für den schwebenden Start-Button
+        contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 96.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        item {
+            Card(Modifier.fillMaxWidth()) { WorkoutDaysRow(store, workout, Modifier.padding(16.dp)) }
+        }
+        // Heatmap: welche Muskeln die Übungen dieses Workouts beanspruchen (gewichtet nach Ziel-Sätzen)
+        if (workout.exercises.isNotEmpty()) item {
+            MuscleHeatCard(
+                title = tr("Beanspruchte Muskeln", "Muscles worked"),
+                score = workoutRegionScore(workout),
+                showSets = false,
+                empty = tr("Für diese Übungen sind keine Muskeln hinterlegt.", "No muscles known for these exercises."),
+                header = {
+                    Text(
+                        tr(
+                            "Aus den Übungen dieses Workouts, gewichtet nach Ziel-Sätzen (Hilfsmuskel zählt ½).",
+                            "From this workout's exercises, weighted by target sets (secondary counts ½)."
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            )
+        }
+        // Bisherige Trainings dieses Workouts
+        item {
+            Text(
+                tr("Letzte Trainingseinheiten", "Recent sessions"),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 12.dp, start = 4.dp)
+            )
+        }
+        if (history.isEmpty()) item {
+            Text(
+                tr("Mit diesem Workout wurde noch nicht trainiert.", "No sessions with this workout yet."),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        }
+        items(history, key = { "s_${it.id}" }) { t ->
+            val stats = sessionStats(store, t)
+            Card(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { onOpenSession(t.id) }
+            ) {
+                Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(fmtDateTime(t.start), style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "${stats.percent} % · ${fmtDuration(t.end - t.start)} · " +
+                                plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")) +
+                                (if (stats.volume > 0) " · ${fmtVol(stats.volume)}" else "") +
+                                (stats.kcal?.let { " · 🔥 ${fmtKcal(it)} kcal" } ?: ""),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (stats.records > 0) Text("🏆 ${stats.records}")
+                    AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
     }
 }
 
