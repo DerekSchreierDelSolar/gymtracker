@@ -2,7 +2,7 @@
 // Im JSON als "goals": [{ id, type, exercise?, target, start, created }].
 
 import { store, GOAL_NEEDS_EXERCISE } from './store.js';
-import { tr, exName, fmtW, fmtDate, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, parseNum, sortByName } from './core.js';
+import { fmtKg, fmtWU, wUnit, fromUnit, isLb, tr, exName, fmtW, fmtDate, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, parseNum, sortByName } from './core.js';
 import { CATALOG } from './data.js';
 import { allSessions } from './stats.js';
 import { exerciseIconHtml } from './pictograms.js';
@@ -11,9 +11,9 @@ import { openDialog, closeDialog, rerender } from './nav.js';
 import { nextMilestones, milestoneRows } from './milestones.js';
 
 const TYPES = () => [
-  ['STRENGTH', '🏋️', tr('Gewicht schaffen', 'Lift a weight'), tr('z. B. 100 kg Bankdrücken', 'e.g. 100 kg bench press')],
+  ['STRENGTH', '🏋️', tr('Gewicht schaffen', 'Lift a weight'), tr(`z. B. ${exBench()} Bankdrücken`, `e.g. ${exBench()} bench press`)],
   ['ENDURANCE', '⏱️', tr('Zeit am Stück', 'Go the distance'), tr('z. B. 30 min laufen oder 2 min Unterarmstütz', 'e.g. run 30 min or hold a plank for 2 min')],
-  ['BODYWEIGHT', '⚖️', tr('Körpergewicht', 'Body weight'), tr('z. B. 10 kg abnehmen', 'e.g. lose 10 kg')],
+  ['BODYWEIGHT', '⚖️', tr('Körpergewicht', 'Body weight'), tr(`z. B. ${exLose()} abnehmen`, `e.g. lose ${exLose()}`)],
   ['CARDIO_WEEK', '🫀', tr('Ausdauer steigern', 'Build endurance'), tr('Cardio-Minuten pro Woche', 'Cardio minutes per week')],
   ['REGULAR', '💚', tr('Gesund bleiben', 'Stay healthy'), tr('regelmäßig dein Wochenziel schaffen', 'hit your weekly goal regularly')],
 ];
@@ -33,10 +33,10 @@ function bestValue(type, ex) {
 
 export function goalTitle(g) {
   switch (g.type) {
-    case 'STRENGTH': return `${fmtW(g.target)} kg ${exName(g.exercise)}`;
+    case 'STRENGTH': return `${fmtKg(g.target)} ${exName(g.exercise)}`;
     case 'ENDURANCE': return `${fmtAmount(g.exercise, g.target)} ${exName(g.exercise)}`;
-    case 'BODYWEIGHT': return g.target < g.start ? tr(`Auf ${fmtW(g.target)} kg abnehmen`, `Get down to ${fmtW(g.target)} kg`)
-      : tr(`Auf ${fmtW(g.target)} kg zunehmen`, `Get up to ${fmtW(g.target)} kg`);
+    case 'BODYWEIGHT': return g.target < g.start ? tr(`Auf ${fmtKg(g.target)} abnehmen`, `Get down to ${fmtKg(g.target)}`)
+      : tr(`Auf ${fmtKg(g.target)} zunehmen`, `Get up to ${fmtKg(g.target)}`);
     case 'CARDIO_WEEK': return tr(`${fmtW(g.target)} min Cardio pro Woche`, `${fmtW(g.target)} min cardio per week`);
     default: return tr(`In ${g.target} Wochen das Wochenziel schaffen`, `Hit the weekly goal in ${g.target} weeks`);
   }
@@ -53,7 +53,7 @@ const cardioMinutes = (from, to) => store.sets.filter(s => isWork(s) && s.time >
 export function goalProgress(g) {
   if (needsExercise(g.type)) {
     const ex = g.exercise;
-    const fmt = g.type === 'STRENGTH' ? v => `${fmtW(v)} kg` : v => fmtAmount(ex, v);
+    const fmt = g.type === 'STRENGTH' ? v => `${fmtKg(v)}` : v => fmtAmount(ex, v);
     const metric = metricOf(g.type);
     const sets = topSets(ex);
     const cur = sets.length ? Math.max(...sets.map(metric)) : 0;
@@ -74,14 +74,14 @@ export function goalProgress(g) {
     const cur = store.weights.at(-1)?.kg ?? g.start;
     const reachedAt = store.weights.find(w => w.time >= g.created && (lose ? w.kg <= g.target : w.kg >= g.target))?.time ?? null;
     const progress = lose ? g.start - cur : cur - g.start;
-    const rest = fmtW(Math.abs(cur - g.target));
+    const rest = fmtKg(Math.abs(cur - g.target));
     const fraction = reachedAt ? 1 : way(g.start, cur, g.target);
     return {
-      fraction, reachedAt, short: pct(fraction), value: `${fmtW(cur)} kg`,
+      fraction, reachedAt, short: pct(fraction), value: `${fmtKg(cur)}`,
       detail: reachedAt ? done(reachedAt)
-        : progress > 0 ? tr(`${fmtW(progress)} kg geschafft · noch ${rest} kg`, `${fmtW(progress)} kg done · ${rest} kg to go`)
+        : progress > 0 ? tr(`${fmtKg(progress)} geschafft · noch ${rest}`, `${fmtKg(progress)} done · ${rest} to go`)
           // noch kein Fortschritt: nur den Weg nennen, nicht „falsche Richtung“ vorhalten
-          : tr(`Start ${fmtW(g.start)} kg · noch ${rest} kg`, `Started at ${fmtW(g.start)} kg · ${rest} kg to go`),
+          : tr(`Start ${fmtKg(g.start)} · noch ${rest}`, `Started at ${fmtKg(g.start)} · ${rest} to go`),
     };
   }
   if (g.type === 'CARDIO_WEEK') {
@@ -126,9 +126,9 @@ export function goalsCard() {
     h('div', { class: 'row' }, h('b', { class: 'grow goals-title' }, tr('🎯 Meine Ziele', '🎯 My goals')),
       h('button', { class: 'btn text', onclick: () => goalDialog(null) }, tr('+ Ziel', '+ Goal'))),
     items.length ? null : miles.length
-      ? muted(tr('Noch kein eigenes Ziel – z. B. 100 kg Bankdrücken oder 10 kg abnehmen.', 'No goal of your own yet – e.g. 100 kg bench press or lose 10 kg.'), 'goals-empty small')
-      : muted(tr('Setz dir ein langfristiges Ziel – z. B. 100 kg Bankdrücken, 30 min laufen oder 10 kg abnehmen. Hier siehst du dann, wie nah du dran bist.',
-        "Set yourself a long-term goal – e.g. 100 kg bench press, run 30 min or lose 10 kg. You'll see here how close you are."), 'goals-empty'),
+      ? muted(tr(`Noch kein eigenes Ziel – z. B. ${exBench()} Bankdrücken oder ${exLose()} abnehmen.`, `No goal of your own yet – e.g. ${exBench()} bench press or lose ${exLose()}.`), 'goals-empty small')
+      : muted(tr(`Setz dir ein langfristiges Ziel – z. B. ${exBench()} Bankdrücken, 30 min laufen oder ${exLose()} abnehmen. Hier siehst du dann, wie nah du dran bist.`,
+        `Set yourself a long-term goal – e.g. ${exBench()} bench press, run 30 min or lose ${exLose()}. You'll see here how close you are.`), 'goals-empty'),
     items.map(([g, p]) => goalRow(g, p, () => goalDialog(g))),
     miles.length ? [h('small', { class: 'muted goals-sub' }, tr('🏁 Als Nächstes', '🏁 Up next')), milestoneRows(miles)] : null);
 }
@@ -151,15 +151,17 @@ const fitsType = (type, n) => (isCardio(store.groupOf(n)) || isTimed(n)) === (ty
 export function goalDialog(goal) {
   const st = {
     type: goal?.type ?? null, exercise: goal?.exercise ?? null, query: '',
-    text: goal && !['CARDIO_WEEK', 'REGULAR'].includes(goal.type) ? fmtW(goal.target) : '',
+    text: goal && !inWeight(goal.type) && !['CARDIO_WEEK', 'REGULAR'].includes(goal.type) ? fmtW(goal.target) : goal && inWeight(goal.type) ? fmtWU(goal.target) : '',
     steps: goal && ['CARDIO_WEEK', 'REGULAR'].includes(goal.type) ? goal.target : 0,
   };
   const pickType = t => { Object.assign(st, { type: t, exercise: null, text: '', steps: t === 'CARDIO_WEEK' ? 90 : t === 'REGULAR' ? 12 : 0 }); rerender(); };
   const currentWeight = () => store.weights.at(-1)?.kg ?? null;
+  // Kraft- und Gewichtsziele in kg gespeichert, im Feld in der gewählten Einheit
+  const targetNum = t => { const n = parseNum(st.text); return n != null && inWeight(t) ? fromUnit(n) : n; };
 
   /** Fehlermeldung, '' = noch unvollständig, null = gültig */
   function error() {
-    const t = st.type, n = parseNum(st.text);
+    const t = st.type, n = targetNum(t);
     if (!t) return '';
     if (needsExercise(t)) {
       if (!st.exercise || n == null || n <= 0) return '';
@@ -169,7 +171,7 @@ export function goalDialog(goal) {
     }
     if (t === 'BODYWEIGHT') {
       if (currentWeight() == null || n == null || n < 20 || n > 400) return '';
-      if (n === currentWeight()) return tr('Das ist dein aktuelles Gewicht', "That's your current weight");
+      if (Math.abs(n - currentWeight()) < 0.05) return tr('Das ist dein aktuelles Gewicht', "That's your current weight");
     }
     return null;
   }
@@ -177,7 +179,7 @@ export function goalDialog(goal) {
   function save() {
     const t = st.type;
     if (!t || error() != null) return;
-    const target = ['CARDIO_WEEK', 'REGULAR'].includes(t) ? st.steps : parseNum(st.text);
+    const target = ['CARDIO_WEEK', 'REGULAR'].includes(t) ? st.steps : targetNum(t);
     // Start nur beim Anlegen (bzw. bei geänderter Übung) festhalten – sonst wäre der bisherige Fortschritt weg
     const keep = goal && goal.type === t && goal.exercise === (st.exercise ?? undefined);
     const start = keep ? goal.start : needsExercise(t) ? bestValue(t, st.exercise) ?? 0 : t === 'BODYWEIGHT' ? currentWeight() : 0;
@@ -231,14 +233,14 @@ export function goalDialog(goal) {
       out.push(h('div', { class: 'row' },
         h('span', { html: exerciseIconHtml(st.exercise, store.groupOf(st.exercise), 32) }),
         h('span', { class: 'grow' }, exName(st.exercise),
-          h('small', { class: 'muted' }, best != null ? tr('Bisher bestes: ', 'Best so far: ') + (t === 'STRENGTH' ? `${fmtW(best)} kg` : fmtAmount(st.exercise, best))
+          h('small', { class: 'muted' }, best != null ? tr('Bisher bestes: ', 'Best so far: ') + (t === 'STRENGTH' ? `${fmtKg(best)}` : fmtAmount(st.exercise, best))
             : tr('Noch nicht gemacht', 'Not done yet'))),
         h('button', { class: 'btn text', onclick: () => { st.exercise = null; st.query = ''; rerender(); } }, tr('Ändern', 'Change'))));
     }
-    if (t === 'BODYWEIGHT') out.push(h('p', null, currentWeight() != null ? tr(`Aktuell: ${fmtW(currentWeight())} kg`, `Current: ${fmtW(currentWeight())} kg`)
+    if (t === 'BODYWEIGHT') out.push(h('p', null, currentWeight() != null ? tr(`Aktuell: ${fmtKg(currentWeight())}`, `Current: ${fmtKg(currentWeight())}`)
       : tr('Trag zuerst im Tab „Körper“ dein Gewicht ein.', 'First log your weight in the "Body" tab.')));
     if (needsExercise(t) || (t === 'BODYWEIGHT' && currentWeight() != null)) {
-      const unit = t === 'ENDURANCE' ? (isCardio(store.groupOf(st.exercise)) ? tr('Minuten', 'minutes') : tr('Sekunden', 'seconds')) : 'kg';
+      const unit = t === 'ENDURANCE' ? (isCardio(store.groupOf(st.exercise)) ? tr('Minuten', 'minutes') : tr('Sekunden', 'seconds')) : wUnit();
       out.push(textField({
         id: 'goal-target', label: tr(`Ziel in ${unit}`, `Goal in ${unit}`), value: st.text, inputmode: 'decimal', error: err || null,
         oninput: v => { st.text = v.replace(/[^\d.,]/g, '').slice(0, 6); rerender(); }, onenter: save,
@@ -268,3 +270,9 @@ export function goalDialog(goal) {
     return dialog(goal ? tr('Ziel bearbeiten', 'Edit goal') : tr('Neues Ziel', 'New goal'), body(), actions, closeDialog);
   });
 }
+
+/** Ziel-Typen, deren Wert ein Gewicht ist (gespeichert in kg). */
+const inWeight = t => t === 'STRENGTH' || t === 'BODYWEIGHT';
+/** Beispielwerte in den Texten passend zur Einheit (runde Werte statt umgerechneter). */
+const exBench = () => (isLb() ? '225 lbs' : '100 kg');
+const exLose = () => (isLb() ? '20 lbs' : '10 kg');

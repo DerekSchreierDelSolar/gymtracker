@@ -1,6 +1,6 @@
 // Anstrengung (RIR) + %-Tabelle zum 1RM (Roadmap Schritt 12) – entspricht Effort.kt.
 
-import { tr, fmtW } from './core.js';
+import { fmtKg, roundPlate, tr, fmtW } from './core.js';
 import { h, chip } from './ui.js';
 
 /** „RIR 2“ bzw. „RIR 4+“ */
@@ -26,10 +26,10 @@ const PERCENT_REPS = [[100, '1'], [95, '2'], [90, '3–4'], [85, '5–6'], [80, 
 export function oneRmTable(orm) {
   if (!(orm > 0)) return null;
   return h('div', { class: 'card pad-m glass orm-table' },
-    h('b', null, tr(`Prozente vom 1RM (${fmtW(orm)} kg)`, `Percent of 1RM (${fmtW(orm)} kg)`)),
+    h('b', null, tr(`Prozente vom 1RM (${fmtKg(orm)})`, `Percent of 1RM (${fmtKg(orm)})`)),
     h('small', { class: 'muted' }, tr('Geschätzt aus deinem besten Satz – Wdh. als Faustregel.', 'Estimated from your best set – reps as a rule of thumb.')),
     PERCENT_REPS.map(([p, reps]) => h('div', { class: 'orm-row' },
       h('span', { class: 'muted orm-p' }, `${p} %`),
-      h('b', { class: 'grow' }, `${fmtW(p === 100 ? orm : Math.floor(orm * p / 100 / 2.5 + 0.5) * 2.5)} kg`),
+      h('b', { class: 'grow' }, `${fmtKg(p === 100 ? orm : roundPlate(orm * p / 100))}`),
       h('span', { class: 'muted' }, tr(`${reps} Wdh.`, `${reps} reps`)))));
 }

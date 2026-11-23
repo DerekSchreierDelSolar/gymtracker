@@ -1,7 +1,7 @@
 // Jahresrückblick „Dein Jahr“ (Roadmap Schritt 17) – entspricht Wrapped.kt.
 
 import { store } from './store.js';
-import { tr, exName, fmtW, fmtKcal, plural, isTop, isWork, isTimed, isCardio, dayKey, startOfWeek, groupLabel, appLanguage } from './core.js';
+import { fmtWU, fmtKg, toBig, bigUnit, tr, exName, fmtW, fmtKcal, plural, isTop, isWork, isTimed, isCardio, dayKey, startOfWeek, groupLabel, appLanguage } from './core.js';
 import { allSessions, sessionStats, recordEvents, streakFrom } from './stats.js';
 import { goalProgress, goalTitle } from './goals.js';
 import { badges, earnedBadges } from './badges.js';
@@ -77,7 +77,7 @@ function yearDialog(initial) {
     const tiles = [[tr('Trainings', 'Workouts'), String(r.sessions)]];
     if (r.durationMs > 0) tiles.push([tr('Trainingszeit', 'Training time'), fmtHoursMinutes(r.durationMs)]);
     tiles.push([tr('Sätze', 'Sets'), fmtKcal(r.sets)]);
-    if (r.volume > 0) tiles.push([tr('Bewegt', 'Lifted'), `${fmtW(Math.round(r.volume / 100) / 10)} t`]);
+    if (r.volume > 0) tiles.push([tr('Bewegt', 'Lifted'), `${fmtW(Math.round(toBig(r.volume) * 10) / 10)} ${bigUnit()}`]);
     if (r.kcal != null) tiles.push(['🔥 kcal', `~${fmtKcal(r.kcal)}`]);
     tiles.push([tr('Rekorde', 'Records'), `🏆 ${r.records}`]);
     return dialog(tr(`🎉 Dein Jahr ${r.year}`, `🎉 Your year ${r.year}`), [
@@ -86,7 +86,7 @@ function yearDialog(initial) {
         h('div', { class: 'stat-grid three' }, tiles.map(([l, v]) => statBox(l, v))),
         h('hr'),
         r.favorite ? line('❤️', tr('Lieblingsübung', 'Favourite exercise'), `${exName(r.favorite[0])} · ` + plural(r.favorite[1], tr('Satz', 'set'), tr('Sätze', 'sets'))) : null,
-        r.recordJump ? line('🚀', tr('Größter Sprung', 'Biggest jump'), `${exName(r.recordJump[0])}: ${fmtW(r.recordJump[1])} → ${fmtW(r.recordJump[2])} kg (+${fmtW(r.recordJump[2] - r.recordJump[1])})`) : null,
+        r.recordJump ? line('🚀', tr('Größter Sprung', 'Biggest jump'), `${exName(r.recordJump[0])}: ${fmtWU(r.recordJump[1])} → ${fmtKg(r.recordJump[2])} (+${fmtWU(r.recordJump[2] - r.recordJump[1])})`) : null,
         r.topGroup ? line('💪', tr('Am meisten trainiert', 'Most trained'), groupLabel(r.topGroup)) : null,
         r.bestMonth ? line('📅', tr('Stärkster Monat', 'Best month'), `${monthName(r.bestMonth[0])} · ` + plural(r.bestMonth[1], 'Training', tr('Trainings', 'workouts'))) : null,
         r.longestStreak >= 2 ? line('🔥', tr('Längste Serie', 'Longest streak'), tr(`${r.longestStreak} Wochen in Folge`, `${r.longestStreak} weeks in a row`)) : null,

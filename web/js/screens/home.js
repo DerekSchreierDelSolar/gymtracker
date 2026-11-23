@@ -1,7 +1,7 @@
 // Startseite mit 5 Tabs – entspricht HomeScreen.kt, DashboardTab.kt, CalendarTab.kt, BodyTab.kt („Fragen“ ist ein eigener Bildschirm).
 
 import { store } from '../store.js';
-import {
+import { fmtKg, fmtVol, fmtWU, wUnit, toUnit, parseW, isLb, weightUnit,
   tr, exName, sortByName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDuration, fmtShortDate, fmtWeek, plural, isCardio, isEnglish, groupLabel,
   GROUP_KEYS, startOfWeek, addDays, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
@@ -172,6 +172,9 @@ function settingsDialog() {
       .map(([m, l]) => chip(l, store.themeMode === m, () => store.setTheme(m)))),
     h('b', { class: 'small-title' }, tr('Sprache', 'Language')),
     h('div', { class: 'chips' }, [['de', 'Deutsch'], ['en', 'English']].map(([l, label]) => chip(label, appLanguage === l, () => store.setLanguage(l)))),
+    // Gewichtseinheit: nur Anzeige/Eingabe, gespeichert wird immer kg (wie SettingsDialog in HomeScreen.kt)
+    h('b', { class: 'small-title' }, tr('Gewichtseinheit', 'Weight unit')),
+    h('div', { class: 'chips' }, [['kg', 'kg'], ['lb', 'lbs']].map(([u, label]) => chip(label, weightUnit === u, () => store.setUnit(u)))),
     profileSettings(),
     cycleSettings(),
     // Fortschritt zurücksetzen (wie SettingsDialog in HomeScreen.kt): Nachfrage, danach „Rückgängig“
@@ -239,7 +242,7 @@ function dashboardTab(onStartWorkout) {
      h('hr', { class: 'card-divider' }),
      h('div', { class: 'week-stats' },
        weekStat(tr('Sätze', 'Sets'), String(weekStats.reduce((a, s) => a + s.sets, 0))),
-       weekStat(tr('Volumen', 'Volume'), `${fmtVolume(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
+       weekStat(tr('Volumen', 'Volume'), `${fmtVol(weekStats.reduce((a, s) => a + s.volume, 0))}`),
        weekStat('🔥 kcal', weekKcal > 0 ? `~${fmtKcal(weekKcal)}` : '–'))),
 
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
@@ -299,7 +302,7 @@ function trendCard(volumes, kcalWeeks) {
       chip(tr('Volumen', 'Volume'), !kcal, () => { showTrendKcal = false; rerender(); }),
       chip('🔥 kcal', kcal, () => { showTrendKcal = true; rerender(); })) : null,
     kcal ? historyBars(kcalWeeks.map(v => v[1]), kcalWeeks.map(v => fmtWeek(v[0])), v => `~${fmtKcal(v)} kcal`)
-      : historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtVolume(v)} kg`));
+      : historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtVol(v)}`));
 }
 
 /** Karte „Neueste Rekorde“: 3 Zeilen, „Mehr anzeigen“ klappt bis 10 auf (wie RecordsCard). */
@@ -496,7 +499,7 @@ function bodyTab() {
   const shown = weights.slice(-30);
 
   const add = () => {
-    const kg = parseNum(bodyInput.value);
+    const kg = parseW(bodyInput.value);
     // Plausibilitätsprüfung gegen Tippfehler (z. B. 824 statt 82,4)
     if (kg != null && kg >= 20 && kg <= 400) {
       // gewählter Tag 12:00 Ortszeit (Tag stimmt in jeder Zeitzone), sonst jetzt
@@ -505,17 +508,17 @@ function bodyTab() {
       bodyInput.value = ''; bodyInput.date = '';
       document.activeElement?.blur();
     }
-    else toast(tr('Bitte ein Gewicht zwischen 20 und 400 kg eingeben.', 'Please enter a weight between 20 and 400 kg.'));
+    else toast(isLb() ? tr('Bitte ein Gewicht zwischen 45 und 880 lbs eingeben.', 'Please enter a weight between 45 and 880 lbs.') : tr('Bitte ein Gewicht zwischen 20 und 400 kg eingeben.', 'Please enter a weight between 20 and 400 kg.'));
   };
 
   return h('div', { class: 'stack pad' },
     h('div', { class: 'card pad-m' },
       h('small', { class: 'muted' }, tr('Aktuelles Gewicht', 'Current weight')),
-      h('div', { class: 'display' }, last ? `${fmtW(last.kg)} kg` : '–'),
+      h('div', { class: 'display' }, last ? `${fmtKg(last.kg)}` : '–'),
       first && last && weights.length >= 2
-        ? muted(`${last.kg - first.kg >= 0 ? '+' : '−'}${fmtW(Math.abs(last.kg - first.kg))} kg ` + tr('seit ', 'since ') + fmtDate(first.time)) : null),
+        ? muted(`${last.kg - first.kg >= 0 ? '+' : '−'}${fmtKg(Math.abs(last.kg - first.kg))} ` + tr('seit ', 'since ') + fmtDate(first.time)) : null),
     h('div', { class: 'row' },
-      textField({ id: 'body-kg', label: tr('Gewicht in kg', 'Weight in kg') + (last ? tr(' · zuletzt ', ' · last ') + fmtW(last.kg) : ''), value: bodyInput.value, inputmode: 'decimal', oninput: v => { bodyInput.value = v; }, onenter: add }),
+      textField({ id: 'body-kg', label: tr(`Gewicht in ${wUnit()}`, `Weight in ${wUnit()}`) + (last ? tr(' · zuletzt ', ' · last ') + fmtWU(last.kg) : ''), value: bodyInput.value, inputmode: 'decimal', oninput: v => { bodyInput.value = v; }, onenter: add }),
       h('button', { class: 'btn', onclick: add }, tr('Eintragen', 'Log'))),
     // Datum (leer = heute), im App-Format; Zukunft gesperrt
     h('label', { class: 'date-row' }, icon('calendar', 18), h('span', null, tr('Datum', 'Date')),
@@ -528,8 +531,8 @@ function bodyTab() {
       iconBtn('info', metDialog, { label: tr('Erklärung', 'Explanation'), cls: 'info-btn accent' })),
     // Gewichtsverlauf; Punkt antippen = Eintrag anpassen oder löschen (statt einer Liste) – wie BodyTab.kt
     weights.length ? chartCard(tr('Gewichtsverlauf', 'Weight trend'),
-      `${fmtW(Math.min(...shown.map(w => w.kg)))} – ${fmtW(Math.max(...shown.map(w => w.kg)))} kg`,
-      lineChart(shown.map(w => w.kg), 'kg', i => { hintUsed('weight'); weightEditDialog(shown[i]); }),
+      `${fmtWU(Math.min(...shown.map(w => w.kg)))} – ${fmtKg(Math.max(...shown.map(w => w.kg)))}`,
+      lineChart(shown.map(w => toUnit(w.kg)), wUnit(), i => { hintUsed('weight'); weightEditDialog(shown[i]); }),
       h('div', { class: 'axis' }, h('small', null, fmtShortDate(shown[0].time)), shown.length > 1 ? h('small', null, fmtShortDate(shown[shown.length - 1].time)) : null),
       showHint('weight') ? muted(tr('Punkt antippen zum Anpassen oder Löschen', 'Tap a point to edit or delete'), 'small') : null) : null,
     // Körpermaße + Körperfett (measures.js)
@@ -547,12 +550,12 @@ function metDialog() {
 
 /** Gewichtseintrag aus dem Diagramm: Gewicht und Datum anpassen oder löschen (mit „Rückgängig“) – wie WeightEditDialog in BodyTab.kt */
 function weightEditDialog(entry) {
-  const st = { text: fmtW(entry.kg), day: isoDay(entry.time) };
+  const st = { text: fmtWU(entry.kg), day: isoDay(entry.time) };
   const save = kg => { store.updateWeight(entry, kg, st.day === isoDay(entry.time) ? entry.time : timeOfIsoDay(st.day)); closeDialog(); };
-  const valid = () => { const kg = parseNum(st.text); return kg != null && kg >= 20 && kg <= 400 ? kg : null; };
+  const valid = () => { const kg = parseW(st.text); return kg != null && kg >= 20 && kg <= 400 ? kg : null; };
   openDialog(() => dialog(tr('Eintrag bearbeiten', 'Edit entry'), [
     textField({
-      id: 'weight-edit', label: tr('Gewicht in kg', 'Weight in kg'), value: st.text, inputmode: 'decimal',
+      id: 'weight-edit', label: tr(`Gewicht in ${wUnit()}`, `Weight in ${wUnit()}`), value: st.text, inputmode: 'decimal',
       error: valid() == null ? ' ' : null,
       oninput: v => { st.text = v; rerender(); },
       onenter: () => { const kg = valid(); if (kg != null) save(kg); },

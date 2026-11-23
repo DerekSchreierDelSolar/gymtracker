@@ -4,7 +4,7 @@ import { wikiButton, wikiFor, wikiContent } from '../wiki.js';
 import { musclePicker, musclesOf, muscleSideCard, levelsOf } from '../bodymap.js';
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
-import {
+import { fmtVol,
   tr, exName, sortByName, fmtDate, fmtDateTime, fmtDuration, fmtW, fmtVolume, fmtKcal, plural, isCardio, isTimed, equipmentOf, catalogEntry,
   catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel, groupColor, fmtSet,
 } from '../core.js';
@@ -113,7 +113,7 @@ export function workoutScreen(w, onStart, running = false) {
               h('b', null, fmtDateTime(t.start)),
               h('small', { class: 'muted' }, `${s.percent} % · ${fmtDuration(t.end - t.start)} · ` +
                 plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) +
-                (s.volume > 0 ? ` · ${fmtVolume(s.volume)} kg` : '') + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)} kcal` : ''))),
+                (s.volume > 0 ? ` · ${fmtVol(s.volume)}` : '') + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)} kcal` : ''))),
             s.records > 0 ? h('span', null, `🏆 ${s.records}`) : null,
             icon('chevron'));
         })),

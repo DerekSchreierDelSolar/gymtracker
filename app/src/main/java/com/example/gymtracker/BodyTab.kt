@@ -56,7 +56,7 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        last?.let { "${fmtW(it.kg)} kg" } ?: "–",
+                        last?.let { "${fmtKg(it.kg)}" } ?: "–",
                         style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -64,7 +64,7 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                     if (first != null && last != null && store.weights.size >= 2) {
                         val diff = last.kg - first.kg
                         Text(
-                            (if (diff >= 0) "+" else "−") + "${fmtW(kotlin.math.abs(diff))} kg " +
+                            (if (diff >= 0) "+" else "−") + "${fmtKg(kotlin.math.abs(diff))} " +
                                 tr("seit ", "since ") + fmtDate(first.time),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -82,15 +82,15 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                     OutlinedTextField(
                         value = input,
                         onValueChange = { input = it },
-                        label = { Text(tr("Gewicht in kg", "Weight in kg")) },
-                        placeholder = { last?.let { Text(fmtW(it.kg)) } },
+                        label = { Text(tr("Gewicht in $wUnit", "Weight in $wUnit")) },
+                        placeholder = { last?.let { Text(fmtWU(it.kg)) } },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(Modifier.width(8.dp))
                     Button(onClick = {
-                        val kg = input.replace(',', '.').toDoubleOrNull()
+                        val kg = parseW(input)
                         // Plausibilitätsprüfung gegen Tippfehler (z. B. 824 statt 82,4)
                         if (kg != null && kg in 20.0..400.0) {
                             store.addWeight(kg, day ?: System.currentTimeMillis())
@@ -136,9 +136,9 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                 val shown = store.weights.takeLast(30)
                 ChartCard(
                     tr("Gewichtsverlauf", "Weight trend"),
-                    "${fmtW(shown.minOf { it.kg })} – ${fmtW(shown.maxOf { it.kg })} kg"
+                    "${fmtWU(shown.minOf { it.kg })} – ${fmtKg(shown.maxOf { it.kg })}"
                 ) {
-                    LineChart(shown.map { it.kg }, "kg", onTapPoint = { editEntry = shown[it]; Hints.used(Hints.WEIGHT) })
+                    LineChart(shown.map { toUnit(it.kg) }, wUnit, onTapPoint = { editEntry = shown[it]; Hints.used(Hints.WEIGHT) })
                     Row(Modifier.fillMaxWidth()) {
                         Text(fmtShortDate(shown.first().time), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -248,10 +248,10 @@ fun DayPickerDialog(initial: Long, onPicked: (Long) -> Unit, onDismiss: () -> Un
 /** Gewichtseintrag aus dem Diagramm: Gewicht und Datum anpassen oder löschen (mit „Rückgängig“). */
 @Composable
 private fun WeightEditDialog(store: GymStore, entry: WeightEntry, onDismiss: () -> Unit) {
-    var text by remember(entry) { mutableStateOf(fmtW(entry.kg)) }
+    var text by remember(entry) { mutableStateOf(fmtWU(entry.kg)) }
     var time by remember(entry) { mutableLongStateOf(entry.time) }
     var pickDay by remember { mutableStateOf(false) }
-    val kg = text.replace(',', '.').toDoubleOrNull()?.takeIf { it in 20.0..400.0 } // wie beim Eintragen
+    val kg = parseW(text)?.takeIf { it in 20.0..400.0 } // wie beim Eintragen
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(tr("Eintrag bearbeiten", "Edit entry")) },
@@ -260,7 +260,7 @@ private fun WeightEditDialog(store: GymStore, entry: WeightEntry, onDismiss: () 
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text(tr("Gewicht in kg", "Weight in kg")) },
+                    label = { Text(tr("Gewicht in $wUnit", "Weight in $wUnit")) },
                     isError = kg == null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),

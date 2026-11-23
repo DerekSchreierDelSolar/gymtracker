@@ -194,7 +194,7 @@ fun DashboardTab(
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp)) {
                     val kcal = weekStats.mapNotNull { it.kcal }.sum()
                     WeekStat(tr("Sätze", "Sets"), weekStats.sumOf { it.sets }.toString(), Modifier.weight(1f))
-                    WeekStat(tr("Volumen", "Volume"), "${fmtVolume(weekStats.sumOf { it.volume })} kg", Modifier.weight(1f))
+                    WeekStat(tr("Volumen", "Volume"), "${fmtVol(weekStats.sumOf { it.volume })}", Modifier.weight(1f))
                     WeekStat("🔥 kcal", if (kcal > 0) "~${fmtKcal(kcal)}" else "–", Modifier.weight(1f))
                 }
             }
@@ -337,7 +337,7 @@ private fun TrendCard(volumes: List<Pair<Long, Double>>, kcalWeeks: List<Pair<Lo
             }
         }
         if (kcal && kcalWeeks != null) HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${fmtKcal(it)} kcal" }
-        else HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtVolume(it)} kg" }
+        else HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtVol(it)}" }
     }
 }
 

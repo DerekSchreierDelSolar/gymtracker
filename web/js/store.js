@@ -3,7 +3,7 @@
 // und zwar im localStorage des Browsers.
 
 import { RENAMED_EXERCISES, TEMPLATES } from './data.js';
-import {
+import { isLb, setWeightUnit,
   CustomMeta, catalogGroup, isCardio, setAppLanguage, appLanguage, tr, dayKey, SET_TYPES, setTypeOf, isWork,
   GROUP_KEYS, EQUIPMENT_KEYS, migrateArmGroup, validYear, validHeight,
 } from './core.js';
@@ -177,6 +177,7 @@ class GymStore {
     this.lastExport = num(s.lastExport) ?? 0;
     this.themeMode = s.theme ?? 'system';
     setAppLanguage(s.language ?? 'de');
+    setWeightUnit(s.unit);
 
     // Profil (optional): ungültige Werte überspringen (wie readFrom in GymStore.kt)
     const pr = obj(root.profile);
@@ -246,6 +247,7 @@ class GymStore {
         lastExport: this.lastExport,
         theme: this.themeMode,
         language: appLanguage,
+        ...(isLb() ? { unit: 'lb' } : {}),
         weeklyGoal: this.weeklyGoal,
       },
       sets: this.sets,
@@ -313,6 +315,8 @@ class GymStore {
     this.profile = p; this.#save();
   }
   setLanguage(lang) { setAppLanguage(lang); this.#save(); }
+  /** Gewichtseinheit "kg" | "lb" (nur Anzeige/Eingabe, gespeichert wird immer kg) – wie setUnit in GymStore.kt. */
+  setUnit(u) { setWeightUnit(u); this.#save(); }
   /** Muskeln einer eigenen Übung festlegen (leere Auswahl = entfernen). */
   setCustomMuscles(name, m) {
     if (m.primary.length || m.secondary.length) CustomMeta.muscles[name] = m; else delete CustomMeta.muscles[name];

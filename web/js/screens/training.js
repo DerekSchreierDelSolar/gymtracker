@@ -4,7 +4,7 @@ import { wikiButton } from '../wiki.js';
 import { similarExercises } from '../wizard.js';
 import { heatCard, regionScore } from '../bodymap.js';
 import { store } from '../store.js';
-import {
+import { fmtVol,
   tr, exName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDateTime, fmtDuration, fmtTime, fmtShortDate, plural, isCardio, isTimed,
   goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort, parseIntStrict,
 } from '../core.js';
@@ -362,7 +362,7 @@ export function summaryScreen(t, onDone) {
   if (t.id >= 0) tiles.push([tr('Dauer', 'Duration'), fmtDuration(t.end - t.start)]);
   tiles.push([tr('Sätze', 'Sets'), String(stats.sets)]);
   if (stats.kcal != null) tiles.push([stats.kcalFromHr ? tr('❤ Verbrauch', '❤ Burned') : tr('🔥 Verbrauch', '🔥 Burned'), `~${fmtKcal(stats.kcal)} kcal`]);
-  if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtVolume(stats.volume)} kg`]);
+  if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtVol(stats.volume)}`]);
   if (stats.cardioMinutes > 0) tiles.push(['Cardio', `${stats.cardioMinutes} min`]);
 
   const volumeItems = stats.results
@@ -394,7 +394,7 @@ export function summaryScreen(t, onDone) {
         empty: tr('Für diese Übungen sind keine Muskeln hinterlegt.', 'No muscles known for these exercises.'),
       }) : null,
       volumeItems.length >= 2 ? chartCard(tr('Volumen pro Übung', 'Volume per exercise'), tr('Gewicht × Wiederholungen', 'Weight × reps'),
-        horizontalBars(volumeItems, v => `${fmtVolume(v)} kg`, true)) : null,
+        horizontalBars(volumeItems, v => `${fmtVol(v)}`, true)) : null,
       h('button', { class: 'btn wide', onclick: onDone }, tr('Fertig', 'Done'))),
   });
 }

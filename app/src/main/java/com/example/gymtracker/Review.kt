@@ -152,7 +152,7 @@ fun ReviewCard(store: GymStore) {
                     deltaOf(r.now.sessions.toDouble(), r.before.sessions.toDouble(), false), Modifier.weight(1f))
                 ReviewStat(tr("Sätze", "Sets"), r.now.sets.toString(),
                     deltaOf(r.now.sets.toDouble(), r.before.sets.toDouble(), false), Modifier.weight(1f))
-                ReviewStat(tr("Volumen", "Volume"), "${fmtVolume(r.now.volume)} kg",
+                ReviewStat(tr("Volumen", "Volume"), "${fmtVol(r.now.volume)}",
                     deltaOf(r.now.volume, r.before.volume, true), Modifier.weight(1f))
             }
             Row {

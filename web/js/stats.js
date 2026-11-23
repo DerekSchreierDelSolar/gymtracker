@@ -2,7 +2,7 @@
 
 import { STRENGTH_MET, MINUTES_PER_SET } from './data.js';
 import { isDeload as cycleIsDeload } from './cycle.js';
-import {
+import { fmtKg, roundPlate, plateStep, isLb,
   isCardio, isTimed, profileComplete, dayKey, goalCompletion, cardioMet, tr, fmtW, fmtSeconds, equipmentOf, startOfWeek, addDays, isWork, isTop, setLabels,
 } from './core.js';
 
@@ -265,13 +265,15 @@ export function progressionSuggestion(store, name, before) {
     };
   }
   const eq = equipmentOf(name);
-  const step = eq === 'KURZHANTEL' || eq === 'KETTLEBELL' ? 2 : 2.5;
+  const step = isLb() ? plateStep() : eq === 'KURZHANTEL' || eq === 'KETTLEBELL' ? 2 : 2.5; // lbs: 5 lbs
+  // nächstes Gewicht; in lbs auf 5 lbs runden (alte kg-Einträge ergeben sonst krumme Werte wie 170,3)
+  const next = isLb() ? roundPlate(top + step) : top + step;
   // Deload-Woche (cycle.js): leichter statt schwerer
   if (cycleIsDeload()) {
-    const d = Math.floor(top * 0.6 / 2.5 + 0.5) * 2.5;
+    const d = roundPlate(top * 0.6);
     return {
-      title: `Deload: ${fmtW(d)} kg`,
-      reason: tr(`Leichte Woche – ca. 60 % von ${fmtW(top)} kg und weniger Sätze, damit du dich erholst`, `Light week – about 60 % of ${fmtW(top)} kg and fewer sets so you recover`),
+      title: `Deload: ${fmtKg(d)}`,
+      reason: tr(`Leichte Woche – ca. 60 % von ${fmtKg(top)} und weniger Sätze, damit du dich erholst`, `Light week – about 60 % of ${fmtKg(top)} and fewer sets so you recover`),
       weight: d,
     };
   }
@@ -281,22 +283,22 @@ export function progressionSuggestion(store, name, before) {
   if (minRir != null && minRir >= 3 && !(atTop.length >= 2 && minReps >= 8)) {
     const n = minRir >= 4 ? '4+' : minRir;
     return {
-      title: tr(`Heute ${fmtW(top + step)} kg?`, `Try ${fmtW(top + step)} kg today?`),
-      reason: tr(`Letztes Mal bei ${fmtW(top)} kg noch ${n} Wdh. in Reserve – das geht schwerer`, `Last time at ${fmtW(top)} kg you had ${n} reps in reserve – go heavier`),
-      weight: top + step,
+      title: tr(`Heute ${fmtKg(next)}?`, `Try ${fmtKg(next)} today?`),
+      reason: tr(`Letztes Mal bei ${fmtKg(top)} noch ${n} Wdh. in Reserve – das geht schwerer`, `Last time at ${fmtKg(top)} you had ${n} reps in reserve – go heavier`),
+      weight: next,
     };
   }
   if (atTop.length >= 2 && minReps >= 8) {
     return {
-      title: tr(`Heute ${fmtW(top + step)} kg?`, `Try ${fmtW(top + step)} kg today?`),
+      title: tr(`Heute ${fmtKg(next)}?`, `Try ${fmtKg(next)} today?`),
       reason: tr(
-        `Letztes Mal ${atTop.length} Sätze mit ${fmtW(top)} kg und mind. ${minReps} Wdh. – Zeit für mehr Gewicht`,
-        `Last time ${atTop.length} sets at ${fmtW(top)} kg with at least ${minReps} reps – time to go heavier`),
-      weight: top + step,
+        `Letztes Mal ${atTop.length} Sätze mit ${fmtKg(top)} und mind. ${minReps} Wdh. – Zeit für mehr Gewicht`,
+        `Last time ${atTop.length} sets at ${fmtKg(top)} with at least ${minReps} reps – time to go heavier`),
+      weight: next,
     };
   }
   return {
-    title: tr(`${fmtW(top)} kg, Ziel: ${maxReps + 1}+ Wdh.`, `${fmtW(top)} kg, goal: ${maxReps + 1}+ reps`),
+    title: tr(`${fmtKg(top)}, Ziel: ${maxReps + 1}+ Wdh.`, `${fmtKg(top)}, goal: ${maxReps + 1}+ reps`),
     reason: tr('Erst bei 2 Sätzen mit 8+ Wdh. lohnt sich mehr Gewicht', 'Go heavier once you hit 8+ reps on 2 sets'),
     weight: top,
   };

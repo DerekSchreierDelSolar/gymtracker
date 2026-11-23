@@ -5,7 +5,7 @@ import { rirLabel, rirChips, rirPrompt, oneRmTable } from '../effort.js';
 import { wikiFor, wikiContent } from '../wiki.js';
 import { musclesOf, muscleEditDialog, muscleSideCard, levelsOf } from '../bodymap.js';
 import { store } from '../store.js';
-import {
+import { fmtKg, fmtVol, fmtWU, wUnit, toUnit, parseW, roundPlate, isLb,
   tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
   oneRepMax, parseNum, parseIntStrict, startOfToday, groupColor, catalogGroup, dayKey, monthIndex, startOfWeek,
   fmtShortDate, completionColor, SET_TYPES, setTypeOf, setTypeLabel, setTypeShort, setLabels, isWork, isTop,
@@ -72,7 +72,7 @@ export function progressionHint(name, before = startOfToday()) {
     h('span', { class: 'hint-emoji' }, '💡'),
     h('div', { class: 'grow' }, h('b', null, s.title), h('small', null, s.reason)),
     s.weight != null ? h('button', {
-      class: 'btn text', onclick: () => { inputState(name).weight = fmtW(s.weight); rerender(); },
+      class: 'btn text', onclick: () => { inputState(name).weight = fmtWU(s.weight); rerender(); },
     }, tr('Übernehmen', 'Apply')) : null);
 }
 
@@ -90,7 +90,7 @@ export function setPrefill(sets, type, goalReps) {
   if (type === 'WARMUP') {
     const wu = sets.find(x => x.type === 'WARMUP');
     if (wu) return [wu.weight, wu.reps];
-    if (top) return [Math.round(top.weight * 0.5 / 2.5) * 2.5, 10];
+    if (top) return [roundPlate(top.weight * 0.5), 10];
   }
   return [top?.weight ?? null, goalReps ?? top?.reps ?? null];
 }
@@ -98,7 +98,7 @@ export function setPrefill(sets, type, goalReps) {
 /** Felder als Text für den Satz-Typ */
 function prefillText(name, type, goalReps) {
   const [w, r] = setPrefill(store.setsFor(name), type, goalReps);
-  return { weight: w == null ? '' : fmtW(w), reps: r == null ? '' : String(r) };
+  return { weight: w == null ? '' : fmtWU(w), reps: r == null ? '' : String(r) };
 }
 
 function inputState(name) {
@@ -133,7 +133,7 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
   const idBase = 'in-' + name.replace(/\W+/g, '_');
 
   const add = () => {
-    const w = cardio ? 0 : parseNum(st.weight) ?? (timed ? 0 : null);
+    const w = cardio ? 0 : parseW(st.weight) ?? (timed ? 0 : null);
     const r = parseIntStrict(st.reps);
     if (w == null || w < 0 || r == null || r <= 0) {
       // Felder rot + Hinweis (wie SetInput in ExerciseDetail.kt), dazu kurzes Wackeln
@@ -193,9 +193,9 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
         rerender();
       }),
       showWeight ? textField({
-        id: idBase + '-w', label: 'kg', value: st.weight, inputmode: 'decimal',
+        id: idBase + '-w', label: wUnit(), value: st.weight, inputmode: 'decimal',
         oninput: v => { st.weight = v; st.tried = false; }, onenter: add,
-        cls: st.tried && ((parseNum(st.weight) == null && !timed) || parseNum(st.weight) < 0) ? 'error' : '',
+        cls: st.tried && ((parseW(st.weight) == null && !timed) || parseW(st.weight) < 0) ? 'error' : '',
       }) : null,
       textField({
         id: idBase + '-r', label: cardio ? tr('Minuten', 'Minutes') : timed ? tr('Sekunden', 'Seconds') : tr('Wdh.', 'Reps'),
@@ -209,7 +209,7 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
       : timed ? tr('Bitte Sekunden eintragen (oder Stoppuhr nutzen).', 'Please enter seconds (or use the stopwatch).')
         : tr('Bitte Gewicht und Wiederholungen eintragen.', 'Please enter weight and reps.')) : null,
     // Aufwärm-Rampe (warmup.js)
-    showWeight && !timed ? setHelpers(name, st.weight, (w, r) => { st.weight = fmtW(w); st.reps = String(r); st.type = 'WARMUP'; rerender(); }) : null,
+    showWeight && !timed ? setHelpers(name, st.weight, (w, r) => { st.weight = fmtWU(w); st.reps = String(r); st.type = 'WARMUP'; rerender(); }) : null,
     st.rirFor != null ? rirPrompt(n => { store.setRir(st.rirFor, n); st.rirFor = null; rerender(); }, () => { st.rirFor = null; rerender(); }) : null);
 }
 
@@ -224,9 +224,9 @@ export function implausibleSet(name, weight, reps) {
   if (!timed && reps > 100) return tr(`${reps} Wiederholungen in einem Satz? Tippfehler?`, `${reps} reps in one set? Typo?`);
   const best = Math.max(0, ...store.setsOf(name).map(s => s.weight));
   if (best > 0 && weight > best * 1.5 && weight - best >= 10) return tr(
-    `${fmtW(weight)} kg ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtW(best)} kg). Tippfehler?`,
-    `${fmtW(weight)} kg is far more than your heaviest so far (${fmtW(best)} kg). Typo?`);
-  if (best === 0 && weight > 300) return tr(`${fmtW(weight)} kg? Tippfehler?`, `${fmtW(weight)} kg? Typo?`);
+    `${fmtKg(weight)} ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtKg(best)}). Tippfehler?`,
+    `${fmtKg(weight)} is far more than your heaviest so far (${fmtKg(best)}). Typo?`);
+  if (best === 0 && weight > 300) return tr(`${fmtKg(weight)}? Tippfehler?`, `${fmtKg(weight)}? Typo?`);
   return null;
 }
 
@@ -276,15 +276,15 @@ export function recordLine(allSets, cardio, timed) {
 }
 
 export function editSetDialog(set, cardio) {
-  const st = { weight: fmtW(set.weight), reps: String(set.reps), type: setTypeOf(set), rir: set.rir ?? null };
+  const st = { weight: fmtWU(set.weight), reps: String(set.reps), type: setTypeOf(set), rir: set.rir ?? null };
   openDialog(() => {
-    const w = cardio ? 0 : parseNum(st.weight);
+    const w = cardio ? 0 : parseW(st.weight);
     const r = parseIntStrict(st.reps);
     const valid = w != null && w >= 0 && r != null && r > 0;
     return dialog(tr('Eintrag bearbeiten', 'Edit entry'), [
       muted(fmtDateTime(set.time)),
       h('div', { class: 'row' },
-        cardio ? null : textField({ id: 'edit-w', label: 'kg', value: st.weight, inputmode: 'decimal', oninput: v => { st.weight = v; rerender(); } }),
+        cardio ? null : textField({ id: 'edit-w', label: wUnit(), value: st.weight, inputmode: 'decimal', oninput: v => { st.weight = v; rerender(); } }),
         textField({
           id: 'edit-r', label: cardio ? tr('Minuten', 'Minutes') : isTimed(set.exercise) ? tr('Sekunden', 'Seconds') : tr('Wdh.', 'Reps'),
           value: st.reps, inputmode: 'numeric', oninput: v => { st.reps = v; rerender(); },
@@ -383,12 +383,12 @@ function exerciseProgress(allSets, cardio, timed) {
   const history = allSets.filter(isTop); // Aufwärm- und Drop-Sätze zählen nicht für den Fortschritt
   if (!history.length) return muted(tr('Noch keine Sätze eingetragen.', 'No sets logged yet.'));
   const strength = !cardio && !timed;
-  const unit = cardio ? 'min' : timed ? 's' : 'kg';
+  const unit = cardio ? 'min' : timed ? 's' : wUnit();
   const value = l => cardio ? l.reduce((a, s) => a + s.reps, 0)
     : timed ? Math.max(...l.map(s => s.reps))
-      : progMetric === 'ORM' ? Math.round(Math.max(...l.map(s => oneRepMax(s.weight, s.reps))) * 2) / 2
-        : progMetric === 'VOLUME' ? l.reduce((a, s) => a + s.weight * s.reps, 0)
-          : Math.max(...l.map(s => s.weight));
+      : progMetric === 'ORM' ? toUnit(Math.round(Math.max(...l.map(s => oneRepMax(s.weight, s.reps))) * 2) / 2)
+        : progMetric === 'VOLUME' ? toUnit(l.reduce((a, s) => a + s.weight * s.reps, 0))
+          : toUnit(Math.max(...l.map(s => s.weight)));
   const groupBy = (sets, key) => {
     const m = new Map();
     for (const s of sets) { const k = key(s.time); if (!m.has(k)) m.set(k, []); m.get(k).push(s); }
@@ -413,7 +413,7 @@ function exerciseProgress(allSets, cardio, timed) {
         h('b', { style: gain > 0 ? `color:${completionColor(1)}` : null }, `${gain > 0 ? '+' : ''}${fmtW(gain)} ${unit}${gain > 0 ? ' ↑' : ''}`))),
     strength ? [
       muted(tr('Bester Satz: ', 'Best set: ') + fmtSet(best, false) + ' · ' + tr('geschätztes 1RM ', 'estimated 1RM ') +
-        `${fmtW(Math.round(Math.max(...history.map(s => oneRepMax(s.weight, s.reps))) * 2) / 2)} kg`, 'small'),
+        `${fmtKg(Math.round(Math.max(...history.map(s => oneRepMax(s.weight, s.reps))) * 2) / 2)}`, 'small'),
       h('div', { class: 'chips wrap' }, Object.entries(METRICS).map(([k, l]) => chip(tr(...l), progMetric === k, () => { progMetric = k; rerender(); }))),
     ] : null,
     h('div', { class: 'chips' }, Object.entries(BUCKETS).map(([k, l]) => chip(tr(...l), progBucket === k, () => { progBucket = k; rerender(); }))),
@@ -444,7 +444,7 @@ export function historyDayCard(day, all, cardio, timed) {
       ? plural(list.length, tr('Einheit', 'session'), tr('Einheiten', 'sessions')) + ` · ${sumReps(list)} ` + tr('Min gesamt', 'min total')
       : timed
         ? plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ' · ' + tr('gesamt ', 'total ') + fmtSeconds(sumReps(list))
-        : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtVolume(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('kg Volumen', 'kg volume'))),
+        : plural(list.length, tr('Satz', 'set'), tr('Sätze', 'sets')) + ` · ${fmtVol(list.reduce((a, s) => a + s.weight * s.reps, 0))} ` + tr('Volumen', 'volume'))),
     all.length && store.noteFor(all[0].exercise, dayKey(all[0].time))
       ? h('p', { class: 'day-note' }, '📝 ' + store.noteFor(all[0].exercise, dayKey(all[0].time))) : null,
     // Neuester Satz oben; Nummer bleibt die Reihenfolge im Training
@@ -482,7 +482,7 @@ function stepRow(cardio, showWeight, timed, st) {
   const pair = (step, change) => h('div', { class: 'step-pair' }, btn('−' + step, () => change(-1)), btn('+' + step, () => change(1)));
   return h('div', { class: 'step-row', style: `grid-template-columns:${cols}` },
     cardio ? null : h('span'),
-    showWeight ? pair('2,5', d => { st.weight = fmtW(Math.max(0, (parseNum(st.weight) ?? 0) + d * 2.5)); }) : null,
+    showWeight ? pair(isLb() ? '5' : tr('2,5', '2.5'), d => { st.weight = fmtW(Math.max(0, (parseNum(st.weight) ?? 0) + d * (isLb() ? 5 : 2.5))); }) : null,
     pair(String(repStep), d => { st.reps = String(Math.max(1, (parseIntStrict(st.reps) ?? 0) + d * repStep)); }),
     h('span'));
 }

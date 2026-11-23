@@ -73,11 +73,37 @@ export const cardioMet = name => CARDIO_MET[name] ?? 7.0;
 
 /** Gewicht: ganze Zahlen ohne Nachkomma, sonst eine Stelle mit Komma (DE) bzw. Punkt (EN). */
 export function fmtW(w) {
-  if (w % 1 === 0) return String(Math.trunc(w));
-  return w.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1, useGrouping: false });
+  const r = Math.round(w * 10) / 10; // auf 0,1 runden (sonst „225,0“ nach lbs → kg → lbs)
+  if (r % 1 === 0) return String(Math.trunc(r));
+  return r.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1, useGrouping: false });
 }
+
+// ---------- Gewichtseinheit (kg / lbs) – wie Format.kt ----------
+// Gespeichert wird IMMER in kg; nur Anzeige und Eingabe rechnen in die gewählte Einheit um.
+export let weightUnit = 'kg';
+export function setWeightUnit(u) { weightUnit = u === 'lb' ? 'lb' : 'kg'; }
+export const isLb = () => weightUnit === 'lb';
+export const LB_PER_KG = 2.20462262;
+/** Einheit zur Anzeige: „kg“ bzw. „lbs“. */
+export const wUnit = () => (isLb() ? 'lbs' : 'kg');
+export const toUnit = kg => (isLb() ? kg * LB_PER_KG : kg);
+export const fromUnit = v => (isLb() ? v / LB_PER_KG : v);
+/** Gewicht (kg) als Zahl in der angezeigten Einheit (Eingabefelder). */
+export const fmtWU = kg => fmtW(toUnit(kg));
+/** Gewicht (kg) mit Einheit: „62,5 kg“ bzw. „137.8 lbs“. */
+export const fmtKg = kg => `${fmtWU(kg)} ${wUnit()}`;
+/** Großes Volumen: Tonnen bzw. 1.000 lbs. */
+export const toBig = kg => toUnit(kg) / 1000;
+export const bigUnit = () => (isLb() ? 'k lbs' : 't');
+/** Eingabefeld (angezeigte Einheit) → kg, null wenn keine Zahl. */
+export const parseW = text => { const n = parseNum(text); return n == null ? null : fromUnit(n); };
+/** Kleinster Gewichtsschritt in kg: 2,5 kg bzw. 5 lbs. */
+export const plateStep = () => (isLb() ? 5 / LB_PER_KG : 2.5);
+export const roundPlate = kg => Math.round(kg / plateStep()) * plateStep();
 /** Volumen zur Anzeige: ab 1000 ganzzahlig mit Tausendertrennzeichen (wie fmtVolume in Format.kt). Nie in Eingabefelder. */
 export const fmtVolume = v => (v >= 1000 ? Math.round(v).toLocaleString(locale()) : fmtW(v));
+/** Volumen (kg × Wdh.) mit Einheit. */
+export const fmtVol = kg => `${fmtVolume(toUnit(kg))} ${wUnit()}`;
 export const fmtKcal = v => fmtVolume(Math.round(v));
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const pad2 = n => String(n).padStart(2, '0');
@@ -122,8 +148,8 @@ export const fmtSeconds = sec => (sec < 60 ? `${sec} s` : `${Math.floor(sec / 60
 /** Text für einen Satz, eine Cardio-Einheit oder eine Zeitübung. */
 export function fmtSet(s, cardio) {
   if (cardio) return `${s.reps} min`;
-  if (isTimed(s.exercise)) return (s.weight > 0 ? `${fmtW(s.weight)} kg · ` : '') + fmtSeconds(s.reps);
-  return `${fmtW(s.weight)} kg × ${s.reps}`;
+  if (isTimed(s.exercise)) return (s.weight > 0 ? `${fmtKg(s.weight)} · ` : '') + fmtSeconds(s.reps);
+  return `${fmtKg(s.weight)} × ${s.reps}`;
 }
 
 /** Geschätztes 1RM nach Epley. */

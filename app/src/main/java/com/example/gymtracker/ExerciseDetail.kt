@@ -49,7 +49,7 @@ fun SetInput(
     // Vorbelegung passend zum Satz-Typ (Aufwärmen leichter, Arbeitssatz mit Wdh.-Ziel)
     fun prefill(t: SetType): Pair<String, String> {
         val (w, r) = setPrefill(store.setsFor(exercise), t, goalReps)
-        return (w?.let { fmtW(it) } ?: "") to (r?.toString() ?: "")
+        return (w?.let { fmtWU(it) } ?: "") to (r?.toString() ?: "")
     }
     val initial = remember(exercise) { prefill(type) }
     var weightText by remember(exercise) { mutableStateOf(initial.first) }
@@ -66,7 +66,7 @@ fun SetInput(
     // Nach einem Arbeitssatz: freiwillige Abfrage „Wdh. in Reserve“ (Effort.kt); ID des Satzes, null = keine Abfrage
     var rirFor by remember(exercise) { mutableStateOf<Long?>(null) }
     // Übernommener Vorschlag überschreibt das Gewichtsfeld
-    LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtW(weightOverride) }
+    LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtWU(weightOverride) }
 
     // Stoppuhr für Zeitübungen: Startzeitpunkt (null = steht)
     // Läuft global je Übung (stopwatchStarts), damit sie beim Wischen im Training nicht zurückgesetzt wird
@@ -150,9 +150,9 @@ fun SetInput(
             OutlinedTextField(
                 value = weightText,
                 onValueChange = { weightText = it; tried = false },
-                label = { Text("kg") },
+                label = { Text(wUnit) },
                 singleLine = true,
-                isError = tried && weightText.replace(',', '.').toDoubleOrNull().let { (it == null && !timed) || (it != null && it < 0) },
+                isError = tried && parseW(weightText).let { (it == null && !timed) || (it != null && it < 0) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f)
             )
@@ -178,7 +178,7 @@ fun SetInput(
         Spacer(Modifier.width(8.dp))
         Button(onClick = {
             // Komma als Dezimaltrenner erlauben; bei Cardio (und Zeitübungen ohne Gerät) ist das Gewicht 0
-            val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull() ?: if (timed) 0.0 else null
+            val w = if (cardio) 0.0 else parseW(weightText) ?: if (timed) 0.0 else null
             val r = repsText.trim().toIntOrNull()
             if (w != null && w >= 0 && r != null && r > 0) { // wie EditSetDialog: kein negatives Gewicht
                 val odd = implausibleSet(store, exercise, w, r)
@@ -193,8 +193,9 @@ fun SetInput(
     Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         if (!cardio) Spacer(Modifier.width(64.dp + 8.dp)) // unter dem Satz-Typ-Knopf
         if (showWeight) {
-            StepButtons(Modifier.weight(1f), "2,5") { d ->
-                val v = (weightText.replace(',', '.').toDoubleOrNull() ?: 0.0) + d * 2.5
+            StepButtons(Modifier.weight(1f), if (isLb) "5" else tr("2,5", "2.5")) { d ->
+                // in der angezeigten Einheit rechnen (5 lbs bzw. 2,5 kg pro Tipp)
+                val v = (weightText.replace(',', '.').toDoubleOrNull() ?: 0.0) + d * (if (isLb) 5.0 else 2.5)
                 weightText = fmtW(v.coerceAtLeast(0.0))
             }
             Spacer(Modifier.width(8.dp))
@@ -207,7 +208,7 @@ fun SetInput(
     }
     // Aufwärm-Rampe (Warmup.kt)
     if (showWeight && !timed) SetHelpers(exercise, weightText) { w, r ->
-        weightText = fmtW(w); repsText = r.toString(); type = SetType.WARMUP
+        weightText = fmtWU(w); repsText = r.toString(); type = SetType.WARMUP
     }
     if (tried) Text(
         when {
@@ -246,10 +247,10 @@ fun implausibleSet(store: GymStore, exercise: String, weight: Double, reps: Int)
     val best = store.setsOf(exercise).maxOfOrNull { it.weight } ?: 0.0
     return when {
         best > 0 && weight > best * 1.5 && weight - best >= 10 -> tr(
-            "${fmtW(weight)} kg ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtW(best)} kg). Tippfehler?",
-            "${fmtW(weight)} kg is far more than your heaviest so far (${fmtW(best)} kg). Typo?"
+            "${fmtKg(weight)} ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtKg(best)}). Tippfehler?",
+            "${fmtKg(weight)} is far more than your heaviest so far (${fmtKg(best)}). Typo?"
         )
-        best == 0.0 && weight > 300 -> tr("${fmtW(weight)} kg? Tippfehler?", "${fmtW(weight)} kg? Typo?")
+        best == 0.0 && weight > 300 -> tr("${fmtKg(weight)}? Tippfehler?", "${fmtKg(weight)}? Typo?")
         else -> null
     }
 }
@@ -264,7 +265,7 @@ fun setPrefill(sets: List<GymSet>, type: SetType, goalReps: Int?): Pair<Double?,
     val top = sets.firstOrNull { it.isTop } ?: sets.firstOrNull()
     if (type == SetType.WARMUP) {
         sets.firstOrNull { it.type == SetType.WARMUP }?.let { return it.weight to it.reps }
-        if (top != null) return Math.round(top.weight * 0.5 / 2.5) * 2.5 to 10
+        if (top != null) return roundPlate(top.weight * 0.5) to 10
     }
     return top?.weight to (goalReps ?: top?.reps)
 }
@@ -375,12 +376,12 @@ fun EditSetDialog(
     onSave: (Double, Int, SetType, Int?) -> Unit,
     onDelete: () -> Unit
 ) {
-    var weightText by remember { mutableStateOf(fmtW(set.weight)) }
+    var weightText by remember { mutableStateOf(fmtWU(set.weight)) }
     var repsText by remember { mutableStateOf(set.reps.toString()) }
     var type by remember { mutableStateOf(set.type) }
     var rir by remember { mutableStateOf(set.rir) }
 
-    val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull()
+    val w = if (cardio) 0.0 else parseW(weightText)
     val r = repsText.trim().toIntOrNull()
     val valid = w != null && w >= 0 && r != null && r > 0
 
@@ -399,7 +400,7 @@ fun EditSetDialog(
                         OutlinedTextField(
                             value = weightText,
                             onValueChange = { weightText = it },
-                            label = { Text("kg") },
+                            label = { Text(wUnit) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             modifier = Modifier.weight(1f)
@@ -625,15 +626,15 @@ fun ExerciseProgress(allSets: List<GymSet>, cardio: Boolean, timed: Boolean) {
         return
     }
     val strength = !cardio && !timed
-    val unit = when { cardio -> "min"; timed -> "s"; else -> "kg" }
+    val unit = when { cardio -> "min"; timed -> "s"; else -> wUnit }
 
     // Wert eines Zeitabschnitts
     fun value(l: List<GymSet>): Double = when {
         cardio -> l.sumOf { it.reps }.toDouble()
         timed -> l.maxOf { it.reps }.toDouble()
-        metric == ProgressMetric.ORM -> Math.round(l.maxOf { oneRepMax(it.weight, it.reps) } * 2) / 2.0
-        metric == ProgressMetric.VOLUME -> l.sumOf { it.weight * it.reps }
-        else -> l.maxOf { it.weight }
+        metric == ProgressMetric.ORM -> toUnit(Math.round(l.maxOf { oneRepMax(it.weight, it.reps) } * 2) / 2.0)
+        metric == ProgressMetric.VOLUME -> toUnit(l.sumOf { it.weight * it.reps })
+        else -> toUnit(l.maxOf { it.weight })
     }
     // Zeitabschnitte, älteste zuerst
     val key: (Long) -> Int = when (bucket) {
@@ -670,7 +671,7 @@ fun ExerciseProgress(allSets: List<GymSet>, cardio: Boolean, timed: Boolean) {
             val best = history.maxBy { it.weight }
             Text(
                 tr("Bester Satz: ", "Best set: ") + fmtSet(best, false) + " · " + tr("geschätztes 1RM ", "estimated 1RM ") +
-                    "${fmtW(Math.round(history.maxOf { oneRepMax(it.weight, it.reps) } * 2) / 2.0)} kg",
+                    "${fmtKg(Math.round(history.maxOf { oneRepMax(it.weight, it.reps) } * 2) / 2.0)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -695,7 +696,7 @@ fun ExerciseProgress(allSets: List<GymSet>, cardio: Boolean, timed: Boolean) {
                 ProgressBucket.WEEK -> tr("pro Woche", "per week")
                 ProgressBucket.MONTH -> tr("pro Monat", "per month")
             }
-            ProgressChart(values, title = title, unit = if (metric == ProgressMetric.VOLUME && strength) "kg" else unit, colors = glassCardColors())
+            ProgressChart(values, title = title, unit = unit, colors = glassCardColors())
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(fmtShortDate(groups.first().first().time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(fmtShortDate(groups.last().first().time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -769,7 +770,7 @@ fun HistoryDayCard(store: GymStore, day: String, daySets: List<GymSet>, cardio: 
                         " · " + tr("gesamt ", "total ") + fmtSeconds(work.sumOf { it.reps })
                 else
                     "$day · " + plural(work.size, tr("Satz", "set"), tr("Sätze", "sets")) +
-                        " · ${fmtVolume(work.sumOf { it.weight * it.reps })} " + tr("kg Volumen", "kg volume"),
+                        " · ${fmtVol(work.sumOf { it.weight * it.reps })} " + tr("Volumen", "volume"),
                 style = MaterialTheme.typography.titleSmall
             )
             daySets.firstOrNull()?.let { store.noteFor(it.exercise, dayKey(it.time)) }?.let { note ->

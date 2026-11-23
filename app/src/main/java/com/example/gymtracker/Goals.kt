@@ -43,9 +43,9 @@ enum class GoalType(val emoji: String) {
     }
 
     val hint: String get() = when (this) {
-        STRENGTH -> tr("z. B. 100 kg Bankdrücken", "e.g. 100 kg bench press")
+        STRENGTH -> if (isLb) tr("z. B. 225 lbs Bankdrücken", "e.g. 225 lbs bench press") else tr("z. B. 100 kg Bankdrücken", "e.g. 100 kg bench press")
         ENDURANCE -> tr("z. B. 30 min laufen oder 2 min Unterarmstütz", "e.g. run 30 min or hold a plank for 2 min")
-        BODYWEIGHT -> tr("z. B. 10 kg abnehmen", "e.g. lose 10 kg")
+        BODYWEIGHT -> if (isLb) tr("z. B. 20 lbs abnehmen", "e.g. lose 20 lbs") else tr("z. B. 10 kg abnehmen", "e.g. lose 10 kg")
         CARDIO_WEEK -> tr("Cardio-Minuten pro Woche", "Cardio minutes per week")
         REGULAR -> tr("regelmäßig dein Wochenziel schaffen", "hit your weekly goal regularly")
     }
@@ -84,10 +84,10 @@ fun bestValue(store: GymStore, type: GoalType, exercise: String): Double? {
 }
 
 fun goalTitle(store: GymStore, g: Goal): String = when (g.type) {
-    GoalType.STRENGTH -> "${fmtW(g.target)} kg " + exName(g.exercise ?: "")
+    GoalType.STRENGTH -> "${fmtKg(g.target)} " + exName(g.exercise ?: "")
     GoalType.ENDURANCE -> fmtAmount(g.exercise ?: "", g.target, store) + " " + exName(g.exercise ?: "")
-    GoalType.BODYWEIGHT -> if (g.target < g.start) tr("Auf ${fmtW(g.target)} kg abnehmen", "Get down to ${fmtW(g.target)} kg")
-        else tr("Auf ${fmtW(g.target)} kg zunehmen", "Get up to ${fmtW(g.target)} kg")
+    GoalType.BODYWEIGHT -> if (g.target < g.start) tr("Auf ${fmtKg(g.target)} abnehmen", "Get down to ${fmtKg(g.target)}")
+        else tr("Auf ${fmtKg(g.target)} zunehmen", "Get up to ${fmtKg(g.target)}")
     GoalType.CARDIO_WEEK -> tr("${fmtW(g.target)} min Cardio pro Woche", "${fmtW(g.target)} min cardio per week")
     GoalType.REGULAR -> tr("In ${g.target.toInt()} Wochen das Wochenziel schaffen", "Hit the weekly goal in ${g.target.toInt()} weeks")
 }
@@ -105,7 +105,7 @@ private fun cardioMinutes(store: GymStore, from: Long, to: Long): Double =
 fun goalProgress(store: GymStore, g: Goal): GoalProgress = when (g.type) {
     GoalType.STRENGTH, GoalType.ENDURANCE -> {
         val ex = g.exercise ?: ""
-        val fmt: (Double) -> String = if (g.type == GoalType.STRENGTH) { v -> "${fmtW(v)} kg" } else { v -> fmtAmount(ex, v, store) }
+        val fmt: (Double) -> String = if (g.type == GoalType.STRENGTH) { v -> "${fmtKg(v)}" } else { v -> fmtAmount(ex, v, store) }
         val metric: (GymSet) -> Double = if (g.type == GoalType.STRENGTH) { s -> s.weight } else { s -> s.reps.toDouble() }
         val sets = store.sets.top().filter { it.exercise == ex && it.reps > 0 }
         val cur = sets.maxOfOrNull(metric) ?: 0.0
@@ -131,13 +131,13 @@ fun goalProgress(store: GymStore, g: Goal): GoalProgress = when (g.type) {
         val done = if (lose) g.start - cur else cur - g.start
         GoalProgress(
             fraction = if (reached != null) 1f else way(g.start, cur, g.target),
-            value = "${fmtW(cur)} kg",
+            value = "${fmtKg(cur)}",
             detail = when {
                 reached != null -> tr("Geschafft am ${fmtDate(reached)}", "Achieved on ${fmtDate(reached)}")
-                done > 0 -> tr("${fmtW(done)} kg geschafft · noch ${fmtW(abs(cur - g.target))} kg",
-                    "${fmtW(done)} kg done · ${fmtW(abs(cur - g.target))} kg to go")
+                done > 0 -> tr("${fmtKg(done)} geschafft · noch ${fmtKg(abs(cur - g.target))}",
+                    "${fmtKg(done)} done · ${fmtKg(abs(cur - g.target))} to go")
                 // noch kein Fortschritt: nur den Weg nennen, nicht „falsche Richtung“ vorhalten
-                else -> tr("Start ${fmtW(g.start)} kg · noch ${fmtW(abs(cur - g.target))} kg", "Started at ${fmtW(g.start)} kg · ${fmtW(abs(cur - g.target))} kg to go")
+                else -> tr("Start ${fmtKg(g.start)} · noch ${fmtKg(abs(cur - g.target))}", "Started at ${fmtKg(g.start)} · ${fmtKg(abs(cur - g.target))} to go")
             },
             reachedAt = reached
         )
@@ -214,13 +214,13 @@ fun GoalsCard(store: GymStore) {
             }
             if (items.isEmpty() && miles.isNotEmpty()) {
                 // kurz halten – die Meilensteine darunter zeigen schon, was als Nächstes kommt
-                Text(tr("Noch kein eigenes Ziel – z. B. 100 kg Bankdrücken oder 10 kg abnehmen.", "No goal of your own yet – e.g. 100 kg bench press or lose 10 kg."),
+                Text(tr("Noch kein eigenes Ziel – z. B. $exBench Bankdrücken oder $exLose abnehmen.", "No goal of your own yet – e.g. $exBench bench press or lose $exLose."),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(end = 8.dp))
             } else if (items.isEmpty()) {
                 Text(
-                    tr("Setz dir ein langfristiges Ziel – z. B. 100 kg Bankdrücken, 30 min laufen oder 10 kg abnehmen. Hier siehst du dann, wie nah du dran bist.",
-                        "Set yourself a long-term goal – e.g. 100 kg bench press, run 30 min or lose 10 kg. You'll see here how close you are."),
+                    tr("Setz dir ein langfristiges Ziel – z. B. $exBench Bankdrücken, 30 min laufen oder $exLose abnehmen. Hier siehst du dann, wie nah du dran bist.",
+                        "Set yourself a long-term goal – e.g. $exBench bench press, run 30 min or lose $exLose. You'll see here how close you are."),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(end = 8.dp)
@@ -279,7 +279,9 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
     var type by remember { mutableStateOf(goal?.type) }
     var exercise by remember { mutableStateOf(goal?.exercise) }
     var query by remember { mutableStateOf("") }
-    var text by remember { mutableStateOf(goal?.target?.let { fmtW(it) } ?: "") }
+    // Kraft- und Gewichtsziele werden in kg gespeichert, im Feld aber in der gewählten Einheit gezeigt
+    val inWeight = { tt: GoalType? -> tt == GoalType.STRENGTH || tt == GoalType.BODYWEIGHT }
+    var text by remember { mutableStateOf(goal?.target?.let { if (inWeight(goal.type)) fmtWU(it) else fmtW(it) } ?: "") }
     var steps by remember { mutableIntStateOf(goal?.target?.toInt() ?: 0) }
     val currentWeight = store.weights.lastOrNull()?.kg
 
@@ -290,7 +292,7 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
 
     val t = type
     val best = if (t != null && t.needsExercise) exercise?.let { bestValue(store, t, it) } else null
-    val number = text.replace(',', '.').toDoubleOrNull()
+    val number = text.replace(',', '.').toDoubleOrNull()?.let { if (inWeight(t)) fromUnit(it) else it }
     // Fehlermeldung bzw. null = gültig
     val error: String? = when (t) {
         null -> ""
@@ -304,7 +306,7 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
         GoalType.BODYWEIGHT -> when {
             currentWeight == null -> ""
             number == null || number !in 20.0..400.0 -> ""
-            number == currentWeight -> tr("Das ist dein aktuelles Gewicht", "That's your current weight")
+            abs(number - currentWeight) < 0.05 -> tr("Das ist dein aktuelles Gewicht", "That's your current weight")
             else -> null
         }
         GoalType.CARDIO_WEEK, GoalType.REGULAR -> null
@@ -394,7 +396,7 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
                             Column(Modifier.weight(1f)) {
                                 Text(exName(ex), style = MaterialTheme.typography.bodyMedium)
                                 Text(
-                                    best?.let { tr("Bisher bestes: ", "Best so far: ") + if (t == GoalType.STRENGTH) "${fmtW(it)} kg" else fmtAmount(ex, it, store) }
+                                    best?.let { tr("Bisher bestes: ", "Best so far: ") + if (t == GoalType.STRENGTH) "${fmtKg(it)}" else fmtAmount(ex, it, store) }
                                         ?: tr("Noch nicht gemacht", "Not done yet"),
                                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -404,7 +406,7 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
                         when (t) {
                             GoalType.STRENGTH, GoalType.ENDURANCE, GoalType.BODYWEIGHT -> {
                                 if (t == GoalType.BODYWEIGHT) Text(
-                                    currentWeight?.let { tr("Aktuell: ${fmtW(it)} kg", "Current: ${fmtW(it)} kg") }
+                                    currentWeight?.let { tr("Aktuell: ${fmtKg(it)}", "Current: ${fmtKg(it)}") }
                                         ?: tr("Trag zuerst im Tab „Körper“ dein Gewicht ein.", "First log your weight in the \"Body\" tab."),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -412,7 +414,7 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
                                     val unit = when {
                                         t == GoalType.ENDURANCE && store.groupOf(exercise ?: "").isCardio -> tr("Minuten", "minutes")
                                         t == GoalType.ENDURANCE -> tr("Sekunden", "seconds")
-                                        else -> "kg"
+                                        else -> wUnit
                                     }
                                     OutlinedTextField(
                                         value = text, onValueChange = { text = it.filter { c -> c.isDigit() || c == ',' || c == '.' }.take(6) },
@@ -471,3 +473,7 @@ private fun GoalStepper(label: String, canDown: Boolean, canUp: Boolean, onDown:
         TextButton(onClick = onUp, enabled = canUp) { Text("+", style = MaterialTheme.typography.headlineMedium) }
     }
 }
+
+/** Beispielwerte in den Ziel-Texten passend zur Einheit (runde Werte statt umgerechneter). */
+private val exBench: String get() = if (isLb) "225 lbs" else "100 kg"
+private val exLose: String get() = if (isLb) "20 lbs" else "10 kg"

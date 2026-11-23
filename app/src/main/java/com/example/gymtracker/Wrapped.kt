@@ -118,7 +118,7 @@ fun YearReviewButton(store: GymStore) {
                 add(tr("Trainings", "Workouts") to r.sessions.toString())
                 if (r.durationMs > 0) add(tr("Trainingszeit", "Training time") to fmtHoursMinutes(r.durationMs))
                 add(tr("Sätze", "Sets") to fmtKcal(r.sets))
-                if (r.volume > 0) add(tr("Bewegt", "Lifted") to "${fmtW(Math.round(r.volume / 100) / 10.0)} t")
+                if (r.volume > 0) add(tr("Bewegt", "Lifted") to "${fmtW(Math.round(toBig(r.volume) * 10) / 10.0)} $bigUnit")
                 r.kcal?.let { add("🔥 kcal" to "~${fmtKcal(it)}") }
                 add(tr("Rekorde", "Records") to "🏆 ${r.records}")
             }
@@ -130,7 +130,7 @@ fun YearReviewButton(store: GymStore) {
             }
             HorizontalDivider()
             r.favorite?.let { (ex, n) -> WrappedLine("❤️", tr("Lieblingsübung", "Favourite exercise"), "${exName(ex)} · " + plural(n, tr("Satz", "set"), tr("Sätze", "sets"))) }
-            r.recordJump?.let { (ex, a, b) -> WrappedLine("🚀", tr("Größter Sprung", "Biggest jump"), "${exName(ex)}: ${fmtW(a)} → ${fmtW(b)} kg (+${fmtW(b - a)})") }
+            r.recordJump?.let { (ex, a, b) -> WrappedLine("🚀", tr("Größter Sprung", "Biggest jump"), "${exName(ex)}: ${fmtWU(a)} → ${fmtKg(b)} (+${fmtWU(b - a)})") }
             r.topGroup?.let { WrappedLine("💪", tr("Am meisten trainiert", "Most trained"), it.label) }
             r.bestMonth?.let { (m, n) ->
                 val name = SimpleDateFormat("LLLL", appLocale()).format(Calendar.getInstance().apply { clear(); set(r.year, m, 1) }.time)

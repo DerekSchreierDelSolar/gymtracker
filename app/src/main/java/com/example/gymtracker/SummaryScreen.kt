@@ -74,7 +74,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
                     stats.kcal?.let {
                         add((if (stats.kcalFromHr) tr("❤ Verbrauch", "❤ Burned") else tr("🔥 Verbrauch", "🔥 Burned")) to "~${fmtKcal(it)} kcal")
                     }
-                    if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtVolume(stats.volume)} kg")
+                    if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtVol(stats.volume)}")
                     if (stats.cardioMinutes > 0) add("Cardio" to "${stats.cardioMinutes} min")
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -122,7 +122,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
             if (volumeItems.size >= 2) {
                 item {
                     ChartCard(tr("Volumen pro Übung", "Volume per exercise"), tr("Gewicht × Wiederholungen", "Weight × reps")) {
-                        HorizontalBars(volumeItems, wide = true) { "${fmtVolume(it)} kg" }
+                        HorizontalBars(volumeItems, wide = true) { "${fmtVol(it)}" }
                     }
                 }
             }

@@ -402,6 +402,18 @@ fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
                     }
                 }
                 Spacer(Modifier.height(8.dp))
+                Text(tr("Gewichtseinheit", "Weight unit"), style = MaterialTheme.typography.titleSmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // nur Anzeige/Eingabe – gespeichert wird immer in kg, Umschalten ändert keine Daten
+                    listOf("kg" to "kg", "lb" to "lbs").forEach { (unit, label) ->
+                        FilterChip(
+                            selected = weightUnit == unit,
+                            onClick = { store.setUnit(unit) },
+                            label = { Text(label) }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
                 ProfileSettings(store)
                 Spacer(Modifier.height(8.dp))
                 AutoBackupSettings(store)

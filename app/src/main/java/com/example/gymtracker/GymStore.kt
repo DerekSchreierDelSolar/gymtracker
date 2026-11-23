@@ -110,6 +110,12 @@ class GymStore(context: Context) {
         save()
     }
 
+    /** Gewichtseinheit: "kg" oder "lb" (nur Anzeige/Eingabe, gespeichert wird immer kg). Setzt weightUnit. */
+    fun setUnit(unit: String) {
+        weightUnit = unit
+        save()
+    }
+
     init { load() }
 
     private fun load() {
@@ -286,6 +292,7 @@ class GymStore(context: Context) {
                 lastExport = it.optLong("lastExport", 0L)
                 themeMode = it.optString("theme", "system")
                 appLanguage = it.optString("language", "de")
+                weightUnit = if (it.optString("unit") == "lb") "lb" else "kg"
             }
             val we = root.optJSONArray("weights") ?: JSONArray()
             weights.addAll(
@@ -406,6 +413,7 @@ class GymStore(context: Context) {
                 .put("lastExport", lastExport)
                 .put("theme", themeMode)
                 .put("language", appLanguage)
+                .apply { if (isLb) put("unit", "lb") }
                 .put("weeklyGoal", weeklyGoal)
         )
         if (!profile.isEmpty) root.put("profile", JSONObject().apply {

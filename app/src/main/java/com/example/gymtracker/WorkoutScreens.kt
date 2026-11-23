@@ -375,7 +375,7 @@ fun WorkoutScreen(
                                     Text(
                                         "${stats.percent} % · ${fmtDuration(t.end - t.start)} · " +
                                             plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                            (if (stats.volume > 0) " · ${fmtVolume(stats.volume)} kg" else "") +
+                                            (if (stats.volume > 0) " · ${fmtVol(stats.volume)}" else "") +
                                             (stats.kcal?.let { " · 🔥 ${fmtKcal(it)} kcal" } ?: ""),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant

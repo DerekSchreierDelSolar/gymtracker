@@ -3,7 +3,7 @@
 // Liefert IMMER mindestens einen Erfolg; nur Vergleiche mit der eigenen Vergangenheit, nie Kritik.
 
 import { store } from './store.js';
-import { tr, exName, fmtW, fmtDate, fmtVolume, plural, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, groupLabel } from './core.js';
+import { fmtKg, fmtVol, tr, exName, fmtW, fmtDate, fmtVolume, plural, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, groupLabel } from './core.js';
 import { allSessions, sessionStats, streakFrom } from './stats.js';
 import { goalProgress, goalTitle, fmtAmount } from './goals.js';
 import { levelUpIn, levelTitle, nextTitleLevel } from './levels.js';
@@ -35,7 +35,7 @@ const isMilestone = n => [1, 5, 10, 25, 50, 75, 100].includes(n) || (n > 100 && 
 const ordinal = n => tr(`${n}.`, n % 100 >= 11 && n % 100 <= 13 ? `${n}th` : `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`);
 const daysBetween = (a, b) => Math.floor((b - a) / 86_400_000);
 const maxOf = (list, f) => (list.length ? Math.max(...list.map(f)) : null);
-const fmtMetric = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)} min` : isTimed(ex) ? `${fmtW(v)} s` : `${fmtW(v)} kg`);
+const fmtMetric = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)} min` : isTimed(ex) ? `${fmtW(v)} s` : `${fmtKg(v)}`);
 
 /**
  * Alle Erfolge eines Trainings, wichtigste zuerst: [{ kind, emoji, big, title, detail, exercise }].
@@ -89,7 +89,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
       });
       if (rep) {
         out.push(item('REP_RECORD', tr('Wiederholungsrekord: ', 'Rep record: ') + exName(ex),
-          (rep.weight > 0 ? `${fmtW(rep.weight)} kg × ${rep.reps}` : tr(`${rep.reps} Wdh.`, `${rep.reps} reps`)) + tr(' – so viele wie nie zuvor', ' – more than ever before'), ex));
+          (rep.weight > 0 ? `${fmtKg(rep.weight)} × ${rep.reps}` : tr(`${rep.reps} Wdh.`, `${rep.reps} reps`)) + tr(' – so viele wie nie zuvor', ' – more than ever before'), ex));
         continue;
       }
     }
@@ -104,7 +104,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
       const repsPrev = maxOf(prev.filter(s => s.weight === best), s => s.reps) ?? 0;
       const volNow = r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0);
       const volPrev = prev.reduce((a, s) => a + s.weight * s.reps, 0);
-      if (repsNow > repsPrev) detail = tr(`+${repsNow - repsPrev} Wdh. bei ${fmtW(best)} kg`, `+${repsNow - repsPrev} reps at ${fmtW(best)} kg`);
+      if (repsNow > repsPrev) detail = tr(`+${repsNow - repsPrev} Wdh. bei ${fmtKg(best)}`, `+${repsNow - repsPrev} reps at ${fmtKg(best)}`);
       else if (volPrev > 0 && volNow > volPrev) {
         const p = Math.round((volNow - volPrev) / volPrev * 100);
         detail = tr(`+${p} % Volumen`, `+${p} % volume`);
@@ -125,7 +125,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
       const before = maxOf(store.sets.filter(s => s.exercise === ex && s.time < t.start && isTop(s) && s.reps > 0), metric) ?? 0;
       const best = maxOf(now, metric);
       if (best > before) {
-        const fmt = g.type === 'STRENGTH' ? v => `${fmtW(v)} kg` : v => fmtAmount(ex, v);
+        const fmt = g.type === 'STRENGTH' ? v => `${fmtKg(v)}` : v => fmtAmount(ex, v);
         out.push(item('GOAL_PROGRESS', tr('Näher dran: ', 'Getting closer: ') + goalTitle(g),
           tr(`+${fmt(best - before)} · noch ${fmt(g.target - best)}`, `+${fmt(best - before)} · ${fmt(g.target - best)} to go`), ex));
       }
@@ -163,7 +163,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
     if (prevVol > 0 && stats.volume > prevVol) {
       const p = Math.round((stats.volume - prevVol) / prevVol * 100);
       out.push(item('VOLUME_UP', tr(`+${p} % Volumen`, `+${p} % volume`),
-        tr(`${fmtVolume(stats.volume)} kg statt ${fmtVolume(prevVol)} kg beim letzten Mal`, `${fmtVolume(stats.volume)} kg vs. ${fmtVolume(prevVol)} kg last time`)));
+        tr(`${fmtVol(stats.volume)} statt ${fmtVol(prevVol)} beim letzten Mal`, `${fmtVol(stats.volume)} vs. ${fmtVol(prevVol)} last time`)));
     }
   }
 
@@ -191,7 +191,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
   // 12. Immer: das Training selbst
   const parts = [];
   if (stats.sets > 0) parts.push(plural(stats.sets, tr('Satz', 'set'), tr('Sätze', 'sets')));
-  if (stats.volume > 0) parts.push(tr(`${fmtVolume(stats.volume)} kg bewegt`, `${fmtVolume(stats.volume)} kg moved`));
+  if (stats.volume > 0) parts.push(tr(`${fmtVol(stats.volume)} bewegt`, `${fmtVol(stats.volume)} moved`));
   if (stats.cardioMinutes > 0) parts.push(`${stats.cardioMinutes} min Cardio`);
   if (t.id >= 0 && t.end - t.start >= 60000) parts.push(`${Math.round((t.end - t.start) / 60000)} min`);
   out.push(item('SESSION', tr('Training geschafft', 'Workout done'), parts.join(' · ') || null));

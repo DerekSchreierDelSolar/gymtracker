@@ -74,11 +74,11 @@ fun anticipation(store: GymStore, w: Workout, today: Boolean = true): String? {
         val top = lastDay.maxOf { it.weight }
         val reps = lastDay.filter { it.weight == top }.maxOf { it.reps }
         return when {
-            s.weight != null && s.weight > top -> tr("Letztes Mal ${fmtW(top)} kg $name – schaffst du $whenDe ${fmtW(s.weight)}?",
-                "Last time ${fmtW(top)} kg $name – can you do ${fmtW(s.weight)} $whenEn?")
+            s.weight != null && s.weight > top -> tr("Letztes Mal ${fmtKg(top)} $name – schaffst du $whenDe ${fmtWU(s.weight)}?",
+                "Last time ${fmtKg(top)} $name – can you do ${fmtWU(s.weight)} $whenEn?")
             top <= 0 -> tr("Letztes Mal $reps × $name – $whenDe ${reps + 1}?", "Last time $reps × $name – ${reps + 1} $whenEn?")
-            else -> tr("Letztes Mal ${fmtW(top)} kg × $reps $name – $whenDe ${reps + 1} Wdh.?",
-                "Last time ${fmtW(top)} kg × $reps $name – ${reps + 1} reps $whenEn?")
+            else -> tr("Letztes Mal ${fmtKg(top)} × $reps $name – $whenDe ${reps + 1} Wdh.?",
+                "Last time ${fmtKg(top)} × $reps $name – ${reps + 1} reps $whenEn?")
         }
     }
     return null

@@ -9,9 +9,42 @@ import java.util.Locale
 
 // ---------- Hilfsfunktionen ----------
 
-fun fmtW(w: Double): String =
-    if (w % 1.0 == 0.0) w.toLong().toString()
-    else String.format(appLocale(), "%.1f", w) // DE: 62,5 – EN: 62.5
+fun fmtW(w: Double): String {
+    val r = Math.round(w * 10) / 10.0 // auf 0,1 runden (sonst „225,0“ nach lbs → kg → lbs)
+    return if (r % 1.0 == 0.0) r.toLong().toString()
+    else String.format(appLocale(), "%.1f", r) // DE: 62,5 – EN: 62.5
+}
+
+// ---------- Gewichtseinheit (kg / lbs) ----------
+// Gespeichert wird IMMER in kg. Nur Anzeige und Eingabe rechnen in die gewählte Einheit um
+// (wie eine View in SQL, die eine Spalte umrechnet – die Tabelle bleibt gleich). Web: core.js.
+
+/** "kg" oder "lb" – globaler Compose-State wie appLanguage, gesetzt über store.setUnit(). */
+var weightUnit by mutableStateOf("kg")
+val isLb: Boolean get() = weightUnit == "lb"
+const val LB_PER_KG = 2.20462262
+
+/** Einheit zur Anzeige: „kg“ bzw. „lbs“. */
+val wUnit: String get() = if (isLb) "lbs" else "kg"
+/** kg → angezeigte Einheit (Zahl). */
+fun toUnit(kg: Double): Double = if (isLb) kg * LB_PER_KG else kg
+/** Eingabe in der angezeigten Einheit → kg. */
+fun fromUnit(v: Double): Double = if (isLb) v / LB_PER_KG else v
+/** Gewicht (kg) als Zahl in der angezeigten Einheit, z. B. für Eingabefelder. */
+fun fmtWU(kg: Double): String = fmtW(toUnit(kg))
+/** Gewicht (kg) mit Einheit: „62,5 kg“ bzw. „137.8 lbs“. */
+fun fmtKg(kg: Double): String = "${fmtWU(kg)} $wUnit"
+/** Volumen (kg × Wdh.) mit Einheit, Tausenderpunkt wie fmtVolume. */
+fun fmtVol(kg: Double): String = "${fmtVolume(toUnit(kg))} $wUnit"
+/** Großes Volumen: Tonnen bzw. 1.000 lbs („k lbs“) – Zahl in dieser Einheit und Name. */
+fun toBig(kg: Double): Double = toUnit(kg) / 1000
+val bigUnit: String get() = if (isLb) "k lbs" else "t"
+/** Eingabefeld lesen („62,5“ oder „62.5“) → kg, null wenn keine Zahl. */
+fun parseW(text: String): Double? = text.replace(',', '.').toDoubleOrNull()?.let(::fromUnit)
+/** Kleinster sinnvoller Gewichtsschritt (Scheibenpaar) in kg: 2,5 kg bzw. 5 lbs. */
+val plateStep: Double get() = if (isLb) 5 / LB_PER_KG else 2.5
+/** Auf ein Vielfaches von plateStep runden (in der angezeigten Einheit glatt). */
+fun roundPlate(kg: Double): Double = Math.round(kg / plateStep) * plateStep
 
 /** Volumen (kg × Wdh.) zur Anzeige: ab 1000 ganzzahlig mit Tausendertrennzeichen (DE 10.753, EN 10,753), sonst wie fmtW.
  *  Nur zum Anzeigen – nie in Eingabefelder (dort würde „1.000“ als 1 gelesen). Web: fmtVolume in core.js. */

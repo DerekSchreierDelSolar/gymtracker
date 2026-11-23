@@ -22,8 +22,12 @@ private val VOLUME_STEPS_T = listOf(1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500,
 private fun nextCountMilestone(n: Int): Int =
     listOf(5, 10, 25, 50, 75, 100).firstOrNull { it > n } ?: ((n / 50) + 1) * 50
 
-/** Schrittweite für „runde“ Gewichte: leicht 5 kg, mittel 10 kg, schwer 20 kg. */
-private fun weightStep(best: Double) = when {
+/** Schrittweite für „runde“ Gewichte in der angezeigten Einheit: leicht 5 kg, mittel 10 kg, schwer 20 kg (lbs: 10 / 25 / 50). */
+private fun weightStep(best: Double) = if (isLb) when {
+    best < 65 -> 10.0
+    best < 330 -> 25.0
+    else -> 50.0
+} else when {
     best < 30 -> 5.0
     best < 150 -> 10.0
     else -> 20.0
@@ -53,7 +57,8 @@ fun nextMilestones(store: GymStore, limit: Int = 3): List<Milestone> {
         val byTime = store.groupOf(ex).isCardio || isTimed(ex)
         val top = store.sets.top().filter { it.exercise == ex && it.reps > 0 }
         if (top.isEmpty()) continue
-        val best = if (byTime) top.maxOf { it.reps.toDouble() } else top.maxOf { it.weight }
+        // Gewichte hier in der angezeigten Einheit (kg bzw. lbs), damit „runde“ Werte auch in lbs rund sind
+        val best = if (byTime) top.maxOf { it.reps.toDouble() } else toUnit(top.maxOf { it.weight })
         if (best <= 0) continue
         val step = when {
             !byTime -> weightStep(best)
@@ -61,13 +66,14 @@ fun nextMilestones(store: GymStore, limit: Int = 3): List<Milestone> {
             else -> 30.0                        // Sekunden
         }
         var next = (floor(best / step) + 1) * step
-        if (g != null && g.target in (best + 0.001)..next) next = g.target // nie über das eigene Ziel hinaus
+        val target = g?.target?.let { if (byTime) it else toUnit(it) }
+        if (target != null && target in (best + 0.001)..next) next = target // nie über das eigene Ziel hinaus
         val prev = maxOf(0.0, next - step)
-        val unit: (Double) -> String = if (!byTime) { v -> "${fmtW(v)} kg" } else { v -> fmtAmount(ex, v, store) }
+        val unit: (Double) -> String = if (!byTime) { v -> "${fmtW(v)} $wUnit" } else { v -> fmtAmount(ex, v, store) }
         exMilestones += Milestone(
             if (g != null) "🎯" else "🏋️",
             tr("Noch ${unit(next - best)} bis ${unit(next)} ", "${unit(next - best)} to ${unit(next)} ") + exName(ex),
-            tr("Bisher bestes: ${unit(best)}", "Best so far: ${unit(best)}") + if (g != null && next == g.target) tr(" · dein Ziel!", " · your goal!") else "",
+            tr("Bisher bestes: ${unit(best)}", "Best so far: ${unit(best)}") + if (target != null && next == target) tr(" · dein Ziel!", " · your goal!") else "",
             frac(prev, best, next), ex
         )
     }
@@ -84,13 +90,13 @@ fun nextMilestones(store: GymStore, limit: Int = 3): List<Milestone> {
     }
 
     // Gesamtvolumen (Tonnen)
-    val volume = store.sets.filter { it.isWork && !store.groupOf(it.exercise).isCardio && !isTimed(it.exercise) }.sumOf { it.weight * it.reps } / 1000.0
+    val volume = store.sets.filter { it.isWork && !store.groupOf(it.exercise).isCardio && !isTimed(it.exercise) }.sumOf { it.weight * it.reps }.let(::toBig) // Tonnen bzw. 1.000 lbs
     if (volume > 0) {
         val next = VOLUME_STEPS_T.firstOrNull { it > volume } ?: (((volume / 10000).toInt() + 1) * 10000)
         val prev = VOLUME_STEPS_T.lastOrNull { it <= volume } ?: 0
-        out += Milestone("🏗️", tr("Noch ${fmtW(Math.round((next - volume) * 10) / 10.0)} t bis $next t bewegt",
-            "${fmtW(Math.round((next - volume) * 10) / 10.0)} t to $next t lifted"),
-            tr("Gesamtvolumen seit Beginn: ${fmtW(Math.round(volume * 10) / 10.0)} t", "Total volume so far: ${fmtW(Math.round(volume * 10) / 10.0)} t"),
+        out += Milestone("🏗️", tr("Noch ${fmtW(Math.round((next - volume) * 10) / 10.0)} $bigUnit bis $next $bigUnit bewegt",
+            "${fmtW(Math.round((next - volume) * 10) / 10.0)} $bigUnit to $next $bigUnit lifted"),
+            tr("Gesamtvolumen seit Beginn: ${fmtW(Math.round(volume * 10) / 10.0)} $bigUnit", "Total volume so far: ${fmtW(Math.round(volume * 10) / 10.0)} $bigUnit"),
             frac(prev.toDouble(), volume, next.toDouble()))
     }
 

@@ -2,7 +2,7 @@
 // store.cycle = { start (Montag), weeks } oder null; Woche weeks+1 = Deload.
 
 import { store } from './store.js';
-import { tr, startOfWeek } from './core.js';
+import { roundPlate, tr, startOfWeek } from './core.js';
 import { h, chip } from './ui.js';
 
 /** Woche im Block 1..weeks+1 (letzte = Deload); null = kein Block / Start in der Zukunft. */
@@ -15,7 +15,7 @@ export function cycleWeek(c = store.cycle, now = Date.now()) {
 
 export const isDeload = (now = Date.now()) => !!store.cycle && cycleWeek(store.cycle, now) === store.cycle.weeks + 1;
 export const deloadTarget = t => (t <= 0 ? 0 : Math.ceil(t / 2));
-export const deloadWeight = kg => Math.floor(kg * 0.6 / 2.5 + 0.5) * 2.5;
+export const deloadWeight = kg => roundPlate(kg * 0.6);
 
 /** Zeile für die Wochenziel-Karte (null = kein Block). */
 export function cycleLine() {

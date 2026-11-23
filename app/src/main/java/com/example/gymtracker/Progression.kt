@@ -48,36 +48,39 @@ fun progressionSuggestion(store: GymStore, name: String, before: Long): Suggesti
             null
         )
     }
-    val step = when (equipmentOf(name)) {
-        Equipment.KURZHANTEL, Equipment.KETTLEBELL -> 2.0
+    val step = when {
+        isLb -> plateStep // 5 lbs
+        equipmentOf(name) == Equipment.KURZHANTEL || equipmentOf(name) == Equipment.KETTLEBELL -> 2.0
         else -> 2.5
     }
+    // nächstes Gewicht; in lbs auf 5 lbs runden (alte kg-Einträge ergeben sonst krumme Werte wie 170,3)
+    val next = if (isLb) roundPlate(top + step) else top + step
     // Deload-Woche (Cycle.kt): leichter statt schwerer
     if (isDeload(store)) return Suggestion(
-        tr("Deload: ${fmtW(deloadWeight(top))} kg", "Deload: ${fmtW(deloadWeight(top))} kg"),
-        tr("Leichte Woche – ca. 60 % von ${fmtW(top)} kg und weniger Sätze, damit du dich erholst", "Light week – about 60 % of ${fmtW(top)} kg and fewer sets so you recover"),
+        tr("Deload: ${fmtKg(deloadWeight(top))}", "Deload: ${fmtKg(deloadWeight(top))}"),
+        tr("Leichte Woche – ca. 60 % von ${fmtKg(top)} und weniger Sätze, damit du dich erholst", "Light week – about 60 % of ${fmtKg(top)} and fewer sets so you recover"),
         deloadWeight(top)
     )
     // Wdh. in Reserve (Effort.kt): noch ≥ 3 im Tank → gleich mehr Gewicht, auch ohne 8+ Wdh.
     val minRir = atTop.mapNotNull { it.rir }.minOrNull()
     if (minRir != null && minRir >= 3 && !(atTop.size >= 2 && minReps >= 8)) return Suggestion(
-        tr("Heute ${fmtW(top + step)} kg?", "Try ${fmtW(top + step)} kg today?"),
-        tr("Letztes Mal bei ${fmtW(top)} kg noch ${if (minRir >= 4) "4+" else minRir} Wdh. in Reserve – das geht schwerer",
-            "Last time at ${fmtW(top)} kg you had ${if (minRir >= 4) "4+" else minRir} reps in reserve – go heavier"),
-        top + step
+        tr("Heute ${fmtKg(next)}?", "Try ${fmtKg(next)} today?"),
+        tr("Letztes Mal bei ${fmtKg(top)} noch ${if (minRir >= 4) "4+" else minRir} Wdh. in Reserve – das geht schwerer",
+            "Last time at ${fmtKg(top)} you had ${if (minRir >= 4) "4+" else minRir} reps in reserve – go heavier"),
+        next
     )
     return if (atTop.size >= 2 && minReps >= 8) {
         Suggestion(
-            tr("Heute ${fmtW(top + step)} kg?", "Try ${fmtW(top + step)} kg today?"),
+            tr("Heute ${fmtKg(next)}?", "Try ${fmtKg(next)} today?"),
             tr(
-                "Letztes Mal ${atTop.size} Sätze mit ${fmtW(top)} kg und mind. $minReps Wdh. – Zeit für mehr Gewicht",
-                "Last time ${atTop.size} sets at ${fmtW(top)} kg with at least $minReps reps – time to go heavier"
+                "Letztes Mal ${atTop.size} Sätze mit ${fmtKg(top)} und mind. $minReps Wdh. – Zeit für mehr Gewicht",
+                "Last time ${atTop.size} sets at ${fmtKg(top)} with at least $minReps reps – time to go heavier"
             ),
-            top + step
+            next
         )
     } else {
         Suggestion(
-            tr("${fmtW(top)} kg, Ziel: ${maxReps + 1}+ Wdh.", "${fmtW(top)} kg, goal: ${maxReps + 1}+ reps"),
+            tr("${fmtKg(top)}, Ziel: ${maxReps + 1}+ Wdh.", "${fmtKg(top)}, goal: ${maxReps + 1}+ reps"),
             tr(
                 "Erst bei 2 Sätzen mit 8+ Wdh. lohnt sich mehr Gewicht",
                 "Go heavier once you hit 8+ reps on 2 sets"

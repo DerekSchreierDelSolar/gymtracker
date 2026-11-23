@@ -48,7 +48,7 @@ private fun daysBetween(a: Long, b: Long) = ((b - a) / 86_400_000L).toInt()
 private fun fmtMetric(store: GymStore, ex: String, v: Double): String = when {
     store.groupOf(ex).isCardio -> "${fmtW(v)} min"
     isTimed(ex) -> "${fmtW(v)} s"
-    else -> "${fmtW(v)} kg"
+    else -> "${fmtKg(v)}"
 }
 
 /**
@@ -103,7 +103,7 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
             }
             if (repRecord != null) {
                 out += Achievement(AchievementKind.REP_RECORD, tr("Wiederholungsrekord: ", "Rep record: ") + exName(ex),
-                    (if (repRecord.weight > 0) "${fmtW(repRecord.weight)} kg × ${repRecord.reps}" else tr("${repRecord.reps} Wdh.", "${repRecord.reps} reps")) +
+                    (if (repRecord.weight > 0) "${fmtKg(repRecord.weight)} × ${repRecord.reps}" else tr("${repRecord.reps} Wdh.", "${repRecord.reps} reps")) +
                         tr(" – so viele wie nie zuvor", " – more than ever before"), ex)
                 continue
             }
@@ -120,7 +120,7 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
                 val volNow = r.sets.work().sumOf { it.weight * it.reps }
                 val volPrev = prev.sumOf { it.weight * it.reps }
                 when {
-                    repsNow > repsPrev -> tr("+${repsNow - repsPrev} Wdh. bei ${fmtW(best)} kg", "+${repsNow - repsPrev} reps at ${fmtW(best)} kg")
+                    repsNow > repsPrev -> tr("+${repsNow - repsPrev} Wdh. bei ${fmtKg(best)}", "+${repsNow - repsPrev} reps at ${fmtKg(best)}")
                     volPrev > 0 && volNow > volPrev -> tr("+${Math.round((volNow - volPrev) / volPrev * 100)} % Volumen", "+${Math.round((volNow - volPrev) / volPrev * 100)} % volume")
                     else -> null
                 }
@@ -143,7 +143,7 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
                 val before = store.sets.filter { it.exercise == ex && it.time < t.start && it.isTop && it.reps > 0 }.maxOfOrNull(metric) ?: 0.0
                 val best = now.maxOf(metric)
                 if (best > before) {
-                    val fmt: (Double) -> String = if (g.type == GoalType.STRENGTH) { v -> "${fmtW(v)} kg" } else { v -> fmtAmount(ex, v, store) }
+                    val fmt: (Double) -> String = if (g.type == GoalType.STRENGTH) { v -> "${fmtKg(v)}" } else { v -> fmtAmount(ex, v, store) }
                     out += Achievement(AchievementKind.GOAL_PROGRESS, tr("Näher dran: ", "Getting closer: ") + goalTitle(store, g),
                         tr("+${fmt(best - before)} · noch ${fmt(g.target - best)}", "+${fmt(best - before)} · ${fmt(g.target - best)} to go"), ex)
                 }
@@ -185,7 +185,7 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
         val prevVol = last?.let { sessionStats(store, it).volume } ?: 0.0
         if (prevVol > 0 && stats.volume > prevVol) out += Achievement(AchievementKind.VOLUME_UP,
             tr("+${Math.round((stats.volume - prevVol) / prevVol * 100)} % Volumen", "+${Math.round((stats.volume - prevVol) / prevVol * 100)} % volume"),
-            tr("${fmtVolume(stats.volume)} kg statt ${fmtVolume(prevVol)} kg beim letzten Mal", "${fmtVolume(stats.volume)} kg vs. ${fmtVolume(prevVol)} kg last time"))
+            tr("${fmtVol(stats.volume)} statt ${fmtVol(prevVol)} beim letzten Mal", "${fmtVol(stats.volume)} vs. ${fmtVol(prevVol)} last time"))
     }
 
     // 9. Muskelgruppe nach mindestens 14 Tagen Pause wieder trainiert
@@ -209,7 +209,7 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
     // 12. Immer: das Training selbst
     val parts = buildList {
         if (stats.sets > 0) add(plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")))
-        if (stats.volume > 0) add(tr("${fmtVolume(stats.volume)} kg bewegt", "${fmtVolume(stats.volume)} kg moved"))
+        if (stats.volume > 0) add(tr("${fmtVol(stats.volume)} bewegt", "${fmtVol(stats.volume)} moved"))
         if (stats.cardioMinutes > 0) add("${stats.cardioMinutes} min Cardio")
         if (t.id >= 0 && t.end - t.start >= 60_000) add("${Math.round((t.end - t.start) / 60000.0)} min")
     }

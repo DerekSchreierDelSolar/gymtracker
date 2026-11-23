@@ -116,8 +116,8 @@ fun fmtSeconds(sec: Int): String =
 /** Text für einen einzelnen Satz, eine Cardio-Einheit oder eine Zeitübung. */
 fun fmtSet(s: GymSet, cardio: Boolean): String = when {
     cardio -> "${s.reps} min"
-    isTimed(s.exercise) -> (if (s.weight > 0) "${fmtW(s.weight)} kg · " else "") + fmtSeconds(s.reps)
-    else -> "${fmtW(s.weight)} kg × ${s.reps}"
+    isTimed(s.exercise) -> (if (s.weight > 0) "${fmtKg(s.weight)} · " else "") + fmtSeconds(s.reps)
+    else -> "${fmtKg(s.weight)} × ${s.reps}"
 }
 
 /**

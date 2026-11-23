@@ -2,14 +2,15 @@
 // Kleine, bald erreichbare Schritte auf der Startseite, immer positiv formuliert.
 
 import { store } from './store.js';
-import { tr, exName, fmtW, plural, isTimed, isCardio, isTop, isWork, startOfWeek, addDays } from './core.js';
+import { wUnit, toUnit, isLb, toBig, bigUnit, tr, exName, fmtW, plural, isTimed, isCardio, isTop, isWork, startOfWeek, addDays } from './core.js';
 import { allSessions, streakFrom } from './stats.js';
 import { goalProgress, fmtAmount } from './goals.js';
 import { h } from './ui.js';
 
 const VOLUME_STEPS_T = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 const nextCountMilestone = n => [5, 10, 25, 50, 75, 100].find(m => m > n) ?? (Math.floor(n / 50) + 1) * 50;
-const weightStep = best => (best < 30 ? 5 : best < 150 ? 10 : 20);
+// Schrittweite in der angezeigten Einheit: 5/10/20 kg bzw. 10/25/50 lbs (wie Milestones.kt)
+const weightStep = best => (isLb() ? (best < 65 ? 10 : best < 330 ? 25 : 50) : best < 30 ? 5 : best < 150 ? 10 : 20);
 const frac = (prev, cur, next) => (next <= prev ? 1 : Math.min(1, Math.max(0, (cur - prev) / (next - prev))));
 const round1 = v => Math.round(v * 10) / 10;
 const prevWeek = w => startOfWeek(addDays(w, -7));
@@ -33,17 +34,19 @@ export function nextMilestones(limit = 3) {
     const byTime = !strength(ex);
     const top = store.sets.filter(s => s.exercise === ex && isTop(s) && s.reps > 0);
     if (!top.length) continue;
-    const best = Math.max(...top.map(s => (byTime ? s.reps : s.weight)));
+    // Gewichte in der angezeigten Einheit, damit „runde“ Werte auch in lbs rund sind
+    const best = Math.max(...top.map(s => (byTime ? s.reps : toUnit(s.weight))));
     if (best <= 0) continue;
     const step = !byTime ? weightStep(best) : isCardio(store.groupOf(ex)) ? 5 : 30;
     let next = (Math.floor(best / step) + 1) * step;
-    if (g && g.target > best && g.target <= next) next = g.target; // nie über das eigene Ziel hinaus
+    const target = g ? (byTime ? g.target : toUnit(g.target)) : null;
+    if (target != null && target > best && target <= next) next = target; // nie über das eigene Ziel hinaus
     const prev = Math.max(0, next - step);
-    const unit = !byTime ? v => `${fmtW(v)} kg` : v => fmtAmount(ex, v);
+    const unit = !byTime ? v => `${fmtW(v)} ${wUnit()}` : v => fmtAmount(ex, v);
     exMilestones.push({
       emoji: g ? '🎯' : '🏋️', exercise: ex, fraction: frac(prev, best, next),
       title: tr(`Noch ${unit(next - best)} bis ${unit(next)} `, `${unit(next - best)} to ${unit(next)} `) + exName(ex),
-      detail: tr(`Bisher bestes: ${unit(best)}`, `Best so far: ${unit(best)}`) + (g && next === g.target ? tr(' · dein Ziel!', ' · your goal!') : ''),
+      detail: tr(`Bisher bestes: ${unit(best)}`, `Best so far: ${unit(best)}`) + (target != null && next === target ? tr(' · dein Ziel!', ' · your goal!') : ''),
     });
   }
   out.push(...exMilestones.sort((a, b) => b.fraction - a.fraction).slice(0, 2));
@@ -61,14 +64,14 @@ export function nextMilestones(limit = 3) {
   }
 
   // Gesamtvolumen (Tonnen)
-  const volume = store.sets.filter(s => isWork(s) && strength(s.exercise)).reduce((a, s) => a + s.weight * s.reps, 0) / 1000;
+  const volume = toBig(store.sets.filter(s => isWork(s) && strength(s.exercise)).reduce((a, s) => a + s.weight * s.reps, 0)); // t bzw. 1.000 lbs
   if (volume > 0) {
     const next = VOLUME_STEPS_T.find(v => v > volume) ?? (Math.floor(volume / 10000) + 1) * 10000;
     const prev = VOLUME_STEPS_T.filter(v => v <= volume).at(-1) ?? 0;
     out.push({
       emoji: '🏗️', fraction: frac(prev, volume, next),
-      title: tr(`Noch ${fmtW(round1(next - volume))} t bis ${next} t bewegt`, `${fmtW(round1(next - volume))} t to ${next} t lifted`),
-      detail: tr(`Gesamtvolumen seit Beginn: ${fmtW(round1(volume))} t`, `Total volume so far: ${fmtW(round1(volume))} t`),
+      title: tr(`Noch ${fmtW(round1(next - volume))} ${bigUnit()} bis ${next} ${bigUnit()} bewegt`, `${fmtW(round1(next - volume))} ${bigUnit()} to ${next} ${bigUnit()} lifted`),
+      detail: tr(`Gesamtvolumen seit Beginn: ${fmtW(round1(volume))} ${bigUnit()}`, `Total volume so far: ${fmtW(round1(volume))} ${bigUnit()}`),
     });
   }
 

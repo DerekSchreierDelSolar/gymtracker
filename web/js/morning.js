@@ -2,7 +2,7 @@
 // Startseite: Rückblick aufs letzte Training + Neuanfang-Effekt; Vorfreude-Satz für die Schnellstart-Karte.
 
 import { store } from './store.js';
-import { tr, plural, exName, fmtW, fmtSeconds, isTimed, isCardio, isTop, dayKey, startOfWeek, startOfToday } from './core.js';
+import { fmtKg, fmtWU, tr, plural, exName, fmtW, fmtSeconds, isTimed, isCardio, isTop, dayKey, startOfWeek, startOfToday } from './core.js';
 import { allSessions, progressionSuggestion, weekdayOf, weekdayLong } from './stats.js';
 import { goalProgress } from './goals.js';
 import { achievements } from './achievements.js';
@@ -58,10 +58,10 @@ export function anticipation(w, today = true) {
     const top = Math.max(...lastDay.map(x => x.weight));
     const reps = Math.max(...lastDay.filter(x => x.weight === top).map(x => x.reps));
     if (s.weight != null && s.weight > top) {
-      return tr(`Letztes Mal ${fmtW(top)} kg ${name} – schaffst du ${wDe} ${fmtW(s.weight)}?`, `Last time ${fmtW(top)} kg ${name} – can you do ${fmtW(s.weight)} ${wEn}?`);
+      return tr(`Letztes Mal ${fmtKg(top)} ${name} – schaffst du ${wDe} ${fmtWU(s.weight)}?`, `Last time ${fmtKg(top)} ${name} – can you do ${fmtWU(s.weight)} ${wEn}?`);
     }
     if (top <= 0) return tr(`Letztes Mal ${reps} × ${name} – ${wDe} ${reps + 1}?`, `Last time ${reps} × ${name} – ${reps + 1} ${wEn}?`);
-    return tr(`Letztes Mal ${fmtW(top)} kg × ${reps} ${name} – ${wDe} ${reps + 1} Wdh.?`, `Last time ${fmtW(top)} kg × ${reps} ${name} – ${reps + 1} reps ${wEn}?`);
+    return tr(`Letztes Mal ${fmtKg(top)} × ${reps} ${name} – ${wDe} ${reps + 1} Wdh.?`, `Last time ${fmtKg(top)} × ${reps} ${name} – ${reps + 1} reps ${wEn}?`);
   }
   return null;
 }

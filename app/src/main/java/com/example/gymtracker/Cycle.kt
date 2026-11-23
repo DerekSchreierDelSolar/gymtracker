@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlin.math.ceil
-import kotlin.math.floor
 
 // ---------- Trainingsblock mit Deload (Roadmap Schritt 14) ----------
 // `weeks` Aufbauwochen + 1 Deload-Woche, ab dem Montag `start`, wiederholt sich. Im JSON "cycle" = { start, weeks }.
@@ -35,7 +34,7 @@ fun isDeload(store: GymStore, now: Long = System.currentTimeMillis()): Boolean =
 fun deloadTarget(t: Int): Int = if (t <= 0) 0 else ceil(t / 2.0).toInt()
 
 /** Deload-Gewicht: ≈ 60 %, auf 2,5 kg gerundet. */
-fun deloadWeight(kg: Double): Double = floor(kg * 0.6 / 2.5 + 0.5) * 2.5
+fun deloadWeight(kg: Double): Double = roundPlate(kg * 0.6)
 
 /** Zeile für die Wochenziel-Karte (null = kein Block). */
 fun cycleLine(store: GymStore): String? {

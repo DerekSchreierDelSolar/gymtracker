@@ -321,6 +321,11 @@
             "⋮ → Settings → Language: German or English."]
     },
     {
+      "keys": ["lbs", "pfund", "pounds", "pound", "einheit", "gewichtseinheit", "kilogramm", "kg oder lbs", "kg in lbs", "unit", "weight unit"],
+      "a": ["⋮ → Einstellungen → Gewichtseinheit: kg oder lbs. Gespeichert wird immer in kg – du kannst jederzeit umschalten, alle Gewichte, Volumen und Vorschläge werden umgerechnet (Vorschläge in lbs auf 5 lbs gerundet).",
+            "⋮ → Settings → Weight unit: kg or lbs. Everything is stored in kg, so you can switch any time – all weights, volume and suggestions are converted (suggestions in lbs rounded to 5 lbs)."]
+    },
+    {
       "keys": ["dunkel", "dunkles design", "hell", "design", "dark mode", "dark", "theme"],
       "a": ["⋮ → Einstellungen → Design: System, Hell oder Dunkel.",
             "⋮ → Settings → Theme: system, light or dark."]
