@@ -248,12 +248,12 @@ function trendCard(volumes, kcalWeeks) {
   const kcal = (showTrendKcal && kcalWeeks) || !hasVolume;
   return chartCard(tr('Verlauf pro Woche', 'Weekly trend'),
     kcal ? tr('Letzte 8 Wochen · geschätzt', 'Last 8 weeks · estimated')
-      : tr('Letzte 8 Wochen · aktuelle Woche hervorgehoben', 'Last 8 weeks · current week highlighted'),
+      : tr('Letzte 8 Wochen · Säule antippen für den Wert', 'Last 8 weeks · tap a bar for its value'),
     kcalWeeks && hasVolume ? h('div', { class: 'segments trend-switch' },
       chip(tr('Volumen', 'Volume'), !kcal, () => { showTrendKcal = false; rerender(); }),
       chip('🔥 kcal', kcal, () => { showTrendKcal = true; rerender(); })) : null,
-    kcal ? historyBars(kcalWeeks.map(v => v[1]), kcalWeeks.map(v => fmtWeek(v[0])), v => `~${fmtKcal(v)}\u00A0kcal`)
-      : historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtVol(v)}`));
+    kcal ? historyBars(kcalWeeks.map(v => v[1]), kcalWeeks.map(v => fmtWeek(v[0])), tr('Diese Woche', 'This week'), v => `~${fmtKcal(v)}\u00A0kcal`)
+      : historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), tr('Diese Woche', 'This week'), v => fmtVol(v)));
 }
 
 /** Karte „Neueste Rekorde“: 3 Zeilen, „Mehr anzeigen“ klappt bis 10 auf (wie RecordsCard). */

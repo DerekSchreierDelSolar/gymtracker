@@ -109,14 +109,25 @@ export function horizontalBars(items, format, wide = false) {
       h('span', { class: 'value' }, format(v)))));
 }
 
-/** Senkrechte Säulen; die letzte (aktuelle) ist hervorgehoben. */
-export function historyBars(values, labels, format) {
+/** Senkrechte Säulen; oben der Wert der gewählten Säule mit Bezeichnung („Diese Woche: …“ / „KW 47: …“).
+ *  Säule antippen = auswählen, erneut = zurück zur aktuellen (wie HistoryBars in Components.kt).
+ *  Ändert nur die eigenen Elemente – kein render(), die Auswahl ist bewusst nicht dauerhaft. */
+export function historyBars(values, labels, currentLabel, format) {
   const mx = Math.max(...values);
   if (!(mx > 0)) return null;
+  const last = values.length - 1;
+  let selected = last;
+  const text = i => `${i === last ? currentLabel : labels[i] ?? ''}: ${format(values[i])}`;
+  const valueEl = h('div', { class: 'vbars-value' }, text(last));
+  const bars = values.map((v, i) => h('div', { class: ['vbar', i === last && 'current'], style: `height:${Math.max(2, (v / mx) * 100)}%` }));
+  const select = i => {
+    selected = selected === i ? last : i;
+    bars.forEach((b, k) => b.classList.toggle('current', k === selected));
+    valueEl.textContent = text(selected);
+  };
   return h('div', { class: 'vbars' },
-    h('div', { class: 'vbars-value' }, format(values[values.length - 1])),
-    h('div', { class: 'vbars-area' }, values.map((v, i) =>
-      h('div', { class: 'vbar-col' }, h('div', { class: ['vbar', i === values.length - 1 && 'current'], style: `height:${Math.max(2, (v / mx) * 100)}%` })))),
+    valueEl,
+    h('div', { class: 'vbars-area' }, bars.map((b, i) => h('div', { class: 'vbar-col', onclick: () => select(i) }, b))),
     h('div', { class: 'vbars-labels' }, labels.map(l => h('span', null, l))));
 }
 

@@ -136,11 +136,15 @@ fun HorizontalBars(items: List<Pair<String, Double>>, wide: Boolean = false, for
 /**
  * Senkrechte Säulen über die Zeit (z. B. Volumen der letzten Trainings).
  * Die letzte Säule (= aktuelles Training) ist in voller Akzentfarbe, die älteren gedämpft.
- * Beschriftet werden nur der aktuelle Wert und das Datum unter jeder Säule.
+ * Oben rechts steht der Wert der gewählten Säule mit Bezeichnung („Diese Woche: …“ bzw. „KW 47: …“),
+ * sonst sähe es so aus, als gehöre die Zahl zur höchsten Säule. Säule antippen = auswählen,
+ * erneut antippen = zurück zur aktuellen. Web: historyBars (ui.js).
  */
 @Composable
-fun HistoryBars(values: List<Double>, labels: List<String>, format: (Double) -> String) {
+fun HistoryBars(values: List<Double>, labels: List<String>, currentLabel: String, format: (Double) -> String) {
     val max = values.maxOrNull()?.takeIf { it > 0 } ?: return
+    // remember(values): bei neuen Daten (z. B. Umschalten Volumen/kcal) wieder die aktuelle Säule
+    var selected by remember(values) { mutableIntStateOf(values.lastIndex) }
     val strong = MaterialTheme.colorScheme.primary
     // Gedämpfte Farbe deckend mischen (statt halbtransparent), damit nichts durchscheint
     val muted = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
@@ -150,7 +154,7 @@ fun HistoryBars(values: List<Double>, labels: List<String>, format: (Double) -> 
     val barShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
     Column {
         Text(
-            format(values.last()),
+            (if (selected == values.lastIndex) currentLabel else labels.getOrElse(selected) { "" }) + ": " + format(values[selected]),
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.align(Alignment.End)
         )
@@ -166,7 +170,9 @@ fun HistoryBars(values: List<Double>, labels: List<String>, format: (Double) -> 
                 Box(
                     Modifier
                         .weight(1f)
-                        .fillMaxHeight(),
+                        .fillMaxHeight()
+                        // ganze Spalte antippbar (auch über kleinen Säulen)
+                        .clickable { selected = if (selected == i) values.lastIndex else i },
                     contentAlignment = Alignment.BottomCenter
                 ) {
                     Box(
@@ -174,7 +180,7 @@ fun HistoryBars(values: List<Double>, labels: List<String>, format: (Double) -> 
                             .width(28.dp)
                             .fillMaxHeight((v / max).toFloat().coerceIn(0.02f, 1f))
                             .clip(barShape)
-                            .background(if (i == values.lastIndex) strong else muted)
+                            .background(if (i == selected) strong else muted)
                     )
                 }
             }

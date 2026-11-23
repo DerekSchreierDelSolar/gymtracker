@@ -329,15 +329,16 @@ private fun TrendCard(volumes: List<Pair<Long, Double>>, kcalWeeks: List<Pair<Lo
     val kcal = showKcal && kcalWeeks != null || volumes.none { it.second > 0 }
     ChartCard(tr("Verlauf pro Woche", "Weekly trend"),
         if (kcal) tr("Letzte 8 Wochen · geschätzt", "Last 8 weeks · estimated")
-        else tr("Letzte 8 Wochen · aktuelle Woche hervorgehoben", "Last 8 weeks · current week highlighted")) {
+        else tr("Letzte 8 Wochen · Säule antippen für den Wert", "Last 8 weeks · tap a bar for its value")) {
         if (kcalWeeks != null && volumes.any { it.second > 0 }) {
             Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 SegmentChip(tr("Volumen", "Volume"), !kcal, { showKcal = false }, Modifier.weight(1f))
                 SegmentChip("🔥 kcal", kcal, { showKcal = true }, Modifier.weight(1f))
             }
         }
-        if (kcal && kcalWeeks != null) HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${fmtKcal(it)}\u00A0kcal" }
-        else HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtVol(it)}" }
+        val thisWeek = tr("Diese Woche", "This week")
+        if (kcal && kcalWeeks != null) HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }, thisWeek) { "~${fmtKcal(it)}\u00A0kcal" }
+        else HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }, thisWeek) { fmtVol(it) }
     }
 }
 

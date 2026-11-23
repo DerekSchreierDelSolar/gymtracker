@@ -314,7 +314,7 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .hbar .value { width: 72px; text-align: right; font-weight: 500; }
 .vbars-value { text-align: right; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
 .vbars-area { display: flex; height: 120px; border-bottom: 1px solid var(--outline-variant); }
-.vbar-col { flex: 1; display: flex; align-items: flex-end; justify-content: center; }
+.vbar-col { flex: 1; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; }
 .vbar { width: 28px; max-width: 70%; border-radius: 4px 4px 0 0; background: color-mix(in srgb, var(--primary) 30%, var(--card)); }
 .vbar.current { background: var(--primary); }
 .vbars-labels { display: flex; margin-top: 4px; }
