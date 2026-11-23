@@ -53,6 +53,8 @@ class GymStore(context: Context) {
     val measures = mutableStateListOf<Measure>()
     /** Langfristige Ziele (Goals.kt), Reihenfolge = Anlegen. Vor init { load() }! */
     val goals = mutableStateListOf<Goal>()
+    /** Lieblingsübungen (★, in Listen zuerst), Reihenfolge = Markieren. JSON `favorites` nur wenn nicht leer. Vor init { load() }! */
+    val favorites = mutableStateListOf<String>()
     /** Notizen pro Übung und Tag: "Übung|Tag" (Tag = dayKey) → Text. Vor init { load() }! */
     private val notes = mutableStateMapOf<String, String>()
     /** Standard-Pausenlänge in Sekunden (0 = kein Pausen-Timer). `private set`: nur über setRest() änderbar. */
@@ -210,7 +212,7 @@ class GymStore(context: Context) {
 
     private fun clearAll() {
         changed()
-        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear(); goals.clear(); measures.clear()
+        exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear(); goals.clear(); measures.clear(); favorites.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         profile = Profile()
         cycle = null
@@ -221,6 +223,8 @@ class GymStore(context: Context) {
         run {
             val ex = root.optJSONArray("exercises") ?: JSONArray()
             for (i in 0 until ex.length()) migrateName(ex.getString(i)).let { if (it !in exercises) exercises.add(it) }
+            val fav = root.optJSONArray("favorites") ?: JSONArray()
+            for (i in 0 until fav.length()) migrateName(fav.optString(i)).let { if (it.isNotEmpty() && it !in favorites) favorites.add(it) }
             val g = root.optJSONObject("groups") ?: JSONObject()
             val oldArms = mutableListOf<String>() // frühere Kategorie „ARME“ → nach den Muskeln aufteilen (unten)
             g.keys().forEach { key ->
@@ -422,6 +426,7 @@ class GymStore(context: Context) {
             profile.heightCm?.let { put("height", it) }
         })
         cycle?.let { root.put("cycle", JSONObject().put("start", it.start).put("weeks", it.weeks)) }
+        if (favorites.isNotEmpty()) root.put("favorites", JSONArray(favorites.toList()))
         if (goals.isNotEmpty()) root.put("goals", JSONArray().also { arr ->
             goals.forEach { g ->
                 arr.put(JSONObject().put("id", g.id).put("type", g.type.name).apply { g.exercise?.let { put("exercise", it) } }
@@ -442,6 +447,16 @@ class GymStore(context: Context) {
         }
         root.put("sets", s)
         return root
+    }
+
+    // ----- Favoriten (★) -----
+    fun isFavorite(name: String): Boolean = name in favorites
+
+    /** Favorit an/aus. Gibt den neuen Zustand zurück. */
+    fun toggleFavorite(name: String): Boolean {
+        val now = if (favorites.remove(name)) false else { favorites.add(name); true }
+        save()
+        return now
     }
 
     fun hasExercise(name: String): Boolean =
@@ -531,6 +546,7 @@ class GymStore(context: Context) {
         sets.removeAll { it.exercise == name }
         // Ziele zu dieser Übung hätten sonst keine Übung mehr (Fortschritt immer 0)
         goals.removeAll { it.exercise == name }
+        favorites.remove(name)
         // Übung auch aus allen Workouts entfernen
         for (i in workouts.indices) {
             workouts[i] = workouts[i].copy(

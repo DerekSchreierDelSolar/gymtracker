@@ -495,7 +495,10 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                     }
                 },
                 navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
-                actions = { IconAction(Ico.DELETE, onClick = { confirmDelete = true }) }
+                actions = {
+                    FavoriteButton(store, exercise)
+                    IconAction(Ico.DELETE, onClick = { confirmDelete = true })
+                }
             )
             PrimaryTabRow(
                 selectedTabIndex = tab.coerceAtMost(tabs.size - 1),

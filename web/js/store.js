@@ -50,6 +50,7 @@ class GymStore {
   measures = [];         // Körpermaße [{ time, type, value }] (measures.js) – wie GymStore.measures
   cycle = null;          // Trainingsblock mit Deload { start, weeks } (cycle.js) – wie GymStore.cycle
   goals = [];            // langfristige Ziele { id, type, exercise?, target, start, created } – wie GymStore.goals (goals.js)
+  favorites = [];        // Lieblingsübungen (★, in Listen zuerst) – wie GymStore.favorites (JSON `favorites` nur wenn nicht leer)
   #listeners = new Set();
 
   constructor() {
@@ -195,6 +196,7 @@ class GymStore {
     const cy = obj(root.cycle);
     this.cycle = num(cy.start) != null && Number.isInteger(cy.weeks) && cy.weeks >= 2 && cy.weeks <= 8 ? { start: cy.start, weeks: cy.weeks } : null;
 
+    this.favorites = [...new Set(names(root.favorites))];
     // Ziele: unbekannter Typ, fehlende Übung oder Zielwert ≤ 0 → überspringen (wie GymStore.kt)
     this.goals = objs(root.goals).filter(o => GOAL_TYPES.includes(o.type) && num(o.target) > 0 &&
       (!GOAL_NEEDS_EXERCISE.includes(o.type) || typeof o.exercise === 'string')).map((o, i) => ({
@@ -252,6 +254,7 @@ class GymStore {
       },
       sets: this.sets,
       ...(Object.keys(this.profile).length ? { profile: this.profile } : {}),
+      ...(this.favorites.length ? { favorites: this.favorites } : {}),
       ...(this.goals.length ? { goals: this.goals } : {}),
       ...(this.cycle ? { cycle: this.cycle } : {}),
       ...(this.measures.length ? { measures: this.measures } : {}),
@@ -297,6 +300,7 @@ class GymStore {
     CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
     this.profile = {};
     this.goals = [];
+    this.favorites = [];
     this.cycle = null;
     this.measures = [];
     this.weeklyGoal = 3; // Sicherung ohne „settings“ → Standard statt des alten Werts
@@ -326,6 +330,16 @@ class GymStore {
   changeWeeklyGoal(n) { this.weeklyGoal = Math.min(14, Math.max(1, n)); this.#save(); }
 
   // ----- Übungen -----
+
+  // ----- Favoriten (★) – wie GymStore.kt -----
+  isFavorite(name) { return this.favorites.includes(name); }
+  /** Favorit an/aus, gibt den neuen Zustand zurück */
+  toggleFavorite(name) {
+    const now = !this.isFavorite(name);
+    this.favorites = now ? [...this.favorites, name] : this.favorites.filter(e => e !== name);
+    this.#save();
+    return now;
+  }
 
   hasExercise(name) {
     const n = name.trim().toLowerCase();
@@ -400,6 +414,7 @@ class GymStore {
     this.sets = this.sets.filter(s => s.exercise !== name);
     // Ziele zu dieser Übung hätten sonst keine Übung mehr (wie deleteExercise in GymStore.kt)
     this.goals = this.goals.filter(g => g.exercise !== name);
+    this.favorites = this.favorites.filter(e => e !== name);
     for (const w of this.workouts) {
       w.exercises = w.exercises.filter(e => e !== name);
       delete w.targets[name];

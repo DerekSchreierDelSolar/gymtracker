@@ -11,11 +11,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.unit.dp
 
 // ---------- App-Icons (selbst gezeichnet, ohne Icon-Bibliothek) ----------
 
-enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME, INFO, BOOK, CHAT, SEND, DRAG, UPLOAD, DOWNLOAD, SWAP }
+enum class Ico { BACK, SEARCH, CLOSE, MORE, DELETE, EDIT, SETTINGS, PLAY, ADD, CALENDAR, DUMBBELL, LIST, CHECK, CHEVRON, FILTER, BODY, COPY, HOME, INFO, BOOK, CHAT, SEND, DRAG, UPLOAD, DOWNLOAD, SWAP, STAR, STAR_FILLED }
 
 /**
  * Einfache Linien-Icons im 24×24-Raster (wie Material Symbols „outlined“).
@@ -107,6 +109,19 @@ fun AppIcon(icon: Ico, modifier: Modifier = Modifier.size(24.dp), tint: Color = 
             Ico.SEND -> { // Papierflieger
                 l(3f, 11f, 21f, 3f, 14f, 21f, 11f, 13f, 3f, 11f)
                 l(11f, 13f, 21f, 3f)
+            }
+            Ico.STAR, Ico.STAR_FILLED -> { // Fünfzack (Favorit), ausgefüllt = markiert
+                val path = Path()
+                for (i in 0 until 10) {
+                    val r = if (i % 2 == 0) 9.5f else 4.1f
+                    val a = Math.toRadians(-90.0 + i * 36.0)
+                    val x = 12f + r * kotlin.math.cos(a).toFloat()
+                    val y = 12.8f + r * kotlin.math.sin(a).toFloat()
+                    if (i == 0) path.moveTo(x * s, y * s) else path.lineTo(x * s, y * s)
+                }
+                path.close()
+                if (icon == Ico.STAR_FILLED) drawPath(path, tint)
+                drawPath(path, tint, style = Stroke(sw, join = StrokeJoin.Round))
             }
             Ico.BODY -> { // Person: Kopf + Schultern (oberer Halbkreis)
                 ring(12f, 7.5f, 3.5f)

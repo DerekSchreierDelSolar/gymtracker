@@ -246,3 +246,8 @@ export function sortByName(list, name = x => x) {
   const one = x => (key(x) === name(x) ? 0 : 1); // 1 = einseitige Variante
   return [...list].sort((a, b) => key(a).localeCompare(key(b), lang, { sensitivity: 'base' }) || one(a) - one(b));
 }
+
+/** Favoriten (★) nach vorn, sonst gleiche Reihenfolge – nach sortByName aufrufen (wie favoritesFirst in Favorites.kt) */
+export function favoritesFirst(list, isFav, name = x => x) {
+  return [...list.filter(x => isFav(name(x))), ...list.filter(x => !isFav(name(x)))];
+}

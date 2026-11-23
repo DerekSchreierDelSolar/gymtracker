@@ -15,6 +15,7 @@ import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
 import { h, icon, iconBtn, chip, dialog, textField, progressChart, onTick, muted, undoToast, showHint, hintUsed } from '../ui.js';
 import { nav, rerender, openDialog, closeDialog, goBack } from '../nav.js';
 import { screen } from '../layout.js';
+import { favoriteBtn, favoriteMark } from '../favorites.js';
 
 // ---------- Kachel ----------
 
@@ -28,7 +29,8 @@ export function exerciseTile(name, group, onClick, extra = {}) {
   },
   h('span', { html: exerciseIconHtml(name, group, 44) }),
   tileName(exName(name)),
-  h('small', null, last ? fmtSet(last, isCardio(group)) : '–'));
+  h('small', null, last ? fmtSet(last, isCardio(group)) : '–'),
+  extra.favorite ? favoriteMark() : null);
   if (extra.onLongPress) onLongPress(tile, extra.onLongPress);
   return tile;
 }
@@ -367,7 +369,7 @@ export function exerciseDetailScreen(name) {
   return screen({
     title: exName(name), back: true, key: `ex-${name}-${tab}`, backdrop: exerciseImageUrl(name),
     titleIcon: exerciseIconHtml(name, group, 32),
-    actions: [iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') })],
+    actions: [favoriteBtn(name), iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') })],
     top: h('div', { class: 'tab-row' }, tabs.map((label, i) =>
       h('button', { class: ['tab', i === tab && 'selected'], onclick: () => { tabOf[name] = i; rerender(); } }, label))),
     content: h('div', { class: 'stack pad' }, content),

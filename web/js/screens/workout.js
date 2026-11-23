@@ -5,7 +5,7 @@ import { musclePicker, musclesOf, muscleSideCard, levelsOf } from '../bodymap.js
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
 import { fmtVol,
-  tr, exName, sortByName, fmtDate, fmtDateTime, fmtDuration, fmtW, fmtVolume, fmtKcal, plural, isCardio, isTimed, equipmentOf, catalogEntry,
+  tr, exName, sortByName, favoritesFirst, fmtDate, fmtDateTime, fmtDuration, fmtW, fmtVolume, fmtKcal, plural, isCardio, isTimed, equipmentOf, catalogEntry,
   catalogGroup, GROUP_KEYS, EQUIPMENT_KEYS, groupLabel, equipmentLabel, groupColor, fmtSet,
 } from '../core.js';
 import { sessionStats, weekdayShort, daysLabel } from '../stats.js';
@@ -14,6 +14,7 @@ import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, s
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
 import { supersetLink, keepLinks } from '../supersets.js';
+import { favoriteBtn, favoritesHeader, nameWithStar, isFav } from '../favorites.js';
 
 import { filterActions, filterBar, matches, noFilterResults, filterActive } from '../filter.js';
 
@@ -282,7 +283,7 @@ export function workoutPickerScreen(w) {
     const g = store.groupOf(name);
     return h('button', { class: 'pick-row', onclick: () => go({ pickDetail: name }) },
       h('span', { html: exerciseIconHtml(name, g, 40) }),
-      h('span', { class: 'grow' }, h('span', null, exName(name)),
+      h('span', { class: 'grow' }, h('span', null, nameWithStar(name)),
         w.exercises.includes(name) ? h('small', { class: 'accent pick-target' }, '✓ ' + targetLabel(store.targetFor(w, name), g)) : null),
       h('span', { class: 'muted' }, icon('chevron')));
   };
@@ -293,6 +294,11 @@ export function workoutPickerScreen(w) {
       w.exercises.length ? [h('h2', { class: 'section' }, tr('In diesem Workout', 'In this workout') + ` (${w.exercises.length})`), w.exercises.map(row)] : null,
       h('h2', { class: 'section' }, tr('Übung hinzufügen', 'Add exercise')),
       muted(tr('Wähle eine Kategorie – oder suche oben direkt nach einer Übung.', 'Pick a category – or search for an exercise at the top.'), 'small'),
+      // Favoriten (★) direkt zum Antippen, vor den Kategorien (wie WorkoutPickerScreen)
+      (() => {
+        const favs = sortByName(visible.filter(isFav), exName);
+        return favs.length ? [favoritesHeader(), favs.map(row), h('h2', { class: 'section' }, tr('Kategorien', 'Categories'))] : null;
+      })(),
       h('div', { class: 'category-list' }, GROUP_KEYS.map(g => {
         const names = visible.filter(n => store.groupOf(n) === g);
         return names.length ? categoryRow(g, groupLabel(g), muscleIconHtml(g, 44), groupColor(g), names.length,
@@ -302,7 +308,7 @@ export function workoutPickerScreen(w) {
     content = h('div', { class: 'pad' },
       muted(tr('Tippe auf eine Übung für Infos, Ziel-Sätze und zum Hinzufügen.', 'Tap an exercise for info, target sets and to add it.'), 'small'),
       GROUP_KEYS.map(g => {
-        const names = sortByName(visible.filter(n => store.groupOf(n) === g), exName); // alphabetisch
+        const names = favoritesFirst(sortByName(visible.filter(n => store.groupOf(n) === g), exName), isFav); // alphabetisch, Favoriten zuerst
         return names.length ? [group == null ? groupHeader(g) : null, names.map(row)] : null;
       }));
   }
@@ -333,6 +339,7 @@ export function workoutExercisePage(w, name) {
       }, icon('add'), tr('Zum Workout hinzufügen', 'Add to workout')));
   return screen({
     title: exName(name), back: true, key: `pickex-${name}`, backdrop: exerciseImageUrl(name),
+    actions: [favoriteBtn(name)],
     titleIcon: exerciseIconHtml(name, g, 32),
     content: h('div', { class: 'stack pad' },
       m ? muscleSideCard('BOTH', levelsOf(m), true) // Vorder- und Rückseite nebeneinander
@@ -350,8 +357,8 @@ export function catalogScreen() {
   const group = nav.catalogGroup;
   const overview = group == null && !filterActive(f);
   const visible = CATALOG.filter(c => (group == null || c.group === group) && matches(f, c.name, c.group));
-  const custom = sortByName(store.customNames.filter(n => (group == null || store.groupOf(n) === group) && matches(f, n, store.groupOf(n)))); // inkl. aus der Liste entfernter → wieder hinzufügbar
-  const byGroup = GROUP_KEYS.map(g => [g, sortByName(visible.filter(c => c.group === g), c => exName(c.name))]).filter(([, l]) => l.length);
+  const custom = favoritesFirst(sortByName(store.customNames.filter(n => (group == null || store.groupOf(n) === group) && matches(f, n, store.groupOf(n)))), isFav); // Favoriten zuerst, inkl. aus der Liste entfernter → wieder hinzufügbar
+  const byGroup = GROUP_KEYS.map(g => [g, favoritesFirst(sortByName(visible.filter(c => c.group === g), c => exName(c.name)), isFav, c => c.name)]).filter(([, l]) => l.length);
 
   let content;
   if (!visible.length && !custom.length) content = noFilterResults('catalog');
@@ -373,7 +380,7 @@ export function catalogScreen() {
           const g = store.groupOf(n), added = store.hasExercise(n);
           return h('div', { class: 'cat-row', role: 'button', onclick: () => (added ? removeAgain(n) : store.addExercise(n)) },
             h('span', { html: exerciseIconHtml(n, g, 40) }),
-            h('div', { class: 'grow' }, h('span', null, n),
+            h('div', { class: 'grow' }, h('span', null, nameWithStar(n, n)),
               h('small', { class: 'muted' }, [groupLabel(g), equipmentOf(n) && equipmentLabel(equipmentOf(n)), isTimed(n) && tr('Zeit', 'Time')].filter(Boolean).join(' · '))),
             added ? h('span', { class: 'accent' }, icon('check')) : h('span', { class: 'add-mark' }, '+'));
         }),
@@ -382,7 +389,7 @@ export function catalogScreen() {
         const added = store.hasExercise(c.name);
         return h('div', { class: 'cat-row', role: 'button', onclick: () => (added ? removeAgain(c.name) : store.addExercise(c.name, c.group)) }, // nochmal tippen = entfernen
           h('span', { html: exerciseIconHtml(c.name, g, 40) }),
-          h('div', { class: 'grow' }, h('span', null, exName(c.name)), h('small', { class: 'muted' }, equipmentLabel(c.equipment))),
+          h('div', { class: 'grow' }, h('span', null, nameWithStar(c.name)), h('small', { class: 'muted' }, equipmentLabel(c.equipment))),
           wikiButton(c.name),
           h('span', { class: ['add-mark', added && 'accent'] }, added ? '✓' : '+'));
       })]));

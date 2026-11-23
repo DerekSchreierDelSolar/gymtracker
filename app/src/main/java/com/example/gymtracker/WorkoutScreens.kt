@@ -556,6 +556,15 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                             )
                         }
                     }
+                    // Favoriten (★) direkt zum Antippen, vor den Kategorien
+                    val favs = visible.filter { store.isFavorite(it) }.sortedByName { exName(it) }
+                    if (favs.isNotEmpty()) {
+                        item(key = "h_fav") { FavoritesHeader() }
+                        items(favs, key = { "fav_$it" }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
+                        item(key = "h_groups") {
+                            Text(tr("Kategorien", "Categories"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
+                        }
+                    }
                     items(MuscleGroup.entries.filter { g -> visible.any { store.groupOf(it) == g } }, key = { "g_${it.name}" }) { g ->
                         val names = visible.filter { store.groupOf(it) == g }
                         Box(Modifier.padding(bottom = 8.dp)) {
@@ -572,7 +581,7 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                     }
                     // Kategorie bzw. Suchtreffer: alle passenden Übungen (die des Workouts mit ✓ und Ziel)
                     MuscleGroup.entries.forEach { g ->
-                        val names = visible.filter { store.groupOf(it) == g }.sortedByName { exName(it) } // alphabetisch
+                        val names = visible.filter { store.groupOf(it) == g }.sortedByName { exName(it) }.favoritesFirst(store) { it } // alphabetisch, Favoriten zuerst
                         if (names.isEmpty()) return@forEach
                         if (group == null) item(key = "h_${g.name}") { GroupHeader(g) }
                         items(names, key = { it }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
@@ -598,7 +607,7 @@ private fun PickerRow(store: GymStore, workout: Workout, name: String, onClick: 
         ExerciseIcon(name, group, Modifier.size(40.dp))
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(exName(name))
+            NameWithStar(store, name)
             if (name in workout.exercises) Text(
                 "✓ " + targetLabel(store.targetFor(workout, name), group),
                 style = MaterialTheme.typography.labelMedium,
@@ -678,7 +687,8 @@ fun WorkoutExercisePage(store: GymStore, workout: Workout, name: String, onBack:
                             Text(exName(name), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     },
-                    navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
+                    navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
+                    actions = { FavoriteButton(store, name) }
                 )
             },
             bottomBar = {

@@ -117,11 +117,11 @@ fun CatalogScreen(
     val overview = group == null && !filter.isActive
     if (group != null) BackHandler { openGroup = null }
     val inGroup = { g: MuscleGroup -> group == null || g == group }
-    val visible = CATALOG.filter { inGroup(it.group) && filter.matches(it.name, it.group) }.sortedByName { exName(it.name) } // alphabetisch
+    val visible = CATALOG.filter { inGroup(it.group) && filter.matches(it.name, it.group) }.sortedByName { exName(it.name) }.favoritesFirst(store) { it.name } // alphabetisch, Favoriten zuerst
     // Eigene Übungen = gespeicherte Übungen, die nicht im Katalog stehen (auch aus der Liste entfernte → wieder hinzufügbar)
     val customVisible = store.customNames
         .filter { catalogGroup(it) == null && inGroup(store.groupOf(it)) && filter.matches(it, store.groupOf(it)) }
-        .sortedByName { it }
+        .sortedByName { it }.favoritesFirst(store) { it }
     val ui = rememberFilterUi(filter)
     var showCustom by remember { mutableStateOf(false) }
     if (showCustom) CustomExerciseDialog(store, onDismiss = { showCustom = false })
@@ -211,7 +211,7 @@ fun CatalogScreen(
                             ExerciseIcon(name, g, Modifier.size(40.dp))
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(name)
+                                NameWithStar(store, name, name)
                                 Text(
                                     listOfNotNull(
                                         g.label,
@@ -242,7 +242,7 @@ fun CatalogScreen(
                             ExerciseIcon(entry.name, group, Modifier.size(40.dp))
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(exName(entry.name))
+                                NameWithStar(store, entry.name, exName(entry.name))
                                 Text(
                                     entry.equipment.label,
                                     style = MaterialTheme.typography.bodySmall,

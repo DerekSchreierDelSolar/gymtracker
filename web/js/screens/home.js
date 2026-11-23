@@ -17,6 +17,7 @@ import { screen, fab } from '../layout.js';
 import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { reviewCard } from '../review.js';
+import { favoritesHeader, isFav } from '../favorites.js';
 import { goalsCard } from '../goals.js';
 import { morningCard, anticipation } from '../morning.js';
 import { levelCard } from '../levels.js';
@@ -304,8 +305,14 @@ function exerciseGrid() {
   return h('div', { class: 'pad list-bottom' },
     // Hinweis auf die sonst unsichtbare Geste – nur bis zum ersten Gedrückthalten (Hints)
     showHint('list') ? muted(tr('Tippen = öffnen · gedrückt halten = weitere Aktionen', 'Tap = open · long-press = more actions'), 'small') : null,
+    // Favoriten (★) als eigener Abschnitt ganz oben – dafür nicht noch einmal in ihrer Kategorie (wie ExerciseGrid)
+    (() => {
+      const favs = sortByName(visible.filter(isFav), exName);
+      return favs.length ? [favoritesHeader(), h('div', { class: 'tile-grid' },
+        favs.map(n => exerciseTile(n, store.groupOf(n), () => go({ exercise: n }), { favorite: true, onLongPress: () => { hintUsed('list'); exerciseMenu(n); } })))] : null;
+    })(),
     GROUP_KEYS.map(g => {
-    const names = sortByName(visible.filter(n => store.groupOf(n) === g), exName); // alphabetisch
+    const names = sortByName(visible.filter(n => store.groupOf(n) === g && !isFav(n)), exName); // alphabetisch
     if (!names.length) return null;
     return [groupHeader(g), h('div', { class: 'tile-grid' },
       names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { onLongPress: () => { hintUsed('list'); exerciseMenu(n); } })))];
@@ -329,6 +336,9 @@ function exerciseMenu(name) {
         !menuPickWorkout ? [
           action('chevron', tr('Öffnen', 'Open'), () => { closeDialog(); go({ exercise: name }); }),
           action('add', tr('Zu Workout hinzufügen', 'Add to workout'), () => { menuPickWorkout = true; rerender(); }),
+          store.isFavorite(name)
+            ? action('starFilled', tr('Aus Favoriten entfernen', 'Remove from favorites'), () => { closeDialog(); store.toggleFavorite(name); })
+            : action('star', tr('Als Favorit markieren', 'Mark as favorite'), () => { closeDialog(); store.toggleFavorite(name); }),
           action('delete', tr('Aus der Liste entfernen', 'Remove from list'), () => { closeDialog(); removeExercise(name); }, 'danger'),
           muted(tr('Workouts und Verlauf bleiben erhalten.', 'Workouts and history are kept.'), 'small menu-note'),
         ] : !store.workouts.length

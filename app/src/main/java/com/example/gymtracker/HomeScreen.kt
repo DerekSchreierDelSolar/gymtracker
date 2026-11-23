@@ -350,9 +350,22 @@ fun ExerciseGrid(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            // Favoriten (★) als eigener Abschnitt ganz oben – dafür nicht noch einmal in ihrer Kategorie
+            val favs = visible.filter { store.isFavorite(it) }.sortedByName { exName(it) }
+            if (favs.isNotEmpty()) {
+                item(key = "header_favorites", span = { GridItemSpan(maxLineSpan) }) { FavoritesHeader() }
+                gridItems(favs, key = { it }) { name ->
+                    ExerciseTile(
+                        name, store.groupOf(name), store.setsFor(name).firstOrNull(),
+                        onClick = { onOpen(name) },
+                        onLongClick = { Hints.used(Hints.LIST); menuFor = name },
+                        favorite = true
+                    )
+                }
+            }
             // Eine Überschrift pro Kategorie, in der Reihenfolge des enums
             MuscleGroup.entries.forEach { group ->
-                val names = visible.filter { store.groupOf(it) == group }.sortedByName { exName(it) } // alphabetisch
+                val names = visible.filter { store.groupOf(it) == group && !store.isFavorite(it) }.sortedByName { exName(it) } // alphabetisch
                 if (names.isEmpty()) return@forEach
 
                 // Überschrift über die ganze Zeile (alle Spalten)
@@ -405,6 +418,9 @@ fun ExerciseMenuSheet(store: GymStore, name: String, onOpen: () -> Unit, onRemov
             if (!pickWorkout) {
                 Action(Ico.CHEVRON, tr("Öffnen", "Open"), onClick = onOpen)
                 Action(Ico.ADD, tr("Zu Workout hinzufügen", "Add to workout"), onClick = { pickWorkout = true })
+                if (store.isFavorite(name)) Action(Ico.STAR_FILLED, tr("Aus Favoriten entfernen", "Remove from favorites")) {
+                    store.toggleFavorite(name); onDismiss()
+                } else Action(Ico.STAR, tr("Als Favorit markieren", "Mark as favorite")) { store.toggleFavorite(name); onDismiss() }
                 Action(Ico.DELETE, tr("Aus der Liste entfernen", "Remove from list"), MaterialTheme.colorScheme.error, onClick = onRemove)
                 Text(
                     tr("Workouts und Verlauf bleiben erhalten.", "Workouts and history are kept."),
@@ -483,7 +499,8 @@ fun ExerciseTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     /** Gedrückt halten (null = nicht belegt, z. B. im Workout, wo langes Drücken das Ziehen startet) */
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    favorite: Boolean = false
 ) {
     val haptic = LocalHapticFeedback.current
     // Kachel leicht in der Kategorie-Farbe getönt
@@ -504,6 +521,7 @@ fun ExerciseTile(
                 .compositeOver(MaterialTheme.colorScheme.surfaceContainerHighest)
         )
     ) {
+    Box {
         Column(
             Modifier
                 .fillMaxWidth()
@@ -547,6 +565,9 @@ fun ExerciseTile(
                 maxLines = 1
             )
         }
+        // Favorit: kleiner Stern oben rechts
+        if (favorite) Box(Modifier.fillMaxWidth().padding(6.dp), contentAlignment = Alignment.TopEnd) { FavoriteMark() }
+    }
     }
 }
 

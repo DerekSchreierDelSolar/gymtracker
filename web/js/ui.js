@@ -57,6 +57,8 @@ const ICONS = {
   share: '<path d="M12 15V4M7 9l5-5 5 5"/><path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>',
   chat: '<path d="M5 5h14l2 2v8l-2 2h-9l-4 3.5.5-3.5H5l-2-2V7z"/><path d="M8 11h.01M12 11h.01M16 11h.01" stroke-width="2.6"/>',
   send: '<path d="M3 11 21 3l-7 18-3-8z"/><path d="M11 13 21 3"/>',
+  star: '<path d="M12 3.3L14.41 9.48L21.04 9.86L15.9 14.07L17.58 20.49L12 16.9L6.42 20.49L8.1 14.07L2.96 9.86L9.59 9.48z"/>',
+  starFilled: '<path d="M12 3.3L14.41 9.48L21.04 9.86L15.9 14.07L17.58 20.49L12 16.9L6.42 20.49L8.1 14.07L2.96 9.86L9.59 9.48z" fill="currentColor"/>',
 };
 export const icon = (name, size = 24) => h('span', {
   class: 'icon',

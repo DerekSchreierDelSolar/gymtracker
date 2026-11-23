@@ -779,3 +779,10 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .nav-row-emoji { width: 36px; font-size: 20px; flex: none; }
 .nav-row .grow small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nav-row.danger .nav-row-title { color: var(--error); }
+
+/* Favoriten (★) – wie FAVORITE_COLOR in Favorites.kt */
+.fav-mark { color: #FFB300; display: inline-flex; vertical-align: middle; }
+.fav-on { color: #FFB300; }
+.fav-name { display: inline-flex; align-items: center; gap: 4px; }
+.tile { position: relative; }
+.tile > .fav-mark { position: absolute; top: 6px; right: 6px; }

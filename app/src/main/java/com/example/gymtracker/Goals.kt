@@ -362,10 +362,11 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
                         val q = query.trim().lowercase()
                         val trained = store.sets.groupingBy { it.exercise }.eachCount()
                         val list = if (q.isEmpty() && trained.keys.any { fitsType(store, t, it) })
-                            trained.entries.filter { fitsType(store, t, it.key) }.sortedByDescending { it.value }.map { it.key }.take(30)
+                            (store.favorites.filter { fitsType(store, t, it) }.sortedByName { exName(it) } + // Favoriten (★) zuerst
+                                trained.entries.filter { fitsType(store, t, it.key) }.sortedByDescending { it.value }.map { it.key }.take(30)).distinct()
                         else (CATALOG.map { it.name } + store.customNames).distinct()
                             .filter { fitsType(store, t, it) && (q.isEmpty() || q in exName(it).lowercase() || q in it.lowercase()) }
-                            .sortedByName { exName(it) }
+                            .sortedByName { exName(it) }.favoritesFirst(store) { it }
                         if (q.isEmpty() && trained.keys.any { fitsType(store, t, it) })
                             Text(tr("Deine häufigsten Übungen – oder oben suchen", "Your most frequent exercises – or search above"),
                                 style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -381,7 +382,7 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
                                 ) {
                                     ExerciseIcon(name, store.groupOf(name), Modifier.size(32.dp))
                                     Spacer(Modifier.width(12.dp))
-                                    Text(exName(name), style = MaterialTheme.typography.bodyMedium)
+                                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) { NameWithStar(store, name) }
                                 }
                             }
                         }

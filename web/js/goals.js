@@ -2,7 +2,8 @@
 // Im JSON als "goals": [{ id, type, exercise?, target, start, created }].
 
 import { store, GOAL_NEEDS_EXERCISE } from './store.js';
-import { fmtKg, fmtWU, wUnit, fromUnit, isLb, tr, exName, fmtW, fmtDate, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, parseNum, sortByName } from './core.js';
+import { fmtKg, fmtWU, wUnit, fromUnit, isLb, tr, exName, fmtW, fmtDate, isTimed, isCardio, isTop, isWork, startOfWeek, addDays, parseNum, sortByName, favoritesFirst } from './core.js';
+import { nameWithStar, isFav } from './favorites.js';
 import { CATALOG } from './data.js';
 import { allSessions } from './stats.js';
 import { exerciseIconHtml } from './pictograms.js';
@@ -216,14 +217,15 @@ export function goalDialog(goal) {
       for (const s of store.sets) counts.set(s.exercise, (counts.get(s.exercise) ?? 0) + 1);
       const trained = [...counts.entries()].filter(([n]) => fitsType(t, n)).sort((a, b) => b[1] - a[1]).map(([n]) => n);
       const showTrained = !q && trained.length > 0;
-      const list = showTrained ? trained.slice(0, 30)
-        : sortByName([...new Set([...CATALOG.map(c => c.name), ...store.customNames])]
-          .filter(n => fitsType(t, n) && (!q || exName(n).toLowerCase().includes(q) || n.toLowerCase().includes(q))), exName);
+      // Favoriten (★) zuerst (wie GoalDialog)
+      const list = showTrained ? [...new Set([...sortByName(store.favorites.filter(n => fitsType(t, n)), exName), ...trained.slice(0, 30)])]
+        : favoritesFirst(sortByName([...new Set([...CATALOG.map(c => c.name), ...store.customNames])]
+          .filter(n => fitsType(t, n) && (!q || exName(n).toLowerCase().includes(q) || n.toLowerCase().includes(q))), exName), isFav);
       return [head,
         textField({ id: 'goal-search', label: tr('Übung suchen', 'Search exercise'), value: st.query, oninput: v => { st.query = v; rerender(); } }),
         showTrained ? muted(tr('Deine häufigsten Übungen – oder oben suchen', 'Your most frequent exercises – or search above'), 'small') : null,
         h('div', { class: 'goal-pick-list', 'data-scroll': 'goal-pick' }, list.map(n => h('button', { class: 'pick-row', onclick: () => { st.exercise = n; st.text = ''; rerender(); } },
-          h('span', { html: exerciseIconHtml(n, store.groupOf(n), 32) }), h('span', { class: 'grow' }, exName(n)))))];
+          h('span', { html: exerciseIconHtml(n, store.groupOf(n), 32) }), h('span', { class: 'grow' }, nameWithStar(n)))))];
     }
     // Schritt 2b: Zielwert
     const err = error();
