@@ -30,7 +30,7 @@ import java.util.Date
  * Vorbelegt mit dem letzten Satz der Übung.
  * `remember(exercise)` setzt die Felder zurück, sobald eine andere Übung angezeigt wird.
  * `weightOverride`: wird gesetzt, wenn der Nutzer einen Gewichts-Vorschlag übernimmt.
- * `startWithWarmup`: erster Satz ist vorausgewählt „Aufwärmen“ (Training: Übung heute noch nicht gemacht).
+ * `startWithWarmup`: erster Satz ist vorausgewählt „Aufwärmen“ (Training: Übung im Training noch nicht gemacht; freies Training: heute noch nicht).
  */
 @Composable
 fun SetInput(
@@ -528,7 +528,14 @@ fun ExerciseDetailScreen(store: GymStore, exercise: String, onBack: () -> Unit) 
                 0 -> {
                     item { RecordLine(history, cardio, timed) }
                     item { ProgressionHint(store, exercise, onApply = { appliedWeight = it }) }
-                    item { SetInput(store, exercise, weightOverride = appliedWeight) }
+                    // Freies Training: Übung heute noch nicht gemacht → erster Satz „Aufwärmen“ (nicht Cardio/Zeit)
+                    item {
+                        val todayKey = dayKey(System.currentTimeMillis())
+                        SetInput(
+                            store, exercise, weightOverride = appliedWeight,
+                            startWithWarmup = !cardio && !timed && history.none { dayKey(it.time) == todayKey }
+                        )
+                    }
                     item { NoteButton(store, exercise) }
                     if (days.isNotEmpty()) item {
                         Column(Modifier.padding(top = 8.dp)) {

@@ -115,6 +115,7 @@ const mmss = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')
  * onAdded: wird nach dem Eintragen aufgerufen (Trainingsmodus startet damit die Pause).
  * warmupKey: im Training gesetzt (= Trainingsstart), wenn die Übung dort noch keinen Satz hat → erster Satz
  * „Aufwärmen“ (wie startWithWarmup in ExerciseDetail.kt); einmal je Training, danach bleibt die Auswahl des Nutzers.
+ * Im Übungsdetail (freies Training) = „day-JJJJMMTT“, solange die Übung heute noch keinen Satz hat.
  */
 export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = null) {
   const cardio = isCardio(store.groupOf(name));
@@ -346,7 +347,8 @@ export function exerciseDetailScreen(name) {
     content = [
       recordLine(history, cardio, timed),
       progressionHint(name),
-      setInput(name),
+      // Freies Training: Übung heute noch nicht gemacht → erster Satz „Aufwärmen“ (einmal je Tag)
+      setInput(name, () => {}, history.some(s => dayKey(s.time) === dayKey(Date.now())) ? null : 'day-' + dayKey(Date.now())),
       noteButton(name),
       days.size ? h('div', null, h('h2', { class: 'section' }, tr('Verlauf', 'History')),
         showHint('set') ? muted(tr('Satz antippen zum Bearbeiten', 'Tap a set to edit'), 'small') : null) : null,
