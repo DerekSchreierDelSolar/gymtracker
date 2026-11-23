@@ -62,7 +62,16 @@
       ["Hüfte weder durchhängen lassen noch hochstrecken.", "Don't let your hips sag or pike up."],
       ["Bauch und Gesäß fest anspannen, ruhig weiteratmen.", "Brace abs and glutes, keep breathing."],
       ["Lieber kürzer und sauber als lange mit Hohlkreuz.", "Better shorter and clean than long with a sagging back."]
-    ]
+    ],
+    "variants": {
+      "Körpergewicht, gestreckte Arme": ["Hohes Brett: auf den Händen statt den Unterarmen, Hände unter den Schultern, Arme gestreckt. Etwas leichter für den Bauch, dafür mehr Arbeit für Schultern, Brust und Trizeps – zugleich die Startposition des Liegestützes.", "High plank: on your hands instead of your forearms, hands under your shoulders, arms straight. Slightly easier on the abs but more work for shoulders, chest and triceps – also the top of a push-up."]
+    },
+    "variantMuscles": {
+      "Körpergewicht, gestreckte Arme": {
+        "muscles": ["Bauch, Schultern, Brust, Trizeps", "Abs, shoulders, chest, triceps"],
+        "secondary": ["obliques", "delts", "chest", "triceps", "glutes"]
+      }
+    }
   },
   "Seitstütz": {
     "muscles": ["Seitliche Bauchmuskeln, Gesäß, Schulter", "Obliques, glutes, shoulder"],
@@ -226,6 +235,23 @@
     "tips": [
       ["Anspruchsvoll – nicht mit Schwung hochwerfen.", "Demanding – don't throw yourself up."],
       ["Leichter: Knie anwinkeln (Tuck-ups).", "Easier: bend your knees (tuck-ups)."]
+    ]
+  },
+  "V-Sitz": {
+    "muscles": ["Gerader Bauchmuskel, Hüftbeuger, Gleichgewicht", "Abs, hip flexors, balance"],
+    "primary": ["abs"],
+    "secondary": ["obliques", "quads"],
+    "regions": { "abs.lower": 1, "abs.upper": 1, "obliques": 0.6, "quads.middle": 0.3 },
+    "how": [
+      ["Auf den Boden setzen, Knie angewinkelt, Hände neben der Hüfte.", "Sit on the floor with your knees bent and hands beside your hips."],
+      ["Leicht zurücklehnen und die Füße abheben, bis du auf dem Gesäß balancierst.", "Lean back slightly and lift your feet until you balance on your sitting bones."],
+      ["Beine so weit strecken, wie es geht – Körper und Beine bilden ein V. Arme nach vorne strecken.", "Straighten your legs as far as you can so your body and legs form a V. Reach your arms forward."],
+      ["Position halten (Zeit wird gemessen), ruhig weiteratmen.", "Hold the position (timed) and keep breathing."]
+    ],
+    "tips": [
+      ["Rücken bleibt lang und gerade, nicht in sich zusammensacken.", "Keep your back long and straight; don't slump."],
+      ["Leichter: Knie angewinkelt lassen (Boot mit gebeugten Beinen).", "Easier: keep your knees bent (bent-leg boat)."],
+      ["Lieber kürzer sauber halten als lange mit rundem Rücken.", "Better to hold shorter with good form than longer with a rounded back."]
     ]
   },
   "Bauchroller": {

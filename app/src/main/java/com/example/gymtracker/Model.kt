@@ -92,7 +92,7 @@ val MuscleGroup.isCardio: Boolean get() = this == MuscleGroup.CARDIO
  * Zeitübungen (Plank, Wandsitzen …): Die Sekunden stehen ebenfalls im Feld `reps`,
  * `weight` ist optional (z. B. Farmer's Walk mit 2 × 24 kg).
  */
-val TIMED_CATALOG = setOf("Wandsitzen (Körpergewicht)", "Unterarmstütz / Plank (Körpergewicht)", "Seitstütz (Körpergewicht)", "Farmer's Walk (Kurzhantel)", "Farmer's Walk (Kettlebell)", "Bärengang (Körpergewicht)")
+val TIMED_CATALOG = setOf("Wandsitzen (Körpergewicht)", "Unterarmstütz / Plank (Körpergewicht)", "Seitstütz (Körpergewicht)", "Farmer's Walk (Kurzhantel)", "Farmer's Walk (Kettlebell)", "Bärengang (Körpergewicht)", "Unterarmstütz / Plank (Körpergewicht, gestreckte Arme)", "V-Sitz (Körpergewicht)", "Handstand (Körpergewicht)", "Handstand (Körpergewicht, an der Wand)", "Krähe (Körpergewicht)")
 
 /**
  * Zusatzangaben zu eigenen Übungen (nicht im Katalog): Gerät, ob sie zeitbasiert sind, Muskeln.

@@ -1,6 +1,6 @@
 # Übungsbilder per KI – Prompt-Liste
 
-Ein Bild pro **Grundübung** (176 Stück) – es gilt automatisch für alle Varianten (Langhantel, Kurzhantel, einarmig …).
+Ein Bild pro **Grundübung** (181 Stück) – es gilt automatisch für alle Varianten (Langhantel, Kurzhantel, einarmig …).
 Stil = das vorhandene Bild `app/src/main/assets/exercises/bankdruecken.jpg` (Meerschweinchen-Bodybuilder, wie das App-Icon).
 Erzeugt aus `CATALOG` (Catalog.kt); kommen neue Grundübungen dazu, hier ergänzen.
 
@@ -946,4 +946,29 @@ Next exercise, same character and style. The guinea pig, in mid-air at the top o
 **176 · Broad Jumps** (Broad Jumps) → `broad-jumps.png`
 ```
 Next exercise, same character and style. The guinea pig, flying forward in a long standing jump, arms swung forward, legs reaching ahead for the landing (side view).
+```
+
+**177 · V-Sitz** (V-Sit Hold) → `v-sitz.png`
+```
+Next exercise, same character and style. The guinea pig, balancing on its bottom on a mat, straight legs and upper body raised so they form a V, arms reaching forward (side view).
+```
+
+**178 · Handstand** (Handstand Hold) → `handstand.png`
+```
+Next exercise, same character and style. The guinea pig, holding a straight handstand on the floor, arms locked, body in one vertical line, feet pointing up (side view).
+```
+
+**179 · Krähe** (Crow Pose) → `kraehe.png`
+```
+Next exercise, same character and style. The guinea pig, balancing on both hands on a mat in crow pose, elbows slightly bent, knees resting on the upper arms, feet lifted off the floor (side view).
+```
+
+**180 · High Knees** (High Knees) → `high-knees.png`
+```
+Next exercise, same character and style. The guinea pig, running in place, one knee driven up to hip height, arms swinging like a runner, on the balls of the feet (side view).
+```
+
+**181 · Anfersen** (Butt Kicks) → `anfersen.png`
+```
+Next exercise, same character and style. The guinea pig, running in place, one heel kicked up to touch its bottom, thigh pointing down, arms bent like a runner (side view).
 ```

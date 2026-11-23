@@ -42,7 +42,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `GymStore.kt` | Gesamter Zustand + Laden/Speichern (atomar via .tmp), Import/Export, alle Mutationen |
 | `AutoBackup.kt` | Automatisches Backup: Ordner per SAF (`OpenDocumentTree`, Berechtigung persistent), beim Verlassen der App (`onStop`) höchstens 1×/Tag `gymtracker-auto-JJJJ-MM-TT.json`, die 7 neuesten bleiben; Einstellungen in SharedPreferences (gerätegebunden, nicht im Export); `AutoBackupSettings` in den Einstellungen |
 | `Model.kt` | `GymSet`, `MuscleGroup`, `Equipment`, `Workout`, `TrainingSession`, `CustomMeta`, `TEMPLATES`, `fmtSet`, `oneRepMax`, `isTimed` |
-| `Catalog.kt` | `CATALOG` (489 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
+| `Catalog.kt` | `CATALOG` (496 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
 | `I18n.kt` | `appLanguage`, `tr()`, `appLocale()` |
 | `Format.kt` | `fmtW`, `fmtDate`, `fmtDateTime`, `fmtDuration`, `plural`, `fmtVolume`, `fmtKcal` (kcal-Anzeigen immer darüber, Tausenderpunkt; Web: core.js); **Gewichtseinheit kg/lbs**: `weightUnit` ("kg"/"lb", JSON `settings.unit` nur bei lb, Chips in den Einstellungen, `store.setUnit`) – gespeichert wird immer kg, Anzeige über `fmtKg` (Gewicht + Einheit), `fmtWU` (Zahl, Eingabefelder), `fmtVol`, `toUnit`/`fromUnit`, `toBig`/`bigUnit` (t bzw. k lbs), Eingabe über `parseW`; Rundung auf Scheiben über `roundPlate`/`plateStep` (2,5 kg bzw. 5 lbs), Stange `barKg` (20 kg / 45 lbs) |
 | `Stats.kt` | `ExerciseResult`, `SessionStats`, `sessionStats()`, `estimateKcal()`, `allSessions()`; `Profile` (optional Geschlecht/Geburtsjahr/Größe, im JSON `profile` = { sex: m/f, birthYear, height } nur wenn gesetzt, Eingabe `ProfileSettings` in den Einstellungen), `bmrKcalPerDay` (Mifflin-St-Jeor), `kcalPerMetHour` = Grundumsatz/24 statt kg, sobald das Profil vollständig ist (Web: stats.js, Validierung `validYear`/`validHeight` in core.js) |
@@ -205,7 +205,7 @@ Homescreen-Widget. (Automatisches Backup: umgesetzt in 1.1, nur Android. Notizen
     Grenzen (keine Diagnosen, bei Schmerzen zum Arzt) + Hinweis in der Oberfläche.
 - **UX-Analyse 22.11.2026 – noch offen** (erledigt nach 1.9: Erklärung vor der Benachrichtigungs-Erlaubnis, Trainings-Chips mit Stand `trainingChipLabel`, Pause-Kreis „tippen zum Ändern“, Kachel-Menü `ExerciseMenuSheet` / `exerciseMenu`, Knopf „Übungen hinzufügen / bearbeiten“ statt Stift, antippbare Ziel-Pille + `TargetStepper` in der Workout-Liste, `Hints`, Training minimieren; erledigt in 1.9: Vorbelegung Aufwärmen/Wdh.-Ziel, „Diese Woche“ über Kennzahlen,
   Tausenderpunkt `fmtVolume`, Kachel-Name zweigeteilt, ▶ in der Workout-Liste, verpasst = roter Ring):
-  - *Klein:* Übungsbilder für alle 176 Grundübungen per KI erzeugen (Prompts + Import vorbereitet, `docs/bild-prompts.md`; bisher nur Bankdrücken)
+  - *Klein:* Übungsbilder für alle 181 Grundübungen per KI erzeugen (Prompts + Import vorbereitet, `docs/bild-prompts.md`; bisher nur Bankdrücken)
 - **Health Connect – weitere Ideen** (besprochen 22.11.2026, umgesetzt sind Gewicht, Trainings, Puls, Erholungs-Check, Puls pro Satz):
   - *Klein:* Körperfett/Muskelmasse von der Waage (zweite Kurve im Tab „Körper“, deckt „Körpermaße“ teilweise ab);
     Größe aus Health Connect ins Profil übernehmen; mehr persönliche Bot-Antworten („kcal diese Woche“, „mein letztes Training“,

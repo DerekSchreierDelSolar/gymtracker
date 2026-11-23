@@ -261,6 +261,23 @@
       ["Nur auf rutschfestem Boden mit Platz nach vorne.", "Only on a non-slip floor with room in front of you."]
     ]
   },
+  "Krähe": {
+    "muscles": ["Schultern, Trizeps, Rumpf, Handgelenke, Gleichgewicht", "Shoulders, triceps, core, wrists, balance"],
+    "primary": ["delts", "abs"],
+    "secondary": ["triceps", "chest", "forearms", "adductors"],
+    "regions": { "delts.front": 1, "abs.upper": 1, "abs.lower": 1, "triceps.lateral": 0.6, "triceps.medial": 0.6, "chest.mid": 0.3, "forearms": 0.6, "adductors": 0.3 },
+    "how": [
+      ["Tief in die Hocke, Hände schulterbreit vor dir auf den Boden, Finger gespreizt.", "Squat down low and place your hands shoulder-width apart in front of you, fingers spread."],
+      ["Ellbogen leicht beugen und die Knie seitlich auf die Oberarme (oder in die Achseln) setzen.", "Bend your elbows slightly and rest your knees on the backs of your upper arms (or in your armpits)."],
+      ["Gewicht nach vorne verlagern, Blick nach vorne, bis die Füße von selbst abheben.", "Shift your weight forward, looking ahead, until your feet lift off on their own."],
+      ["Auf den Händen balancieren und halten (Zeit wird gemessen).", "Balance on your hands and hold (timed)."]
+    ],
+    "tips": [
+      ["Ein Kissen vor den Kopf legen – anfangs kippt man gern nach vorne.", "Put a cushion in front of your head – at first it is easy to tip forward."],
+      ["Erst einen Fuß, dann beide abheben.", "Lift one foot first, then both."],
+      ["Handgelenke vorher aufwärmen, bei Schmerzen abbrechen.", "Warm up your wrists first and stop if they hurt."]
+    ]
+  },
   "Hampelmann": {
     "muscles": ["Ausdauer, Waden, Schultern", "Conditioning, calves, shoulders"],
     "primary": ["calves"],

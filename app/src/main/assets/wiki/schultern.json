@@ -222,6 +222,26 @@
       ["Ein Kissen unter dem Kopf schützt beim Üben.", "A cushion under your head protects you while practising."]
     ]
   },
+  "Handstand": {
+    "muscles": ["Schultern, Trizeps, Rumpf, Gleichgewicht", "Shoulders, triceps, core, balance"],
+    "primary": ["delts"],
+    "secondary": ["triceps", "traps", "abs", "forearms"],
+    "regions": { "delts.front": 1, "delts.side": 0.6, "traps.upper": 0.6, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3, "abs.upper": 0.3, "abs.lower": 0.3 },
+    "how": [
+      ["Hände schulterbreit auf den Boden, Finger gespreizt.", "Place your hands shoulder-width apart on the floor, fingers spread."],
+      ["Mit einem Bein Schwung holen und in den Handstand kicken, das zweite Bein folgt.", "Kick up into the handstand with one leg, the other follows."],
+      ["Arme gestreckt, Schultern zu den Ohren schieben, Körper in einer Linie, Bauch und Gesäß fest.", "Arms locked, push your shoulders up toward your ears, body in one line, abs and glutes tight."],
+      ["Gleichgewicht über die Finger korrigieren und halten (Zeit wird gemessen).", "Balance by pressing through your fingers and hold (timed)."]
+    ],
+    "tips": [
+      ["Erst an der Wand üben und das Abrollen bzw. seitliche Abdrehen zum Aussteigen lernen.", "Practise against a wall first and learn how to bail out by rolling or twisting sideways."],
+      ["Kein Hohlkreuz – Rippen nach unten ziehen.", "No arched back – pull your ribs down."],
+      ["Handgelenke vorher gut aufwärmen.", "Warm up your wrists well beforehand."]
+    ],
+    "variants": {
+      "Körpergewicht, an der Wand": ["Mit dem Rücken zur Wand hochkicken (Fersen lehnen an) oder – sauberer – mit dem Bauch zur Wand die Füße an der Wand hochlaufen. Die Wand nimmt das Gleichgewicht ab, die Schulterkraft bleibt.", "Kick up with your back to the wall (heels resting on it) or – cleaner – walk your feet up the wall facing it. The wall handles the balance; the shoulder work stays."]
+    }
+  },
   "Butterfly Reverse": {
     "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],
     "primary": ["delts"],

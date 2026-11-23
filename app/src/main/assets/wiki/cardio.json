@@ -208,6 +208,36 @@
       ["Anfangs kurze Intervalle – die Waden ermüden schnell.", "Start with short intervals – calves tire quickly."]
     ]
   },
+  "High Knees": {
+    "muscles": ["Herz-Kreislauf, Hüftbeuger, Oberschenkel, Waden", "Cardio, hip flexors, quads, calves"],
+    "primary": ["quads", "calves"],
+    "secondary": ["abs", "glutes", "hamstrings"],
+    "how": [
+      ["Hüftbreit stehen, Arme angewinkelt wie beim Laufen.", "Stand hip-width apart, arms bent as if running."],
+      ["Auf der Stelle laufen und die Knie abwechselnd bis etwa Hüfthöhe ziehen.", "Run in place, driving your knees up to about hip height in turn."],
+      ["Auf den Fußballen bleiben, Arme schwingen gegengleich mit.", "Stay on the balls of your feet with your arms swinging opposite."]
+    ],
+    "tips": [
+      ["Oberkörper aufrecht, nicht nach hinten lehnen.", "Keep your torso upright; don't lean back."],
+      ["Gut als Aufwärmen oder in Intervallen (z. B. 30 Sekunden schnell, 30 Sekunden Pause).", "Great as a warm-up or in intervals (e.g. 30 seconds fast, 30 seconds rest)."],
+      ["Leichter: Marschieren mit hohen Knien statt Laufen.", "Easier: march with high knees instead of running."]
+    ]
+  },
+  "Anfersen": {
+    "muscles": ["Herz-Kreislauf, Beinbeuger, Waden", "Cardio, hamstrings, calves"],
+    "primary": ["hamstrings", "calves"],
+    "secondary": ["quads", "glutes"],
+    "how": [
+      ["Hüftbreit stehen, Arme angewinkelt.", "Stand hip-width apart with your arms bent."],
+      ["Auf der Stelle (oder langsam vorwärts) laufen und die Fersen abwechselnd zum Gesäß ziehen.", "Run in place (or slowly forward), kicking your heels up toward your glutes in turn."],
+      ["Knie zeigen nach unten, die Oberschenkel bleiben fast senkrecht.", "Knees point down and your thighs stay almost vertical."]
+    ],
+    "tips": [
+      ["Leicht auf den Fußballen landen.", "Land lightly on the balls of your feet."],
+      ["Klassische Laufschule – gut zum Aufwärmen vor Beintraining und Laufen.", "A classic running drill – great as a warm-up before leg day or a run."],
+      ["Tempo langsam steigern.", "Build up the pace gradually."]
+    ]
+  },
   "HIIT": {
     "muscles": ["Herz-Kreislauf, ganzer Körper", "Cardio, full body"],
     "primary": ["quads"],
