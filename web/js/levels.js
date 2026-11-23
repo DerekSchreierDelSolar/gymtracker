@@ -12,6 +12,10 @@ export const XP = { SESSION: 50, SET: 5, RECORD: 25, WEEK_GOAL: 50, GOAL: 200 };
 
 /** Punkte bis einschließlich `until`, aufgeschlüsselt (wie xpBreakdown). */
 export function xpBreakdown(until = Infinity) {
+  return store.memo('xp:' + until, () => computeXp(until));
+}
+
+function computeXp(until) {
   const sessions = allSessions(store).filter(t => t.start <= until);
   const perWeek = new Map();
   for (const t of sessions) perWeek.set(startOfWeek(t.start), (perWeek.get(startOfWeek(t.start)) ?? 0) + 1);

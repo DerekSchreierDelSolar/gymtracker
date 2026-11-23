@@ -63,7 +63,7 @@ fun exerciseResult(
     }
     // Aufwärm- und Drop-Sätze zählen nicht für Rekorde
     val best = sets.top().maxOfOrNull(metric)
-    val prevBest = store.sets.filter { it.exercise == name && it.time < start && it.isTop }.maxOfOrNull(metric)
+    val prevBest = store.setsOf(name).filter { it.time < start && it.isTop }.maxOfOrNull(metric)
     // Bestleistung nur, wenn es vorher schon Sätze gab – sonst wäre jedes erste Training ein Rekord
     val record = best != null && prevBest != null && best > prevBest
     // Sätze vom letzten Trainingstag vor diesem Training (für „▲ +2,5 kg vs. letztes Mal“)
@@ -143,7 +143,7 @@ fun estimateKcal(store: GymStore, t: TrainingSession, results: List<ExerciseResu
     return Math.round(cardioKcal + strengthKcal).toInt()
 }
 
-fun sessionStats(store: GymStore, t: TrainingSession): SessionStats {
+fun sessionStats(store: GymStore, t: TrainingSession): SessionStats = store.memo("sessionStats" to t) {
     // Ältere Trainings ohne gespeicherte Ziele bekommen den Standard
     val results = t.exercises.map {
         exerciseResult(
@@ -155,20 +155,22 @@ fun sessionStats(store: GymStore, t: TrainingSession): SessionStats {
     // Aufwärmsätze zählen weder fürs Volumen noch für die Satzzahl
     val strength = results.filter { !it.group.isCardio && !isTimed(it.name) }.flatMap { it.sets.work() }
     val cardio = results.filter { it.group.isCardio }.flatMap { it.sets.work() }
-    return SessionStats(
+    val hrKcal = heartRateKcal(store, t)
+    SessionStats(
         results = results,
         sets = results.sumOf { it.sets.count { s -> s.isWork } },
         volume = strength.sumOf { it.weight * it.reps },
         cardioMinutes = cardio.sumOf { it.reps },
         records = results.count { it.record },
-        kcal = heartRateKcal(store, t) ?: estimateKcal(store, t, results),
-        kcalFromHr = heartRateKcal(store, t) != null
+        kcal = hrKcal ?: estimateKcal(store, t, results),
+        kcalFromHr = hrKcal != null
     )
 }
 
 /** Alle Trainings inkl. freier Trainings (eines pro Tag mit Sätzen ohne Workout). */
-fun allSessions(store: GymStore): List<TrainingSession> =
+fun allSessions(store: GymStore): List<TrainingSession> = store.memo("allSessions") {
     store.sessions + store.freeSetsByDay().keys.mapNotNull { store.freeSession(it) }
+}
 
 
 

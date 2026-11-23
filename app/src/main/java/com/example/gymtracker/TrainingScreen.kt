@@ -83,13 +83,16 @@ fun TrainingScreen(
     // Zurück-Taste beendet das Training nicht, sondern minimiert es (Beenden nur über „Beenden“)
     BackHandler { onMinimize() }
 
-    // Stoppuhr: LaunchedEffect startet eine Coroutine, die regelmäßig `now` aktualisiert.
+    // Stoppuhr: LaunchedEffect startet eine Coroutine, die regelmäßig `nowState` aktualisiert.
     // Sie wird automatisch beendet, wenn der Bildschirm verlassen wird.
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    // Weitergegeben wird nur die Lese-Funktion `now`: neu gezeichnet wird dann nur, wer sie aufruft
+    // (Dauer in der Kopfzeile, Pausen-Kreis) – nicht der ganze Bildschirm 5× pro Sekunde.
+    val nowState = remember { mutableLongStateOf(System.currentTimeMillis()) }
+    val now: () -> Long = remember { { nowState.longValue } }
     LaunchedEffect(Unit) {
         while (true) {
             delay(200)
-            now = System.currentTimeMillis()
+            nowState.longValue = System.currentTimeMillis()
         }
     }
 
@@ -173,11 +176,7 @@ fun TrainingScreen(
                 title = {
                     Column {
                         Text("${index + 1}/$n · ${workout.name}")
-                        Text(
-                            "⏱ " + fmtDuration(now - start),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        ElapsedText(start, now)
                     }
                 },
                 actions = {
@@ -279,7 +278,8 @@ fun TrainingScreen(
 
     if (confirmEnd) {
         // Letzter Satz > 30 min her → wohl vergessen zu beenden: Ende auf den letzten Satz anbieten (TrainingState.kt)
-        val lastSet = remember { forgottenEnd(store, workout.exercises, start) }
+        val dialogNow = remember { System.currentTimeMillis() } // fester Zeitpunkt beim Öffnen
+        val lastSet = remember { forgottenEnd(store, workout.exercises, start, dialogNow) }
         // Verworfen wird nur ganz ohne Satz – auch reine Aufwärmsätze werden gespeichert (finishTraining)
         val anySet = lastSet != null || workout.exercises.any { store.setsBetween(it, start, Long.MAX_VALUE).isNotEmpty() }
         val clock = lastSet?.let { java.text.SimpleDateFormat("HH:mm", appLocale()).format(java.util.Date(it)) }
@@ -288,7 +288,7 @@ fun TrainingScreen(
             title = { Text(tr("Training beenden?", "Finish workout?")) },
             text = {
                 val setsText = plural(totalSets, tr("Satz", "set"), tr("Sätze", "sets")) +
-                    tr(" in ", " in ") + fmtDuration((lastSet ?: now) - start)
+                    tr(" in ", " in ") + fmtDuration((lastSet ?: dialogNow) - start)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         when {
@@ -305,8 +305,8 @@ fun TrainingScreen(
                     )
                     if (lastSet != null) Text(
                         tr(
-                            "Dein letzter Satz war um $clock (vor ${fmtDuration(now - lastSet)}). Soll das Training dort enden? Sonst zählen Dauer und kcal bis jetzt.",
-                            "Your last set was at $clock (${fmtDuration(now - lastSet)} ago). End the workout there? Otherwise duration and kcal count until now."
+                            "Dein letzter Satz war um $clock (vor ${fmtDuration(dialogNow - lastSet)}). Soll das Training dort enden? Sonst zählen Dauer und kcal bis jetzt.",
+                            "Your last set was at $clock (${fmtDuration(dialogNow - lastSet)} ago). End the workout there? Otherwise duration and kcal count until now."
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -336,7 +336,7 @@ fun TrainingExercisePage(
     workout: Workout,
     start: Long,
     name: String,
-    now: Long,
+    now: () -> Long,
     restEnd: Long?,
     restTotal: Long,
     onSkipRest: () -> Unit,
@@ -354,7 +354,6 @@ fun TrainingExercisePage(
     val target = store.targetFor(workout, name)
     // Frühere Trainings dieser Übung (vor diesem Training), nach Tag gruppiert, neuester zuerst
     val previousDays = store.setsFor(name).filter { it.time < start }.groupBy { fmtDate(it.time) }
-    val resting = restEnd != null && restEnd > now
     var showAlternatives by remember { mutableStateOf(false) }
     if (showAlternatives) AlternativesSheet(store, workout, start, name, original, onPick = { showAlternatives = false; onSwap(it) }, onDismiss = { showAlternatives = false })
 
@@ -384,7 +383,6 @@ fun TrainingExercisePage(
         // Drei Kreise: Wiederholungs-Ziel · Pause · Sätze dieser Übung
         item {
             val goal = repsGoal(store, name, start)
-            val restOptions = listOf(0, 60, 90, 120, 180)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.Top) {
                 CircleStat(
                     progress = 1f,
@@ -392,31 +390,7 @@ fun TrainingExercisePage(
                     value = goal?.first ?: "–",
                     label = goal?.second ?: tr("Wdh.-Ziel", "Rep goal")
                 )
-                if (resting) {
-                    CircleStat(
-                        progress = (restEnd!! - now).toFloat() / restTotal.coerceAtLeast(1),
-                        color = Color(0xFFE8703A),
-                        value = fmtDuration(restEnd - now + 999),
-                        label = tr("Pause · tippen = weiter", "Rest · tap to skip"),
-                        big = true,
-                        onClick = onSkipRest
-                    )
-                } else {
-                    val sec = store.restSeconds
-                    CircleStat(
-                        progress = if (sec > 0) 1f else 0f,
-                        color = MaterialTheme.colorScheme.primary,
-                        value = if (sec > 0) fmtDuration(sec * 1000L) else tr("Aus", "Off"),
-                        // „tippen zum Ändern“, bis die Pausenlänge einmal geändert wurde; danach reicht das ✎
-                        label = if (Hints.show(Hints.REST)) tr("Pause · tippen zum Ändern", "Rest · tap to change") else tr("Pause ✎", "Rest ✎"),
-                        big = true,
-                        // nächste Pausenlänge (Aus → 1 min → 90 s → 2 min → 3 min → Aus)
-                        onClick = {
-                            Hints.used(Hints.REST)
-                            store.setRest(restOptions[(restOptions.indexOf(sec) + 1) % restOptions.size])
-                        }
-                    )
-                }
+                RestCircle(store, now, restEnd, restTotal, onSkipRest)
                 val reached = target > 0 && todayWork >= target
                 CircleStat(
                     progress = if (target > 0) todayWork.toFloat() / target else if (todayWork > 0) 1f else 0f,
@@ -498,6 +472,49 @@ fun repsGoal(store: GymStore, name: String, before: Long): Pair<String, String>?
  * Schlanker Kreis mit Wert in der Mitte und Beschriftung darunter (Trainingsseite).
  * progress 0..1 = Anteil des Bogens ab 12 Uhr; big = etwas größer (mittlerer Kreis).
  */
+/** Laufende Dauer in der Kopfzeile – eigene Funktion, damit nur dieser Text jede 200 ms neu gezeichnet wird. */
+@Composable
+private fun ElapsedText(start: Long, now: () -> Long) {
+    Text(
+        "⏱ " + fmtDuration(now() - start),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+/** Pausen-Kreis: Countdown (antippen = überspringen) bzw. Pausenlänge (antippen = ändern). Liest als Einziges die Uhr. */
+@Composable
+private fun RestCircle(store: GymStore, now: () -> Long, restEnd: Long?, restTotal: Long, onSkipRest: () -> Unit) {
+    val t = now()
+    val resting = restEnd != null && restEnd > t
+    val restOptions = listOf(0, 60, 90, 120, 180)
+    if (resting) {
+        CircleStat(
+            progress = (restEnd!! - t).toFloat() / restTotal.coerceAtLeast(1),
+            color = Color(0xFFE8703A),
+            value = fmtDuration(restEnd - t + 999),
+            label = tr("Pause · tippen = weiter", "Rest · tap to skip"),
+            big = true,
+            onClick = onSkipRest
+        )
+    } else {
+        val sec = store.restSeconds
+        CircleStat(
+            progress = if (sec > 0) 1f else 0f,
+            color = MaterialTheme.colorScheme.primary,
+            value = if (sec > 0) fmtDuration(sec * 1000L) else tr("Aus", "Off"),
+            // „tippen zum Ändern“, bis die Pausenlänge einmal geändert wurde; danach reicht das ✎
+            label = if (Hints.show(Hints.REST)) tr("Pause · tippen zum Ändern", "Rest · tap to change") else tr("Pause ✎", "Rest ✎"),
+            big = true,
+            // nächste Pausenlänge (Aus → 1 min → 90 s → 2 min → 3 min → Aus)
+            onClick = {
+                Hints.used(Hints.REST)
+                store.setRest(restOptions[(restOptions.indexOf(sec) + 1) % restOptions.size])
+            }
+        )
+    }
+}
+
 @Composable
 fun CircleStat(
     progress: Float,

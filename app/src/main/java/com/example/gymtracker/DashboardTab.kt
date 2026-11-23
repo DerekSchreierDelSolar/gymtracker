@@ -23,7 +23,7 @@ data class RecordEvent(val exercise: String, val set: GymSet)
  * Alle Rekorde chronologisch: Ein Trainingstag ist ein Rekord, wenn sein bester Wert
  * (Gewicht bzw. Dauer) alles davor übertrifft. Der allererste Tag zählt nicht.
  */
-fun recordEvents(store: GymStore): List<RecordEvent> {
+fun recordEvents(store: GymStore): List<RecordEvent> = store.memo("recordEvents") {
     val events = mutableListOf<RecordEvent>()
     store.sets.top().groupBy { it.exercise }.forEach { (name, list) -> // ohne Aufwärm-/Drop-Sätze
         val byTime = store.groupOf(name).isCardio || isTimed(name)
@@ -36,7 +36,7 @@ fun recordEvents(store: GymStore): List<RecordEvent> {
             if (prev == null || metric(top) > prev) best = metric(top)
         }
     }
-    return events.sortedByDescending { it.set.time }
+    events.sortedByDescending { it.set.time }
 }
 
 /**

@@ -11,6 +11,36 @@ import java.io.File
 class GymStore(context: Context) {
     private val appContext = context.applicationContext
     private val file = File(context.filesDir, "gym_data.json")
+
+    /**
+     * Zählt jede Änderung der Daten hoch (save, Import, Laden). Auswertungen, die alle Sätze/Trainings durchgehen
+     * (allSessions, sessionStats, recordEvents, Abzeichen, XP …), werden über `memo` nur einmal pro Stand berechnet
+     * statt bei jedem Neuzeichnen – wie ein Cache mit Versionsnummer (vgl. useMemo mit Abhängigkeit).
+     * Vor init { load() }!
+     */
+    var revision by mutableIntStateOf(0)
+        private set
+    private val memoCache = HashMap<Any, Any?>()
+    private var memoRev = -1
+    private var memoDay = -1
+
+    /**
+     * Ergebnis von `compute` für `key`, zwischengespeichert bis zur nächsten Änderung (oder bis Mitternacht).
+     * Liest `revision` (Compose-State) → wer memo im Composable aufruft, wird bei jeder Änderung neu gezeichnet.
+     * compute darf nur von den gespeicherten Daten abhängen (und der Sprache – setLanguage speichert ebenfalls).
+     */
+    fun <T> memo(key: Any, compute: () -> T): T {
+        val rev = revision
+        val day = dayKey(System.currentTimeMillis())
+        if (rev != memoRev || day != memoDay) { memoCache.clear(); memoRev = rev; memoDay = day }
+        if (memoCache.containsKey(key)) {
+            @Suppress("UNCHECKED_CAST")
+            return memoCache[key] as T
+        }
+        return compute().also { memoCache[key] = it }
+    }
+
+    private fun changed() { revision++ }
     val exercises = mutableStateListOf<String>()
     val sets = mutableStateListOf<GymSet>()
     /** Muskelgruppe pro Übung (Übungsname → Gruppe). */
@@ -83,6 +113,7 @@ class GymStore(context: Context) {
     init { load() }
 
     private fun load() {
+        changed()
         if (!file.exists()) return
         try {
             val text = file.readText()
@@ -106,6 +137,7 @@ class GymStore(context: Context) {
      * Stürzt die App mitten im Schreiben ab, bleibt die alte Datei vollständig erhalten.
      */
     private fun save() {
+        changed()
         try {
             val tmp = File(file.parentFile, "gym_data.json.tmp")
             tmp.writeText(toJson().toString())
@@ -171,6 +203,7 @@ class GymStore(context: Context) {
     }
 
     private fun clearAll() {
+        changed()
         exercises.clear(); sets.clear(); groups.clear(); workouts.clear(); sessions.clear(); weights.clear(); notes.clear(); goals.clear(); measures.clear()
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         profile = Profile()
@@ -670,7 +703,11 @@ class GymStore(context: Context) {
 
     /** Sätze einer Übung in einem Zeitraum, älteste zuerst. */
     fun setsBetween(exercise: String, start: Long, end: Long): List<GymSet> =
-        sets.filter { it.exercise == exercise && it.time in start..end }.sortedBy { it.time }
+        setsOf(exercise).filter { it.time in start..end }
+
+    /** Alle Sätze einer Übung, älteste zuerst (Index pro Übung, einmal pro Stand berechnet). */
+    fun setsOf(exercise: String): List<GymSet> =
+        memo("setsByExercise") { sets.groupBy { it.exercise }.mapValues { (_, l) -> l.sortedBy { it.time } } }[exercise].orEmpty()
 
     /**
      * Training abschließen. Gibt die gespeicherte Session zurück,
@@ -706,9 +743,10 @@ class GymStore(context: Context) {
     // ----- Freies Training (Sätze ohne gestartetes Workout) -----
 
     /** Sätze, die zu keinem gespeicherten Training gehören, gruppiert nach Tag (JJJJMMTT). */
-    fun freeSetsByDay(): Map<Int, List<GymSet>> =
+    fun freeSetsByDay(): Map<Int, List<GymSet>> = memo("freeSetsByDay") {
         sets.filter { s -> sessions.none { t -> s.time in t.start..t.end && s.exercise in t.exercises } }
             .groupBy { dayKey(it.time) }
+    }
 
     /**
      * Baut aus den freien Sätzen eines Tages ein „virtuelles“ Training.
@@ -836,7 +874,7 @@ class GymStore(context: Context) {
 
     /** Alle Sätze einer Übung, neueste zuerst. */
     fun setsFor(exercise: String): List<GymSet> =
-        sets.filter { it.exercise == exercise }.sortedByDescending { it.time }
+        memo("setsFor" to exercise) { setsOf(exercise).asReversed().toList() }
 }
 
 

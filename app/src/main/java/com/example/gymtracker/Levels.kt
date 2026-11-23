@@ -28,12 +28,12 @@ data class XpBreakdown(val sessions: Int, val sets: Int, val records: Int, val w
     val total: Int get() = sessions * Xp.SESSION + sets * Xp.SET + records * Xp.RECORD + weeks * Xp.WEEK_GOAL + goals * Xp.GOAL
 }
 
-fun xpBreakdown(store: GymStore, until: Long = Long.MAX_VALUE): XpBreakdown {
+fun xpBreakdown(store: GymStore, until: Long = Long.MAX_VALUE): XpBreakdown = store.memo("xp" to until) {
     val sessions = allSessions(store).filter { it.start <= until }
     // Wochen mit erreichtem Wochenziel: das Training, das die Woche vollmacht, muss bis `until` stattgefunden haben
     val weeks = sessions.groupBy { startOfWeek(it.start) }.values.count { l -> l.size >= store.weeklyGoal }
     val goals = store.goals.count { g -> goalProgress(store, g).reachedAt?.let { it <= until } == true }
-    return XpBreakdown(
+    XpBreakdown(
         sessions = sessions.size,
         sets = store.sets.count { it.isWork && it.time <= until },
         records = recordEvents(store).count { it.set.time <= until },

@@ -38,6 +38,10 @@ export const badges = () => [
 
 /** Erreichte Abzeichen: Map ID → Zeitpunkt (wie earnedBadges). */
 export function earnedBadges() {
+  return store.memo('earnedBadges', computeEarnedBadges);
+}
+
+function computeEarnedBadges() {
   const out = new Map();
   const earn = (id, t) => { if (t != null && !out.has(id)) out.set(id, t); };
   const sessions = allSessions(store).sort((a, b) => a.start - b.start);

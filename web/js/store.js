@@ -70,7 +70,32 @@ class GymStore {
 
   /** Wird nach jeder Änderung aufgerufen (die App zeichnet dann neu). */
   subscribe(fn) { this.#listeners.add(fn); }
-  #changed() { this.#listeners.forEach(fn => fn()); }
+  #changed() { this.#rev++; this.#listeners.forEach(fn => fn()); }
+
+  // Zwischenspeicher für teure Auswertungen (allSessions, sessionStats, recordEvents, Abzeichen, XP …):
+  // gilt bis zur nächsten Änderung (#rev) bzw. bis Mitternacht. Wie memo in GymStore.kt.
+  #rev = 0;
+  #memo = new Map();
+  #memoRev = -1;
+  #memoDay = -1;
+  /** Ergebnis von fn für key (String oder Objekt, z. B. ein Training), einmal pro Datenstand berechnet. */
+  memo(key, fn) {
+    const day = dayKey(Date.now());
+    if (this.#memoRev !== this.#rev || this.#memoDay !== day) { this.#memo.clear(); this.#memoRev = this.#rev; this.#memoDay = day; }
+    if (this.#memo.has(key)) return this.#memo.get(key);
+    const v = fn();
+    this.#memo.set(key, v);
+    return v;
+  }
+  /** Sätze einer Übung, älteste zuerst (Index pro Übung). */
+  setsOf(exercise) {
+    return this.memo('setsByExercise', () => {
+      const m = new Map();
+      for (const s of this.sets) { if (!m.has(s.exercise)) m.set(s.exercise, []); m.get(s.exercise).push(s); }
+      for (const l of m.values()) l.sort((a, b) => a.time - b.time);
+      return m;
+    }).get(exercise) ?? [];
+  }
 
   #save() {
     // Schlägt das Speichern fehl (Speicher voll), meldet app.js das – die Änderung wäre sonst beim Schließen weg
@@ -265,6 +290,7 @@ class GymStore {
   }
 
   #clearAll() {
+    this.#rev++;
     this.exercises = []; this.sets = []; this.groups = {}; this.workouts = []; this.sessions = []; this.weights = []; this.notes = {};
     CustomMeta.equipment = {}; CustomMeta.timed = new Set(); CustomMeta.muscles = {};
     this.profile = {};
@@ -509,12 +535,12 @@ class GymStore {
 
   /** Sätze einer Übung im Zeitraum, älteste zuerst. */
   setsBetween(exercise, start, end) {
-    return this.sets.filter(s => s.exercise === exercise && s.time >= start && s.time <= end).sort((a, b) => a.time - b.time);
+    return this.setsOf(exercise).filter(s => s.time >= start && s.time <= end);
   }
 
   /** Alle Sätze einer Übung, neueste zuerst. */
   setsFor(exercise) {
-    return this.sets.filter(s => s.exercise === exercise).sort((a, b) => b.time - a.time);
+    return this.memo('setsFor:' + exercise, () => this.setsOf(exercise).slice().reverse()).slice();
   }
 
   // ----- Trainings -----
@@ -548,6 +574,10 @@ class GymStore {
 
   /** Sätze, die zu keinem gespeicherten Training gehören, gruppiert nach Tag (JJJJMMTT). */
   freeSetsByDay() {
+    return this.memo('freeSetsByDay', () => this.#computeFreeSetsByDay());
+  }
+
+  #computeFreeSetsByDay() {
     const map = new Map();
     for (const s of this.sets) {
       if (this.#inSession(s)) continue;

@@ -52,7 +52,7 @@ val BADGES: List<Badge> get() = listOf(
 private fun hourOf(t: Long) = Calendar.getInstance().apply { timeInMillis = t }.get(Calendar.HOUR_OF_DAY)
 
 /** Erreichte Abzeichen: ID → Zeitpunkt, an dem es verdient wurde. */
-fun earnedBadges(store: GymStore): Map<String, Long> {
+fun earnedBadges(store: GymStore): Map<String, Long> = store.memo("earnedBadges") {
     val out = mutableMapOf<String, Long>()
     fun earn(id: String, t: Long?) { if (t != null) out[id] = t }
     val sessions = allSessions(store).sortedBy { it.start }
@@ -119,7 +119,7 @@ fun earnedBadges(store: GymStore): Map<String, Long> {
     earn("comeback", sessions.zipWithNext().firstOrNull { (a, b) -> b.start - a.start > 30L * 86_400_000 }?.second?.start)
     earn("double", days.values.filter { it.size >= 2 }.minOfOrNull { it.sortedBy { s -> s.start }[1].start })
     earn("marathon", sessions.firstOrNull { it.id >= 0 && it.end - it.start >= 90L * 60_000 }?.start)
-    return out
+    out
 }
 
 /** Abzeichen, die in diesem Training (zwischen Start und Ende) verdient wurden – für Achievements.kt. */

@@ -71,7 +71,12 @@ export function estimateKcal(store, t, results) {
   return Math.round(cardioKcal + (strengthMinutes * STRENGTH_MET * kg) / 60);
 }
 
+/** Kennzahlen eines Trainings – einmal pro Datenstand berechnet (store.memo, Schlüssel = das Trainings-Objekt). */
 export function sessionStats(store, t) {
+  return store.memo(t, () => computeSessionStats(store, t));
+}
+
+function computeSessionStats(store, t) {
   const results = t.exercises.map(e =>
     exerciseResult(store, e, t.start, t.end, t.targets[e] ?? 0, t.id < 0));
   const strength = results.filter(r => !isCardio(r.group) && !isTimed(r.name)).flatMap(r => r.sets.filter(isWork));
@@ -80,26 +85,34 @@ export function sessionStats(store, t) {
   const done = sum(results, r => r.counted);
   const total = sum(results, r => r.target);
   const completion = goalCompletion(done, total, sets);
+  const hrKcal = heartRateKcal(store, t);
   return {
     results, sets, done, total, completion, percent: Math.round(completion * 100),
     volume: sum(strength, s => s.weight * s.reps),
     cardioMinutes: sum(cardio, s => s.reps),
     records: results.filter(r => r.record).length,
-    kcal: heartRateKcal(store, t) ?? estimateKcal(store, t, results),
-    kcalFromHr: heartRateKcal(store, t) != null,
+    kcal: hrKcal ?? estimateKcal(store, t, results),
+    kcalFromHr: hrKcal != null,
   };
 }
 
 /** Alle Trainings inkl. freier Trainings (eines pro Tag mit Sätzen ohne Workout). */
 export function allSessions(store) {
-  const byDay = store.freeSetsByDay();
-  return [...store.sessions, ...[...byDay.keys()].map(d => store.freeSession(d, byDay)).filter(Boolean)];
+  // Kopie: einige Aufrufer sortieren das Ergebnis direkt (sort ändert das Array)
+  return store.memo('allSessions', () => {
+    const byDay = store.freeSetsByDay();
+    return [...store.sessions, ...[...byDay.keys()].map(d => store.freeSession(d, byDay)).filter(Boolean)];
+  }).slice();
 }
 
 // ---------- Dashboard ----------
 
 /** Rekorde chronologisch: Trainingstag, dessen Bestwert alles davor übertrifft (erster Tag zählt nicht). */
 export function recordEvents(store) {
+  return store.memo('recordEvents', () => computeRecordEvents(store)).slice();
+}
+
+function computeRecordEvents(store) {
   const events = [];
   const byEx = new Map();
   for (const s of store.sets.filter(isTop)) { // ohne Aufwärm-/Drop-Sätze
