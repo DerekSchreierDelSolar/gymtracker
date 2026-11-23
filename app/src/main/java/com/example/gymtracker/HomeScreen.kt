@@ -350,22 +350,9 @@ fun ExerciseGrid(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            // Favoriten (★) als eigener Abschnitt ganz oben – dafür nicht noch einmal in ihrer Kategorie
-            val favs = visible.filter { store.isFavorite(it) }.sortedByName { exName(it) }
-            if (favs.isNotEmpty()) {
-                item(key = "header_favorites", span = { GridItemSpan(maxLineSpan) }) { FavoritesHeader() }
-                gridItems(favs, key = { it }) { name ->
-                    ExerciseTile(
-                        name, store.groupOf(name), store.setsFor(name).firstOrNull(),
-                        onClick = { onOpen(name) },
-                        onLongClick = { Hints.used(Hints.LIST); menuFor = name },
-                        favorite = true
-                    )
-                }
-            }
             // Eine Überschrift pro Kategorie, in der Reihenfolge des enums
             MuscleGroup.entries.forEach { group ->
-                val names = visible.filter { store.groupOf(it) == group && !store.isFavorite(it) }.sortedByName { exName(it) } // alphabetisch
+                val names = visible.filter { store.groupOf(it) == group }.sortedByName { exName(it) } // alphabetisch
                 if (names.isEmpty()) return@forEach
 
                 // Überschrift über die ganze Zeile (alle Spalten)
@@ -376,7 +363,8 @@ fun ExerciseGrid(
                     ExerciseTile(
                         name, group, store.setsFor(name).firstOrNull(),
                         onClick = { onOpen(name) },
-                        onLongClick = { Hints.used(Hints.LIST); menuFor = name }
+                        onLongClick = { Hints.used(Hints.LIST); menuFor = name },
+                        favorite = store.isFavorite(name) // nur kleiner Stern, Position bleibt alphabetisch
                     )
                 }
             }

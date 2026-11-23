@@ -167,8 +167,8 @@
     },
     {
       "keys": ["favorit", "favoriten", "lieblingsuebung", "lieblingsuebungen", "stern", "markieren", "favorite", "favorites", "star", "oben anzeigen"],
-      "a": ["Übungen kannst du als Favorit markieren: Kachel im Tab „Übungen“ gedrückt halten → „Als Favorit markieren“, oder in der Übung oben auf den Stern ☆ tippen. Favoriten tragen einen ★ und stehen in allen Listen ganz oben – im Tab „Übungen“ und beim Bearbeiten eines Workouts als eigener Abschnitt „Favoriten“, im Katalog und bei der Ziel-Auswahl zuerst. Nochmal auf den Stern tippen entfernt den Favoriten wieder.",
-            "You can mark exercises as favorites: long-press a tile in the \"Exercises\" tab → \"Mark as favorite\", or tap the star ☆ at the top of an exercise. Favorites get a ★ and always come first in lists – in the \"Exercises\" tab and when editing a workout as their own \"Favorites\" section, in the catalog and the goal picker at the top. Tap the star again to remove it."]
+      "a": ["Übungen kannst du als Favorit markieren: Kachel im Tab „Übungen“ gedrückt halten → „Als Favorit markieren“, oder in der Übung oben auf den Stern ☆ tippen. Favoriten tragen einen ★ (im Tab „Übungen“ klein oben rechts auf der Kachel). Beim Bearbeiten eines Workouts stehen sie als eigener Abschnitt „Favoriten“ oben, im Katalog und bei der Ziel-Auswahl zuerst. Nochmal auf den Stern tippen entfernt den Favoriten wieder.",
+            "You can mark exercises as favorites: long-press a tile in the \"Exercises\" tab → \"Mark as favorite\", or tap the star ☆ at the top of an exercise. Favorites get a ★ (in the \"Exercises\" tab a small one at the top right of the tile). When editing a workout they have their own \"Favorites\" section at the top; in the catalog and the goal picker they come first. Tap the star again to remove it."]
     },
     {
       "keys": ["supersatz", "supersaetze", "superset", "supersets", "riesensatz", "verbinden", "zwei uebungen abwechselnd", "giant set"],
