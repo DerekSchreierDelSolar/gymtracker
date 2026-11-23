@@ -457,13 +457,20 @@ class GymStore {
 
   changeCycle(c) { this.cycle = c; this.#save(); }
 
-  /** Übung mit der nächsten zum Supersatz verbinden bzw. lösen (supersets.js) */
-  toggleLink(workoutId, exercise) {
+  /** Supersatz-Verbindungen setzen (Auflösen + Rückgängig, supersets.js) */
+  setLinks(workoutId, links) {
     const w = this.workout(workoutId);
     if (!w) return;
-    const l = new Set(w.links ?? []);
-    if (l.has(exercise)) l.delete(exercise); else l.add(exercise);
-    w.links = [...l];
+    w.links = [...links];
+    this.#save();
+  }
+
+  /** Supersatz bilden: neue Reihenfolge + Verbindungen aus groupedWorkout (supersets.js; dort berechnet, kein Kreis-Import) */
+  linkSuperset(workoutId, { exercises, links }) {
+    const w = this.workout(workoutId);
+    if (!w) return;
+    w.exercises = exercises;
+    w.links = links;
     this.#save();
   }
 

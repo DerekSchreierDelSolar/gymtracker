@@ -161,6 +161,12 @@ fun WorkoutScreen(
     var confirmDelete by remember { mutableStateOf(false) }
     val history = store.sessionsFor(workout.id)
 
+    // ----- Supersatz bilden: Auswahlmodus (Kästchen statt Griff, unten „Verbinden“) -----
+    var selecting by rememberSaveable(workout.id) { mutableStateOf(false) }
+    var selected by remember(workout.id) { mutableStateOf(setOf<String>()) }
+    BackHandler(enabled = selecting) { selecting = false }
+    val groups = supersetGroups(workout)
+
     // ----- Drag & Drop zum Umsortieren (Liste) -----
     val listState = rememberLazyListState()
     val overviewState = rememberLazyListState()
@@ -172,6 +178,7 @@ fun WorkoutScreen(
     val currentExercises by rememberUpdatedState(workout.exercises)
 
     fun startDrag(name: String) {
+        if (selecting) return // im Auswahlmodus wird nicht umsortiert
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         dragKey = name
         dragY = 0f
@@ -179,6 +186,7 @@ fun WorkoutScreen(
 
     /** Finger bewegt: Zeile mitziehen; überdeckt sie den Nachbarn zur Hälfte → Plätze tauschen. */
     fun dragBy(name: String, dy: Float) {
+        if (dragKey != name) return
         dragY += dy
         val items = listState.layoutInfo.visibleItemsInfo
         val cur = items.firstOrNull { it.key == name } ?: return
@@ -268,8 +276,35 @@ fun WorkoutScreen(
                 }
             }
         },
+        bottomBar = {
+            // Auswahlmodus: Abbrechen / Verbinden fest unten
+            if (selecting && tab == 0) Surface(tonalElevation = 3.dp) {
+              Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 10.dp)) {
+                Text(
+                    tr(
+                        "Tippe die Übungen an, die du abwechselnd machen willst (mind. 2). Sie rücken in der Liste zusammen.",
+                        "Tap the exercises you want to alternate (at least 2). They will be moved next to each other."
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SUPERSET_COLOR
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedButton(onClick = { selecting = false }, modifier = Modifier.weight(1f)) { Text(tr("Abbrechen", "Cancel")) }
+                    Button(
+                        onClick = {
+                            store.linkSuperset(workout.id, selected)
+                            selecting = false
+                        },
+                        enabled = selected.size >= 2,
+                        modifier = Modifier.weight(1f)
+                    ) { Text(tr("Verbinden", "Link") + if (selected.isNotEmpty()) " (${selected.size})" else "") }
+                }
+              }
+            }
+        },
         floatingActionButton = {
-            if (workout.exercises.isNotEmpty()) {
+            if (workout.exercises.isNotEmpty() && !(selecting && tab == 0)) {
                 ExtendedFloatingActionButton(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -302,7 +337,7 @@ fun WorkoutScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Bedienhinweis nur, bis einmal umsortiert wurde
-                if (Hints.show(Hints.DRAG)) item {
+                if (!selecting && Hints.show(Hints.DRAG)) item {
                     Text(
                         tr(
                             "Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.",
@@ -313,13 +348,25 @@ fun WorkoutScreen(
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
                 }
-                workout.exercises.forEachIndexed { pos, name -> item(key = name) {
+                workout.exercises.forEach { name ->
+                // Über einer Gruppe: „🔗 Supersatz · Auflösen“ (beim Ziehen/Auswählen ausgeblendet)
+                val group = groups.firstOrNull { it.first() == name }
+                if (group != null) item(key = "grp_$name") {
+                    if (dragKey == null && !selecting) SupersetHeader(group.size) {
+                        val old = workout.links
+                        store.setLinks(workout.id, old - group.toSet())
+                        Undo.show(tr("Supersatz aufgelöst", "Superset unlinked")) { store.setLinks(workout.id, old) }
+                    }
+                }
+                item(key = name) {
                     val dragging = name == dragKey
                     // Wichtig: die Modifier-Kette hat immer dieselbe Struktur (nur Werte ändern sich),
                     // sonst würde Compose den pointerInput-Knoten neu anlegen und die Geste abbrechen.
                     WorkoutExerciseRow(
                         store, workout, name,
-                        onClick = { onOpen(name) },
+                        onClick = { if (selecting) selected = if (name in selected) selected - name else selected + name else onOpen(name) },
+                        inSuperset = groups.any { name in it },
+                        selection = if (selecting) name in selected else null,
                         modifier = Modifier
                             // Andere Zeilen gleiten animiert an ihren neuen Platz; die gezogene folgt dem Finger
                             .animateItem(
@@ -354,18 +401,22 @@ fun WorkoutScreen(
                         }
                     )
                 }
-                // Verbinder zur nächsten Übung: antippen = Supersatz an/aus (Supersets.kt); beim Ziehen ausgeblendet
-                if (pos < workout.exercises.lastIndex) item(key = "link_$name") {
-                    if (dragKey == null) SupersetLink(name in workout.links) { store.toggleLink(workout.id, name) }
-                }
                 }
                 // Beschrifteter Knopf statt nur Stift oben: öffnet WorkoutPickerScreen
-                item {
+                if (!selecting) item {
                     OutlinedButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
                         AppIcon(Ico.ADD)
                         Spacer(Modifier.width(8.dp))
                         Text(tr("Übungen hinzufügen / bearbeiten", "Add / edit exercises"))
                     }
+                }
+                // Supersatz bilden → Auswahlmodus (Supersets.kt)
+                if (!selecting && workout.exercises.size >= 2) item {
+                    OutlinedButton(
+                        onClick = { selected = emptySet(); selecting = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = SUPERSET_COLOR)
+                    ) { Text(tr("🔗 Supersatz bilden", "🔗 Create superset")) }
                 }
             }
         }
@@ -487,7 +538,11 @@ fun WorkoutExerciseRow(
     name: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    handleModifier: Modifier = Modifier
+    handleModifier: Modifier = Modifier,
+    /** Teil eines Supersatzes → orangefarbener Rahmen */
+    inSuperset: Boolean = false,
+    /** Auswahlmodus „Supersatz bilden“: angehakt ja/nein, null = kein Auswahlmodus (Griff) */
+    selection: Boolean? = null
 ) {
     val group = store.groupOf(name)
     val last = store.setsFor(name).firstOrNull()
@@ -507,7 +562,12 @@ fun WorkoutExerciseRow(
         // leicht in der Kategorie-Farbe getönt (wie die Kacheln)
         colors = CardDefaults.cardColors(
             containerColor = group.color.copy(alpha = 0.14f).compositeOver(MaterialTheme.colorScheme.surfaceContainerHighest)
-        )
+        ),
+        border = when {
+            selection == true -> androidx.compose.foundation.BorderStroke(2.dp, SUPERSET_COLOR)
+            inSuperset && selection == null -> androidx.compose.foundation.BorderStroke(2.dp, SUPERSET_COLOR.copy(alpha = 0.7f))
+            else -> null
+        }
     ) {
         Row(Modifier.padding(start = 12.dp, top = 10.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             ExerciseIcon(name, group, Modifier.size(44.dp))
@@ -535,9 +595,18 @@ fun WorkoutExerciseRow(
                     )
                 }
             }
-            // Griff: große Tippfläche (48 dp), sofort ziehbar
-            Box(handleModifier.size(48.dp), contentAlignment = Alignment.Center) {
-                AppIcon(Ico.DRAG, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (selection != null) {
+                // Auswahlmodus: Kästchen statt Griff (die ganze Zeile ist antippbar)
+                Checkbox(
+                    checked = selection, onCheckedChange = { onClick() },
+                    colors = CheckboxDefaults.colors(checkedColor = SUPERSET_COLOR),
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+            } else {
+                // Griff: große Tippfläche (48 dp), sofort ziehbar
+                Box(handleModifier.size(48.dp), contentAlignment = Alignment.Center) {
+                    AppIcon(Ico.DRAG, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
     }

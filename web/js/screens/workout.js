@@ -13,7 +13,7 @@ import { exerciseIconHtml, muscleIconHtml, exerciseImageUrl } from '../pictogram
 import { h, icon, iconBtn, chip, dialog, textField, groupHeader, muted, toast, showHint, hintUsed, undoToast, categoryRow } from '../ui.js';
 import { nav, go, rerender, openDialog, closeDialog, goBack, update } from '../nav.js';
 import { screen, fab } from '../layout.js';
-import { supersetLink, keepLinks } from '../supersets.js';
+import { supersetHead, supersetGroups, groupedWorkout, keepLinks } from '../supersets.js';
 import { favoriteBtn, favoritesHeader, nameWithStar, isFav } from '../favorites.js';
 
 import { filterActions, filterBar, matches, noFilterResults, filterActive } from '../filter.js';
@@ -77,6 +77,9 @@ function daysRow(w) {
 
 // ---------- Ein Workout ----------
 
+// Auswahlmodus „Supersatz bilden“: { id: Workout, sel: Set der angehakten Übungen } oder null
+let linking = null;
+
 // Gewählter Reiter je Workout (0 = Übungen, 1 = Überblick), übersteht das Neuzeichnen (wie workoutTab in GymApp)
 const workoutTabOf = {};
 
@@ -121,7 +124,8 @@ export function workoutScreen(w, onStart, running = false) {
     ], closeDialog));
 
   const tab = workoutTabOf[w.id] ?? 0;
-  let content;
+  const sel = linking?.id === w.id && tab === 0 ? linking.sel : null; // Auswahlmodus aktiv?
+  let content, bottom = null;
   if (tab === 1) {
     content = workoutOverview(w, history);
   } else if (!w.exercises.length) {
@@ -129,19 +133,37 @@ export function workoutScreen(w, onStart, running = false) {
       h('p', null, tr('Dieses Workout hat noch keine Übungen.', 'This workout has no exercises yet.')),
       h('div', null, h('button', { class: 'btn', onclick: () => go({ pick: true }) }, tr('Übungen auswählen', 'Choose exercises'))));
   } else {
-    const list = h('div', { class: 'ex-list' }, w.exercises.map((name, i) => exerciseRow(w, name, i < w.exercises.length - 1)));
-    enableDrag(list, w);
+    const groups = supersetGroups(w);
+    const list = h('div', { class: 'ex-list' }, w.exercises.map(name => exerciseRow(w, name, groups, sel)));
+    if (!sel) enableDrag(list, w);
+    if (sel) bottom = h('div', { class: 'pick-bar link-bar' },
+      h('p', { class: 'link-hint' }, tr('Tippe die Übungen an, die du abwechselnd machen willst (mind. 2). Sie rücken in der Liste zusammen.',
+        'Tap the exercises you want to alternate (at least 2). They will be moved next to each other.')),
+      h('div', { class: 'link-buttons' },
+        h('button', { class: 'btn outline', onclick: () => { linking = null; rerender(); } }, tr('Abbrechen', 'Cancel')),
+        h('button', {
+          class: 'btn', disabled: sel.size < 2,
+          onclick: () => { linking = null; store.linkSuperset(w.id, groupedWorkout(w, sel)); },
+        }, tr('Verbinden', 'Link') + (sel.size ? ` (${sel.size})` : ''))));
     content = h('div', { class: 'pad list-bottom' },
       // Bedienhinweis nur, bis einmal umsortiert wurde (Hints)
-      showHint('drag') ? muted(tr('Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.',
+      !sel && showHint('drag') ? muted(tr('Tipp: Am Griff rechts ziehen (oder Zeile gedrückt halten), um die Reihenfolge zu ändern.',
         'Tip: drag the handle on the right (or long-press a row) to change the order.'), 'small') : null,
       list,
       // Beschrifteter Knopf statt nur Stift oben (wie WorkoutScreen.kt)
-      h('button', { class: 'btn outline wide add-exercises', onclick: () => go({ pick: true }) }, icon('add'), tr('Übungen hinzufügen / bearbeiten', 'Add / edit exercises')));
+      sel ? null : h('button', { class: 'btn outline wide add-exercises', onclick: () => go({ pick: true }) }, icon('add'), tr('Übungen hinzufügen / bearbeiten', 'Add / edit exercises')),
+      // Supersatz bilden → Auswahlmodus (wie in WorkoutScreens.kt)
+      !sel && w.exercises.length >= 2
+        ? h('button', { class: 'btn outline wide add-exercises superset-btn', onclick: () => { linking = { id: w.id, sel: new Set() }; rerender(); } },
+          tr('🔗 Supersatz bilden', '🔗 Create superset'))
+        : null);
   }
 
   return screen({
     title: w.name, back: true, key: `workout-${w.id}-${tab}`,
+    // Zurück beendet zuerst den Auswahlmodus
+    onBack: () => { if (sel) { linking = null; rerender(); } else goBack(); },
+    bottom,
     top: h('div', { class: 'tab-row' }, [tr('Übungen', 'Exercises'), tr('Überblick', 'Overview')].map((label, i) =>
       h('button', { class: ['tab', i === tab && 'selected'], onclick: () => { workoutTabOf[w.id] = i; rerender(); } }, label))),
     actions: [
@@ -149,29 +171,38 @@ export function workoutScreen(w, onStart, running = false) {
       iconBtn('delete', deleteDialog, { label: tr('Löschen', 'Delete') }),
     ],
     content,
-    fab: w.exercises.length ? fab(running ? tr('Training fortsetzen', 'Resume workout') : tr('Training starten', 'Start workout'), 'play', onStart) : null,
+    fab: w.exercises.length && !sel ? fab(running ? tr('Training fortsetzen', 'Resume workout') : tr('Training starten', 'Start workout'), 'play', onStart) : null,
   });
 }
 
 /** Eine Übung im Workout als Listenzeile: Bild, Name, letzter Satz, Ziel-Pille (antippbar), Griff (wie WorkoutExerciseRow in WorkoutScreens.kt) */
-function exerciseRow(w, name, canLink = false) {
+function exerciseRow(w, name, groups, sel) {
   const g = store.groupOf(name), last = store.setsFor(name)[0], target = store.targetFor(w, name);
   const sub = last ? tr('Zuletzt ', 'Last ') + fmtSet(last, isCardio(g)) : '–';
+  const group = groups.find(gr => gr.includes(name));
   return h('button', {
-    class: 'ex-row', 'data-name': name, style: `--tint:${groupColor(g)}`,
+    class: ['ex-row', group && !sel && 'superset', sel?.has(name) && 'selected'], 'data-name': name, style: `--tint:${groupColor(g)}`,
     onclick: e => {
+      if (sel) { sel.has(name) ? sel.delete(name) : sel.add(name); rerender(); return; } // Auswahlmodus: an-/abhaken
       if (e.currentTarget.dataset.justDragged || e.target.closest('.drag-handle')) return; // nach dem Ziehen / am Griff nicht öffnen
       if (e.target.closest('.target-pill')) { targetDialog(w, name); return; }
-      if (e.target.closest('.superset-link')) { store.toggleLink(w.id, name); return; } // Supersatz mit der nächsten an/aus
+      if (e.target.closest('.superset-unlink')) { // Supersatz auflösen, mit Rückgängig
+        const old = [...(w.links ?? [])];
+        store.setLinks(w.id, old.filter(x => !group.includes(x)));
+        undoToast(tr('Supersatz aufgelöst', 'Superset unlinked'), () => store.setLinks(w.id, old));
+        return;
+      }
       go({ exercise: name });
     },
   },
+  // Kopf „🔗 Supersatz · Auflösen“ oben in der ersten Zeile der Gruppe (nicht als eigenes Element, sonst stört es das Ziehen)
+  group && group[0] === name && !sel ? supersetHead(group.length) : null,
   h('span', { html: exerciseIconHtml(name, g, 44) }),
   h('div', { class: 'grow' }, h('b', null, exName(name)), h('small', null, sub),
     // Ziel-Sätze immer sichtbar („Ziel: –“ = optional) und direkt antippbar (span, da die Zeile selbst ein button ist)
     h('span', { class: 'target-pill', role: 'button' }, tr('Ziel: ', 'Goal: ') + (target === 0 ? '–' : targetLabel(target, g)) + ' ✎')),
-  h('span', { class: 'drag-handle', 'aria-label': tr('Ziehen', 'Drag') }, icon('drag')),
-  canLink ? supersetLink((w.links ?? []).includes(name)) : null);
+  sel ? h('span', { class: ['select-box', sel.has(name) && 'on'] }, sel.has(name) ? '✓' : '')
+    : h('span', { class: 'drag-handle', 'aria-label': tr('Ziehen', 'Drag') }, icon('drag')));
 }
 
 /** Ziel-Sätze einer Übung direkt aus der Workout-Liste ändern (wie der Ziel-Dialog in WorkoutExerciseRow) */

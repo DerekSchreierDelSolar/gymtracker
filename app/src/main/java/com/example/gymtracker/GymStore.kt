@@ -593,16 +593,23 @@ class GymStore(context: Context) {
         save()
     }
 
-    /** Übung im Workout von Position `from` nach `to` verschieben (für Drag & Drop). */
-    /** Übung mit der nächsten im Workout zum Supersatz verbinden bzw. lösen (Supersets.kt). */
-    fun toggleLink(workoutId: Long, exercise: String) {
+    /** Supersatz-Verbindungen eines Workouts setzen (Auflösen + Rückgängig). */
+    fun setLinks(workoutId: Long, links: Set<String>) {
         val i = workouts.indexOfFirst { it.id == workoutId }
         if (i < 0) return
-        val w = workouts[i]
-        workouts[i] = w.copy(links = if (exercise in w.links) w.links - exercise else w.links + exercise)
+        workouts[i] = workouts[i].copy(links = links)
         save()
     }
 
+    /** Gewählte Übungen zu einem Supersatz verbinden (rückt sie zusammen, siehe [groupedWorkout]). */
+    fun linkSuperset(workoutId: Long, selected: Set<String>) {
+        val i = workouts.indexOfFirst { it.id == workoutId }
+        if (i < 0) return
+        workouts[i] = groupedWorkout(workouts[i], selected)
+        save()
+    }
+
+    /** Übung im Workout von Position `from` nach `to` verschieben (für Drag & Drop). */
     fun moveInWorkout(workoutId: Long, from: Int, to: Int) {
         val i = workouts.indexOfFirst { it.id == workoutId }
         if (i < 0) return

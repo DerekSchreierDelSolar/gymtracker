@@ -751,8 +751,18 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .orm-p { width: 64px; }
 /* Supersätze (supersets.js) */
 .ex-row { flex-wrap: wrap; }
-.superset-link { flex-basis: 100%; text-align: center; margin: 8px 0 -6px; font-size: 13px; padding: 4px 0; color: var(--muted); opacity: .8; }
-.superset-link.linked { color: #ff9800; opacity: 1; font-weight: 600; }
+.ex-row.superset { outline: 2px solid rgba(255, 152, 0, .7); outline-offset: -2px; }
+.ex-row.selected { outline: 2px solid #ff9800; outline-offset: -2px; }
+.superset-head { flex-basis: 100%; display: flex; align-items: center; gap: 8px; margin: -2px 0 6px; padding-right: 14px; font-size: 13px; font-weight: 600; color: #ff9800; }
+.superset-head > span:first-child { flex: 1; min-width: 0; }
+.superset-unlink { color: var(--primary); padding: 4px 0 4px 8px; }
+.select-box { width: 24px; height: 24px; margin: 0 12px; border: 2px solid var(--muted); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; flex: none; }
+.select-box.on { background: #ff9800; border-color: #ff9800; }
+.btn.outline.superset-btn { color: #ff9800; margin-top: 8px; }
+.link-bar { background: var(--container); gap: 10px; }
+.link-hint { margin: 0; color: #ff9800; font-size: 14px; }
+.link-buttons { display: flex; gap: 12px; }
+.link-buttons .btn { flex: 1; height: 48px; }
 .superset-hint { padding: 8px 12px; border-radius: 12px; background: rgba(255, 152, 0, .15); font-size: 14px; }
 /* Trainingsblock (cycle.js) */
 .cycle-settings { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }

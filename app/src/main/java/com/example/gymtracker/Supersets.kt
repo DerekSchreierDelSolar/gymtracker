@@ -63,26 +63,42 @@ fun supersetNext(store: GymStore, w: Workout, name: String, start: Long, warmup:
     return (if (open) group.first() else null) to true
 }
 
+/**
+ * Gewählte Übungen (mind. 2) zu einer Gruppe verbinden: Sie rücken an den Platz der obersten gewählten zusammen
+ * (Reihenfolge untereinander bleibt) und lösen sich aus bisherigen Gruppen. Andere Verbindungen bleiben,
+ * solange die Übung danach dieselbe ist.
+ */
+fun groupedWorkout(w: Workout, selected: Set<String>): Workout {
+    val sel = w.exercises.filter { it in selected }
+    if (sel.size < 2) return w
+    val rest = w.exercises.filter { it !in selected }
+    val insertAt = w.exercises.take(w.exercises.indexOf(sel.first())).count { it !in selected }
+    val order = rest.take(insertAt) + sel + rest.drop(insertAt)
+    val oldNext = w.exercises.withIndex().associate { (i, e) -> e to w.exercises.getOrNull(i + 1) }
+    val links = mutableSetOf<String>()
+    for ((i, e) in order.withIndex()) {
+        val next = order.getOrNull(i + 1) ?: continue
+        if (e in w.links && e !in selected && next !in selected && oldNext[e] == next) links += e
+    }
+    links += sel.dropLast(1)
+    return w.copy(exercises = order, links = links)
+}
+
 /** Farbe der Supersatz-Markierung. */
 val SUPERSET_COLOR = Color(0xFFFF9800)
 
-/** Verbinder zwischen zwei Übungen in der Workout-Liste: antippen = verbinden / lösen. */
+/** Kopfzeile über einer Gruppe in der Workout-Liste: „🔗 Supersatz“ bzw. „Riesensatz“ + Auflösen. */
 @Composable
-fun SupersetLink(linked: Boolean, onToggle: () -> Unit) {
-    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Surface(
-            onClick = onToggle,
-            shape = RoundedCornerShape(50),
-            color = if (linked) SUPERSET_COLOR.copy(alpha = 0.22f) else Color.Transparent,
-            contentColor = if (linked) SUPERSET_COLOR else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            modifier = Modifier.height(28.dp)
-        ) {
-            Text(
-                if (linked) tr("🔗 Supersatz", "🔗 Superset") else tr("+ Supersatz", "+ Superset"),
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
-            )
-        }
+fun SupersetHeader(size: Int, onUnlink: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            "🔗 " + (if (size >= 3) tr("Riesensatz", "Giant set") else tr("Supersatz", "Superset")) +
+                tr(" · abwechselnd, Pause erst danach", " · alternate, rest afterwards"),
+            style = MaterialTheme.typography.labelLarge,
+            color = SUPERSET_COLOR,
+            modifier = Modifier.weight(1f)
+        )
+        TextButton(onClick = onUnlink, contentPadding = PaddingValues(horizontal = 8.dp)) { Text(tr("Auflösen", "Unlink")) }
     }
 }
 

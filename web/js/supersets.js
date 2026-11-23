@@ -40,9 +40,32 @@ export function supersetNext(w, name, start, warmup) {
   return { next: open ? group[0] : null, rest: true };
 }
 
-/** Verbinder unten in der Listenzeile (span, weil die Zeile selbst ein button ist). */
-export function supersetLink(linked) {
-  return h('span', { class: ['superset-link', linked && 'linked'], role: 'button' }, linked ? tr('🔗 Supersatz', '🔗 Superset') : tr('+ Supersatz', '+ Superset'));
+/**
+ * Gewählte Übungen (mind. 2) zu einer Gruppe verbinden: Sie rücken an den Platz der obersten gewählten zusammen
+ * (Reihenfolge untereinander bleibt) und lösen sich aus bisherigen Gruppen; andere Verbindungen bleiben,
+ * solange die Übung danach dieselbe ist (wie groupedWorkout in Supersets.kt). Gibt { exercises, links } zurück.
+ */
+export function groupedWorkout(w, selected) {
+  const sel = w.exercises.filter(e => selected.has(e));
+  if (sel.length < 2) return { exercises: w.exercises, links: w.links ?? [] };
+  const rest = w.exercises.filter(e => !selected.has(e));
+  const insertAt = w.exercises.slice(0, w.exercises.indexOf(sel[0])).filter(e => !selected.has(e)).length;
+  const order = [...rest.slice(0, insertAt), ...sel, ...rest.slice(insertAt)];
+  const old = new Set(w.links ?? []);
+  const oldNext = e => w.exercises[w.exercises.indexOf(e) + 1];
+  const links = order.filter((e, i) => {
+    const next = order[i + 1];
+    return next != null && old.has(e) && !selected.has(e) && !selected.has(next) && oldNext(e) === next;
+  });
+  return { exercises: order, links: [...links, ...sel.slice(0, -1)] };
+}
+
+/** Kopf über einer Gruppe, oben in deren erster Listenzeile (span, weil die Zeile selbst ein button ist). */
+export function supersetHead(size) {
+  return h('span', { class: 'superset-head' },
+    h('span', null, '🔗 ' + (size >= 3 ? tr('Riesensatz', 'Giant set') : tr('Supersatz', 'Superset')) +
+      tr(' · abwechselnd, Pause erst danach', ' · alternate, rest afterwards')),
+    h('span', { class: 'superset-unlink', role: 'button' }, tr('Auflösen', 'Unlink')));
 }
 
 /** Hinweis auf der Trainingsseite (wie SupersetHint). */
