@@ -58,3 +58,13 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 21. **Ernährung** aus Health Connect lesen (Eiweiß, kcal-Bilanz) statt eigenem Tagebuch.
 
 Weiterhin separat geplant (siehe CLAUDE.md): KI-Coach, weitere Health-Connect-Ideen, Play-Store-Veröffentlichung.
+
+## Backlog (noch nicht eingeplant)
+22. **Übungskacheln selbst anordnen** (besprochen 23.11.2026; Tab „Übungen“, bisher Kategorie-Überschriften + alphabetisch, `ExerciseGrid` in HomeScreen.kt / home.js).
+    `store.exercises` hat schon eine gespeicherte Reihenfolge → für eigene Anordnung kein neues Feld nötig. Ideen, vom kleinsten Aufwand an:
+    - *Sortier-Umschalter* (Chips A–Z · Zuletzt trainiert · Am häufigsten · Eigene), Wahl in `settings` im JSON (gilt auch im Web).
+    - *Anheften ⭐* über das Kachel-Menü → Abschnitt „Favoriten“ ganz oben (JSON `pinned` nur wenn nicht leer).
+    - *Drag & Drop* im Modus „Anordnen“ (gedrückt halten ist schon das Menü): innerhalb der Kategorie, optional Kategorien selbst
+      umsortieren (`groupOrder`); bei aktivem Filter/Suche gesperrt. Ohne Bibliothek: `detectDragGestures` + Treffer über
+      `gridState.layoutInfo.visibleItemsInfo`, Auto-Scroll wie in WorkoutScreens.kt; Web: `enableDrag` aufs Raster erweitern.
+    - Empfehlung: erst Umschalter + Anheften, Drag & Drop als „Eigene“ nachziehen. Eigene Ordner verworfen (überschneidet sich mit Workouts).
