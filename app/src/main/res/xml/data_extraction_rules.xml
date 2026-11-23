@@ -4,6 +4,7 @@
     <cloud-backup>
         <exclude domain="sharedpref" path="health_connect.xml" />
         <exclude domain="sharedpref" path="auto_backup.xml" />
+        <exclude domain="sharedpref" path="training.xml" />
         <exclude domain="file" path="gym_data_before_import.json" />
         <exclude domain="file" path="gym_data_before_reset.json" />
         <exclude domain="file" path="gym_data.json.tmp" />
@@ -11,6 +12,7 @@
     <device-transfer>
         <exclude domain="sharedpref" path="health_connect.xml" />
         <exclude domain="sharedpref" path="auto_backup.xml" />
+        <exclude domain="sharedpref" path="training.xml" />
         <exclude domain="file" path="gym_data_before_import.json" />
         <exclude domain="file" path="gym_data_before_reset.json" />
         <exclude domain="file" path="gym_data.json.tmp" />

@@ -519,9 +519,10 @@ class GymStore {
 
   // ----- Trainings -----
 
-  /** Training abschließen; null, wenn kein Satz eingetragen wurde (dann wird nichts gespeichert). */
-  finishTraining(workout, start) {
-    const end = Date.now();
+  /** Training abschließen; null, wenn kein Satz eingetragen wurde (dann wird nichts gespeichert).
+   *  endAt = Ende (letzter Satz, wenn das Beenden vergessen wurde), null = jetzt. */
+  finishTraining(workout, start, endAt = null) {
+    const end = Math.max(start, endAt ?? Date.now());
     if (workout.exercises.every(e => this.setsBetween(e, start, end).length === 0)) return null;
     const t = {
       id: start, workoutId: workout.id, workoutName: workout.name, exercises: [...workout.exercises], start, end,

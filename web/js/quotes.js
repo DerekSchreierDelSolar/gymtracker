@@ -72,8 +72,12 @@ export function quoteFor(t, wins, stats) {
   const n = streakFrom(new Set(all.filter(x => x.start <= t.end).map(x => startOfWeek(x.start))), startOfWeek(t.start)).weeks;
   // „{n} Wochen am Stück“ nur, wenn es wirklich eine Serie gibt
   const hasRecord = wins.some(a => a.kind === 'RECORD');
-  const pool = QUOTES[mood].filter(([de]) => (mood !== 'STREAK' || n >= 2 || !de.includes('{n}'))
-    && (hasRecord || !de.startsWith('Neuer Rekord'))); // Rekord-Spruch nur bei echtem Rekord
+  // „Wochenziel geschafft!“ nur, wenn das Wochenziel mit diesem Training wirklich erreicht wurde (nicht bei bloßer Serie)
+  const weekGoal = wins.some(a => a.kind === 'WEEK_GOAL');
+  let pool = QUOTES[mood].filter(([de]) => (mood !== 'STREAK' || n >= 2 || !de.includes('{n}'))
+    && (hasRecord || !de.startsWith('Neuer Rekord')) // Rekord-Spruch nur bei echtem Rekord
+    && (weekGoal || !de.startsWith('Wochenziel')));
+  if (!pool.length) pool = QUOTES.NORMAL;
   const [de, en] = pool[Math.floor(rnd() * pool.length)];
   return { mood, text: tr(de, en).replace('{n}', String(n)) };
 }

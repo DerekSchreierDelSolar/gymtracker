@@ -679,8 +679,9 @@ class GymStore(context: Context) {
     /** Nach jedem abgeschlossenen Training (MainActivity: Health-Connect-Abgleich). */
     var onTrainingFinished: (() -> Unit)? = null
 
-    fun finishTraining(workout: Workout, start: Long): TrainingSession? {
-        val end = System.currentTimeMillis()
+    /** `endAt` = Ende des Trainings; null = jetzt (früher = letzter Satz, wenn das Beenden vergessen wurde). */
+    fun finishTraining(workout: Workout, start: Long, endAt: Long? = null): TrainingSession? {
+        val end = (endAt ?: System.currentTimeMillis()).coerceAtLeast(start)
         if (workout.exercises.all { setsBetween(it, start, end).isEmpty() }) return null
         val t = TrainingSession(
             start, workout.id, workout.name, workout.exercises, start, end,

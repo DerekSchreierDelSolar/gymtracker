@@ -33,12 +33,12 @@ function startTraining(workoutId) {
   go({ trainingWorkoutId: workoutId, trainingOpen: true, trainingStart: Date.now(), trainingIndex: 0, restEnd: null, swaps: {} });
 }
 
-function finishTraining() {
+function finishTraining(endAt = null) {
   const w = store.workout(nav.trainingWorkoutId);
   // Getauschte Übungen speichern; Originale, die vor dem Tausch schon Sätze hatten, gehören trotzdem dazu
   const s = w ? sessionWorkout(w, nav.swaps) : null;
   if (s) s.exercises.push(...Object.keys(nav.swaps ?? {}).filter(o => !s.exercises.includes(o) && store.setsBetween(o, nav.trainingStart, Infinity).length));
-  const t = s ? store.finishTraining(s, nav.trainingStart) : null;
+  const t = s ? store.finishTraining(s, nav.trainingStart, endAt) : null;
   keepScreenOn(false);
   update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, trainingIndex: 0, restEnd: null, swaps: {}, summaryId: t?.id ?? null, celebrateId: t?.id ?? null });
 }
@@ -174,7 +174,8 @@ function sessionWorkout(w, swaps = {}, deload = isDeload()) {
   if (!Object.keys(swaps).length && !deload) return w;
   return {
     ...w,
-    exercises: w.exercises.map(e => swaps[e] ?? e),
+    // Alternative, die danach auch selbst ins Workout kam, nur einmal (sonst doppelt gezählte Sätze)
+    exercises: [...new Set(w.exercises.map(e => swaps[e] ?? e))],
     // Deload-Woche (cycle.js): halbe Ziel-Sätze
     targets: Object.fromEntries(Object.entries(w.targets).map(([k, v]) => [swaps[k] ?? k, deload ? deloadTarget(v) : v])),
     links: (w.links ?? []).map(e => swaps[e] ?? e),

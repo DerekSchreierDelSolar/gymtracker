@@ -5,12 +5,14 @@
    - health_connect.xml: Erholungswerte (Ruhepuls/HRV/Schlaf) und Abgleich-Stand mit Health Connect –
      Gesundheitsdaten, die Health Connect selbst verwaltet; auf einem neuen Gerät würde der alte Stand stören
    - auto_backup.xml: Ordner-Berechtigung (SAF) gilt nur auf diesem Gerät
+   - training.xml: gerade laufendes Training (TrainingState.kt), gehört nur zu diesem Gerät
    - Sicherungskopien vor Import/Zurücksetzen und die Zwischendatei beim Speichern
    Gleiche Liste in data_extraction_rules.xml (ab Android 12).
 -->
 <full-backup-content>
         <exclude domain="sharedpref" path="health_connect.xml" />
         <exclude domain="sharedpref" path="auto_backup.xml" />
+        <exclude domain="sharedpref" path="training.xml" />
         <exclude domain="file" path="gym_data_before_import.json" />
         <exclude domain="file" path="gym_data_before_reset.json" />
         <exclude domain="file" path="gym_data.json.tmp" />

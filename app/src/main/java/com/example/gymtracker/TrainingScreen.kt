@@ -76,7 +76,8 @@ fun TrainingScreen(
     restEnd: Long? = null,
     restTotal: Long = 0L,
     onRest: (end: Long?, total: Long) -> Unit = { _, _ -> },
-    onFinish: () -> Unit
+    /** Training beenden; Ende = Zeitpunkt (letzter Satz) oder null = jetzt */
+    onFinish: (Long?) -> Unit
 ) {
     var confirmEnd by remember { mutableStateOf(false) }
     // Zurück-Taste beendet das Training nicht, sondern minimiert es (Beenden nur über „Beenden“)
@@ -277,31 +278,52 @@ fun TrainingScreen(
     }
 
     if (confirmEnd) {
+        // Letzter Satz > 30 min her → wohl vergessen zu beenden: Ende auf den letzten Satz anbieten (TrainingState.kt)
+        val lastSet = remember { forgottenEnd(store, workout.exercises, start) }
+        // Verworfen wird nur ganz ohne Satz – auch reine Aufwärmsätze werden gespeichert (finishTraining)
+        val anySet = lastSet != null || workout.exercises.any { store.setsBetween(it, start, Long.MAX_VALUE).isNotEmpty() }
+        val clock = lastSet?.let { java.text.SimpleDateFormat("HH:mm", appLocale()).format(java.util.Date(it)) }
         AlertDialog(
             onDismissRequest = { confirmEnd = false },
             title = { Text(tr("Training beenden?", "Finish workout?")) },
             text = {
                 val setsText = plural(totalSets, tr("Satz", "set"), tr("Sätze", "sets")) +
-                    tr(" in ", " in ") + fmtDuration(now - start)
-                Text(
-                    when {
-                        totalSets == 0 -> tr(
-                            "Du hast noch keinen Satz eingetragen – das Training wird verworfen.",
-                            "You haven't logged any sets yet – this workout will be discarded."
-                        )
-                        goalTotal == 0 -> "$setsText."
-                        else -> "$setsText – " + tr(
-                            "$goalDone von $goalTotal Ziel-Sätzen ($goalPercent %).",
-                            "$goalDone of $goalTotal target sets ($goalPercent %)."
-                        )
-                    }
-                )
+                    tr(" in ", " in ") + fmtDuration((lastSet ?: now) - start)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        when {
+                            !anySet -> tr(
+                                "Du hast noch keinen Satz eingetragen – das Training wird verworfen.",
+                                "You haven't logged any sets yet – this workout will be discarded."
+                            )
+                            goalTotal == 0 -> "$setsText."
+                            else -> "$setsText – " + tr(
+                                "$goalDone von $goalTotal Ziel-Sätzen ($goalPercent %).",
+                                "$goalDone of $goalTotal target sets ($goalPercent %)."
+                            )
+                        }
+                    )
+                    if (lastSet != null) Text(
+                        tr(
+                            "Dein letzter Satz war um $clock (vor ${fmtDuration(now - lastSet)}). Soll das Training dort enden? Sonst zählen Dauer und kcal bis jetzt.",
+                            "Your last set was at $clock (${fmtDuration(now - lastSet)} ago). End the workout there? Otherwise duration and kcal count until now."
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             },
             confirmButton = {
-                TextButton(onClick = { confirmEnd = false; onFinish() }) { Text(tr("Beenden", "Finish")) }
+                if (lastSet != null) Row {
+                    TextButton(onClick = { confirmEnd = false; onFinish(null) }) { Text(tr("Jetzt", "Now")) }
+                    TextButton(onClick = { confirmEnd = false; onFinish(lastSet) }) { Text(tr("Um $clock", "At $clock")) }
+                } else TextButton(onClick = { confirmEnd = false; onFinish(null) }) { Text(tr("Beenden", "Finish")) }
             },
             dismissButton = {
-                TextButton(onClick = { confirmEnd = false }) { Text(tr("Weiter trainieren", "Keep training")) }
+                // Drei Knöpfe: kürzerer Text, damit alles in eine Zeile passt
+                TextButton(onClick = { confirmEnd = false }) {
+                    Text(if (lastSet != null) tr("Abbrechen", "Cancel") else tr("Weiter trainieren", "Keep training"))
+                }
             }
         )
     }

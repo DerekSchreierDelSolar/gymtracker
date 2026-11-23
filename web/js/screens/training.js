@@ -5,7 +5,7 @@ import { similarExercises } from '../wizard.js';
 import { heatCard, regionScore } from '../bodymap.js';
 import { store } from '../store.js';
 import {
-  tr, exName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDateTime, fmtDuration, fmtShortDate, plural, isCardio, isTimed,
+  tr, exName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDateTime, fmtDuration, fmtTime, fmtShortDate, plural, isCardio, isTimed,
   goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort, parseIntStrict,
 } from '../core.js';
 import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames, setHeartRates } from '../stats.js';
@@ -155,22 +155,43 @@ function restCircle() {
 
 // ---------- Trainingsmodus ----------
 
+/** Ab so langer Zeit ohne neuen Satz bietet „Beenden“ an, beim letzten Satz zu enden (wie FORGOTTEN_END_MS in TrainingState.kt). */
+const FORGOTTEN_END_MS = 30 * 60_000;
+
+/** Zeitpunkt des letzten Satzes, wenn er mehr als 30 min zurückliegt („Beenden vergessen“), sonst null. */
+export function forgottenEnd(exercises, start, now = Date.now()) {
+  const last = Math.max(-Infinity, ...exercises.flatMap(e => store.setsBetween(e, start, now).map(s => s.time)));
+  return Number.isFinite(last) && now - last > FORGOTTEN_END_MS ? last : null;
+}
+
 export function confirmEndTraining(w, onFinish) {
+  const lastSet = forgottenEnd(w.exercises, nav.trainingStart);
   openDialog(() => {
     const start = nav.trainingStart;
+    const now = Date.now();
     const total = w.exercises.reduce((a, e) => a + store.setsBetween(e, start, Infinity).filter(isWork).length, 0);
     const goalTotal = w.exercises.reduce((a, e) => a + store.targetFor(w, e), 0);
     const goalDone = w.exercises.reduce((a, e) => a + Math.min(store.setsBetween(e, start, Infinity).filter(isWork).length, store.targetFor(w, e)), 0);
     const pct = Math.round(goalCompletion(goalDone, goalTotal, total) * 100);
-    const setsText = plural(total, tr('Satz', 'set'), tr('Sätze', 'sets')) + tr(' in ', ' in ') + fmtDuration(Date.now() - start);
+    const setsText = plural(total, tr('Satz', 'set'), tr('Sätze', 'sets')) + tr(' in ', ' in ') + fmtDuration((lastSet ?? now) - start);
+    const clock = lastSet != null ? fmtTime(lastSet) : '';
+    // Verworfen wird nur ganz ohne Satz – auch reine Aufwärmsätze werden gespeichert (store.finishTraining)
+    const anySet = lastSet != null || w.exercises.some(e => store.setsBetween(e, start, Infinity).length);
     return dialog(tr('Training beenden?', 'Finish workout?'),
-      h('p', null, total === 0
+      h('p', null, !anySet
         ? tr('Du hast noch keinen Satz eingetragen – das Training wird verworfen.', "You haven't logged any sets yet – this workout will be discarded.")
         : goalTotal === 0 ? `${setsText}.`
-          : `${setsText} – ` + tr(`${goalDone} von ${goalTotal} Ziel-Sätzen (${pct} %).`, `${goalDone} of ${goalTotal} target sets (${pct} %).`)),
-      [
+          : `${setsText} – ` + tr(`${goalDone} von ${goalTotal} Ziel-Sätzen (${pct} %).`, `${goalDone} of ${goalTotal} target sets (${pct} %).`),
+        lastSet != null ? h('small', { class: 'muted', style: 'display:block;margin-top:8px' }, tr(
+          `Dein letzter Satz war um ${clock} (vor ${fmtDuration(now - lastSet)}). Soll das Training dort enden? Sonst zählen Dauer und kcal bis jetzt.`,
+          `Your last set was at ${clock} (${fmtDuration(now - lastSet)} ago). End the workout there? Otherwise duration and kcal count until now.`)) : null),
+      lastSet != null ? [
+        { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
+        { label: tr('Jetzt', 'Now'), onClick: () => { closeDialog(); onFinish(null); } },
+        { label: tr(`Um ${clock}`, `At ${clock}`), onClick: () => { closeDialog(); onFinish(lastSet); } },
+      ] : [
         { label: tr('Weiter trainieren', 'Keep training'), onClick: closeDialog },
-        { label: tr('Beenden', 'Finish'), onClick: () => { closeDialog(); onFinish(); } },
+        { label: tr('Beenden', 'Finish'), onClick: () => { closeDialog(); onFinish(null); } },
       ], closeDialog);
   });
 }

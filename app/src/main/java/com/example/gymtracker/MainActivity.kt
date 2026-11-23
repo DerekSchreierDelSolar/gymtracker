@@ -98,18 +98,21 @@ fun GymApp(store: GymStore) {
     // Laufendes Training: Startzeit (null = kein Training), Workout und aktuelle Übung.
     // Unabhängig von `workoutId` (= angezeigtes Workout), damit man das Training minimieren und
     // in der App herumgehen kann, während es weiterläuft.
-    var trainingStart by rememberSaveable { mutableStateOf<Long?>(null) }
-    var trainingWorkoutId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var trainingIndex by rememberSaveable { mutableIntStateOf(0) }
+    // Startwerte aus TrainingPrefs (TrainingState.kt): ein laufendes Training übersteht so auch das Wegwischen der App
+    val context = LocalContext.current
+    val restored = remember { TrainingPrefs.load(context) }
+    var trainingStart by rememberSaveable { mutableStateOf(restored?.start) }
+    var trainingWorkoutId by rememberSaveable { mutableStateOf(restored?.workoutId) }
+    var trainingIndex by rememberSaveable { mutableIntStateOf(restored?.index ?: 0) }
     // false = minimiert (Leiste „Training läuft“ statt Trainingsbildschirm)
-    var trainingOpen by rememberSaveable { mutableStateOf(true) }
+    var trainingOpen by rememberSaveable { mutableStateOf(restored?.open ?: true) }
     // Pause: Endzeitpunkt (null = keine) und Gesamtlänge – hier oben, damit sie beim Minimieren weiterläuft
-    var restEnd by rememberSaveable { mutableStateOf<Long?>(null) }
-    var restTotal by rememberSaveable { mutableLongStateOf(0L) }
+    var restEnd by rememberSaveable { mutableStateOf(restored?.restEnd) }
+    var restTotal by rememberSaveable { mutableLongStateOf(restored?.restTotal ?: 0L) }
     // Training starten, während schon eins läuft → Hinweis
     var startBlocked by remember { mutableStateOf(false) }
     // Tausch nur für das laufende Training: Original → Alternative (HashMap ist Serializable → rememberSaveable)
-    var swaps by rememberSaveable { mutableStateOf<Map<String, String>>(HashMap()) }
+    var swaps by rememberSaveable { mutableStateOf<Map<String, String>>(HashMap(restored?.swaps.orEmpty())) }
     // Während des Trainings: Workout bearbeiten offen? Wert = Übung, die im Training gerade angezeigt war
     var editInTraining by rememberSaveable { mutableStateOf<String?>(null) }
     // Geöffnete Trainings-Übersicht
@@ -124,7 +127,13 @@ fun GymApp(store: GymStore) {
     // bleiben, wenn man eine Übung öffnet und zurückkommt.
     var listFilter by remember { mutableStateOf(ExerciseFilter()) }
     var catalogFilter by remember { mutableStateOf(ExerciseFilter()) }
-    val context = LocalContext.current
+
+    // Laufendes Training bei jeder Änderung dauerhaft merken (bzw. löschen, sobald es beendet ist)
+    LaunchedEffect(trainingStart, trainingWorkoutId, trainingIndex, trainingOpen, restEnd, restTotal, swaps) {
+        val s = trainingStart
+        val id = trainingWorkoutId
+        TrainingPrefs.save(context, if (s != null && id != null) TrainingState(s, id, trainingIndex, trainingOpen, swaps, restEnd, restTotal) else null)
+    }
 
     val ex = current
     val workout = workoutId?.let { store.workout(it) }
@@ -216,12 +225,12 @@ fun GymApp(store: GymStore) {
                         restEnd = restEnd,
                         restTotal = restTotal,
                         onRest = { end, total -> restEnd = end; restTotal = total },
-                        onFinish = {
+                        onFinish = { end ->
                             // Übungen, die vor dem Tausch schon Sätze hatten, gehören trotzdem zum Training
                             val withSets = session.copy(exercises = session.exercises + swaps.keys.filter { o ->
                                 o !in session.exercises && store.setsBetween(o, start, Long.MAX_VALUE).isNotEmpty()
                             })
-                            val t = store.finishTraining(withSets, start)
+                            val t = store.finishTraining(withSets, start, end)
                             resetTraining()
                             summaryId = t?.id
                             celebrateId = t?.id
@@ -316,7 +325,9 @@ fun GymApp(store: GymStore) {
 fun sessionWorkout(w: Workout, swaps: Map<String, String>, deload: Boolean = false): Workout {
     if (swaps.isEmpty() && !deload) return w
     return w.copy(
-        exercises = w.exercises.map { swaps[it] ?: it },
+        // distinct: Alternative, die danach (Workout im Training bearbeiten) auch selbst ins Workout kam, nur einmal –
+        // sonst doppelter Pager-Schlüssel (Absturz) und doppelt gezählte Sätze
+        exercises = w.exercises.map { swaps[it] ?: it }.distinct(),
         // Deload-Woche (Cycle.kt): halbe Ziel-Sätze; fehlende Einträge = Standard 0 (optional) bleiben so
         targets = w.targets.mapKeys { (k, _) -> swaps[k] ?: k }.mapValues { (_, t) -> if (deload) deloadTarget(t) else t },
         links = w.links.map { swaps[it] ?: it }.toSet()

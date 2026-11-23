@@ -84,9 +84,12 @@ fun quoteFor(store: GymStore, t: TrainingSession, wins: List<Achievement>, stats
     val n = streakFrom(allSessions(store).filter { it.start <= t.end }.map { startOfWeek(it.start) }.toSet(), startOfWeek(t.start)).weeks
     // „{n} Wochen am Stück“ nur, wenn es wirklich eine Serie gibt
     val hasRecord = wins.any { it.kind == AchievementKind.RECORD }
+    // „Wochenziel geschafft!“ nur, wenn das Wochenziel mit diesem Training wirklich erreicht wurde (nicht bei bloßer Serie)
+    val weekGoal = wins.any { it.kind == AchievementKind.WEEK_GOAL }
     val pool = QUOTES.getValue(mood).filter {
-        (mood != QuoteMood.STREAK || n >= 2 || "{n}" !in it.first) && (hasRecord || !it.first.startsWith("Neuer Rekord")) // Rekord-Spruch nur bei echtem Rekord
-    }
+        (mood != QuoteMood.STREAK || n >= 2 || "{n}" !in it.first) && (hasRecord || !it.first.startsWith("Neuer Rekord")) && // Rekord-Spruch nur bei echtem Rekord
+            (weekGoal || !it.first.startsWith("Wochenziel"))
+    }.ifEmpty { QUOTES.getValue(QuoteMood.NORMAL) }
     val (de, en) = pool[rnd.nextInt(pool.size)]
     return Quote(mood, tr(de, en).replace("{n}", n.toString()))
 }
