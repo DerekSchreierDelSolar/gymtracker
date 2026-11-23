@@ -34,7 +34,6 @@ val BADGES: List<Badge> get() = listOf(
     Badge("rec25", "🏆", tr("Rekordjäger", "Record hunter"), tr("25 Rekorde", "25 records")),
     Badge("day10t", "🏋️", tr("Schwerlast", "Heavy duty"), tr("10 t an einem Tag bewegt", "10 t lifted in one day")),
     Badge("total100t", "🏗️", tr("Tonnenweise", "By the ton"), tr("100 t insgesamt bewegt", "100 t lifted in total")),
-    Badge("goal1", "🎯", tr("Zielstrebig", "Determined"), tr("Ein langfristiges Ziel erreicht", "Reached a long-term goal")),
     Badge("allround", "🧩", tr("Rundum", "All-rounder"), tr("Brust, Rücken, Beine, Schultern, Bizeps und Trizeps in einer Woche", "Chest, back, legs, shoulders, biceps and triceps in one week")),
     Badge("cardio30", "🫁", tr("Langer Atem", "Staying power"), tr("30 min Cardio am Stück", "30 min of cardio in one go")),
     Badge("hold2", "🪨", tr("Felsenfest", "Rock solid"), tr("2 min bei einer Zeitübung (z. B. Unterarmstütz)", "2 min on a timed exercise (e.g. plank)")),
@@ -46,7 +45,8 @@ val BADGES: List<Badge> get() = listOf(
     Badge("newyear", "🎆", tr("Guter Vorsatz", "New Year's resolution"), tr("Training am 1. Januar", "Workout on 1 January"), secret = true),
     Badge("comeback", "🔄", tr("Comeback", "Comeback"), tr("Nach über 30 Tagen Pause wieder trainiert", "Back after more than 30 days off"), secret = true),
     Badge("double", "✌️", tr("Doppelschicht", "Double shift"), tr("Zwei Trainings an einem Tag", "Two workouts in one day"), secret = true),
-    Badge("marathon", "⏳", tr("Marathon", "Marathon"), tr("Training über 90 Minuten", "Workout over 90 minutes"), secret = true)
+    Badge("marathon", "⏳", tr("Marathon", "Marathon"), tr("Training über 90 Minuten", "Workout over 90 minutes"), secret = true),
+    Badge("goal1", "🎯", tr("Zielstrebig", "Determined"), tr("Ein langfristiges Ziel erreicht", "Reached a long-term goal"), secret = true)
 )
 
 private fun hourOf(t: Long) = Calendar.getInstance().apply { timeInMillis = t }.get(Calendar.HOUR_OF_DAY)

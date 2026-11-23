@@ -22,7 +22,6 @@ export const badges = () => [
   B('rec25', '🏆', tr('Rekordjäger', 'Record hunter'), tr('25 Rekorde', '25 records')),
   B('day10t', '🏋️', tr('Schwerlast', 'Heavy duty'), tr('10 t an einem Tag bewegt', '10 t lifted in one day')),
   B('total100t', '🏗️', tr('Tonnenweise', 'By the ton'), tr('100 t insgesamt bewegt', '100 t lifted in total')),
-  B('goal1', '🎯', tr('Zielstrebig', 'Determined'), tr('Ein langfristiges Ziel erreicht', 'Reached a long-term goal')),
   B('allround', '🧩', tr('Rundum', 'All-rounder'), tr('Brust, Rücken, Beine, Schultern, Bizeps und Trizeps in einer Woche', 'Chest, back, legs, shoulders, biceps and triceps in one week')),
   B('cardio30', '🫁', tr('Langer Atem', 'Staying power'), tr('30 min Cardio am Stück', '30 min of cardio in one go')),
   B('hold2', '🪨', tr('Felsenfest', 'Rock solid'), tr('2 min bei einer Zeitübung (z. B. Unterarmstütz)', '2 min on a timed exercise (e.g. plank)')),
@@ -34,6 +33,7 @@ export const badges = () => [
   B('comeback', '🔄', tr('Comeback', 'Comeback'), tr('Nach über 30 Tagen Pause wieder trainiert', 'Back after more than 30 days off'), true),
   B('double', '✌️', tr('Doppelschicht', 'Double shift'), tr('Zwei Trainings an einem Tag', 'Two workouts in one day'), true),
   B('marathon', '⏳', tr('Marathon', 'Marathon'), tr('Training über 90 Minuten', 'Workout over 90 minutes'), true),
+  B('goal1', '🎯', tr('Zielstrebig', 'Determined'), tr('Ein langfristiges Ziel erreicht', 'Reached a long-term goal'), true),
 ];
 
 /** Erreichte Abzeichen: Map ID → Zeitpunkt (wie earnedBadges). */
