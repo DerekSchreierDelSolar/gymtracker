@@ -297,6 +297,7 @@ class GymStore {
     this.goals = [];
     this.cycle = null;
     this.measures = [];
+    this.weeklyGoal = 3; // Sicherung ohne „settings“ → Standard statt des alten Werts
   }
 
   markExported() { this.lastExport = Date.now(); this.#save(); }
@@ -393,9 +394,12 @@ class GymStore {
     delete CustomMeta.muscles[name];
     CustomMeta.timed.delete(name);
     this.sets = this.sets.filter(s => s.exercise !== name);
+    // Ziele zu dieser Übung hätten sonst keine Übung mehr (wie deleteExercise in GymStore.kt)
+    this.goals = this.goals.filter(g => g.exercise !== name);
     for (const w of this.workouts) {
       w.exercises = w.exercises.filter(e => e !== name);
       delete w.targets[name];
+      if (w.links) w.links = w.links.filter(e => e !== name);
     }
     this.#save();
   }

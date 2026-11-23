@@ -69,8 +69,10 @@ fun SetInput(
     LaunchedEffect(weightOverride) { if (weightOverride != null) weightText = fmtW(weightOverride) }
 
     // Stoppuhr für Zeitübungen: Startzeitpunkt (null = steht)
-    var watchStart by remember(exercise) { mutableStateOf<Long?>(null) }
-    var watchNow by remember { mutableLongStateOf(0L) }
+    // Läuft global je Übung (stopwatchStarts), damit sie beim Wischen im Training nicht zurückgesetzt wird
+    val watchStart = stopwatchStarts[exercise]
+    fun setWatch(v: Long?) { if (v == null) stopwatchStarts.remove(exercise) else stopwatchStarts[exercise] = v }
+    var watchNow by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(watchStart) {
         while (watchStart != null) {
             watchNow = System.currentTimeMillis()
@@ -106,10 +108,10 @@ fun SetInput(
                             // Stopp: gemessene Sekunden ins Feld übernehmen
                             val sec = ((System.currentTimeMillis() - watchStart!!) / 1000).toInt()
                             repsText = sec.coerceAtLeast(1).toString()
-                            watchStart = null
+                            setWatch(null)
                         } else {
                             watchNow = System.currentTimeMillis()
-                            watchStart = watchNow
+                            setWatch(watchNow)
                         }
                     },
                     colors = if (running) ButtonDefaults.buttonColors(
@@ -132,7 +134,7 @@ fun SetInput(
         // Nach dem Aufwärmen: Felder auf den Arbeitssatz umstellen
         if (type == SetType.WARMUP) prefill(SetType.NORMAL).let { weightText = it.first; repsText = it.second }
         type = SetType.NORMAL
-        watchStart = null
+        setWatch(null)
         tried = false
         onAdded()
     }
@@ -839,3 +841,7 @@ fun NoteButton(store: GymStore, exercise: String) {
         )
     }
 }
+
+/** Laufende Stoppuhren (Zeitübungen) je Übung: Startzeit. Außerhalb von SetInput, weil der Pager im Training
+ *  weggewischte Seiten verwirft – die Stoppuhr liefe sonst nicht weiter. (Web: inputState in exercise.js) */
+private val stopwatchStarts = mutableStateMapOf<String, Long>()

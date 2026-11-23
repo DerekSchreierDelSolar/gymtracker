@@ -208,6 +208,7 @@ class GymStore(context: Context) {
         CustomMeta.equipment.clear(); CustomMeta.timed.clear(); CustomMeta.muscles.clear()
         profile = Profile()
         cycle = null
+        weeklyGoal = 3 // Sicherung ohne „settings“ → Standard statt des alten Werts
     }
 
     private fun readFrom(root: JSONObject) {
@@ -520,11 +521,14 @@ class GymStore(context: Context) {
         CustomMeta.muscles.remove(name)
         CustomMeta.timed.remove(name)
         sets.removeAll { it.exercise == name }
+        // Ziele zu dieser Übung hätten sonst keine Übung mehr (Fortschritt immer 0)
+        goals.removeAll { it.exercise == name }
         // Übung auch aus allen Workouts entfernen
         for (i in workouts.indices) {
             workouts[i] = workouts[i].copy(
                 exercises = workouts[i].exercises - name,
-                targets = workouts[i].targets - name
+                targets = workouts[i].targets - name,
+                links = workouts[i].links - name
             )
         }
         save()
