@@ -174,6 +174,8 @@ fun ReviewCard(store: GymStore) {
                 Text(tr("Über dich", "About you"), style = MaterialTheme.typography.titleSmall)
                 me.forEach { (icon, text) -> ReviewLine(icon, text) }
             }
+            // Jahresrückblick (Wrapped.kt)
+            YearReviewButton(store)
         }
     }
 }

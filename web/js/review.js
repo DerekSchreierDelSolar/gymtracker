@@ -8,6 +8,7 @@ import { regionScore, muscleScoreOf, relativeLoad, muscleLabel } from './bodymap
 import { MUSCLES } from './body-data.js';
 import { nav, update } from './nav.js';
 import { store } from './store.js';
+import { yearReviewButton } from './wrapped.js';
 
 /** Beginn des Zeitraums `back` Zeiträume vor dem laufenden (1 = letzte Woche bzw. letzter Monat) */
 export function reviewStart(period, back, now = Date.now()) {
@@ -91,6 +92,8 @@ export function reviewCard() {
       // Über dich (Schritt 10): unabhängig vom Zeitraum
       (me => (me.length ? [h('hr'), h('b', { class: 'small-title' }, tr('Über dich', 'About you')),
         me.map(([icon, text]) => h('p', { class: 'review-line' }, h('span', null, icon), text))] : null))(identityLines()),
+      // Jahresrückblick (wrapped.js)
+      yearReviewButton(),
     ]);
 }
 

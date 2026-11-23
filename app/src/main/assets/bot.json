@@ -181,6 +181,11 @@
             "In the \"Body\" tab, below your weight, there's the \"📏 Body measurements\" card: waist, chest, arm, hips, thigh (cm) and body fat (%). Pick a measurement, log a value – the trend appears below. Tap a point to edit or delete it. Tip: measure in the morning, always at the same spot. In the Android app body fat also comes in automatically from your scale via Health Connect."]
     },
     {
+      "keys": ["jahresrueckblick", "mein jahr", "dein jahr", "jahr", "wrapped", "jahresbilanz", "year in review", "my year"],
+      "a": ["Unten in der Rückblick-Karte auf der Startseite öffnet „🎉 Dein Jahr … ansehen“ den Jahresrückblick: Trainings, Trainingszeit, Sätze, bewegte Tonnen, kcal und Rekorde des Jahres, dazu Lieblingsübung, größter Gewichtssprung, meisttrainierte Muskelgruppe, stärkster Monat, längste Serie, Level-Aufstieg, erreichte Ziele und neue Abzeichen. Im Januar zeigt er das Vorjahr; ältere Jahre lassen sich oben umschalten.",
+            "At the bottom of the review card on the home screen, \"🎉 See your year …\" opens your year in review: workouts, training time, sets, tonnes lifted, kcal and records of the year, plus favourite exercise, biggest weight jump, most trained muscle group, best month, longest streak, level-up, goals reached and new badges. In January it shows the previous year; older years can be switched at the top."]
+    },
+    {
       "keys": ["serie", "wochen in folge", "streak", "joker", "urlaub", "krank", "pause serie"],
       "a": ["Die Serie 🔥 zählt, wie viele Wochen in Folge du mindestens einmal trainiert hast. Die laufende Woche bricht die Serie nicht, solange sie noch nicht vorbei ist. 🃏 Pro Monat gibt es einen Joker: Eine Woche ohne Training (Urlaub, krank) wird automatisch überbrückt, wenn du davor trainiert hast – erst zwei Pausenwochen am Stück beenden die Serie.",
             "The streak 🔥 counts how many weeks in a row you trained at least once. The current week doesn't break it while it's still running. 🃏 Each month you get one joker: a week without training (holiday, sick) is bridged automatically if you trained before it – only two weeks off in a row end the streak."]

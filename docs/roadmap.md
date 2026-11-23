@@ -48,10 +48,10 @@ Ruhetage nie bestrafen). Kein Vergleich mit anderen Menschen / Bevölkerungsstat
 15. ✅ (22.11.2026) **Körpermaße** (Taille, Arm, Brust …) als weitere Kurven im Tab „Körper“ + **Körperfett/Muskelmasse** aus Health Connect.
     Passt auch als Zieltyp in 1 (z. B. Taillenumfang).
 16. ❌ (gestrichen) **Relative Kraft** (eigener Rekord × Körpergewicht, nur für dich, kein Vergleich mit anderen).
-17. ⏸ (zurückgestellt 22.11.2026, Phase 4 vorerst beendet) **Jahresrückblick („Wrapped“):** Gesamtvolumen, häufigste Übung, größter Rekord-Sprung, längste Serie, erreichte Ziele,
+17. ✅ (23.11.2026) **Jahresrückblick („Wrapped“):** Gesamtvolumen, häufigste Übung, größter Rekord-Sprung, längste Serie, erreichte Ziele,
     Abzeichen + Level des Jahres (nutzt 1–10 und `Review.kt`).
 
-## Phase 5 – Große Brocken
+## Phase 5 – Große Brocken (❌ am 23.11.2026 gestrichen)
 18. **Homescreen-Widget** (klassische `RemoteViews`, ohne Glance): Wochenziel, Serie, Level, „Heute dran“ + Schnellstart.
 19. **Workout teilen per QR-Code** (offline, ohne `INTERNET`; QR-Erzeugung ohne Bibliothek selbst schreiben).
 20. **Fortschrittsfotos** lokal in `filesDir`, Vorher/Nachher-Schieberegler (Backup-Frage klären, nicht ins JSON).
