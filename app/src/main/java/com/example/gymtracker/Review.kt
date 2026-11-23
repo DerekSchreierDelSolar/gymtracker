@@ -1,6 +1,8 @@
 package com.example.gymtracker
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -9,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import kotlin.math.roundToInt
 
@@ -66,11 +69,12 @@ data class Review(
     val neglected: List<String>
 )
 
-fun review(store: GymStore, period: ReviewPeriod, now: Long = System.currentTimeMillis()): Review {
-    val start = reviewStart(period, 1, now)
-    val end = reviewStart(period, 0, now)
-    val prev = reviewStart(period, 2, now)
-    val earlier = reviewStart(period, 4, now) // 3 Zeiträume vor dem Rückblick = „normalerweise trainiert“
+/** Rückblick auf den Zeitraum `back` Zeiträume vor dem laufenden (1 = letzte Woche bzw. letzter Monat, 2 = vorletzter …) */
+fun review(store: GymStore, period: ReviewPeriod, back: Int = 1, now: Long = System.currentTimeMillis()): Review {
+    val start = reviewStart(period, back, now)
+    val end = reviewStart(period, back - 1, now)
+    val prev = reviewStart(period, back + 1, now)
+    val earlier = reviewStart(period, back + 3, now) // 3 Zeiträume vor dem Rückblick = „normalerweise trainiert“
     val load = relativeLoad(muscleScoreOf(regionScore(store.sets.filter { it.time in start until end })))
     val usual = muscleScoreOf(regionScore(store.sets.filter { it.time in earlier until start })).filterValues { it > 0f }.keys
     return Review(
@@ -117,12 +121,38 @@ fun fmtHoursMinutes(ms: Long): String {
     return if (min >= 60) "${min / 60} h ${min % 60} min" else "$min min"
 }
 
-/** Karte „Rückblick“ mit Umschalter Woche/Monat. Nichts anzeigen, solange es in beiden Zeiträumen kein Training gibt. */
+/**
+ * Wie viele abgeschlossene Monate sich zurückblättern lassen: bis zum Monat des ersten Satzes
+ * (mindestens 1 = letzter Monat, höchstens 36). Web: reviewMonths in review.js.
+ */
+fun reviewMonths(store: GymStore, now: Long = System.currentTimeMillis()): Int {
+    val first = store.sets.minOfOrNull { it.time } ?: return 1
+    val a = Calendar.getInstance().apply { timeInMillis = first }
+    val b = Calendar.getInstance().apply { timeInMillis = now }
+    val diff = (b.get(Calendar.YEAR) - a.get(Calendar.YEAR)) * 12 + b.get(Calendar.MONTH) - a.get(Calendar.MONTH)
+    return diff.coerceIn(1, 36)
+}
+
+/** Name eines Rückblick-Monats: „Oktober“, aus einem anderen Jahr „Dezember 2025“ */
+fun reviewMonthLabel(start: Long, now: Long = System.currentTimeMillis()): String {
+    val year = Calendar.getInstance().apply { timeInMillis = now }.get(Calendar.YEAR)
+    val c = Calendar.getInstance().apply { timeInMillis = start }
+    // "LLLL" = Monatsname im Nominativ, in der App-Sprache
+    return SimpleDateFormat(if (c.get(Calendar.YEAR) == year) "LLLL" else "LLLL yyyy", appLocale()).format(c.time)
+}
+
+/**
+ * Karte „Rückblick“ mit Umschalter Woche/Monat; bei Monat darunter wischbare Monats-Chips
+ * (letzter Monat zuerst, zurück bis zum ersten Training). Nichts anzeigen, solange es in beiden Zeiträumen kein Training gibt.
+ */
 @Composable
 fun ReviewCard(store: GymStore) {
     var periodName by rememberSaveable { mutableStateOf(ReviewPeriod.WEEK.name) }
+    var monthBack by rememberSaveable { mutableIntStateOf(1) } // 1 = letzter Monat, 2 = vorletzter …
     val period = ReviewPeriod.valueOf(periodName)
-    val r = review(store, period)
+    val months = reviewMonths(store)
+    val back = if (period == ReviewPeriod.MONTH) monthBack.coerceIn(1, months) else 1
+    val r = review(store, period, back)
     // Ganz ohne Trainings (auch im Monat) bleibt die Karte weg
     if (r.now.sessions == 0 && r.before.sessions == 0 && period == ReviewPeriod.WEEK &&
         review(store, ReviewPeriod.MONTH).let { it.now.sessions == 0 && it.before.sessions == 0 }) return
@@ -133,7 +163,19 @@ fun ReviewCard(store: GymStore) {
             Text(tr("Rückblick", "Review"), style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 SegmentChip(tr("Letzte Woche", "Last week"), period == ReviewPeriod.WEEK, { periodName = ReviewPeriod.WEEK.name }, Modifier.weight(1f))
-                SegmentChip(tr("Letzter Monat", "Last month"), period == ReviewPeriod.MONTH, { periodName = ReviewPeriod.MONTH.name }, Modifier.weight(1f))
+                SegmentChip(tr("Monat", "Month"), period == ReviewPeriod.MONTH, { periodName = ReviewPeriod.MONTH.name }, Modifier.weight(1f))
+            }
+            if (period == ReviewPeriod.MONTH && months > 1) {
+                // wie overflow-x: auto im Web – die Reihe lässt sich seitlich wischen
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    (1..months).forEach { b ->
+                        FilterChip(
+                            selected = b == back,
+                            onClick = { monthBack = b },
+                            label = { Text(reviewMonthLabel(reviewStart(ReviewPeriod.MONTH, b))) }
+                        )
+                    }
+                }
             }
             Text(
                 "${fmtDate(r.start)} – ${fmtDate(r.end - 1)} · $vs",

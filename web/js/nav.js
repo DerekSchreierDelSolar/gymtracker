@@ -18,6 +18,7 @@ export const nav = {
   wikiTab: 0,            // Wiki-Reiter: 0 Übungen, 1 Muskeln, 2 Supplements
   statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite
   reviewPeriod: 'WEEK',   // Rückblick auf der Startseite: WEEK oder MONTH
+  reviewMonth: 1,         // Rückblick-Monat: 1 = letzter Monat, 2 = vorletzter …
   workoutId: null,
   pick: false,           // Übungsauswahl fürs Workout
   pickDetail: null,      // beim Bearbeiten geöffnete Übung (Info + Ziel-Sätze + Hinzufügen)

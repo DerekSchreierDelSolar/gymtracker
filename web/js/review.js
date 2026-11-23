@@ -31,9 +31,10 @@ function periodSummary(store, start, end) {
   };
 }
 
-export function review(store, period, now = Date.now()) {
-  const start = reviewStart(period, 1, now), end = reviewStart(period, 0, now);
-  const prev = reviewStart(period, 2, now), earlier = reviewStart(period, 4, now);
+/** Rückblick auf den Zeitraum `back` Zeiträume vor dem laufenden (1 = letzte Woche bzw. letzter Monat, 2 = vorletzter …) */
+export function review(store, period, back = 1, now = Date.now()) {
+  const start = reviewStart(period, back, now), end = reviewStart(period, back - 1, now);
+  const prev = reviewStart(period, back + 1, now), earlier = reviewStart(period, back + 3, now);
   const load = relativeLoad(muscleScoreOf(regionScore(store.sets.filter(s => s.time >= start && s.time < end))));
   const usual = muscleScoreOf(regionScore(store.sets.filter(s => s.time >= earlier && s.time < start)));
   return {
@@ -62,10 +63,30 @@ const fmtHoursMinutes = ms => { const m = Math.floor(ms / 60000); return m >= 60
 const stat = (label, value, delta) => h('div', { class: 'review-stat' },
   h('b', null, value), h('small', { class: 'muted' }, label), h('small', { class: delta?.[1] ?? '' }, delta?.[0] ?? ' '));
 
-/** Karte „Rückblick“ mit Umschalter; nichts, solange es in beiden Zeiträumen (Woche und Monat) kein Training gibt */
+/** Wie viele abgeschlossene Monate sich zurückblättern lassen: bis zum Monat des ersten Satzes (1–36), wie reviewMonths in Review.kt */
+export function reviewMonths(store, now = Date.now()) {
+  if (!store.sets.length) return 1;
+  const a = new Date(Math.min(...store.sets.map(s => s.time))), b = new Date(now);
+  const diff = (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth();
+  return Math.min(36, Math.max(1, diff));
+}
+
+/** „Oktober“, aus einem anderen Jahr „Dezember 2025“ */
+function reviewMonthLabel(start, now = Date.now()) {
+  const d = new Date(start);
+  const opts = d.getFullYear() === new Date(now).getFullYear() ? { month: 'long' } : { month: 'long', year: 'numeric' };
+  return d.toLocaleDateString(tr('de-DE', 'en-GB'), opts);
+}
+
+/**
+ * Karte „Rückblick“ mit Umschalter Woche/Monat; bei Monat darunter wischbare Monats-Chips (letzter Monat zuerst,
+ * zurück bis zum ersten Training). Nichts, solange es in beiden Zeiträumen (Woche und Monat) kein Training gibt.
+ */
 export function reviewCard() {
   const period = nav.reviewPeriod;
-  const r = review(store, period);
+  const months = reviewMonths(store);
+  const back = period === 'MONTH' ? Math.min(Math.max(1, nav.reviewMonth), months) : 1;
+  const r = review(store, period, back);
   const empty = x => x.now.sessions === 0 && x.before.sessions === 0;
   if (empty(r) && empty(review(store, period === 'WEEK' ? 'MONTH' : 'WEEK'))) return null;
   const vs = period === 'WEEK' ? tr('ggü. Vorwoche', 'vs. week before') : tr('ggü. Vormonat', 'vs. month before');
@@ -74,7 +95,14 @@ export function reviewCard() {
     h('h3', null, tr('Rückblick', 'Review')),
     h('div', { class: 'segments' },
       chip(tr('Letzte Woche', 'Last week'), period === 'WEEK', () => update({ reviewPeriod: 'WEEK' })),
-      chip(tr('Letzter Monat', 'Last month'), period === 'MONTH', () => update({ reviewPeriod: 'MONTH' }))),
+      chip(tr('Monat', 'Month'), period === 'MONTH', () => update({ reviewPeriod: 'MONTH' }))),
+    // Monats-Chips; der gewählte wird nach dem Neuzeichnen per data-autoscroll wieder ins Bild geholt (app.js)
+    period === 'MONTH' && months > 1 ? h('div', { class: 'chips scroll-chips' },
+      Array.from({ length: months }, (_, i) => i + 1).map(b => {
+        const c = chip(reviewMonthLabel(reviewStart('MONTH', b)), b === back, () => update({ reviewMonth: b }));
+        if (b === back && b > 1) c.dataset.autoscroll = '';
+        return c;
+      })) : null,
     h('small', { class: 'muted' }, `${fmtDate(r.start)} – ${fmtDate(r.end - 1)} · ${vs}`),
     r.now.sessions === 0 ? h('p', { class: 'muted' }, tr('Keine Trainingseinheiten in diesem Zeitraum.', 'No workouts in this period.')) : [
       h('div', { class: 'review-grid' },

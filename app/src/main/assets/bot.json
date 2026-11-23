@@ -101,9 +101,9 @@
             "The wiki has a \"Muscles\" tab at the top: for every muscle its Latin name, origin, insertion, nerve, function, role in everyday life, common problems and injuries, stretches and matching exercises. Tap a muscle on the figure or pick one from the list – or ask me, e.g. \"What does the lat do?\" or \"How do I stretch my calves?\". This is not medical advice."]
     },
     {
-      "keys": ["rueckblick", "wochenrueckblick", "monatsrueckblick", "letzte woche", "letzter monat", "vergleich vorwoche", "review", "last week", "last month"],
-      "a": ["Auf der Startseite zeigt die Karte „Rückblick“ die letzte abgeschlossene Woche bzw. den letzten Monat: Trainingseinheiten, Sätze, Volumen, Trainingszeit und kcal mit Veränderung zum Zeitraum davor (grün = mehr, rot = weniger), dazu neue Rekorde, die meisttrainierten Muskeln und Muskeln, die du sonst trainierst, diesmal aber kaum (💤).",
-            "On the home screen the \"Review\" card shows the last completed week or month: workouts, sets, volume, training time and calories with the change versus the period before (green = more, red = less), plus new records, your most-trained muscles and muscles you usually train but barely did this time (💤)."]
+      "keys": ["rueckblick", "wochenrueckblick", "monatsrueckblick", "letzte woche", "letzter monat", "alter monat", "vormonat", "vergleich vorwoche", "review", "last week", "last month"],
+      "a": ["Auf der Startseite zeigt die Karte „Rückblick“ die letzte abgeschlossene Woche oder einen Monat – über die Monats-Knöpfe (Oktober, September …) auch ältere Monate: Trainingseinheiten, Sätze, Volumen, Trainingszeit und kcal mit Veränderung zum Zeitraum davor (grün = mehr, rot = weniger), dazu neue Rekorde, die meisttrainierten Muskeln und Muskeln, die du sonst trainierst, diesmal aber kaum (💤).",
+            "On the home screen the \"Review\" card shows the last completed week or a month – older months via the month buttons (October, September …): workouts, sets, volume, training time and calories with the change versus the period before (green = more, red = less), plus new records, your most-trained muscles and muscles you usually train but barely did this time (💤)."]
     },
     {
       "keys": ["supplement", "supplements", "nahrungsergaenzung", "nahrungsergaenzungsmittel", "ergaenzungsmittel", "tabletten", "pillen", "pulver", "supplements wiki"],
