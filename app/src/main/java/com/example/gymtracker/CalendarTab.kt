@@ -193,9 +193,9 @@ fun CalendarTab(
                 val n = monthSessions.size
                 val kcal = monthSessions.mapNotNull { statsBySession.getValue(it.id).kcal }.sum()
                 tr(
-                    "${plural(n, "Trainingseinheit", "Trainingseinheiten")} an ${plural(days, "Tag", "Tagen")} · Ø $avg % abgeschlossen",
-                    "${plural(n, "workout", "workouts")} on ${plural(days, "day", "days")} · avg. $avg % completed"
-                ) + (if (kcal > 0) " · 🔥 ~${fmtKcal(kcal)} kcal" else "")
+                    "${plural(n, "Trainingseinheit", "Trainingseinheiten")} an ${plural(days, "Tag", "Tagen")} · Ø $avg\u00A0% abgeschlossen",
+                    "${plural(n, "workout", "workouts")} on ${plural(days, "day", "days")} · avg. $avg\u00A0% completed"
+                ) + (if (kcal > 0) " · 🔥 ~${fmtKcal(kcal)}\u00A0kcal" else "")
             }
             Card(Modifier.fillMaxWidth()) {
                 Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(12.dp))
@@ -243,7 +243,7 @@ fun CalendarTab(
                                 else -> "${stats.done}/${stats.total} " + tr("Ziel-Sätze", "target sets") +
                                     " · ${fmtDuration(t.end - t.start)} · "
                             } + plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")) +
-                                (stats.kcal?.let { " · 🔥 ${fmtKcal(it)} kcal" } ?: ""),
+                                (stats.kcal?.let { " · 🔥 ${fmtKcal(it)}\u00A0kcal" } ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -22,7 +22,7 @@ const typeInfo = t => TYPES().find(x => x[0] === t);
 const needsExercise = t => GOAL_NEEDS_EXERCISE.includes(t);
 
 /** Menge einer Ausdauer-Übung: Cardio in Minuten, Zeitübung in Sekunden (wie GymSet.reps). */
-export const fmtAmount = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)} min` : `${fmtW(v)} s`);
+export const fmtAmount = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)}\u00A0min` : `${fmtW(v)} s`);
 const topSets = ex => store.sets.filter(s => s.exercise === ex && isTop(s) && s.reps > 0);
 const metricOf = type => (type === 'ENDURANCE' ? s => s.reps : s => s.weight);
 
@@ -38,14 +38,14 @@ export function goalTitle(g) {
     case 'ENDURANCE': return `${fmtAmount(g.exercise, g.target)} ${exName(g.exercise)}`;
     case 'BODYWEIGHT': return g.target < g.start ? tr(`Auf ${fmtKg(g.target)} abnehmen`, `Get down to ${fmtKg(g.target)}`)
       : tr(`Auf ${fmtKg(g.target)} zunehmen`, `Get up to ${fmtKg(g.target)}`);
-    case 'CARDIO_WEEK': return tr(`${fmtW(g.target)} min Cardio pro Woche`, `${fmtW(g.target)} min cardio per week`);
+    case 'CARDIO_WEEK': return tr(`${fmtW(g.target)}\u00A0min Cardio pro Woche`, `${fmtW(g.target)}\u00A0min cardio per week`);
     default: return tr(`In ${g.target} Wochen das Wochenziel schaffen`, `Hit the weekly goal in ${g.target} weeks`);
   }
 }
 
 const clamp = x => Math.min(1, Math.max(0, x));
 const way = (start, cur, target) => (target === start ? 1 : clamp((cur - start) / (target - start)));
-const pct = f => `${Math.round(f * 100)} %`;
+const pct = f => `${Math.round(f * 100)}\u00A0%`;
 const done = t => tr(`Geschafft am ${fmtDate(t)}`, `Achieved on ${fmtDate(t)}`);
 const cardioMinutes = (from, to) => store.sets.filter(s => isWork(s) && s.time >= from && s.time < to && isCardio(store.groupOf(s.exercise)))
   .reduce((a, s) => a + s.reps, 0);
@@ -94,10 +94,10 @@ export function goalProgress(g) {
     const fraction = clamp(now / g.target);
     return {
       fraction, reachedAt: null, short: pct(fraction),
-      value: tr(`${fmtW(now)} / ${fmtW(g.target)} min diese Woche`, `${fmtW(now)} / ${fmtW(g.target)} min this week`),
+      value: tr(`${fmtW(now)} / ${fmtW(g.target)}\u00A0min diese Woche`, `${fmtW(now)} / ${fmtW(g.target)}\u00A0min this week`),
       detail: now >= g.target ? tr('Diese Woche geschafft 💪', 'Done this week 💪')
         : hit > 0 ? tr(`In ${hit} der letzten ${weeks.length} Wochen geschafft`, `Done in ${hit} of the last ${weeks.length} weeks`)
-          : tr(`Noch ${fmtW(g.target - now)} min diese Woche`, `${fmtW(g.target - now)} min to go this week`),
+          : tr(`Noch ${fmtW(g.target - now)}\u00A0min diese Woche`, `${fmtW(g.target - now)}\u00A0min to go this week`),
     };
   }
   // REGULAR: Wochen seit dem Anlegen mit erreichtem Wochenziel; Zeitpunkt = Training, das die Woche vollgemacht hat
@@ -249,7 +249,7 @@ export function goalDialog(goal) {
       }));
     }
     if (t === 'CARDIO_WEEK') out.push(
-      stepper(tr(`${st.steps} min pro Woche`, `${st.steps} min per week`), st.steps > 15, st.steps < 600, () => { st.steps -= 15; }, () => { st.steps += 15; }),
+      stepper(tr(`${st.steps}\u00A0min pro Woche`, `${st.steps}\u00A0min per week`), st.steps > 15, st.steps < 600, () => { st.steps -= 15; }, () => { st.steps += 15; }),
       muted(tr('Alle Cardio-Übungen zählen zusammen (Laufen, Rad, Rudern …).', 'All cardio exercises count together (running, cycling, rowing …).'), 'small'));
     if (t === 'REGULAR') out.push(
       stepper(tr(`${st.steps} Wochen`, `${st.steps} weeks`), st.steps > 4, st.steps < 52, () => { st.steps -= 4; }, () => { st.steps += 4; }),

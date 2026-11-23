@@ -95,7 +95,7 @@ private fun deltaOf(now: Double, before: Double, percent: Boolean): Pair<String,
     val diff = now - before
     val text = when {
         percent && before <= 0.0 -> return tr("neu", "new") to MaterialTheme.colorScheme.primary
-        percent -> (diff / before * 100).roundToInt().let { if (it > 0) "+$it %" else if (it < 0) "−${-it} %" else "±0 %" }
+        percent -> (diff / before * 100).roundToInt().let { if (it > 0) "+$it\u00A0%" else if (it < 0) "−${-it}\u00A0%" else "±0 %" }
         else -> diff.roundToInt().let { if (it > 0) "+$it" else if (it < 0) "−${-it}" else "±0" }
     }
     val color = when {
@@ -118,7 +118,7 @@ private fun ReviewStat(label: String, value: String, delta: Pair<String, Color>?
 /** Trainingszeit kurz: „3 h 20 min“ bzw. „45 min“ */
 fun fmtHoursMinutes(ms: Long): String {
     val min = (ms / 60000).toInt()
-    return if (min >= 60) "${min / 60} h ${min % 60} min" else "$min min"
+    return if (min >= 60) "${min / 60} h ${min % 60}\u00A0min" else "$min\u00A0min"
 }
 
 /**

@@ -72,10 +72,10 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
                     if (t.id >= 0) add(tr("Dauer", "Duration") to fmtDuration(t.end - t.start))
                     add(tr("Sätze", "Sets") to stats.sets.toString())
                     stats.kcal?.let {
-                        add((if (stats.kcalFromHr) tr("❤ Verbrauch", "❤ Burned") else tr("🔥 Verbrauch", "🔥 Burned")) to "~${fmtKcal(it)} kcal")
+                        add((if (stats.kcalFromHr) tr("❤ Verbrauch", "❤ Burned") else tr("🔥 Verbrauch", "🔥 Burned")) to "~${fmtKcal(it)}\u00A0kcal")
                     }
                     if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtVol(stats.volume)}")
-                    if (stats.cardioMinutes > 0) add("Cardio" to "${stats.cardioMinutes} min")
+                    if (stats.cardioMinutes > 0) add("Cardio" to "${stats.cardioMinutes}\u00A0min")
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     tiles.chunked(3).forEach { row ->
@@ -167,9 +167,9 @@ fun HeartRateCard(store: GymStore, t: TrainingSession, hr: HeartRate, kcalFromHr
     val curve = hr.curve.filter { it > 0 }
     ChartCard(
         tr("❤ Puls", "❤ Heart rate"),
-        tr("Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm", "avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm")
+        tr("Ø ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm", "avg ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm")
     ) {
-        if (curve.size >= 2) LineChart(curve.map { it.toDouble() }, "bpm", headline = "Ø ${hr.avg} bpm", dots = false)
+        if (curve.size >= 2) LineChart(curve.map { it.toDouble() }, "bpm", headline = "Ø ${hr.avg}\u00A0bpm", dots = false)
         val maxHr = maxHeartRate(store, t.start)
         if (maxHr != null && curve.isNotEmpty()) {
             val zones = heartZoneNames()
@@ -177,12 +177,12 @@ fun HeartRateCard(store: GymStore, t: TrainingSession, hr: HeartRate, kcalFromHr
             Spacer(Modifier.height(8.dp))
             Text(tr("Pulszonen", "Heart rate zones"), style = MaterialTheme.typography.labelLarge)
             Text(
-                tr("< 60 · 60–70 · 70–80 · 80–90 · > 90 % der max. Herzfrequenz (~$maxHr bpm = 220 − Alter)",
-                    "< 60 · 60–70 · 70–80 · 80–90 · > 90 % of max heart rate (~$maxHr bpm = 220 − age)"),
+                tr("< 60 · 60–70 · 70–80 · 80–90 · > 90 % der max. Herzfrequenz (~$maxHr\u00A0bpm = 220 − Alter)",
+                    "< 60 · 60–70 · 70–80 · 80–90 · > 90 % of max heart rate (~$maxHr\u00A0bpm = 220 − age)"),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(4.dp))
-            HorizontalBars(zones.mapIndexed { i, z -> z to minutes[i].toDouble() }) { "${it.toInt()} min" }
+            HorizontalBars(zones.mapIndexed { i, z -> z to minutes[i].toDouble() }) { "${it.toInt()}\u00A0min" }
         }
         val p = store.profile
         if (!kcalFromHr && (p.sex == null || p.birthYear == null)) Text(
@@ -231,7 +231,7 @@ fun SetHeartCard(items: List<SetHeart>) {
         if (drops.isNotEmpty()) {
             val avg = Math.round(drops.average()).toInt()
             Text(
-                tr("Ø Erholung 1 min nach dem Satz: −$avg bpm", "Avg recovery 1 min after the set: −$avg bpm") +
+                tr("Ø Erholung 1 min nach dem Satz: −$avg\u00A0bpm", "Avg recovery 1 min after the set: −$avg\u00A0bpm") +
                     tr(" (über 12 normal, ab 20 gut trainiert)", " (above 12 normal, 20+ well trained)"),
                 style = MaterialTheme.typography.bodySmall
             )

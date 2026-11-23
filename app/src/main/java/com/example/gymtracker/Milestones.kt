@@ -116,8 +116,8 @@ fun nextMilestones(store: GymStore, limit: Int = 3): List<Milestone> {
     // Cardio-Wochenziel
     goals.filter { it.type == GoalType.CARDIO_WEEK }.forEach { g ->
         val min = store.sets.filter { it.isWork && it.time >= week && store.groupOf(it.exercise).isCardio }.sumOf { it.reps }.toDouble()
-        if (min < g.target) out += Milestone("🫀", tr("Noch ${fmtW(g.target - min)} min Cardio diese Woche", "${fmtW(g.target - min)} min of cardio left this week"),
-            tr("Dein Ziel: ${fmtW(g.target)} min pro Woche", "Your goal: ${fmtW(g.target)} min per week"), (min / g.target).toFloat())
+        if (min < g.target) out += Milestone("🫀", tr("Noch ${fmtW(g.target - min)}\u00A0min Cardio diese Woche", "${fmtW(g.target - min)}\u00A0min of cardio left this week"),
+            tr("Dein Ziel: ${fmtW(g.target)}\u00A0min pro Woche", "Your goal: ${fmtW(g.target)}\u00A0min per week"), (min / g.target).toFloat())
     }
 
     return out.sortedByDescending { it.fraction }.take(limit)

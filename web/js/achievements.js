@@ -35,7 +35,7 @@ const isMilestone = n => [1, 5, 10, 25, 50, 75, 100].includes(n) || (n > 100 && 
 const ordinal = n => tr(`${n}.`, n % 100 >= 11 && n % 100 <= 13 ? `${n}th` : `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`);
 const daysBetween = (a, b) => Math.floor((b - a) / 86_400_000);
 const maxOf = (list, f) => (list.length ? Math.max(...list.map(f)) : null);
-const fmtMetric = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)} min` : isTimed(ex) ? `${fmtW(v)} s` : `${fmtKg(v)}`);
+const fmtMetric = (ex, v) => (isCardio(store.groupOf(ex)) ? `${fmtW(v)}\u00A0min` : isTimed(ex) ? `${fmtW(v)} s` : `${fmtKg(v)}`);
 
 /**
  * Alle Erfolge eines Trainings, wichtigste zuerst: [{ kind, emoji, big, title, detail, exercise }].
@@ -107,7 +107,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
       if (repsNow > repsPrev) detail = tr(`+${repsNow - repsPrev} Wdh. bei ${fmtKg(best)}`, `+${repsNow - repsPrev} reps at ${fmtKg(best)}`);
       else if (volPrev > 0 && volNow > volPrev) {
         const p = Math.round((volNow - volPrev) / volPrev * 100);
-        detail = tr(`+${p} % Volumen`, `+${p} % volume`);
+        detail = tr(`+${p}\u00A0% Volumen`, `+${p}\u00A0% volume`);
       }
     }
     if (detail) out.push(item('EXERCISE_UP', exName(ex), detail + tr(' ggü. letztem Mal', ' vs. last time'), ex));
@@ -135,7 +135,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
         .reduce((a, s) => a + s.reps, 0);
       if (minutes(t.start) < g.target && minutes(t.end + 1) >= g.target) {
         out.push(item('GOAL_PROGRESS', tr('Cardio-Ziel dieser Woche geschafft', 'Cardio goal done this week'),
-          tr(`${fmtW(g.target)} min Ausdauer – dein Herz sagt danke`, `${fmtW(g.target)} min of cardio – your heart says thanks`)));
+          tr(`${fmtW(g.target)}\u00A0min Ausdauer – dein Herz sagt danke`, `${fmtW(g.target)}\u00A0min of cardio – your heart says thanks`)));
       }
     }
   }
@@ -162,7 +162,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
     const prevVol = last ? sessionStats(store, last).volume : 0;
     if (prevVol > 0 && stats.volume > prevVol) {
       const p = Math.round((stats.volume - prevVol) / prevVol * 100);
-      out.push(item('VOLUME_UP', tr(`+${p} % Volumen`, `+${p} % volume`),
+      out.push(item('VOLUME_UP', tr(`+${p}\u00A0% Volumen`, `+${p}\u00A0% volume`),
         tr(`${fmtVol(stats.volume)} statt ${fmtVol(prevVol)} beim letzten Mal`, `${fmtVol(stats.volume)} vs. ${fmtVol(prevVol)} last time`)));
     }
   }
@@ -192,8 +192,8 @@ export function achievements(t, stats = sessionStats(store, t)) {
   const parts = [];
   if (stats.sets > 0) parts.push(plural(stats.sets, tr('Satz', 'set'), tr('Sätze', 'sets')));
   if (stats.volume > 0) parts.push(tr(`${fmtVol(stats.volume)} bewegt`, `${fmtVol(stats.volume)} moved`));
-  if (stats.cardioMinutes > 0) parts.push(`${stats.cardioMinutes} min Cardio`);
-  if (t.id >= 0 && t.end - t.start >= 60000) parts.push(`${Math.round((t.end - t.start) / 60000)} min`);
+  if (stats.cardioMinutes > 0) parts.push(`${stats.cardioMinutes}\u00A0min Cardio`);
+  if (t.id >= 0 && t.end - t.start >= 60000) parts.push(`${Math.round((t.end - t.start) / 60000)}\u00A0min`);
   out.push(item('SESSION', tr('Training geschafft', 'Workout done'), parts.join(' · ') || null));
 
   // stabil sortieren: innerhalb einer Art bleibt die Reihenfolge der Übungen

@@ -514,10 +514,10 @@ private fun WorkoutOverview(
                     Column(Modifier.weight(1f)) {
                         Text(fmtDateTime(t.start), style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "${stats.percent} % · ${fmtDuration(t.end - t.start)} · " +
+                            "${stats.percent}\u00A0% · ${fmtDuration(t.end - t.start)} · " +
                                 plural(stats.sets, tr("Satz", "set"), tr("Sätze", "sets")) +
                                 (if (stats.volume > 0) " · ${fmtVol(stats.volume)}" else "") +
-                                (stats.kcal?.let { " · 🔥 ${fmtKcal(it)} kcal" } ?: ""),
+                                (stats.kcal?.let { " · 🔥 ${fmtKcal(it)}\u00A0kcal" } ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

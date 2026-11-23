@@ -144,11 +144,11 @@ export function fmtDuration(ms) {
   return h > 0 ? `${h}:${pad2(m)}:${pad2(s)}` : `${m}:${pad2(s)}`;
 }
 /** Sekunden als „45 s“ bzw. „1:30 min“. */
-export const fmtSeconds = sec => (sec < 60 ? `${sec} s` : `${Math.floor(sec / 60)}:${pad2(sec % 60)} min`);
+export const fmtSeconds = sec => (sec < 60 ? `${sec}\u00A0s` : `${Math.floor(sec / 60)}:${pad2(sec % 60)}\u00A0min`);
 
 /** Text für einen Satz, eine Cardio-Einheit oder eine Zeitübung. */
 export function fmtSet(s, cardio) {
-  if (cardio) return `${s.reps} min`;
+  if (cardio) return `${s.reps}\u00A0min`;
   if (isTimed(s.exercise)) return (s.weight > 0 ? `${fmtKg(s.weight)} · ` : '') + fmtSeconds(s.reps);
   return `${fmtKg(s.weight)} × ${s.reps}`;
 }

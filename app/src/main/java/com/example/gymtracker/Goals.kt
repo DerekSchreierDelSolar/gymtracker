@@ -71,11 +71,11 @@ data class Goal(
 )
 
 /** Fortschritt zur Anzeige: fraction 0..1, reachedAt = wann geschafft (null = noch nicht / wiederkehrend). */
-data class GoalProgress(val fraction: Float, val value: String, val detail: String, val reachedAt: Long?, val short: String = "${Math.round(fraction * 100)} %")
+data class GoalProgress(val fraction: Float, val value: String, val detail: String, val reachedAt: Long?, val short: String = "${Math.round(fraction * 100)}\u00A0%")
 
 /** Menge einer Ausdauer-Übung: Cardio in Minuten, Zeitübung in Sekunden (wie GymSet.reps). */
 fun fmtAmount(exercise: String, v: Double, store: GymStore): String =
-    if (store.groupOf(exercise).isCardio) "${fmtW(v)} min" else "${fmtW(v)} s"
+    if (store.groupOf(exercise).isCardio) "${fmtW(v)}\u00A0min" else "${fmtW(v)} s"
 
 /** Bester Wert einer Übung (Gewicht bzw. Dauer), null = noch nie gemacht. */
 fun bestValue(store: GymStore, type: GoalType, exercise: String): Double? {
@@ -88,7 +88,7 @@ fun goalTitle(store: GymStore, g: Goal): String = when (g.type) {
     GoalType.ENDURANCE -> fmtAmount(g.exercise ?: "", g.target, store) + " " + exName(g.exercise ?: "")
     GoalType.BODYWEIGHT -> if (g.target < g.start) tr("Auf ${fmtKg(g.target)} abnehmen", "Get down to ${fmtKg(g.target)}")
         else tr("Auf ${fmtKg(g.target)} zunehmen", "Get up to ${fmtKg(g.target)}")
-    GoalType.CARDIO_WEEK -> tr("${fmtW(g.target)} min Cardio pro Woche", "${fmtW(g.target)} min cardio per week")
+    GoalType.CARDIO_WEEK -> tr("${fmtW(g.target)}\u00A0min Cardio pro Woche", "${fmtW(g.target)}\u00A0min cardio per week")
     GoalType.REGULAR -> tr("In ${g.target.toInt()} Wochen das Wochenziel schaffen", "Hit the weekly goal in ${g.target.toInt()} weeks")
 }
 
@@ -150,11 +150,11 @@ fun goalProgress(store: GymStore, g: Goal): GoalProgress = when (g.type) {
         val hit = weeks.count { cardioMinutes(store, it, weekEnd(it)) >= g.target }
         GoalProgress(
             fraction = (now / g.target).toFloat().coerceIn(0f, 1f),
-            value = tr("${fmtW(now)} / ${fmtW(g.target)} min diese Woche", "${fmtW(now)} / ${fmtW(g.target)} min this week"),
+            value = tr("${fmtW(now)} / ${fmtW(g.target)}\u00A0min diese Woche", "${fmtW(now)} / ${fmtW(g.target)}\u00A0min this week"),
             detail = when {
                 now >= g.target -> tr("Diese Woche geschafft 💪", "Done this week 💪")
                 hit > 0 -> tr("In ${hit} der letzten ${weeks.size} Wochen geschafft", "Done in $hit of the last ${weeks.size} weeks")
-                else -> tr("Noch ${fmtW(g.target - now)} min diese Woche", "${fmtW(g.target - now)} min to go this week")
+                else -> tr("Noch ${fmtW(g.target - now)}\u00A0min diese Woche", "${fmtW(g.target - now)}\u00A0min to go this week")
             },
             reachedAt = null
         )
@@ -428,7 +428,7 @@ fun GoalDialog(store: GymStore, goal: Goal?, onDismiss: () -> Unit) {
                                 }
                             }
                             GoalType.CARDIO_WEEK -> {
-                                GoalStepper(tr("$steps min pro Woche", "$steps min per week"), steps > 15, steps < 600,
+                                GoalStepper(tr("$steps\u00A0min pro Woche", "$steps\u00A0min per week"), steps > 15, steps < 600,
                                     { steps -= 15 }, { steps += 15 })
                                 Text(tr("Alle Cardio-Übungen zählen zusammen (Laufen, Rad, Rudern …).", "All cardio exercises count together (running, cycling, rowing …)."),
                                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

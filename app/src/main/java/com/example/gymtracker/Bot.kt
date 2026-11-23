@@ -422,23 +422,23 @@ object Bot {
         val text = buildString {
             append(tr("Dein letztes Training mit Puls: ${last.workoutName} am ${fmtDate(last.start)}\n",
                 "Your last workout with heart rate: ${last.workoutName} on ${fmtDate(last.start)}\n"))
-            append(tr("❤ Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm", "❤ avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm"))
+            append(tr("❤ Ø ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm", "❤ avg ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm"))
             maxHeartRate(s, last.start)?.let { maxHr ->
                 val minutes = heartZoneMinutes(hr, maxHr)
                 val top = minutes.indices.maxByOrNull { minutes[it] }
-                if (top != null && minutes[top] > 0) append(tr("\nMeiste Zeit in Zone ${heartZoneNames()[top]} (${minutes[top]} min)",
-                    "\nMost time in zone ${heartZoneNames()[top]} (${minutes[top]} min)"))
+                if (top != null && minutes[top] > 0) append(tr("\nMeiste Zeit in Zone ${heartZoneNames()[top]} (${minutes[top]}\u00A0min)",
+                    "\nMost time in zone ${heartZoneNames()[top]} (${minutes[top]}\u00A0min)"))
             }
             stats.kcal?.let {
-                append(if (stats.kcalFromHr) tr("\n🔥 ~${fmtKcal(it)} kcal (aus dem Puls berechnet)", "\n🔥 ~${fmtKcal(it)} kcal (calculated from heart rate)")
-                else tr("\n🔥 ~${fmtKcal(it)} kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)",
-                    "\n🔥 ~${fmtKcal(it)} kcal (MET estimate – with sex and birth year in your profile I use heart rate)"))
+                append(if (stats.kcalFromHr) tr("\n🔥 ~${fmtKcal(it)}\u00A0kcal (aus dem Puls berechnet)", "\n🔥 ~${fmtKcal(it)}\u00A0kcal (calculated from heart rate)")
+                else tr("\n🔥 ~${fmtKcal(it)}\u00A0kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)",
+                    "\n🔥 ~${fmtKcal(it)}\u00A0kcal (MET estimate – with sex and birth year in your profile I use heart rate)"))
             }
             if (withHr.size >= 2) {
                 val recent = withHr.take(5)
                 val avg = Math.round(recent.map { it.hr!!.avg }.average())
-                append(tr("\nØ deiner letzten ${recent.size} Trainings mit Puls: $avg bpm (davor: ${withHr[1].hr!!.avg} bpm)",
-                    "\nAverage of your last ${recent.size} workouts with heart rate: $avg bpm (previous: ${withHr[1].hr!!.avg} bpm)"))
+                append(tr("\nØ deiner letzten ${recent.size} Trainings mit Puls: $avg\u00A0bpm (davor: ${withHr[1].hr!!.avg}\u00A0bpm)",
+                    "\nAverage of your last ${recent.size} workouts with heart rate: $avg\u00A0bpm (previous: ${withHr[1].hr!!.avg}\u00A0bpm)"))
             }
             append(tr("\nMehr in der Trainingsübersicht (Kalender → Tag antippen).", "\nMore in the workout summary (calendar → tap the day)."))
         }

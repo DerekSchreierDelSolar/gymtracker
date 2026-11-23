@@ -98,7 +98,7 @@ object Recovery {
                 // Gerundet bewerten, damit Anzeige („+2“) und Ampel zusammenpassen
                 val diff = base?.let { Math.round(today - it).toInt() }
                 add(RecoveryPart(
-                    "❤", tr("Ruhepuls", "Resting HR"), "$today bpm",
+                    "❤", tr("Ruhepuls", "Resting HR"), "$today\u00A0bpm",
                     base?.let { tr("Ø ${Math.round(it)}", "avg ${Math.round(it)}") + " (" + signed(diff!!) + ")" },
                     diff?.let { if (it >= 5) 2 else if (it >= 2) 1 else 0 }
                 ))

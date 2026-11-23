@@ -55,8 +55,8 @@ fun freshStart(store: GymStore, now: Long = System.currentTimeMillis()): String?
  * null = keine Übung mit Verlauf.
  */
 fun anticipation(store: GymStore, w: Workout, today: Boolean = true): String? {
-    val whenDe = if (today) "heute" else "nächstes Mal"
-    val whenEn = if (today) "today" else "next time"
+    val whenDe = if (today) "heute" else "nächstes\u00A0Mal"
+    val whenEn = if (today) "today" else "next\u00A0time"
     val goalEx = store.goals.filter { it.type.needsExercise && goalProgress(store, it).reachedAt == null }.mapNotNull { it.exercise }.toSet()
     val dayStart = startOfToday()
     for (ex in w.exercises.sortedBy { if (it in goalEx) 0 else 1 }) {

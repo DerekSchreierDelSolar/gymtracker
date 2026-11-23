@@ -336,7 +336,7 @@ private fun TrendCard(volumes: List<Pair<Long, Double>>, kcalWeeks: List<Pair<Lo
                 SegmentChip("🔥 kcal", kcal, { showKcal = true }, Modifier.weight(1f))
             }
         }
-        if (kcal && kcalWeeks != null) HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${fmtKcal(it)} kcal" }
+        if (kcal && kcalWeeks != null) HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${fmtKcal(it)}\u00A0kcal" }
         else HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtVol(it)}" }
     }
 }

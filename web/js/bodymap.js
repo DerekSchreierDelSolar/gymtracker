@@ -439,10 +439,10 @@ export function heatCard({ title, score: regions, showSets, empty, header = null
       ? [showSets
           // Trainingsübersicht: Anteil jedes Muskels an der Summe (zusammen 100 %) + Sätze
           ? [h('small', { class: 'muted' }, tr('Anteil am Training · Sätze', 'Share of workout · sets')),
-            horizontalBars(shown.map(([id, v]) => [muscleLabel(id), v]), v => `${Math.round((v / total) * 100)} % · ${fmtSets(v)}`)]
+            horizontalBars(shown.map(([id, v]) => [muscleLabel(id), v]), v => `${Math.round((v / total) * 100)}\u00A0% · ${fmtSets(v)}`)]
           // sonst Prozent relativ zum stärksten Muskel
           : h('div', { class: 'heat-list' }, shown.map(([id]) => h('span', null, dot(heatColor(load[id])),
-            `${muscleLabel(id)} ${Math.round(load[id] * 100)} %`))),
+            `${muscleLabel(id)} ${Math.round(load[id] * 100)}\u00A0%`))),
         entries.length > MUSCLE_LIST_SHORT
           ? h('button', { class: 'btn text show-all', onclick: toggle },
             showAll ? tr('Weniger anzeigen', 'Show less') : tr(`Alle anzeigen (${entries.length})`, `Show all (${entries.length})`))

@@ -29,7 +29,7 @@ export function oneRmTable(orm) {
     h('b', null, tr(`Prozente vom 1RM (${fmtKg(orm)})`, `Percent of 1RM (${fmtKg(orm)})`)),
     h('small', { class: 'muted' }, tr('Geschätzt aus deinem besten Satz – Wdh. als Faustregel.', 'Estimated from your best set – reps as a rule of thumb.')),
     PERCENT_REPS.map(([p, reps]) => h('div', { class: 'orm-row' },
-      h('span', { class: 'muted orm-p' }, `${p} %`),
+      h('span', { class: 'muted orm-p' }, `${p}\u00A0%`),
       h('b', { class: 'grow' }, `${fmtKg(p === 100 ? orm : roundPlate(orm * p / 100))}`),
       h('span', { class: 'muted' }, tr(`${reps} Wdh.`, `${reps} reps`)))));
 }

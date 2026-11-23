@@ -11,7 +11,7 @@ import { openDialog, closeDialog, rerender } from './nav.js';
 
 const yearOf = t => new Date(t).getFullYear();
 const yearStart = y => new Date(y, 0, 1).getTime();
-const fmtHoursMinutes = ms => { const m = Math.floor(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`; };
+const fmtHoursMinutes = ms => { const m = Math.floor(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60}\u00A0min` : `${m}\u00A0min`; };
 const count = (items, key) => { const m = new Map(); for (const x of items) m.set(key(x), (m.get(key(x)) ?? 0) + 1); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
 
 /** Abgeschlossene Jahre mit Trainings, neuestes zuerst – das laufende Jahr gibt es erst, wenn es um ist (wie Wrapped.kt). */

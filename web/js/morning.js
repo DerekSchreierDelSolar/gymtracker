@@ -38,7 +38,7 @@ export function freshStart(now = Date.now()) {
 
 /** Vorfreude-Satz für ein Workout (Ziel-Übungen zuerst, Vorschlag aus progressionSuggestion); null = keine Übung mit Verlauf. */
 export function anticipation(w, today = true) {
-  const [wDe, wEn] = today ? ['heute', 'today'] : ['nächstes Mal', 'next time'];
+  const [wDe, wEn] = today ? ['heute', 'today'] : ['nächstes\u00A0Mal', 'next\u00A0time'];
   const goalEx = new Set(store.goals.filter(g => g.exercise && goalProgress(g).reachedAt == null).map(g => g.exercise));
   const dayStart = startOfToday();
   const order = w.exercises.map((e, i) => [e, i]).sort((a, b) => (goalEx.has(b[0]) - goalEx.has(a[0])) || a[1] - b[1]).map(x => x[0]);

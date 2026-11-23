@@ -56,7 +56,7 @@ fun OneRmTable(orm: Double) {
             Spacer(Modifier.height(4.dp))
             PERCENT_REPS.forEach { (p, reps) ->
                 Row {
-                    Text("$p %", modifier = Modifier.width(64.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("$p\u00A0%", modifier = Modifier.width(64.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("${fmtKg(if (p == 100) orm else roundPlate(orm * p / 100))}", modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                     Text(tr("$reps Wdh.", "$reps reps"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

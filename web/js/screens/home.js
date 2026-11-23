@@ -252,7 +252,7 @@ function trendCard(volumes, kcalWeeks) {
     kcalWeeks && hasVolume ? h('div', { class: 'segments trend-switch' },
       chip(tr('Volumen', 'Volume'), !kcal, () => { showTrendKcal = false; rerender(); }),
       chip('🔥 kcal', kcal, () => { showTrendKcal = true; rerender(); })) : null,
-    kcal ? historyBars(kcalWeeks.map(v => v[1]), kcalWeeks.map(v => fmtWeek(v[0])), v => `~${fmtKcal(v)} kcal`)
+    kcal ? historyBars(kcalWeeks.map(v => v[1]), kcalWeeks.map(v => fmtWeek(v[0])), v => `~${fmtKcal(v)}\u00A0kcal`)
       : historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtVol(v)}`));
 }
 
@@ -408,8 +408,8 @@ function calendarTab() {
     const days = new Set(monthSessions.map(t => dayKey(t.start))).size;
     const n = monthSessions.length;
     const kcal = monthSessions.reduce((a, t) => a + (stats.get(t.id).kcal ?? 0), 0);
-    monthText = tr(`${plural(n, 'Trainingseinheit', 'Trainingseinheiten')} an ${plural(days, 'Tag', 'Tagen')} · Ø ${avg} % abgeschlossen`,
-      `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg} % completed`) + (kcal > 0 ? ` · 🔥 ~${fmtKcal(kcal)} kcal` : '');
+    monthText = tr(`${plural(n, 'Trainingseinheit', 'Trainingseinheiten')} an ${plural(days, 'Tag', 'Tagen')} · Ø ${avg}\u00A0% abgeschlossen`,
+      `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg}\u00A0% completed`) + (kcal > 0 ? ` · 🔥 ~${fmtKcal(kcal)}\u00A0kcal` : '');
   }
   const daySessions = (byDay.get(nav.calDay) ?? []).slice().sort((a, b) => a.start - b.start);
 
@@ -431,7 +431,7 @@ function calendarTab() {
           h('small', { class: 'muted' }, (t.id < 0 ? plural(s.results.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) + ' · '
             : s.total === 0 ? fmtDuration(t.end - t.start) + ' · '
               : `${s.done}/${s.total} ` + tr('Ziel-Sätze', 'target sets') + ` · ${fmtDuration(t.end - t.start)} · `) +
-            plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)} kcal` : ''))),
+            plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)}\u00A0kcal` : ''))),
         icon('chevron'));
     }),
     h('div', { class: 'legend' }, [[1, '100 %'], [0.5, '≥ 50 %'], [0.25, '< 50 %']].map(([p, l]) => [ring(p, 16), h('small', null, l)]),

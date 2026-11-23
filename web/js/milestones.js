@@ -94,8 +94,8 @@ export function nextMilestones(limit = 3) {
     if (min < g.target) {
       out.push({
         emoji: '🫀', fraction: min / g.target,
-        title: tr(`Noch ${fmtW(g.target - min)} min Cardio diese Woche`, `${fmtW(g.target - min)} min of cardio left this week`),
-        detail: tr(`Dein Ziel: ${fmtW(g.target)} min pro Woche`, `Your goal: ${fmtW(g.target)} min per week`),
+        title: tr(`Noch ${fmtW(g.target - min)}\u00A0min Cardio diese Woche`, `${fmtW(g.target - min)}\u00A0min of cardio left this week`),
+        detail: tr(`Dein Ziel: ${fmtW(g.target)}\u00A0min pro Woche`, `Your goal: ${fmtW(g.target)}\u00A0min per week`),
       });
     }
   }

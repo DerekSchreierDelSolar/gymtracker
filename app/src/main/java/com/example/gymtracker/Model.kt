@@ -111,11 +111,11 @@ fun isTimed(name: String): Boolean = name in TIMED_CATALOG || name in CustomMeta
 
 /** Sekunden als „45 s“ bzw. „1:30 min“. */
 fun fmtSeconds(sec: Int): String =
-    if (sec < 60) "$sec s" else "${sec / 60}:${(sec % 60).toString().padStart(2, '0')} min"
+    if (sec < 60) "$sec\u00A0s" else "${sec / 60}:${(sec % 60).toString().padStart(2, '0')}\u00A0min"
 
 /** Text für einen einzelnen Satz, eine Cardio-Einheit oder eine Zeitübung. */
 fun fmtSet(s: GymSet, cardio: Boolean): String = when {
-    cardio -> "${s.reps} min"
+    cardio -> "${s.reps}\u00A0min"
     isTimed(s.exercise) -> (if (s.weight > 0) "${fmtKg(s.weight)} · " else "") + fmtSeconds(s.reps)
     else -> "${fmtKg(s.weight)} × ${s.reps}"
 }

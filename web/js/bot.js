@@ -157,23 +157,23 @@ function heartAnswer() {
   const hr = last.hr, stats = sessionStats(store, last);
   const lines = [
     tr(`Dein letztes Training mit Puls: ${last.workoutName} am ${fmtDate(last.start)}`, `Your last workout with heart rate: ${last.workoutName} on ${fmtDate(last.start)}`),
-    tr(`❤ Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`, `❤ avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`),
+    tr(`❤ Ø ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm`, `❤ avg ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm`),
   ];
   const maxHr = maxHeartRate(store, last.start);
   if (maxHr) {
     const minutes = heartZoneMinutes(hr, maxHr);
     const top = minutes.indexOf(Math.max(...minutes));
-    if (minutes[top] > 0) lines.push(tr(`Meiste Zeit in Zone ${heartZoneNames()[top]} (${minutes[top]} min)`, `Most time in zone ${heartZoneNames()[top]} (${minutes[top]} min)`));
+    if (minutes[top] > 0) lines.push(tr(`Meiste Zeit in Zone ${heartZoneNames()[top]} (${minutes[top]}\u00A0min)`, `Most time in zone ${heartZoneNames()[top]} (${minutes[top]}\u00A0min)`));
   }
   if (stats.kcal != null) lines.push(stats.kcalFromHr
-    ? tr(`🔥 ~${fmtKcal(stats.kcal)} kcal (aus dem Puls berechnet)`, `🔥 ~${fmtKcal(stats.kcal)} kcal (calculated from heart rate)`)
-    : tr(`🔥 ~${fmtKcal(stats.kcal)} kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)`,
-      `🔥 ~${fmtKcal(stats.kcal)} kcal (MET estimate – with sex and birth year in your profile I use heart rate)`));
+    ? tr(`🔥 ~${fmtKcal(stats.kcal)}\u00A0kcal (aus dem Puls berechnet)`, `🔥 ~${fmtKcal(stats.kcal)}\u00A0kcal (calculated from heart rate)`)
+    : tr(`🔥 ~${fmtKcal(stats.kcal)}\u00A0kcal (MET-Schätzung – mit Geschlecht und Geburtsjahr im Profil rechne ich mit dem Puls)`,
+      `🔥 ~${fmtKcal(stats.kcal)}\u00A0kcal (MET estimate – with sex and birth year in your profile I use heart rate)`));
   if (withHr.length >= 2) {
     const recent = withHr.slice(0, 5);
     const avg = Math.round(recent.reduce((a, s) => a + s.hr.avg, 0) / recent.length);
-    lines.push(tr(`Ø deiner letzten ${recent.length} Trainings mit Puls: ${avg} bpm (davor: ${withHr[1].hr.avg} bpm)`,
-      `Average of your last ${recent.length} workouts with heart rate: ${avg} bpm (previous: ${withHr[1].hr.avg} bpm)`));
+    lines.push(tr(`Ø deiner letzten ${recent.length} Trainings mit Puls: ${avg}\u00A0bpm (davor: ${withHr[1].hr.avg}\u00A0bpm)`,
+      `Average of your last ${recent.length} workouts with heart rate: ${avg}\u00A0bpm (previous: ${withHr[1].hr.avg}\u00A0bpm)`));
   }
   lines.push(tr('Mehr in der Trainingsübersicht (Kalender → Tag antippen).', 'More in the workout summary (calendar → tap the day).'));
   return { bot: true, text: lines.join('\n') };

@@ -181,7 +181,7 @@ export function confirmEndTraining(w, onFinish) {
       h('p', null, !anySet
         ? tr('Du hast noch keinen Satz eingetragen – das Training wird verworfen.', "You haven't logged any sets yet – this workout will be discarded.")
         : goalTotal === 0 ? `${setsText}.`
-          : `${setsText} – ` + tr(`${goalDone} von ${goalTotal} Ziel-Sätzen (${pct} %).`, `${goalDone} of ${goalTotal} target sets (${pct} %).`),
+          : `${setsText} – ` + tr(`${goalDone} von ${goalTotal} Ziel-Sätzen (${pct}\u00A0%).`, `${goalDone} of ${goalTotal} target sets (${pct}\u00A0%).`),
         lastSet != null ? h('small', { class: 'muted', style: 'display:block;margin-top:8px' }, tr(
           `Dein letzter Satz war um ${clock} (vor ${fmtDuration(now - lastSet)}). Soll das Training dort enden? Sonst zählen Dauer und kcal bis jetzt.`,
           `Your last set was at ${clock} (${fmtDuration(now - lastSet)} ago). End the workout there? Otherwise duration and kcal count until now.`)) : null),
@@ -325,8 +325,8 @@ function setHeartCard(items) {
         i.beforeNext != null ? h('small', { class: i.recovered === false ? 'error' : 'muted' },
           (i.recovered === false ? '⚠ ' : '') + tr(`vor nächstem: ${i.beforeNext}`, `before next: ${i.beforeNext}`)) : null)),
     ]),
-    drops.length ? h('small', null, tr(`Ø Erholung 1 min nach dem Satz: −${Math.round(drops.reduce((a, b) => a + b, 0) / drops.length)} bpm (über 12 normal, ab 20 gut trainiert)`,
-      `Avg recovery 1 min after the set: −${Math.round(drops.reduce((a, b) => a + b, 0) / drops.length)} bpm (above 12 normal, 20+ well trained)`)) : null,
+    drops.length ? h('small', null, tr(`Ø Erholung 1 min nach dem Satz: −${Math.round(drops.reduce((a, b) => a + b, 0) / drops.length)}\u00A0bpm (über 12 normal, ab 20 gut trainiert)`,
+      `Avg recovery 1 min after the set: −${Math.round(drops.reduce((a, b) => a + b, 0) / drops.length)}\u00A0bpm (above 12 normal, 20+ well trained)`)) : null,
     items.some(i => i.recovered === false) ? muted(tr('⚠ = Puls vor dem nächsten Satz noch nicht einmal halb gesunken – die Pause war evtl. zu kurz.',
       "⚠ = heart rate hadn't even dropped halfway before the next set – the rest may have been too short."), 'small') : null);
 }
@@ -339,13 +339,13 @@ function heartRateCard(t, kcalFromHr) {
   if (maxHr && curve.length) {
     const minutes = heartZoneMinutes(hr, maxHr), names = heartZoneNames();
     zones = [h('b', null, tr('Pulszonen', 'Heart rate zones')),
-      muted(tr(`< 60 · 60–70 · 70–80 · 80–90 · > 90 % der max. Herzfrequenz (~${maxHr} bpm = 220 − Alter)`,
-        `< 60 · 60–70 · 70–80 · 80–90 · > 90 % of max heart rate (~${maxHr} bpm = 220 − age)`), 'small'),
-      horizontalBars(names.map((n, i) => [n, minutes[i]]), v => `${v} min`)];
+      muted(tr(`< 60 · 60–70 · 70–80 · 80–90 · > 90 % der max. Herzfrequenz (~${maxHr}\u00A0bpm = 220 − Alter)`,
+        `< 60 · 60–70 · 70–80 · 80–90 · > 90 % of max heart rate (~${maxHr}\u00A0bpm = 220 − age)`), 'small'),
+      horizontalBars(names.map((n, i) => [n, minutes[i]]), v => `${v}\u00A0min`)];
   }
   return chartCard(tr('❤ Puls', '❤ Heart rate'),
-    tr(`Ø ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`, `avg ${hr.avg} · max ${hr.max} · min ${hr.min} bpm`),
-    curve.length >= 2 ? lineChart(curve, 'bpm', null, { headline: `Ø ${hr.avg} bpm`, dots: false }) : null,
+    tr(`Ø ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm`, `avg ${hr.avg} · max ${hr.max} · min ${hr.min}\u00A0bpm`),
+    curve.length >= 2 ? lineChart(curve, 'bpm', null, { headline: `Ø ${hr.avg}\u00A0bpm`, dots: false }) : null,
     zones,
     !kcalFromHr && (!p.sex || !p.birthYear) ? muted(tr('Tipp: Mit Geschlecht und Geburtsjahr im Profil (Einstellungen) berechnet die App die kcal aus dem Puls.',
       'Tip: with sex and birth year in your profile (settings) the app calculates calories from heart rate.'), 'small') : null);
@@ -361,9 +361,9 @@ export function summaryScreen(t, onDone) {
   const tiles = [];
   if (t.id >= 0) tiles.push([tr('Dauer', 'Duration'), fmtDuration(t.end - t.start)]);
   tiles.push([tr('Sätze', 'Sets'), String(stats.sets)]);
-  if (stats.kcal != null) tiles.push([stats.kcalFromHr ? tr('❤ Verbrauch', '❤ Burned') : tr('🔥 Verbrauch', '🔥 Burned'), `~${fmtKcal(stats.kcal)} kcal`]);
+  if (stats.kcal != null) tiles.push([stats.kcalFromHr ? tr('❤ Verbrauch', '❤ Burned') : tr('🔥 Verbrauch', '🔥 Burned'), `~${fmtKcal(stats.kcal)}\u00A0kcal`]);
   if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtVol(stats.volume)}`]);
-  if (stats.cardioMinutes > 0) tiles.push(['Cardio', `${stats.cardioMinutes} min`]);
+  if (stats.cardioMinutes > 0) tiles.push(['Cardio', `${stats.cardioMinutes}\u00A0min`]);
 
   const volumeItems = stats.results
     .filter(r => !isCardio(r.group) && !isTimed(r.name) && r.sets.length)
@@ -434,7 +434,7 @@ function alternativesSheet(w, start, name) {
           return h('div', { class: 'cat-row', role: 'button', onclick: () => pick(alt) },
             h('span', { html: exerciseIconHtml(alt, g, 40) }),
             h('div', { class: 'grow' }, h('span', null, exName(alt)),
-              h('small', { class: 'muted' }, tr(`${pct} % ähnlich`, `${pct} % similar`) + (last ? ' · ' + tr('zuletzt ', 'last ') + fmtSet(last, isCardio(g)) : ''))),
+              h('small', { class: 'muted' }, tr(`${pct}\u00A0% ähnlich`, `${pct}\u00A0% similar`) + (last ? ' · ' + tr('zuletzt ', 'last ') + fmtSet(last, isCardio(g)) : ''))),
             wikiButton(alt));
         }) : muted(tr('Keine ähnlichen Übungen gefunden (für diese Übung sind keine Muskeln hinterlegt).', 'No similar exercises found (no muscles are set for this exercise).'))))));
 }

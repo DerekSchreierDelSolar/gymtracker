@@ -910,7 +910,7 @@ private fun MuscleHeatCardContent(
                     )
                     HorizontalBars(
                         shown.map { muscleLabel(it.key) to it.value.toDouble() }
-                    ) { v -> "${Math.round(v / total * 100)} % · ${fmtSets(v.toFloat())}" }
+                    ) { v -> "${Math.round(v / total * 100)}\u00A0% · ${fmtSets(v.toFloat())}" }
                 } else
                 // Muskeln mit Prozent (relativ zum stärksten), stärkste zuerst
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -918,7 +918,7 @@ private fun MuscleHeatCardContent(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             heatColor(load.getValue(id))?.let { LegendDot(it) }
                             Text(
-                                muscleLabel(id) + " ${Math.round(load.getValue(id) * 100)} %",
+                                muscleLabel(id) + " ${Math.round(load.getValue(id) * 100)}\u00A0%",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }

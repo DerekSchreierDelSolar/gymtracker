@@ -103,9 +103,9 @@ function workoutOverview(w, history) {
         return h('button', { class: 'card row-card', onclick: () => go({ summaryId: t.id }) },
           h('div', { class: 'grow' },
             h('b', null, fmtDateTime(t.start)),
-            h('small', { class: 'muted' }, `${s.percent} % · ${fmtDuration(t.end - t.start)} · ` +
+            h('small', { class: 'muted' }, `${s.percent}\u00A0% · ${fmtDuration(t.end - t.start)} · ` +
               plural(s.sets, tr('Satz', 'set'), tr('Sätze', 'sets')) +
-              (s.volume > 0 ? ` · ${fmtVol(s.volume)}` : '') + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)} kcal` : ''))),
+              (s.volume > 0 ? ` · ${fmtVol(s.volume)}` : '') + (s.kcal != null ? ` · 🔥 ${fmtKcal(s.kcal)}\u00A0kcal` : ''))),
           s.records > 0 ? h('span', null, `🏆 ${s.records}`) : null,
           icon('chevron'));
       }))

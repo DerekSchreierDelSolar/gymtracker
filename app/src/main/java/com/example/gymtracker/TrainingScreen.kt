@@ -298,8 +298,8 @@ fun TrainingScreen(
                             )
                             goalTotal == 0 -> "$setsText."
                             else -> "$setsText – " + tr(
-                                "$goalDone von $goalTotal Ziel-Sätzen ($goalPercent %).",
-                                "$goalDone of $goalTotal target sets ($goalPercent %)."
+                                "$goalDone von $goalTotal Ziel-Sätzen ($goalPercent\u00A0%).",
+                                "$goalDone of $goalTotal target sets ($goalPercent\u00A0%)."
                             )
                         }
                     )
@@ -753,7 +753,7 @@ fun AlternativesSheet(
                     Column(Modifier.weight(1f)) {
                         Text(exName(alt))
                         Text(
-                            tr("$percent % ähnlich", "$percent % similar") + (last?.let { " · " + tr("zuletzt ", "last ") + fmtSet(it, g.isCardio) } ?: ""),
+                            tr("$percent\u00A0% ähnlich", "$percent\u00A0% similar") + (last?.let { " · " + tr("zuletzt ", "last ") + fmtSet(it, g.isCardio) } ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

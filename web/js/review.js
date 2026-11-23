@@ -58,7 +58,7 @@ function deltaOf(now, before, percent) {
   return [text, diff > 0 ? 'delta-up' : diff < 0 ? 'delta-down' : 'muted'];
 }
 
-const fmtHoursMinutes = ms => { const m = Math.floor(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`; };
+const fmtHoursMinutes = ms => { const m = Math.floor(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60}\u00A0min` : `${m}\u00A0min`; };
 
 const stat = (label, value, delta) => h('div', { class: 'review-stat' },
   h('b', null, value), h('small', { class: 'muted' }, label), h('small', { class: delta?.[1] ?? '' }, delta?.[0] ?? ' '));
