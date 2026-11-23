@@ -97,7 +97,11 @@
     "tips": [
       ["Es ist eine Hüftbewegung, keine Kniebeuge – Kniewinkel bleibt fast gleich.", "It's a hip hinge, not a squat – your knee angle barely changes."],
       ["Rücken bleibt gerade, das Gewicht nicht ablegen.", "Keep your back flat and don't set the weight down."]
-    ]
+    ],
+    "variants": {
+      "Kettlebell": ["Eine Kettlebell mit beiden Händen am Griff vor den Oberschenkeln halten – gut für zu Hause und zum Lernen der Hüftbewegung.", "Hold one kettlebell by the handle with both hands in front of your thighs – great at home and for learning the hip hinge."],
+      "Kettlebell, einbeinig": ["Auf einem Bein stehen, die Kettlebell in der Hand der Gegenseite. Beim Vorbeugen streckt sich das freie Bein nach hinten, die Hüfte bleibt gerade (nicht aufdrehen). Fordert zusätzlich Gleichgewicht und den mittleren Gesäßmuskel.", "Stand on one leg holding the kettlebell in the opposite hand. As you hinge, your free leg reaches back; keep your hips square (no opening up). Also trains balance and the glute medius."]
+    }
   },
   "Sumo-Kreuzheben": {
     "muscles": ["Gesäß, Adduktoren, Oberschenkel, Rücken", "Glutes, adductors, quads, back"],
@@ -145,7 +149,17 @@
       ["Vorderes Knie bleibt über dem Fuß, nicht nach innen.", "Keep your front knee over your foot, not caving inward."],
       ["Oberkörper aufrecht, Schritt lang genug.", "Torso upright, step long enough."],
       ["Hinteres Knie nicht auf den Boden knallen.", "Don't slam your back knee into the floor."]
-    ]
+    ],
+    "variants": {
+      "Körpergewicht, Sprung": ["Aus dem tiefen Ausfallschritt hochspringen, in der Luft die Beine wechseln und im Ausfallschritt mit dem anderen Bein vorne weich landen. Plyometrisch und sehr anstrengend – erst die normale Variante sicher beherrschen.", "From the bottom of a lunge, jump up, switch legs in the air and land softly in a lunge with the other leg in front. Plyometric and very demanding – master the regular lunge first."]
+    },
+    "variantMuscles": {
+      "Körpergewicht, Sprung": {
+        "muscles": ["Oberschenkel vorne, Gesäß, Waden, Sprungkraft", "Quads, glutes, calves, explosive power"],
+        "secondary": ["adductors", "hamstrings", "calves"],
+        "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 1, "glutes.max": 1, "glutes.med": 0.6, "calves.outer": 0.6, "calves.inner": 0.6 }
+      }
+    }
   },
   "Ausfallschritte gehend": {
     "muscles": ["Oberschenkel vorne, Gesäß, Gleichgewicht", "Quads, glutes, balance"],
@@ -232,7 +246,15 @@
       "Maschine, liegend": ["Bäuchlings liegen, Hüfte bleibt fest auf dem Polster.", "Lie face down and keep your hips pressed into the pad."],
       "Kabelzug, stehend": ["Fußschlaufe am unteren Kabel, festhalten und die Ferse Richtung Gesäß ziehen.", "Ankle strap on the low cable; hold on and pull your heel toward your glutes."],
       "Kurzhantel": ["Bäuchlings auf der Bank, Kurzhantel zwischen den Füßen einklemmen.", "Lie face down on a bench with a dumbbell squeezed between your feet."],
-      "Theraband": ["Band an einem festen Punkt in Bodennähe befestigen und um den Knöchel legen.", "Anchor the band low and loop it around your ankle."]
+      "Theraband": ["Band an einem festen Punkt in Bodennähe befestigen und um den Knöchel legen.", "Anchor the band low and loop it around your ankle."],
+      "Ball": ["Auf dem Rücken liegen, Fersen auf einem Gymnastikball. Hüfte anheben, bis der Körper eine Linie bildet, dann den Ball mit den Fersen zum Gesäß rollen und wieder wegrollen – die Hüfte bleibt dabei oben. Ganz ohne Gerät, gut für zu Hause.", "Lie on your back with your heels on a stability ball. Lift your hips into a straight line, then roll the ball toward your glutes with your heels and back out – keep your hips up throughout. No machine needed, great at home."]
+    },
+    "variantMuscles": {
+      "Ball": {
+        "muscles": ["Beinbeuger, Gesäß, Rumpf", "Hamstrings, glutes, core"],
+        "secondary": ["glutes", "lowerback", "abs", "calves"],
+        "regions": { "hamstrings.outer": 1, "hamstrings.inner": 1, "glutes.max": 0.6, "calves.outer": 0.3, "calves.inner": 0.3 }
+      }
     }
   },
   "Adduktion": {
@@ -367,6 +389,23 @@
       ["Knie über den Knöcheln, nicht weiter vorne.", "Knees over your ankles, not further forward."],
       ["Hände nicht auf den Oberschenkeln abstützen.", "Don't rest your hands on your thighs."],
       ["Ruhig weiteratmen.", "Keep breathing steadily."]
+    ]
+  },
+  "Jump Squat": {
+    "muscles": ["Oberschenkel vorne, Gesäß, Waden, Sprungkraft", "Quads, glutes, calves, explosive power"],
+    "primary": ["quads", "glutes"],
+    "secondary": ["calves", "hamstrings", "abs"],
+    "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 1, "glutes.max": 1, "glutes.med": 0.3, "calves.outer": 0.6, "calves.inner": 0.6, "hamstrings.outer": 0.3, "hamstrings.inner": 0.3 },
+    "how": [
+      ["Hüft- bis schulterbreit stehen, Arme locker vor dem Körper.", "Stand with your feet hip- to shoulder-width apart, arms relaxed in front of you."],
+      ["In die Kniebeuge gehen, bis die Oberschenkel etwa waagerecht sind; die Arme schwingen dabei nach hinten.", "Squat down until your thighs are about parallel, swinging your arms back."],
+      ["Explosiv nach oben abspringen und die Arme mit nach oben reißen.", "Jump up explosively, driving your arms upward."],
+      ["Weich auf den Fußballen landen und direkt in die nächste Kniebeuge abfedern.", "Land softly on the balls of your feet and sink straight into the next squat."]
+    ],
+    "tips": [
+      ["Leise landen – die Knie zeigen bei der Landung in Richtung Zehen, nicht nach innen.", "Land quietly – your knees track over your toes, not inward."],
+      ["Wenige saubere Sprünge bringen mehr als viele müde – aufhören, wenn die Sprunghöhe nachlässt.", "A few crisp jumps beat many tired ones – stop when your jump height drops."],
+      ["Leichter: Kniebeuge mit Fersenheben statt Sprung.", "Easier: squat and rise onto your toes instead of jumping."]
     ]
   },
   "Seitliches Gehen": {

@@ -81,15 +81,25 @@
     "primary": ["glutes", "hamstrings", "delts", "traps"],
     "secondary": ["quads", "lowerback", "triceps"],
     "how": [
-      ["Breiter Griff, Start wie beim Kreuzheben.", "Wide grip, start like a deadlift."],
-      ["Explosiv strecken und die Stange in einer Bewegung über den Kopf bringen.", "Extend explosively and bring the bar overhead in one motion."],
+      ["Langhantel: breiter Griff, Start wie beim Kreuzheben.", "Barbell: wide grip, start like a deadlift."],
+      ["Explosiv strecken und das Gewicht in einer Bewegung über den Kopf bringen.", "Extend explosively and bring the weight overhead in one motion."],
       ["Mit gestreckten Armen über dem Kopf fangen (oft in der Hocke), dann aufrichten.", "Catch it with locked arms overhead (often in a squat), then stand up."]
     ],
     "tips": [
-      ["Die technisch schwierigste Langhantelübung – unbedingt mit Anleitung lernen.", "The most technical barbell lift – learn it with coaching."],
-      ["Nur mit Stoßscheiben und auf geeignetem Boden trainieren.", "Only train with bumper plates on a suitable floor."],
-      ["Gewicht nach vorne fallen lassen, wenn es nicht klappt – nicht festhalten.", "If a lift fails, dump the bar forward – don't fight it."]
-    ]
+      ["Technisch sehr anspruchsvoll – unbedingt mit Anleitung lernen.", "Very technical – learn it with coaching."],
+      ["Mit der Langhantel nur mit Stoßscheiben und auf geeignetem Boden trainieren.", "With a barbell, only train with bumper plates on a suitable floor."],
+      ["Klappt ein Versuch nicht, das Gewicht loslassen bzw. ablegen – nicht festhalten.", "If a rep fails, let the weight go – don't fight it."]
+    ],
+    "variants": {
+      "Kettlebell": ["Einarmig: Kettlebell zwischen den Beinen nach hinten schwingen, mit der Hüfte explosiv nach oben bringen und dicht am Körper hochziehen. Oben die Hand durch den Griff schieben, damit die Kugel weich auf dem Unterarm landet, Arm gestreckt. Ohne Hocke; danach Seite wechseln.", "One arm: hike the bell back between your legs, drive it up with your hips and keep it close to your body. At the top punch your hand through the handle so the bell lands softly on your forearm, arm locked. No squat; then switch sides."]
+    },
+    "variantMuscles": {
+      "Kettlebell": {
+        "muscles": ["Gesäß, Beinbeuger, Schultern, Ausdauer", "Glutes, hamstrings, shoulders, conditioning"],
+        "primary": ["glutes", "hamstrings", "delts"],
+        "secondary": ["traps", "lowerback", "abs", "forearms"]
+      }
+    }
   },
   "Farmer's Walk": {
     "muscles": ["Griffkraft, Trapez, Rumpf, ganzer Körper", "Grip, traps, core, full body"],
@@ -133,6 +143,39 @@
       ["Weich in leicht gebeugten Knien landen, Knie nicht nach innen.", "Land softly with bent knees; knees don't cave in."],
       ["Lieber niedrige Box und sicher als zu hoch.", "Better a lower box safely than too high."],
       ["Herunterspringen belastet Achillessehne und Knie.", "Jumping down stresses your Achilles and knees."]
+    ]
+  },
+  "Wall Balls": {
+    "muscles": ["Beine, Gesäß, Schultern, Ausdauer", "Legs, glutes, shoulders, conditioning"],
+    "primary": ["quads", "glutes", "delts"],
+    "secondary": ["triceps", "abs", "hamstrings", "calves"],
+    "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 1, "glutes.max": 1, "delts.front": 1, "delts.side": 0.3 },
+    "how": [
+      ["Etwa eine Armlänge vor einer Wand stehen, den Medizinball vor der Brust halten.", "Stand about an arm's length from a wall, holding a medicine ball at your chest."],
+      ["Tief in die Kniebeuge gehen, die Ellbogen bleiben unter dem Ball.", "Squat down deep, keeping your elbows under the ball."],
+      ["Explosiv aufstehen und den Schwung nutzen, um den Ball an ein Ziel hoch an der Wand zu werfen.", "Stand up explosively and use that drive to throw the ball to a target high on the wall."],
+      ["Ball fangen und direkt in die nächste Kniebeuge abfedern.", "Catch the ball and absorb it straight into the next squat."]
+    ],
+    "tips": [
+      ["Die Kraft kommt aus den Beinen – die Arme führen den Wurf nur zu Ende.", "The power comes from your legs – your arms just finish the throw."],
+      ["In der Kniebeuge bleibt der Rücken gerade, die Fersen bleiben am Boden.", "Keep your back flat and your heels down in the squat."],
+      ["Einen weichen Wall Ball verwenden, keinen harten Slam-Ball.", "Use a soft wall ball, not a hard slam ball."]
+    ]
+  },
+  "Ball Slams": {
+    "muscles": ["Ganzer Körper, Rumpf, Schultern, Explosivkraft", "Full body, core, shoulders, explosive power"],
+    "primary": ["lats", "abs", "delts"],
+    "secondary": ["glutes", "quads", "triceps", "obliques", "hamstrings"],
+    "how": [
+      ["Schulterbreit stehen, den Slam-Ball mit beiden Händen vor dem Körper halten.", "Stand shoulder-width apart holding the slam ball in both hands."],
+      ["Ball über den Kopf heben, dabei auf die Zehen gehen und den ganzen Körper strecken.", "Lift the ball overhead, rising onto your toes and extending your whole body."],
+      ["Mit Bauch und Armen den Ball kraftvoll vor die Füße schmettern, Hüfte und Knie beugen mit.", "Slam it hard to the floor in front of your feet using your abs and arms, bending your hips and knees with it."],
+      ["Ball mit geradem Rücken aufheben (wie beim Kreuzheben) und wiederholen.", "Pick it up with a flat back, like a deadlift, and repeat."]
+    ],
+    "tips": [
+      ["Nur einen Slam-Ball ohne Rückprall verwenden – ein springender Ball kann ins Gesicht prallen.", "Only use a dead-bounce slam ball – a bouncy ball can rebound into your face."],
+      ["Zügig, aber kontrolliert – ideal für Intervalle (z. B. 30 Sekunden).", "Fast but controlled – ideal for intervals (e.g. 30 seconds)."],
+      ["Beim Aufheben nicht den Rücken runden.", "Don't round your back when picking the ball up."]
     ]
   },
   "Hampelmann": {

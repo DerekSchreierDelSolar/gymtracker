@@ -489,5 +489,25 @@
     "variants": {
       "Hyperextension-Bank": ["Seitlich in die Bank legen und den Oberkörper aus der Seitlage anheben.", "Lie sideways in the bench and raise your torso from the side-lying position."]
     }
+  },
+  "Windmühle": {
+    "muscles": ["Schräge Bauchmuskeln, Schulterstabilität, Hüftbeweglichkeit", "Obliques, shoulder stability, hip mobility"],
+    "primary": ["obliques"],
+    "secondary": ["delts", "glutes", "hamstrings", "abs", "lowerback"],
+    "regions": { "obliques": 1, "delts.side": 0.6, "delts.front": 0.3, "glutes.med": 0.6, "glutes.max": 0.3, "hamstrings.outer": 0.3, "hamstrings.inner": 0.3 },
+    "how": [
+      ["Kettlebell mit einer Hand über den Kopf drücken, Arm gestreckt. Füße etwas breiter als schulterbreit, beide etwa 45° von der Gewichtsseite weggedreht.", "Press the kettlebell overhead with one arm locked out. Feet a bit wider than shoulders, both turned about 45° away from the working arm."],
+      ["Blick zum Gewicht, die Hüfte zur Seite des Gewichts hinausschieben.", "Keep your eyes on the weight and push your hip out toward the loaded side."],
+      ["Oberkörper seitlich nach unten neigen, die freie Hand gleitet am Bein entlang Richtung Fuß.", "Hinge sideways, sliding your free hand down your leg toward your foot."],
+      ["Mit Bauch und Gesäß zurück in den Stand, der Arm bleibt senkrecht.", "Return to standing using your abs and glutes, keeping the arm vertical."]
+    ],
+    "tips": [
+      ["Der Arm mit dem Gewicht bleibt die ganze Zeit senkrecht über der Schulter.", "The loaded arm stays vertical above your shoulder the whole time."],
+      ["Erst ohne oder mit sehr leichtem Gewicht lernen.", "Learn it with no or very light weight first."],
+      ["Nur so tief gehen, wie der Rücken lang bleibt.", "Only go as low as you can with a long spine."]
+    ],
+    "variants": {
+      "Kurzhantel": ["Wie mit der Kettlebell; die Kurzhantel liegt ruhiger in der Hand, dafür etwas weniger Stabilisationsarbeit für die Schulter.", "Same as with a kettlebell; the dumbbell sits steadier in your hand, so slightly less stabilizing work for the shoulder."]
+    }
   }
 }

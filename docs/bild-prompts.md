@@ -1,6 +1,6 @@
 # Übungsbilder per KI – Prompt-Liste
 
-Ein Bild pro **Grundübung** (164 Stück) – es gilt automatisch für alle Varianten (Langhantel, Kurzhantel, einarmig …).
+Ein Bild pro **Grundübung** (169 Stück) – es gilt automatisch für alle Varianten (Langhantel, Kurzhantel, einarmig …).
 Stil = das vorhandene Bild `app/src/main/assets/exercises/bankdruecken.jpg` (Meerschweinchen-Bodybuilder, wie das App-Icon).
 Erzeugt aus `CATALOG` (Catalog.kt); kommen neue Grundübungen dazu, hier ergänzen.
 
@@ -884,4 +884,31 @@ Next exercise, same character and style. The guinea pig, wearing boxing gloves, 
 **164 · Battle Ropes** (Battle Ropes) → `battle-ropes.png`
 ```
 Next exercise, same character and style. The guinea pig, half squat, whipping two heavy battle ropes in waves with both arms (front three-quarter view).
+```
+
+### Ergänzt (11/2026)
+
+**165 · Renegade Row** (Renegade Row) → `renegade-row.png`
+```
+Next exercise, same character and style. The guinea pig, in a high plank with each hand on a hex dumbbell, rowing one dumbbell up to the hip while the other arm supports the body, hips level (front three-quarter view).
+```
+
+**166 · Jump Squat** (Jump Squats) → `jump-squat.png`
+```
+Next exercise, same character and style. The guinea pig, jumping straight up out of a squat, feet just off the floor, arms swung up overhead, no equipment (side view).
+```
+
+**167 · Windmühle** (Kettlebell Windmill) → `windmuehle.png`
+```
+Next exercise, same character and style. The guinea pig, holding a kettlebell overhead with one locked arm, hips pushed out to that side, torso bent sideways so the free hand slides down the front leg toward the foot, eyes on the kettlebell (front view).
+```
+
+**168 · Wall Balls** (Wall Balls) → `wall-balls.png`
+```
+Next exercise, same character and style. The guinea pig, standing up out of a deep squat in front of a wall, throwing a soft medicine ball up toward a target high on the wall, arms extended (side view).
+```
+
+**169 · Ball Slams** (Medicine Ball Slams) → `ball-slams.png`
+```
+Next exercise, same character and style. The guinea pig, slamming a heavy black slam ball down onto the floor in front of the feet with both arms, hips and knees bent, the ball just hitting the floor (side view).
 ```

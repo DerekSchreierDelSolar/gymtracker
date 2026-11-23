@@ -62,7 +62,28 @@
       ["Schulter nicht hochziehen.", "Don't shrug your shoulder."]
     ],
     "variants": {
-      "Kabelzug": ["Am Kabel stehend oder kniend – konstante Spannung, auch in der Dehnung.", "Standing or kneeling at a cable – constant tension, including in the stretch."]
+      "Kabelzug": ["Am Kabel stehend oder kniend – konstante Spannung, auch in der Dehnung.", "Standing or kneeling at a cable – constant tension, including in the stretch."],
+      "Kettlebell": ["Kettlebell am Griff halten und den Ellbogen zur Hüfte ziehen. Die Kugel hängt unter der Hand – das fordert etwas mehr Griffkraft.", "Hold the kettlebell by the handle and drive your elbow to your hip. The bell hangs below your hand – a bit more grip work."]
+    }
+  },
+  "Renegade Row": {
+    "muscles": ["Latissimus, oberer Rücken, Rumpf (gegen das Verdrehen)", "Lats, upper back, core (anti-rotation)"],
+    "primary": ["lats"],
+    "secondary": ["traps", "delts", "biceps", "abs", "obliques", "chest", "triceps"],
+    "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.middle": 0.6, "delts.rear": 0.6, "abs.upper": 0.6, "abs.lower": 0.6, "obliques": 0.6, "chest.mid": 0.3, "chest.lower": 0.3, "triceps.lateral": 0.3, "triceps.long": 0.3, "triceps.medial": 0.3 },
+    "how": [
+      ["Im hohen Liegestütz auf zwei Kurzhanteln stützen, Füße etwas breiter als hüftbreit.", "Get into a high plank with your hands on two dumbbells, feet a bit wider than hip-width."],
+      ["Der Körper bildet eine Linie, Bauch und Gesäß sind fest.", "Your body forms a straight line, abs and glutes tight."],
+      ["Eine Hantel zur Hüfte rudern, ohne dass das Becken kippt; das Gewicht ruht auf dem anderen Arm.", "Row one dumbbell to your hip without letting your hips rotate, bracing on the other arm."],
+      ["Kontrolliert absetzen und die Seite wechseln.", "Set it down under control and switch sides."]
+    ],
+    "tips": [
+      ["Hüfte bleibt parallel zum Boden – das Gegenhalten ist der halbe Trainingseffekt.", "Keep your hips square to the floor – resisting the twist is half the point."],
+      ["Breiterer Fußstand macht die Übung stabiler und leichter.", "A wider stance makes it more stable and easier."],
+      ["Hanteln mit flachen Seiten (Sechskant) verwenden, damit nichts wegrollt.", "Use hex dumbbells with flat sides so nothing rolls away."]
+    ],
+    "variants": {
+      "Kettlebell": ["Die Griffe der Kettlebells umfassen, Handgelenke gerade. Die kleinere Stützfläche fordert noch mehr Stabilität.", "Grip the kettlebell handles with straight wrists. The smaller base demands even more stability."]
     }
   },
   "T-Bar-Rudern": {
