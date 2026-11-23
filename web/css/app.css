@@ -209,6 +209,7 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .field input:focus + span { color: var(--primary); }
 .field.error input { border-color: var(--error); }
 .field small { color: var(--error); display: block; margin: 4px 0 0 14px; }
+.input-error { color: var(--error); display: block; margin: 6px 0 0 4px; }
 
 .set-input { display: flex; flex-direction: column; gap: 8px; }
 .stopwatch { display: flex; align-items: center; gap: 12px; padding: 16px; }

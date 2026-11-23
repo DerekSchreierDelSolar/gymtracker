@@ -136,9 +136,25 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
     const w = cardio ? 0 : parseNum(st.weight) ?? (timed ? 0 : null);
     const r = parseIntStrict(st.reps);
     if (w == null || w < 0 || r == null || r <= 0) {
+      // Felder rot + Hinweis (wie SetInput in ExerciseDetail.kt), dazu kurzes Wackeln
+      st.tried = true;
+      rerender();
       document.getElementById(idBase + '-row')?.classList.add('shake');
       return;
     }
+    // Ungewöhnlicher Wert (Tippfehler?) → erst nachfragen
+    const odd = implausibleSet(name, w, r);
+    if (odd) {
+      openDialog(() => dialog(tr('Wirklich eintragen?', 'Log this set?'), h('p', null, odd), [
+        { label: tr('Korrigieren', 'Fix it'), onClick: closeDialog },
+        { label: tr('Ja, eintragen', 'Yes, log it'), onClick: () => { closeDialog(); save(w, r); } },
+      ], closeDialog));
+      return;
+    }
+    save(w, r);
+  };
+  const save = (w, r) => {
+    st.tried = false;
     st.watchStart = null;
     const added = store.addSet(name, w, r, st.type ?? 'NORMAL');
     // Nach einem Arbeitssatz: freiwillige Abfrage „Wdh. in Reserve“ (effort.js)
@@ -178,18 +194,40 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
       }),
       showWeight ? textField({
         id: idBase + '-w', label: 'kg', value: st.weight, inputmode: 'decimal',
-        oninput: v => { st.weight = v; }, onenter: add,
+        oninput: v => { st.weight = v; st.tried = false; }, onenter: add,
+        cls: st.tried && ((parseNum(st.weight) == null && !timed) || parseNum(st.weight) < 0) ? 'error' : '',
       }) : null,
       textField({
         id: idBase + '-r', label: cardio ? tr('Minuten', 'Minutes') : timed ? tr('Sekunden', 'Seconds') : tr('Wdh.', 'Reps'),
-        value: st.reps, inputmode: 'numeric', oninput: v => { st.reps = v; }, onenter: add,
+        value: st.reps, inputmode: 'numeric', oninput: v => { st.reps = v; st.tried = false; }, onenter: add,
+        cls: st.tried && !((parseIntStrict(st.reps) ?? 0) > 0) ? 'error' : '',
       }),
       h('button', { class: 'btn plus', onclick: add, 'aria-label': cardio ? tr('Eintragen', 'Log') : tr('Satz hinzufügen', 'Add set') }, '+')),
     // Schnell ändern ohne Tastatur: −/+ unter den Feldern (Gewicht ±2,5 kg; Wdh./Minuten ±1, Sekunden ±5) – wie SetInput in ExerciseDetail.kt
     stepRow(cardio, showWeight, timed, st),
+    st.tried ? h('small', { class: 'input-error' }, cardio ? tr('Bitte Minuten eintragen.', 'Please enter minutes.')
+      : timed ? tr('Bitte Sekunden eintragen (oder Stoppuhr nutzen).', 'Please enter seconds (or use the stopwatch).')
+        : tr('Bitte Gewicht und Wiederholungen eintragen.', 'Please enter weight and reps.')) : null,
     // Aufwärm-Rampe (warmup.js)
     showWeight && !timed ? setHelpers(name, st.weight, (w, r) => { st.weight = fmtW(w); st.reps = String(r); st.type = 'WARMUP'; rerender(); }) : null,
     st.rirFor != null ? rirPrompt(n => { store.setRir(st.rirFor, n); st.rirFor = null; rerender(); }, () => { st.rirFor = null; rerender(); }) : null);
+}
+
+/**
+ * Tippfehler-Schutz (wie implausibleSet in ExerciseDetail.kt): Hinweistext bei ungewöhnlichem Satz, sonst null.
+ * Gewicht: mehr als 1,5× und mindestens 10 kg über dem bisherigen Höchstgewicht (ohne Verlauf: über 300 kg).
+ */
+export function implausibleSet(name, weight, reps) {
+  const cardio = isCardio(store.groupOf(name)), timed = isTimed(name);
+  if (cardio) return reps > 300 ? tr(`${reps} Minuten sind über 5 Stunden. Tippfehler?`, `${reps} minutes is over 5 hours. Typo?`) : null;
+  if (timed && reps > 1800) return tr(`${reps} Sekunden sind über 30 Minuten. Tippfehler?`, `${reps} seconds is over 30 minutes. Typo?`);
+  if (!timed && reps > 100) return tr(`${reps} Wiederholungen in einem Satz? Tippfehler?`, `${reps} reps in one set? Typo?`);
+  const best = Math.max(0, ...store.setsOf(name).map(s => s.weight));
+  if (best > 0 && weight > best * 1.5 && weight - best >= 10) return tr(
+    `${fmtW(weight)} kg ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtW(best)} kg). Tippfehler?`,
+    `${fmtW(weight)} kg is far more than your heaviest so far (${fmtW(best)} kg). Typo?`);
+  if (best === 0 && weight > 300) return tr(`${fmtW(weight)} kg? Tippfehler?`, `${fmtW(weight)} kg? Typo?`);
+  return null;
 }
 
 // ---------- Satz-Zeile + Bearbeiten ----------

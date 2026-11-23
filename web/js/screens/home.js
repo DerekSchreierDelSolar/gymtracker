@@ -243,10 +243,6 @@ function dashboardTab(onStartWorkout) {
           ? tr(`Ziel ${goal}/Woche`, `Goal ${goal}/week`) + (showHint('weekGoal') ? tr(' · tippen zum Ändern', ' · tap to change') : '')
           : tr('Tippen, um das Ziel zu ändern', 'Tap to change goal')) : null)),
 
-    // Level (levels.js)
-    levelCard(),
-    badgesCard(),
-
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
       h('div', { class: 'grow' },
         h('small', null, pick?.title ?? tr('Weiter mit', 'Continue with')),
@@ -263,6 +259,10 @@ function dashboardTab(onStartWorkout) {
         h('h2', null, tr('Willkommen! 👋', 'Welcome! 👋')),
         h('p', null, tr("So geht's: 1. Workout aus einer Vorlage anlegen · 2. Training starten · 3. Sätze eintragen.", 'How it works: 1. Create a workout from a template · 2. Start training · 3. Log your sets.')),
         h('button', { class: 'btn', onclick: newWorkoutDialog }, tr('Vorlage wählen', 'Choose a template'))),
+
+    // Level (levels.js) + Abzeichen – unter dem Schnellstart, damit der ohne Scrollen sichtbar ist (wie DashboardTab.kt)
+    levelCard(),
+    badgesCard(),
 
     // Langfristige Ziele (goals.js, wie GoalsCard in Goals.kt)
     goalsCard(),

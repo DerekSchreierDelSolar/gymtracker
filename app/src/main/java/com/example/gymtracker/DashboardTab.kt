@@ -191,10 +191,6 @@ fun DashboardTab(
             }
         }
 
-        // Level (Levels.kt)
-        item { LevelCard(store) }
-        item { BadgesCard(store) }
-
         // Erholungs-Check (Recovery.kt, nur mit Health Connect und Daten von heute)
         if (Recovery.rating() != null) item { RecoveryCard() }
 
@@ -251,6 +247,10 @@ fun DashboardTab(
                 }
             }
         }
+
+        // Level (Levels.kt) + Abzeichen (Badges.kt) – unter dem Schnellstart, damit der ohne Scrollen sichtbar ist
+        item { LevelCard(store) }
+        item { BadgesCard(store) }
 
         // Langfristige Ziele (Goals.kt)
         item { GoalsCard(store) }

@@ -59,6 +59,10 @@ fun SetInput(
         if (weightText to repsText == prefill(type)) prefill(t).let { weightText = it.first; repsText = it.second }
         type = t
     }
+    // „+“ mit ungültiger Eingabe getippt → Felder rot markieren (bis zum nächsten gültigen Satz)
+    var tried by remember(exercise) { mutableStateOf(false) }
+    // Ungewöhnlicher Wert (Tippfehler?) → Nachfrage: Gewicht, Wdh. und Hinweistext
+    var confirmOdd by remember(exercise) { mutableStateOf<Triple<Double, Int, String>?>(null) }
     // Nach einem Arbeitssatz: freiwillige Abfrage „Wdh. in Reserve“ (Effort.kt); ID des Satzes, null = keine Abfrage
     var rirFor by remember(exercise) { mutableStateOf<Long?>(null) }
     // Übernommener Vorschlag überschreibt das Gewichtsfeld
@@ -121,6 +125,18 @@ fun SetInput(
         }
     }
 
+    // Satz speichern (nach gültiger Eingabe bzw. nach Bestätigung eines ungewöhnlichen Werts)
+    fun add(w: Double, r: Int) {
+        val added = store.addSet(exercise, w, r, type)
+        rirFor = added.id.takeIf { type != SetType.WARMUP && !cardio && !timed }
+        // Nach dem Aufwärmen: Felder auf den Arbeitssatz umstellen
+        if (type == SetType.WARMUP) prefill(SetType.NORMAL).let { weightText = it.first; repsText = it.second }
+        type = SetType.NORMAL
+        watchStart = null
+        tried = false
+        onAdded()
+    }
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         // Satz-Typ: antippen = nächster Typ (N → A → D → V); bei Cardio nicht sinnvoll
         if (!cardio) {
@@ -131,9 +147,10 @@ fun SetInput(
         if (!cardio && (!timed || equipmentOf(exercise) != Equipment.KOERPER)) {
             OutlinedTextField(
                 value = weightText,
-                onValueChange = { weightText = it },
+                onValueChange = { weightText = it; tried = false },
                 label = { Text("kg") },
                 singleLine = true,
+                isError = tried && weightText.replace(',', '.').toDoubleOrNull().let { (it == null && !timed) || (it != null && it < 0) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f)
             )
@@ -141,7 +158,8 @@ fun SetInput(
         }
         OutlinedTextField(
             value = repsText,
-            onValueChange = { repsText = it },
+            onValueChange = { repsText = it; tried = false },
+            isError = tried && (repsText.trim().toIntOrNull() ?: 0) <= 0,
             label = {
                 Text(
                     when {
@@ -161,14 +179,9 @@ fun SetInput(
             val w = if (cardio) 0.0 else weightText.replace(',', '.').toDoubleOrNull() ?: if (timed) 0.0 else null
             val r = repsText.trim().toIntOrNull()
             if (w != null && w >= 0 && r != null && r > 0) { // wie EditSetDialog: kein negatives Gewicht
-                val added = store.addSet(exercise, w, r, type)
-                rirFor = added.id.takeIf { type != SetType.WARMUP && !cardio && !timed }
-                // Nach dem Aufwärmen: Felder auf den Arbeitssatz umstellen
-                if (type == SetType.WARMUP) prefill(SetType.NORMAL).let { weightText = it.first; repsText = it.second }
-                type = SetType.NORMAL
-                watchStart = null
-                onAdded()
-            }
+                val odd = implausibleSet(store, exercise, w, r)
+                if (odd != null) confirmOdd = Triple(w, r, odd) else add(w, r)
+            } else tried = true // statt still nichts zu tun: Felder rot markieren
         }, modifier = Modifier.size(56.dp), contentPadding = PaddingValues(0.dp)) {
             Text("+", style = MaterialTheme.typography.headlineMedium)
         }
@@ -194,7 +207,48 @@ fun SetInput(
     if (showWeight && !timed) SetHelpers(exercise, weightText) { w, r ->
         weightText = fmtW(w); repsText = r.toString(); type = SetType.WARMUP
     }
+    if (tried) Text(
+        when {
+            cardio -> tr("Bitte Minuten eintragen.", "Please enter minutes.")
+            timed -> tr("Bitte Sekunden eintragen (oder Stoppuhr nutzen).", "Please enter seconds (or use the stopwatch).")
+            else -> tr("Bitte Gewicht und Wiederholungen eintragen.", "Please enter weight and reps.")
+        },
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.error,
+        modifier = Modifier.padding(top = 4.dp)
+    )
     rirFor?.let { id -> RirPrompt(onPick = { store.setRir(id, it); rirFor = null }, onSkip = { rirFor = null }) }
+    confirmOdd?.let { (w, r, text) ->
+        AlertDialog(
+            onDismissRequest = { confirmOdd = null },
+            title = { Text(tr("Wirklich eintragen?", "Log this set?")) },
+            text = { Text(text) },
+            confirmButton = { TextButton(onClick = { confirmOdd = null; add(w, r) }) { Text(tr("Ja, eintragen", "Yes, log it")) } },
+            dismissButton = { TextButton(onClick = { confirmOdd = null }) { Text(tr("Korrigieren", "Fix it")) } }
+        )
+    }
+    }
+}
+
+/**
+ * Tippfehler-Schutz: Hinweistext, wenn ein Satz ungewöhnlich ist (z. B. 800 statt 80 kg) – sonst null.
+ * Ein falscher Rekord bliebe sonst dauerhaft (Rekorde, XP, Abzeichen, Diagramme). Web: implausibleSet in exercise.js.
+ * Gewicht: mehr als 1,5× und mindestens 10 kg über dem bisherigen Höchstgewicht der Übung (ohne Verlauf: über 300 kg).
+ */
+fun implausibleSet(store: GymStore, exercise: String, weight: Double, reps: Int): String? {
+    val cardio = store.groupOf(exercise).isCardio
+    val timed = isTimed(exercise)
+    if (cardio) return if (reps > 300) tr("$reps Minuten sind über 5 Stunden. Tippfehler?", "$reps minutes is over 5 hours. Typo?") else null
+    if (timed && reps > 1800) return tr("$reps Sekunden sind über 30 Minuten. Tippfehler?", "$reps seconds is over 30 minutes. Typo?")
+    if (!timed && reps > 100) return tr("$reps Wiederholungen in einem Satz? Tippfehler?", "$reps reps in one set? Typo?")
+    val best = store.setsOf(exercise).maxOfOrNull { it.weight } ?: 0.0
+    return when {
+        best > 0 && weight > best * 1.5 && weight - best >= 10 -> tr(
+            "${fmtW(weight)} kg ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtW(best)} kg). Tippfehler?",
+            "${fmtW(weight)} kg is far more than your heaviest so far (${fmtW(best)} kg). Typo?"
+        )
+        best == 0.0 && weight > 300 -> tr("${fmtW(weight)} kg? Tippfehler?", "${fmtW(weight)} kg? Typo?")
+        else -> null
     }
 }
 
