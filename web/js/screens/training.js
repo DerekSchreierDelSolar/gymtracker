@@ -17,7 +17,7 @@ import { nav, update, go, openDialog, closeDialog, onSwipe, rerender } from '../
 import { screen } from '../layout.js';
 import { setInput, setRows, historyDayCard, recordLine, noteButton } from './exercise.js';
 import { achievements } from '../achievements.js';
-import { achievementsCard, goalsTouched, goalsCard, celebrateOnce } from '../celebration.js';
+import { achievementsCard, celebrateOnce } from '../celebration.js';
 import { quoteFor, quoteBubble } from '../quotes.js';
 import { supersetOf, supersetNext, supersetHint } from '../supersets.js';
 
@@ -371,28 +371,12 @@ export function summaryScreen(t, onDone) {
     .filter(i => i[1] > 0) // Körpergewichtsübungen (0 kg) hätten nur einen leeren Balken
     .sort((a, b) => b[1] - a[1]);
 
-  let trend = null;
-  if (t.workoutId >= 0) {
-    const hist = store.sessionsFor(t.workoutId).filter(x => x.start <= t.start).slice(0, 8).reverse();
-    if (hist.length >= 2) {
-      const vols = hist.map(x => sessionStats(store, x).volume);
-      const prev = vols[vols.length - 2];
-      const change = prev > 0 ? Math.round(((vols[vols.length - 1] - prev) / prev) * 100) : null;
-      trend = chartCard(tr(`Verlauf: ${t.workoutName}`, `Trend: ${t.workoutName}`),
-        change == null ? tr('Volumen der letzten Trainingseinheiten', 'Volume of recent sessions')
-          : change >= 0 ? tr(`+${change} % Volumen gegenüber letztem Mal`, `+${change} % volume vs. last time`)
-            : tr(`${change} % Volumen gegenüber letztem Mal`, `${change} % volume vs. last time`),
-        historyBars(vols, hist.map(x => fmtShortDate(x.start)), v => `${fmtVolume(v)} kg`));
-    }
-  }
-
   return screen({
     title: tr('Trainingsübersicht', 'Workout summary'), back: true, onBack: onDone, key: 'summary-' + t.id,
     actions: [h('button', { class: 'btn text', onclick: onDone }, tr('Fertig', 'Done'))],
     content: h('div', { class: 'stack pad' },
       achievementsCard(wins, celebrate, t.id),
       quoteBubble(quoteFor(t, wins, stats)), // Meerschweinchen-Spruch (quotes.js)
-      celebrate ? goalsCard(goalsTouched(stats)) : null,
       h('div', null,
         h('h2', { class: 'headline' }, t.workoutName),
         muted(fmtDateTime(t.start)),
@@ -411,37 +395,8 @@ export function summaryScreen(t, onDone) {
       }) : null,
       volumeItems.length >= 2 ? chartCard(tr('Volumen pro Übung', 'Volume per exercise'), tr('Gewicht × Wiederholungen', 'Weight × reps'),
         horizontalBars(volumeItems, v => `${fmtVolume(v)} kg`, true)) : null,
-      trend,
-      stats.results.map(r => {
-        const cardio = isCardio(r.group);
-        const met = r.target > 0 && r.sets.filter(isWork).length >= r.target;
-        return h('div', { class: 'card row-card' },
-          h('span', { html: exerciseIconHtml(r.name, r.group, 40) }),
-          h('div', { class: 'grow' },
-            h('b', { style: met ? `color:${completionColor(1)}` : null },
-              r.target === 0 ? `${exName(r.name)}  ·  optional` : `${exName(r.name)}  ·  ${r.sets.filter(isWork).length}/${r.target}`),
-            r.sets.length === 0
-              ? muted(r.target === 0 ? tr('nicht gemacht', 'not done') : tr('übersprungen', 'skipped'), 'small')
-              : [h('small', null, r.sets.map(s => fmtSet(s, cardio) + (s.type ? ` (${setTypeShort(s.type)})` : '')).join(', ')),
-                ((v) => !cardio && !isTimed(r.name) && v > 0 ? muted(tr('Volumen: ', 'Volume: ') + `${fmtVolume(v)} kg`, 'small') : null)(r.sets.filter(isWork).reduce((a, s) => a + s.weight * s.reps, 0)), // 0 kg (Körpergewicht) ausblenden
-                comparisonLine(r)]),
-          r.record ? h('span', { class: 'big-emoji' }, '🏆') : null);
-      }),
       h('button', { class: 'btn wide', onclick: onDone }, tr('Fertig', 'Done'))),
   });
-}
-
-/** Vergleich mit dem letzten Mal: Kraft = schwerster Satz, Cardio = Minuten gesamt, Zeit = längste. */
-function comparisonLine(r) {
-  const sets = r.sets.filter(isTop); // ohne Aufwärm-/Drop-Sätze (wie r.previous)
-  if (!r.previous.length || !sets.length) return null;
-  const cardio = isCardio(r.group), timed = isTimed(r.name);
-  const val = l => (cardio ? l.reduce((a, s) => a + s.reps, 0) : timed ? Math.max(...l.map(s => s.reps)) : Math.max(...l.map(s => s.weight)));
-  const diff = val(sets) - val(r.previous);
-  const fmtDiff = d => (cardio ? `${fmtW(d)} min` : timed ? `${Math.trunc(d)} s` : `${fmtW(d)} kg`);
-  const [text, color] = diff > 0.001 ? [`▲ +${fmtDiff(diff)}`, completionColor(1)]
-    : diff < -0.001 ? [`▼ −${fmtDiff(-diff)}`, null] : [`= ${tr('gleich', 'same')}`, null];
-  return h('small', { class: color ? '' : 'muted', style: color ? `color:${color};font-weight:600` : null }, `${text} ` + tr('ggü. letztem Mal', 'vs. last time'));
 }
 
 export { keepScreenOn };

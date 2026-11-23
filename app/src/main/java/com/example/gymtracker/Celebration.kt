@@ -89,19 +89,6 @@ private fun headline(list: List<Achievement>): String {
     return pool[Random.nextInt(pool.size)]
 }
 
-/** Ziele, zu denen dieses Training beigetragen hat: Übungsziel in den Sätzen, Cardio-Ziel bei Cardio, „Gesund bleiben“ immer. */
-fun goalsTouched(store: GymStore, stats: SessionStats): List<Goal> {
-    val done = stats.results.filter { it.sets.isNotEmpty() }
-    return store.goals.filter { g ->
-        when (g.type) {
-            GoalType.STRENGTH, GoalType.ENDURANCE -> done.any { it.name == g.exercise }
-            GoalType.CARDIO_WEEK -> done.any { it.group.isCardio }
-            GoalType.REGULAR -> true
-            GoalType.BODYWEIGHT -> false
-        }
-    }
-}
-
 private data class Particle(
     val x: Float, val delay: Float, val speed: Float, val sway: Float, val phase: Float,
     val spin: Float, val w: Float, val h: Float, val color: Color

@@ -41,17 +41,6 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
             // Meerschweinchen-Spruch (Quotes.kt)
             item { QuoteBubble(remember(t.id, stats.sets) { quoteFor(store, t, wins, stats) }) }
 
-            // Direkt nach dem Training: Fortschritt der Ziele, zu denen es beigetragen hat
-            val touched = if (celebrate) goalsTouched(store, stats) else emptyList()
-            if (touched.isNotEmpty()) item {
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 8.dp)) {
-                        Text(tr("🎯 Deine Ziele", "🎯 Your goals"), style = MaterialTheme.typography.titleMedium)
-                        touched.forEach { GoalRow(store, it) }
-                    }
-                }
-            }
-
             item {
                 Text(t.workoutName, style = MaterialTheme.typography.headlineSmall)
                 Text(
@@ -138,72 +127,6 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
                 }
             }
 
-            // Diagramm 2: Verlauf dieses Workouts (letzte bis zu 8 Trainings inkl. diesem)
-            if (t.workoutId >= 0) {
-                val history = store.sessionsFor(t.workoutId)
-                    .filter { it.start <= t.start }
-                    .take(8)
-                    .reversed()
-                if (history.size >= 2) {
-                    item {
-                        val volumes = history.map { sessionStats(store, it).volume }
-                        val prev = volumes[volumes.size - 2]
-                        val change = if (prev > 0) Math.round((volumes.last() - prev) / prev * 100).toInt() else null
-                        ChartCard(
-                            tr("Verlauf: ${t.workoutName}", "Trend: ${t.workoutName}"),
-                            when {
-                                change == null -> tr("Volumen der letzten Trainingseinheiten", "Volume of recent sessions")
-                                change >= 0 -> tr("+$change % Volumen gegenüber letztem Mal", "+$change % volume vs. last time")
-                                else -> tr("$change % Volumen gegenüber letztem Mal", "$change % volume vs. last time")
-                            }
-                        ) {
-                            HistoryBars(volumes, history.map { fmtShortDate(it.start) }) { "${fmtVolume(it)} kg" }
-                        }
-                    }
-                }
-            }
-
-            items(stats.results, key = { it.name }) { r ->
-                val cardio = r.group.isCardio
-                Card(Modifier.fillMaxWidth()) {
-                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        ExerciseIcon(r.name, r.group, Modifier.size(40.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                if (r.target == 0) "${exName(r.name)}  ·  optional"
-                                else "${exName(r.name)}  ·  ${r.sets.count { it.isWork }}/${r.target}",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = if (r.target > 0 && r.sets.count { it.isWork } >= r.target) completionColor(1f)
-                                else MaterialTheme.colorScheme.onSurface
-                            )
-                            if (r.sets.isEmpty()) {
-                                Text(
-                                    if (r.target == 0) tr("nicht gemacht", "not done") else tr("übersprungen", "skipped"),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            } else {
-                                Text(
-                                    r.sets.joinToString(", ") { fmtSet(it, cardio) + if (it.type != SetType.NORMAL) " (${it.type.short})" else "" },
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                val volume = r.sets.work().sumOf { it.weight * it.reps }
-                                if (!cardio && !isTimed(r.name) && volume > 0) {  // Körpergewicht (0 kg): keine „Volumen: 0 kg“-Zeile
-                                    Text(
-                                        tr("Volumen: ", "Volume: ") + "${fmtVolume(volume)} kg",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                ComparisonLine(r)
-                            }
-                        }
-                        if (r.record) Text("🏆", style = MaterialTheme.typography.titleLarge)
-                    }
-                }
-            }
-
             item {
                 Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) { Text(tr("Fertig", "Done")) }
             }
@@ -213,43 +136,6 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
     }
 }
 
-/**
- * Vergleich mit dem letzten Mal: Kraft = schwerster Satz, Cardio = Minuten gesamt.
- * Pfeil + Text (nicht nur Farbe), damit es auch ohne Farbwahrnehmung lesbar ist.
- */
-@Composable
-fun ComparisonLine(r: ExerciseResult) {
-    val sets = r.sets.top() // ohne Aufwärm-/Drop-Sätze (wie r.previous)
-    if (r.previous.isEmpty() || sets.isEmpty()) return
-    val cardio = r.group.isCardio
-    val timed = isTimed(r.name)
-    val now = when {
-        cardio -> sets.sumOf { it.reps }.toDouble()
-        timed -> sets.maxOf { it.reps }.toDouble()
-        else -> sets.maxOf { it.weight }
-    }
-    val before = when {
-        cardio -> r.previous.sumOf { it.reps }.toDouble()
-        timed -> r.previous.maxOf { it.reps }.toDouble()
-        else -> r.previous.maxOf { it.weight }
-    }
-    val diff = now - before
-    fun fmtDiff(d: Double) = when {
-        cardio -> "${fmtW(d)} min"
-        timed -> "${d.toInt()} s"
-        else -> "${fmtW(d)} kg"
-    }
-    val (text, color) = when {
-        diff > 0.001 -> "▲ +${fmtDiff(diff)}" to completionColor(1f)
-        diff < -0.001 -> "▼ −${fmtDiff(-diff)}" to MaterialTheme.colorScheme.onSurfaceVariant
-        else -> "= ${tr("gleich", "same")}" to MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Text(
-        "$text " + tr("ggü. letztem Mal", "vs. last time"),
-        style = MaterialTheme.typography.labelMedium,
-        color = color
-    )
-}
 
 @Composable
 fun StatBox(label: String, value: String, modifier: Modifier = Modifier) {

@@ -1,11 +1,9 @@
 // Feier im Summary (Roadmap Schritt 3, Peak-End-Regel) – entspricht Celebration.kt.
 // Erfolge (achievements.js) groß oben, Konfetti + Vibration bei großen Erfolgen (nur direkt nach dem Training).
 
-import { store } from './store.js';
 import { tr } from './core.js';
 import { h } from './ui.js';
 import { rerender } from './nav.js';
-import { goalRow } from './goals.js';
 
 const expanded = new Set();   // Trainings-IDs mit aufgeklappter Erfolgsliste
 const headlines = new Map();  // Trainings-ID → Überschrift (zufällig, aber pro Training fest)
@@ -35,19 +33,6 @@ export function achievementsCard(list, fresh, id) {
       h('div', { class: 'grow' }, h('b', null, a.title), a.detail ? h('small', { class: 'muted' }, a.detail) : null))),
     rest.length > 5 ? h('button', { class: 'btn text', onclick: () => { if (all) expanded.delete(id); else expanded.add(id); rerender(); } },
       all ? tr('Weniger anzeigen', 'Show less') : tr(`+${rest.length - 5} weitere`, `+${rest.length - 5} more`)) : null);
-}
-
-/** Ziele, zu denen dieses Training beigetragen hat (wie goalsTouched). */
-export function goalsTouched(stats) {
-  const done = stats.results.filter(r => r.sets.length);
-  return store.goals.filter(g => (g.type === 'STRENGTH' || g.type === 'ENDURANCE') ? done.some(r => r.name === g.exercise)
-    : g.type === 'CARDIO_WEEK' ? done.some(r => r.group === 'CARDIO')
-      : g.type === 'REGULAR');
-}
-
-export function goalsCard(goals) {
-  return goals.length ? h('div', { class: 'card goals-card' }, h('b', { class: 'goals-title' }, tr('🎯 Deine Ziele', '🎯 Your goals')),
-    goals.map(g => goalRow(g))) : null;
 }
 
 const COLORS = ['#ffc107', '#4caf50', '#2196f3', '#e91e63', '#9c27b0', '#ff5722', '#7c83fd'];
