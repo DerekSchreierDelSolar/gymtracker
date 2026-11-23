@@ -131,7 +131,16 @@
       ["Nicht höher als bis zur Brust – sonst kann es in der Schulter zwicken.", "Don't go higher than chest level – it can pinch the shoulder."],
       ["Schulterbreiter Griff ist schonender als ein enger.", "A shoulder-width grip is gentler than a narrow one."],
       ["Bei Schulterschmerzen lieber Seitheben machen.", "If your shoulders hurt, do lateral raises instead."]
-    ]
+    ],
+    "variants": {
+      "Langhantel, breiter Griff": ["Etwa 1,5× schulterbreit greifen und nur bis knapp unter die Brust ziehen. Mehr seitliche Schulter, weniger Trapez – und schonender fürs Schultergelenk.", "Grip about 1.5× shoulder width and pull to just below your chest. More side delts, less traps – and gentler on the shoulder joint."]
+    },
+    "variantMuscles": {
+      "Langhantel, breiter Griff": {
+        "muscles": ["Seitliche Schulter, oberer Trapez", "Side delts, upper traps"],
+        "regions": { "delts.side": 1, "delts.front": 0.6, "delts.rear": 0.3, "traps.upper": 0.6, "traps.middle": 0.3 }
+      }
+    }
   },
   "Shrugs": {
     "muscles": ["Oberer Trapez (Nacken)", "Upper traps"],

@@ -22,7 +22,9 @@ import org.json.JSONObject
 // Schlüssel = Grundübung (CatalogExercise.base). Die Web-Version liest dieselben Dateien
 // (web/tools/gen-data.mjs). Format pro Eintrag:
 //   "Bankdrücken": { "muscles": [de, en], "how": [[de, en], …], "tips": [[de, en], …],
-//                    "variants": { "Kurzhantel": [de, en], … } }   // Schlüssel = Text in der Klammer
+//                    "variants": { "Kurzhantel": [de, en], … },   // Schlüssel = Text in der Klammer
+//                    "variantMuscles": { "Kabelzug, breiter Griff": { "muscles"?, "primary"?, "secondary"?, "regions"? } } }
+// variantMuscles: andere Muskeln je Variante (z. B. Griffbreite) – genannte Felder ersetzen die der Grundübung.
 
 /** Ein Text in beiden Sprachen; `text` liefert die aktuelle. */
 data class WikiText(val de: String, val en: String) {
@@ -39,7 +41,17 @@ data class WikiEntry(
     val primary: List<String> = emptyList(),
     val secondary: List<String> = emptyList(),
     /** Genauer: Region (REGION_NAMES in BodyMap.kt) → Stufe 1 / 0,6 / 0,3 – überschreibt primary/secondary für diese Muskeln. */
-    val regions: Map<String, Float> = emptyMap()
+    val regions: Map<String, Float> = emptyMap(),
+    /** Eigene Muskeln einzelner Varianten (Schlüssel = Klammertext), siehe variantMuscles oben. */
+    val variantMuscles: Map<String, VariantMuscles> = emptyMap()
+)
+
+/** Abweichende Muskeln einer Variante; null = wie die Grundübung. */
+data class VariantMuscles(
+    val muscles: WikiText? = null,
+    val primary: List<String>? = null,
+    val secondary: List<String>? = null,
+    val regions: Map<String, Float>? = null
 )
 
 object Wiki {
@@ -72,9 +84,23 @@ object Wiki {
             variants = v?.keys()?.asSequence()?.associateWith { pair(v.getJSONArray(it)) }.orEmpty(),
             primary = strings(o.optJSONArray("primary")),
             secondary = strings(o.optJSONArray("secondary")),
-            regions = o.optJSONObject("regions")?.let { r -> r.keys().asSequence().associateWith { r.getDouble(it).toFloat() } }.orEmpty()
+            regions = regionsOf(o.optJSONObject("regions")).orEmpty(),
+            variantMuscles = o.optJSONObject("variantMuscles")?.let { vm ->
+                vm.keys().asSequence().associateWith { k ->
+                    val m = vm.getJSONObject(k)
+                    VariantMuscles(
+                        muscles = m.optJSONArray("muscles")?.let(::pair),
+                        primary = m.optJSONArray("primary")?.let(::strings),
+                        secondary = m.optJSONArray("secondary")?.let(::strings),
+                        regions = regionsOf(m.optJSONObject("regions"))
+                    )
+                }
+            }.orEmpty()
         )
     }
+
+    private fun regionsOf(r: JSONObject?): Map<String, Float>? =
+        r?.let { r.keys().asSequence().associateWith { r.getDouble(it).toFloat() } }
 }
 
 /** Klammertext eines Katalog-Namens: „Bankdrücken (Kurzhantel)“ → „Kurzhantel“. */
@@ -83,8 +109,16 @@ private fun variantKey(entry: CatalogExercise): String =
 
 /** Wiki-Eintrag zu einer Übung (Katalog-Name oder Grundübung), null bei eigenen Übungen. */
 fun wikiFor(name: String): WikiEntry? {
-    val base = CATALOG.firstOrNull { it.name == name }?.base ?: name
-    return Wiki.entries[base]
+    val cat = CATALOG.firstOrNull { it.name == name }
+    val entry = Wiki.entries[cat?.base ?: name] ?: return null
+    val vm = cat?.let { entry.variantMuscles[variantKey(it)] } ?: return entry
+    // Variante mit eigenen Muskeln (z. B. Griff): genannte Felder ersetzen die der Grundübung
+    return entry.copy(
+        muscles = vm.muscles ?: entry.muscles,
+        primary = vm.primary ?: entry.primary,
+        secondary = vm.secondary ?: entry.secondary,
+        regions = vm.regions ?: entry.regions
+    )
 }
 
 /** Übersetzter Anzeigename einer Grundübung. Englisch: kürzester EN-Name der Varianten (z. B. „Bench Press“). */

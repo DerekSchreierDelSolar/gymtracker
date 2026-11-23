@@ -21,7 +21,19 @@
       "Maschine": ["Oberarme flach aufs Polster, Ellbogen auf Höhe der Drehachse.", "Upper arms flat on the pad, elbows in line with the pivot."],
       "Theraband": ["Auf das Band stellen; je weiter oben, desto mehr Widerstand.", "Stand on the band; resistance increases toward the top."],
       "Kabelzug, über Kopf": ["Zwischen zwei oberen Kabelrollen stehen, Arme seitlich auf Schulterhöhe, Griffe zu den Ohren curlen.", "Stand between two high pulleys, arms out at shoulder height, curl the handles toward your ears."],
-      "Langhantel, Arm Blaster": ["Der Arm Blaster hält die Ellbogen fest am Körper – kein Schwung möglich.", "The arm blaster locks your elbows at your sides – no swinging possible."]
+      "Langhantel, Arm Blaster": ["Der Arm Blaster hält die Ellbogen fest am Körper – kein Schwung möglich.", "The arm blaster locks your elbows at your sides – no swinging possible."],
+      "Langhantel, breiter Griff": ["Breiter als schulterbreit greifen – betont den kurzen (inneren) Bizepskopf.", "Grip wider than shoulder width – emphasises the short (inner) biceps head."],
+      "Langhantel, enger Griff": ["Enger als schulterbreit greifen – betont den langen (äußeren) Bizepskopf, der dem Arm die „Spitze“ gibt.", "Grip narrower than shoulder width – emphasises the long (outer) biceps head that gives the arm its peak."]
+    },
+    "variantMuscles": {
+      "Langhantel, breiter Griff": {
+        "muscles": ["Bizeps (v. a. kurzer Kopf), Unterarm", "Biceps (especially the short head), forearms"],
+        "regions": { "biceps.short": 1, "biceps.long": 0.6, "biceps.brachialis": 0.6 }
+      },
+      "Langhantel, enger Griff": {
+        "muscles": ["Bizeps (v. a. langer Kopf), Unterarm", "Biceps (especially the long head), forearms"],
+        "regions": { "biceps.long": 1, "biceps.short": 0.6, "biceps.brachialis": 0.6 }
+      }
     }
   },
   "Hammer Curls": {
@@ -138,7 +150,22 @@
       ["Beim Seil unten die Enden auseinanderziehen.", "With a rope, spread the ends apart at the bottom."]
     ],
     "variants": {
-      "Maschine": ["Ellbogen auf das Polster und in Linie mit der Drehachse.", "Elbows on the pad and in line with the pivot."]
+      "Maschine": ["Ellbogen auf das Polster und in Linie mit der Drehachse.", "Elbows on the pad and in line with the pivot."],
+      "Kabelzug": ["Gerade Stange im Obergriff: stabil, viel Gewicht möglich – trifft äußeren und inneren Kopf gleichmäßig.", "Straight bar, overhand: stable and lets you go heavy – hits the lateral and medial heads evenly."],
+      "Kabelzug, Seil": ["Unten die Seilenden nach außen ziehen, Handflächen zeigen nach unten. Mehr Bewegung am Ende – betont den äußeren Kopf, dafür etwas weniger Gewicht.", "Spread the rope ends apart at the bottom, palms facing down. More range at the end – emphasises the lateral head, at a slightly lower weight."],
+      "Kabelzug, V-Griff": ["V-Griff mit leicht schrägem Griff – schont die Handgelenke und erlaubt viel Gewicht.", "V-handle with a slightly angled grip – easy on the wrists and lets you go heavy."],
+      "Kabelzug, Untergriff": ["Stange im Untergriff (Handflächen nach oben), Ellbogen fest am Körper. Weniger Gewicht – betont den inneren (medialen) Kopf, Unterarm arbeitet mit.", "Bar underhand (palms up), elbows pinned to your sides. Less weight – emphasises the medial head, forearms help."]
+    },
+    "variantMuscles": {
+      "Kabelzug, Seil": {
+        "muscles": ["Trizeps (v. a. äußerer Kopf)", "Triceps (especially the lateral head)"],
+        "regions": { "triceps.lateral": 1, "triceps.medial": 0.6, "triceps.long": 0.6 }
+      },
+      "Kabelzug, Untergriff": {
+        "muscles": ["Trizeps (v. a. innerer Kopf), Unterarm", "Triceps (especially the medial head), forearms"],
+        "secondary": ["forearms"],
+        "regions": { "triceps.medial": 1, "triceps.lateral": 0.6, "triceps.long": 0.3 }
+      }
     }
   },
   "Trizepsdrücken über Kopf": {

@@ -35,7 +35,16 @@
       ["Oberkörper bleibt ruhig – nicht mit Schwung hochreißen.", "Keep your torso still – no swinging the weight up."],
       ["Rücken gerade, Nacken in Verlängerung der Wirbelsäule.", "Back flat, neck in line with your spine."],
       ["Mit den Ellbogen ziehen, nicht mit den Händen.", "Pull with your elbows, not your hands."]
-    ]
+    ],
+    "variants": {
+      "Langhantel, Untergriff": ["Stange im Untergriff schulterbreit, zum Bauch ziehen, Ellbogen eng am Körper. Mehr unterer Latissimus und Bizeps, weniger oberer Rücken.", "Underhand grip at shoulder width, row to your stomach with elbows tight. More lower lats and biceps, less upper back."]
+    },
+    "variantMuscles": {
+      "Langhantel, Untergriff": {
+        "muscles": ["Unterer Latissimus, Bizeps, mittlerer Rücken", "Lower lats, biceps, mid back"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.middle": 0.6, "traps.lower": 0.6, "delts.rear": 0.3, "biceps.short": 1, "biceps.long": 0.6, "biceps.brachialis": 0.6 }
+      }
+    }
   },
   "Einarmiges Rudern": {
     "muscles": ["Latissimus, oberer Rücken, Bizeps", "Lats, upper back, biceps"],
@@ -102,7 +111,34 @@
     "tips": [
       ["Oberkörper bleibt fast senkrecht – nicht weit nach hinten lehnen.", "Keep your torso nearly upright – don't lean far back."],
       ["Rücken nicht rund machen, wenn das Gewicht nach vorne geht.", "Don't round your back as the weight goes forward."]
-    ]
+    ],
+    "variants": {
+      "Kabelzug": ["Meist mit V-Griff (eng, Handflächen zueinander) zum Bauchnabel: Ellbogen dicht am Körper – betont den Latissimus.", "Usually with a V-handle (close, palms facing) to your belly button: elbows close to your body – emphasises the lats."],
+      "Kabelzug, breiter Griff": ["Lange Stange breit im Obergriff, zur unteren Brust ziehen, Ellbogen etwa 45–70° vom Körper weg. Trifft vor allem mittleren Rücken (Trapez, Rautenmuskeln) und hintere Schulter.", "Long bar with a wide overhand grip, pull to your lower chest with elbows about 45–70° away from your body. Mainly hits the mid back (traps, rhomboids) and rear delts."],
+      "Kabelzug, Untergriff": ["Stange schulterbreit im Untergriff, Ellbogen eng am Körper zur Hüfte ziehen. Unterer Latissimus und Bizeps arbeiten stärker.", "Bar at shoulder width with an underhand grip, drive your elbows tight along your body toward your hips. The lower lats and biceps work harder."],
+      "Kabelzug, Seil": ["Seil einhängen und zum Brustbein ziehen, dabei die Enden auseinanderziehen und die Ellbogen hoch und weit führen. Betont hintere Schulter und oberen Rücken.", "Attach a rope and pull to your sternum, spreading the ends with elbows high and wide. Emphasises the rear delts and upper back."]
+    },
+    "variantMuscles": {
+      "Kabelzug": {
+        "muscles": ["Latissimus, mittlerer Rücken, Bizeps", "Lats, mid back, biceps"]
+      },
+      "Kabelzug, breiter Griff": {
+        "muscles": ["Mittlerer Rücken, hintere Schulter, Trapez", "Mid back, rear delts, traps"],
+        "primary": ["traps", "delts"],
+        "secondary": ["lats", "biceps"],
+        "regions": { "traps.middle": 1, "traps.lower": 0.6, "traps.upper": 0.3, "delts.rear": 1, "lats.upper": 0.6, "lats.lower": 0.3 }
+      },
+      "Kabelzug, Untergriff": {
+        "muscles": ["Unterer Latissimus, Bizeps, mittlerer Rücken", "Lower lats, biceps, mid back"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.middle": 0.6, "traps.lower": 0.3, "delts.rear": 0.3, "biceps.short": 1, "biceps.long": 0.6, "biceps.brachialis": 0.6 }
+      },
+      "Kabelzug, Seil": {
+        "muscles": ["Hintere Schulter, oberer und mittlerer Rücken", "Rear delts, upper and mid back"],
+        "primary": ["delts", "traps"],
+        "secondary": ["lats", "biceps"],
+        "regions": { "delts.rear": 1, "traps.middle": 1, "traps.upper": 0.6, "traps.lower": 0.3, "lats.upper": 0.3 }
+      }
+    }
   },
   "Rack Pulls": {
     "muscles": ["Oberer und unterer Rücken, Gesäß, Trapez, Griff", "Upper and lower back, glutes, traps, grip"],
@@ -152,7 +188,30 @@
     ],
     "variants": {
       "Maschine": ["Geführte Bewegung, oft mit getrennten Griffen – gut für einseitiges Training.", "Guided path, often with separate handles – good for one-arm work."],
-      "Kabelzug, enger Griff": ["Engen Griff (V-Griff) einhängen und mit neutralem Griff fassen. Oben volle Streckung für eine gute Dehnung.", "Attach a close-grip (V) handle and hold it with a neutral grip. Fully extend at the top for a good stretch."]
+      "Kabelzug, breiter Griff": ["Deutlich breiter als schulterbreit im Obergriff fassen, zur oberen Brust ziehen. Kürzerer Weg – trifft vor allem den oberen, äußeren Latissimus (Rückenbreite) und den oberen Rücken.", "Grip the bar overhand well outside shoulder width and pull to your upper chest. Shorter range – mainly hits the upper, outer lats (back width) and upper back."],
+      "Kabelzug, enger Griff": ["Gerade Stange im Obergriff etwa schulterbreit oder enger fassen. Längerer Weg mit mehr Dehnung; Oberarmmuskel (Brachialis) und Unterarm helfen stärker mit.", "Hold the straight bar overhand at shoulder width or narrower. Longer range with more stretch; the brachialis and forearms help more."],
+      "Kabelzug, V-Griff": ["V-Griff einhängen, Handflächen zeigen zueinander. Leicht zurücklehnen und den Griff zur unteren Brust ziehen, Ellbogen dicht am Körper nach unten. Längster Weg – betont den unteren Latissimus und den mittleren Rücken, Bizeps hilft mit.", "Attach a V-handle, palms facing each other. Lean back slightly and pull it to your lower chest, elbows close to your body. Longest range – emphasises the lower lats and mid back, with help from the biceps."],
+      "Kabelzug, Untergriff": ["Stange schulterbreit im Untergriff (Handflächen zu dir) fassen und zur Brust ziehen. Ellbogen bleiben vor dem Körper – unterer Latissimus und Bizeps arbeiten stärker.", "Grip the bar underhand (palms toward you) at shoulder width and pull to your chest. Elbows stay in front of your body – the lower lats and biceps work harder."]
+    },
+    "variantMuscles": {
+      "Kabelzug, breiter Griff": {
+        "muscles": ["Oberer Latissimus (Rückenbreite), oberer Rücken, hintere Schulter", "Upper lats (back width), upper back, rear delts"],
+        "regions": { "lats.upper": 1, "lats.lower": 0.6, "traps.lower": 0.6, "traps.middle": 0.6, "delts.rear": 0.6, "biceps.long": 0.3, "biceps.short": 0.3, "biceps.brachialis": 0.3 }
+      },
+      "Kabelzug, enger Griff": {
+        "muscles": ["Latissimus, Oberarmmuskel (Brachialis), Unterarm", "Lats, brachialis, forearms"],
+        "secondary": ["biceps", "traps", "delts", "forearms"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6, "traps.middle": 0.3, "delts.rear": 0.3, "biceps.brachialis": 0.6, "biceps.long": 0.3, "biceps.short": 0.3 }
+      },
+      "Kabelzug, V-Griff": {
+        "muscles": ["Unterer Latissimus, mittlerer Rücken, Bizeps", "Lower lats, mid back, biceps"],
+        "secondary": ["biceps", "traps", "delts", "forearms"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.middle": 0.6, "traps.lower": 0.6, "delts.rear": 0.3, "biceps.brachialis": 0.6, "biceps.long": 0.6, "biceps.short": 0.3 }
+      },
+      "Kabelzug, Untergriff": {
+        "muscles": ["Unterer Latissimus, Bizeps", "Lower lats, biceps"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6, "traps.middle": 0.3, "biceps.short": 1, "biceps.long": 0.6, "biceps.brachialis": 0.6 }
+      }
     }
   },
   "Überzüge": {
@@ -189,7 +248,25 @@
     "variants": {
       "Maschine / unterstützt": ["Mehr Gegengewicht = leichter. Gewicht über die Wochen reduzieren.", "More counterweight = easier. Reduce it over the weeks."],
       "Widerstandsband": ["Band um die Stange schlingen und Knie oder Fuß hineinstellen; dickeres Band = mehr Hilfe.", "Loop the band over the bar and put your knee or foot in it; thicker band = more help."],
-      "Körpergewicht, Untergriff": ["Stange im Untergriff schulterbreit fassen. Meist etwas leichter als Klimmzüge im Obergriff, weil der Bizeps stärker hilft.", "Grip the bar underhand at shoulder width. Usually a bit easier than overhand pull-ups since the biceps help more."]
+      "Körpergewicht, Untergriff": ["Stange im Untergriff schulterbreit fassen. Meist etwas leichter als Klimmzüge im Obergriff, weil der Bizeps stärker hilft.", "Grip the bar underhand at shoulder width. Usually a bit easier than overhand pull-ups since the biceps help more."],
+      "Körpergewicht, breiter Griff": ["Deutlich breiter als schulterbreit greifen. Kürzerer Weg, schwerer – betont den oberen, äußeren Latissimus (Rückenbreite), der Bizeps hilft kaum.", "Grip well outside shoulder width. Shorter range and harder – emphasises the upper, outer lats (back width); the biceps help little."],
+      "Körpergewicht, Parallelgriff": ["An parallelen Griffen hängen, Handflächen zueinander. Schonend für Schultern und Handgelenke; Oberarmmuskel (Brachialis) und Unterarm arbeiten stärker.", "Hang from parallel handles, palms facing each other. Easy on shoulders and wrists; the brachialis and forearms work harder."]
+    },
+    "variantMuscles": {
+      "Körpergewicht, breiter Griff": {
+        "muscles": ["Oberer Latissimus (Rückenbreite), oberer Rücken, Griffkraft", "Upper lats (back width), upper back, grip"],
+        "regions": { "lats.upper": 1, "lats.lower": 0.6, "traps.lower": 0.6, "traps.middle": 0.3, "delts.rear": 0.6, "biceps.long": 0.3, "biceps.short": 0.3, "biceps.brachialis": 0.3 }
+      },
+      "Körpergewicht, Parallelgriff": {
+        "muscles": ["Latissimus, Oberarmmuskel (Brachialis), Bizeps, Unterarm", "Lats, brachialis, biceps, forearms"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6, "delts.rear": 0.3, "biceps.brachialis": 1, "biceps.long": 0.6, "biceps.short": 0.3 }
+      },
+      "Körpergewicht, Untergriff": {
+        "muscles": ["Unterer Latissimus, Bizeps, Griffkraft", "Lower lats, biceps, grip"],
+        "primary": ["lats", "biceps"],
+        "secondary": ["traps", "delts", "forearms"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.3, "biceps.long": 1, "biceps.short": 1, "biceps.brachialis": 0.6 }
+      }
     }
   },
   "Australische Klimmzüge": {

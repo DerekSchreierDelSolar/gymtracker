@@ -21,7 +21,11 @@ const variantKey = c => c.name.slice(c.base.length).trim().replace(/^\(|\)$/g, '
 
 /** Wiki-Eintrag zu einer Übung (Katalog-Name oder Grundübung), null bei eigenen Übungen. */
 export function wikiFor(name) {
-  return WIKI[byName.get(name)?.base ?? name] ?? null;
+  const cat = byName.get(name);
+  const entry = WIKI[cat?.base ?? name] ?? null;
+  const vm = cat && entry?.variantMuscles?.[variantKey(cat)];
+  // Variante mit eigenen Muskeln (z. B. Griff): genannte Felder ersetzen die der Grundübung (wie Wiki.kt)
+  return vm ? { ...entry, ...vm } : entry;
 }
 
 /** Anzeigename einer Grundübung. Englisch: kürzester EN-Name der Varianten (z. B. „Bench Press“). */

@@ -122,8 +122,12 @@ const noWiki = [...bases].filter(b => !wiki[b]);
 if (noWiki.length) console.warn('Wiki fehlt für: ' + noWiki.join(', '));
 for (const [b, e] of Object.entries(wiki)) {
   if (!bases.has(b)) throw new Error('Wiki: unbekannte Grundübung ' + b);
-  for (const v of Object.keys(e.variants ?? {})) {
+  for (const v of [...Object.keys(e.variants ?? {}), ...Object.keys(e.variantMuscles ?? {})]) {
     if (!names.has(`${b} (${v})`)) throw new Error(`Wiki: unbekannte Variante ${b} (${v})`);
+  }
+  for (const [v, m] of Object.entries(e.variantMuscles ?? {})) {
+    for (const k of Object.keys(m)) if (!['muscles', 'primary', 'secondary', 'regions'].includes(k))
+      throw new Error(`Wiki: unbekanntes Feld ${k} in variantMuscles ${b} (${v})`);
   }
 }
 writeFileSync(join(root, 'web/js/wiki-data.js'),
@@ -157,7 +161,8 @@ for (const s of bodyShapes) if (s.id && !muscles[s.id]) throw new Error('BodyMap
 const regionKeys = new Set(bodyShapes.flatMap(s => s.regions ? s.regions.split(';').map(r => r.split(':')[0].trim())
   : s.region ? [s.region] : s.fill === 'MUSCLE' ? [s.id] : []));
 for (const k of regionKeys) if (k.includes('.') && !regionNames[k]) throw new Error('BodyMap: Region ohne Namen ' + k);
-for (const [b, e] of Object.entries(wiki)) {
+for (const [b, e] of [...Object.entries(wiki),
+  ...Object.entries(wiki).flatMap(([b, e]) => Object.entries(e.variantMuscles ?? {}).map(([v, m]) => [`${b} (${v})`, m]))]) {
   for (const id of [...(e.primary ?? []), ...(e.secondary ?? [])]) if (!muscles[id]) throw new Error(`Wiki: unbekannte Muskel-ID ${id} bei ${b}`);
   for (const [k, v] of Object.entries(e.regions ?? {})) {
     if (!regionKeys.has(k)) throw new Error(`Wiki: unbekannte Region ${k} bei ${b}`);
