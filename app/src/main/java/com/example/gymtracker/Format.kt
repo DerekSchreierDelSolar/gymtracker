@@ -33,9 +33,10 @@ fun fromUnit(v: Double): Double = if (isLb) v / LB_PER_KG else v
 /** Gewicht (kg) als Zahl in der angezeigten Einheit, z. B. für Eingabefelder. */
 fun fmtWU(kg: Double): String = fmtW(toUnit(kg))
 /** Gewicht (kg) mit Einheit: „62,5 kg“ bzw. „137.8 lbs“. */
-fun fmtKg(kg: Double): String = "${fmtWU(kg)} $wUnit"
+//   = geschütztes Leerzeichen: Zahl und Einheit werden nie auf zwei Zeilen getrennt
+fun fmtKg(kg: Double): String = "${fmtWU(kg)} $wUnit"
 /** Volumen (kg × Wdh.) mit Einheit, Tausenderpunkt wie fmtVolume. */
-fun fmtVol(kg: Double): String = "${fmtVolume(toUnit(kg))} $wUnit"
+fun fmtVol(kg: Double): String = "${fmtVolume(toUnit(kg))} $wUnit"
 /** Großes Volumen: Tonnen bzw. 1.000 lbs („k lbs“) – Zahl in dieser Einheit und Name. */
 fun toBig(kg: Double): Double = toUnit(kg) / 1000
 val bigUnit: String get() = if (isLb) "k lbs" else "t"
@@ -53,7 +54,7 @@ fun fmtVolume(v: Double): String = if (v >= 1000) String.format(appLocale(), "%,
 /** kcal-Anzeige mit Tausenderpunkt wie das Volumen (z. B. „1.467“). */
 fun fmtKcal(v: Number): String = fmtVolume(Math.round(v.toDouble()).toDouble())
 
-fun plural(n: Int, one: String, many: String): String = "$n ${if (n == 1) one else many}"
+fun plural(n: Int, one: String, many: String): String = "$n ${if (n == 1) one else many}"
 
 fun fmtDate(t: Long): String =
     SimpleDateFormat(tr("dd.MM.yyyy", "dd/MM/yyyy"), appLocale()).format(Date(t))

@@ -178,8 +178,8 @@ function dashboardTab(onStartWorkout) {
       h('div', { class: 'grow' },
         h('small', { class: 'muted' }, tr('Wochenziel', 'Weekly goal')),
         // Ziel erreicht/übertroffen → „5 Trainings ✓“ statt „5 von 3“ (wie DashboardTab.kt)
-        h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Trainingseinheit', 'workout'), tr('Trainingseinheiten', 'workouts')) + ' ✓'
-          : tr(`${weekSessions.length} von ${goal} Trainingseinheiten`, `${weekSessions.length} of ${goal} workouts`)),
+        h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Training', 'workout'), tr('Trainings', 'workouts')) + ' ✓'
+          : tr(`${weekSessions.length} von ${goal} Trainings`, `${weekSessions.length} of ${goal} workouts`)),
         h('span', null, streak > 0 ? '🔥 ' + tr(`${plural(streak, 'Woche', 'Wochen')} in Folge`, `${plural(streak, 'week', 'weeks')} in a row`)
           + (jokerRecent ? tr(' · 🃏 Joker hat sie gerettet', ' · 🃏 saved by a joker') : '')
           : tr('Starte deine Serie!', 'Start your streak!')),
@@ -409,7 +409,7 @@ function calendarTab() {
     const n = monthSessions.length;
     const kcal = monthSessions.reduce((a, t) => a + (stats.get(t.id).kcal ?? 0), 0);
     monthText = tr(`${plural(n, 'Trainingseinheit', 'Trainingseinheiten')} an ${plural(days, 'Tag', 'Tagen')} · Ø ${avg} % abgeschlossen`,
-      `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg} % completed`) + (kcal > 0 ? ` · 🔥 ~${fmtKcal(kcal)} kcal` : '');
+      `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg} % completed`) + (kcal > 0 ? ` · 🔥 ~${fmtKcal(kcal)} kcal` : '');
   }
   const daySessions = (byDay.get(nav.calDay) ?? []).slice().sort((a, b) => a.start - b.start);
 
@@ -481,7 +481,7 @@ function bodyTab() {
     h('div', { class: 'kcal-note' }, h('span', null, '🔥'),
       muted(last == null
         ? tr('Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.', 'Log your weight and the app will estimate calories burned.')
-        : tr('Dein Gewicht fließt in die kcal-Schätzung ein (Startseite: „Diese Woche“).', 'Your weight is used for the calorie estimate (home: "This week").'), 'grow'),
+        : tr('Dein Gewicht fließt in die kcal-Schätzung ein.', 'Your weight is used for the calorie estimate.'), 'grow'),
       iconBtn('info', metDialog, { label: tr('Erklärung', 'Explanation'), cls: 'info-btn accent' })),
     // Gewichtsverlauf; Punkt antippen = Eintrag anpassen oder löschen (statt einer Liste) – wie BodyTab.kt
     weights.length ? chartCard(tr('Gewichtsverlauf', 'Weight trend'),

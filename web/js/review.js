@@ -1,7 +1,7 @@
 // Wochen-/Monatsrückblick (Karte auf der Startseite) – entspricht Review.kt.
 // Zeigt den letzten ABGESCHLOSSENEN Zeitraum (letzte Woche Mo–So bzw. letzten Kalendermonat) im Vergleich zum Zeitraum davor.
 
-import { fmtVol, tr, exName, fmtW, fmtVolume, fmtKcal, fmtDate, startOfWeek, addDays, isWork, groupLabel } from './core.js';
+import { fmtVol, tr, exName, fmtW, fmtVolume, fmtKcal, fmtDate, plural, startOfWeek, addDays, isWork, groupLabel } from './core.js';
 import { h, chip } from './ui.js';
 import { allSessions, sessionStats, recordEvents, weekdayOf, weekdayLong } from './stats.js';
 import { regionScore, muscleScoreOf, relativeLoad, muscleLabel } from './bodymap.js';
@@ -148,7 +148,7 @@ export function identityLines(now = Date.now()) {
   const top = (items, key) => { const m = new Map(); for (const x of items) m.set(key(x), (m.get(key(x)) ?? 0) + 1); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
   // Lieblingsübung: die meisten Sätze
   const fav = top(recent, s => s.exercise)[0];
-  if (fav && fav[1] >= 5) out.push(['❤️', tr(`Lieblingsübung: ${exName(fav[0])} · ${fav[1]} Sätze`, `Favourite exercise: ${exName(fav[0])} · ${fav[1]} sets`)]);
+  if (fav && fav[1] >= 5) out.push(['❤️', tr(`Lieblingsübung: ${exName(fav[0])} · ${plural(fav[1], 'Satz', 'Sätze')}`, `Favourite exercise: ${exName(fav[0])} · ${plural(fav[1], 'set', 'sets')}`)]);
   // Typische Trainingszeit + Lieblings-Wochentag
   const starts = sessions.filter(t => t.start >= since).map(t => t.start);
   if (starts.length >= 3) {

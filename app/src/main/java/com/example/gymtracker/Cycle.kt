@@ -41,7 +41,9 @@ fun cycleLine(store: GymStore): String? {
     val c = store.cycle ?: return null
     val w = cycleWeek(c) ?: return null
     return if (w == c.length) tr("🛌 Deload-Woche – leichter trainieren, der Körper baut auf", "🛌 Deload week – train lighter, your body rebuilds")
-    else tr("📆 Block: Woche $w von ${c.length} · Deload in Woche ${c.length}", "📆 Block: week $w of ${c.length} · deload in week ${c.length}")
+    // geschützte Leerzeichen: wenn die Zeile zu lang ist, nur am „·“ umbrechen
+    else tr("📆 Block: Woche $w von ${c.length} · Deload in Woche ${c.length}",
+        "📆 Block: week $w of ${c.length} · deload in week ${c.length}")
 }
 
 /** Unterseite „Trainingsblock“ der Einstellungen (SettingsScreen.kt). */

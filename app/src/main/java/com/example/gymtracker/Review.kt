@@ -252,7 +252,7 @@ fun identityLines(store: GymStore, now: Long = System.currentTimeMillis()): List
     val recent = store.sets.filter { it.isWork && it.time >= since }
     // Lieblingsübung: die meisten Sätze
     recent.groupingBy { it.exercise }.eachCount().maxByOrNull { it.value }?.takeIf { it.value >= 5 }?.let { (ex, n) ->
-        out += "❤️" to tr("Lieblingsübung: ${exName(ex)} · $n Sätze", "Favourite exercise: ${exName(ex)} · $n sets")
+        out += "❤️" to tr("Lieblingsübung: ${exName(ex)} · ${plural(n, "Satz", "Sätze")}", "Favourite exercise: ${exName(ex)} · ${plural(n, "set", "sets")}")
     }
     // Typische Trainingszeit + Lieblings-Wochentag
     val starts = sessions.filter { it.start >= since }.map { it.start }

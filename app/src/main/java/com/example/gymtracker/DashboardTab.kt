@@ -167,8 +167,8 @@ fun DashboardTab(
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
                             // Ziel erreicht/übertroffen → nicht „5 von 3“, sondern „5 Trainings ✓“ (Ziel steht darunter)
-                            if (weekSessions.size >= goal) plural(weekSessions.size, tr("Trainingseinheit", "workout"), tr("Trainingseinheiten", "workouts")) + " ✓"
-                            else tr("${weekSessions.size} von $goal Trainingseinheiten", "${weekSessions.size} of $goal workouts"),
+                            if (weekSessions.size >= goal) plural(weekSessions.size, tr("Training", "workout"), tr("Trainings", "workouts")) + " ✓"
+                            else tr("${weekSessions.size} von $goal Trainings", "${weekSessions.size} of $goal workouts"),
                             style = MaterialTheme.typography.titleLarge
                         )
                         Text(

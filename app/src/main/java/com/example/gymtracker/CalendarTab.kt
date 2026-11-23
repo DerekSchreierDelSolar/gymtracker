@@ -195,7 +195,7 @@ fun CalendarTab(
                 tr(
                     "${plural(n, "Trainingseinheit", "Trainingseinheiten")} an ${plural(days, "Tag", "Tagen")} · Ø $avg % abgeschlossen",
                     "${plural(n, "workout", "workouts")} on ${plural(days, "day", "days")} · avg. $avg % completed"
-                ) + (if (kcal > 0) " · 🔥 ~${fmtKcal(kcal)} kcal" else "")
+                ) + (if (kcal > 0) " · 🔥 ~${fmtKcal(kcal)} kcal" else "")
             }
             Card(Modifier.fillMaxWidth()) {
                 Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(12.dp))

@@ -91,7 +91,8 @@ export const fromUnit = v => (isLb() ? v / LB_PER_KG : v);
 /** Gewicht (kg) als Zahl in der angezeigten Einheit (Eingabefelder). */
 export const fmtWU = kg => fmtW(toUnit(kg));
 /** Gewicht (kg) mit Einheit: „62,5 kg“ bzw. „137.8 lbs“. */
-export const fmtKg = kg => `${fmtWU(kg)} ${wUnit()}`;
+//   = geschütztes Leerzeichen: Zahl und Einheit werden nie auf zwei Zeilen getrennt (wie Format.kt)
+export const fmtKg = kg => `${fmtWU(kg)} ${wUnit()}`;
 /** Großes Volumen: Tonnen bzw. 1.000 lbs. */
 export const toBig = kg => toUnit(kg) / 1000;
 export const bigUnit = () => (isLb() ? 'k lbs' : 't');
@@ -103,9 +104,9 @@ export const roundPlate = kg => Math.round(kg / plateStep()) * plateStep();
 /** Volumen zur Anzeige: ab 1000 ganzzahlig mit Tausendertrennzeichen (wie fmtVolume in Format.kt). Nie in Eingabefelder. */
 export const fmtVolume = v => (v >= 1000 ? Math.round(v).toLocaleString(locale()) : fmtW(v));
 /** Volumen (kg × Wdh.) mit Einheit. */
-export const fmtVol = kg => `${fmtVolume(toUnit(kg))} ${wUnit()}`;
+export const fmtVol = kg => `${fmtVolume(toUnit(kg))} ${wUnit()}`;
 export const fmtKcal = v => fmtVolume(Math.round(v));
-export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const pad2 = n => String(n).padStart(2, '0');
 
 export function fmtDate(t) {

@@ -24,7 +24,9 @@ export function cycleLine() {
   if (w == null) return null;
   const len = c.weeks + 1;
   return w === len ? tr('🛌 Deload-Woche – leichter trainieren, der Körper baut auf', '🛌 Deload week – train lighter, your body rebuilds')
-    : tr(`📆 Block: Woche ${w} von ${len} · Deload in Woche ${len}`, `📆 Block: week ${w} of ${len} · deload in week ${len}`);
+    // geschützte Leerzeichen: wenn die Zeile zu lang ist, nur am „·“ umbrechen
+    : tr(`📆 Block: Woche ${w} von ${len} · Deload in Woche ${len}`,
+      `📆 Block: week ${w} of ${len} · deload in week ${len}`);
 }
 
 /** Abschnitt im Einstellungen-Dialog (wie CycleSettings). */

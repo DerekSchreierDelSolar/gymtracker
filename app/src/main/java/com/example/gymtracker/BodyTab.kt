@@ -119,8 +119,8 @@ fun BodyTab(store: GymStore, modifier: Modifier) {
                         "Trag dein Gewicht ein, dann schätzt die App deinen Kalorienverbrauch.",
                         "Log your weight and the app will estimate calories burned."
                     ) else tr(
-                        "Dein Gewicht fließt in die kcal-Schätzung ein (Startseite: „Diese Woche“).",
-                        "Your weight is used for the calorie estimate (home: \"This week\")."
+                        "Dein Gewicht fließt in die kcal-Schätzung ein.",
+                        "Your weight is used for the calorie estimate."
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
