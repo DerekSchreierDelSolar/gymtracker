@@ -766,3 +766,16 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .wrapped-line { display: flex; gap: 10px; padding: 6px 0; }
 .wrapped-emoji { width: 32px; flex: none; font-size: 20px; }
 .wrapped-line small, .wrapped-line b { display: block; }
+
+/* Einstellungen als eigener Bildschirm (screens/settings.js, wie SettingsScreen.kt) */
+.settings-group { display: flex; flex-direction: column; gap: 6px; }
+.settings-title { font-size: 14px; font-weight: 600; color: var(--primary); margin: 0 0 0 4px; }
+.settings-card { padding: 6px 0; overflow: hidden; }
+.choice-row { display: flex; align-items: center; gap: 6px; padding: 6px 16px; }
+.choice-row > span { width: 76px; flex: none; }
+.choice-row .segments { flex: 1; }
+.nav-row { display: flex; align-items: center; width: 100%; padding: 10px 16px; text-align: left; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
+.nav-row:active { background: var(--container-high); }
+.nav-row-emoji { width: 36px; font-size: 20px; flex: none; }
+.nav-row .grow small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-row.danger .nav-row-title { color: var(--error); }

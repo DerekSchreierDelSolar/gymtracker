@@ -170,7 +170,6 @@ fun AutoBackupSettings(store: GymStore) {
     val small = MaterialTheme.typography.bodySmall
 
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(tr("Automatisches Backup", "Automatic backup"), style = MaterialTheme.typography.titleSmall)
         val label = AutoBackup.folderLabel()
         if (label == null) {
             Text(

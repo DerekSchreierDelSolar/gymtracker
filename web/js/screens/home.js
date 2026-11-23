@@ -63,14 +63,14 @@ export function homeScreen(onStartWorkout) {
   });
 }
 
-// ---------- ⋮-Menü: Einstellungen, Export, Import ----------
+// ---------- ⋮-Menü: Einstellungen (screens/settings.js), Export, Import ----------
 
 function menu() {
   const close = () => update({ menuOpen: false });
   return [
     h('div', { class: 'menu-backdrop', onclick: close }),
     h('div', { class: 'menu' },
-      h('button', { onclick: () => { close(); settingsDialog(); } }, icon('settings', 20), tr('Einstellungen', 'Settings')),
+      h('button', { onclick: () => go({ settings: true }) }, icon('settings', 20), tr('Einstellungen', 'Settings')),
       h('hr'),
       h('button', { onclick: () => { close(); exportData(); } }, icon('download', 20), tr('Daten exportieren', 'Export data')),
       h('button', { onclick: () => { close(); importData(); } }, icon('upload', 20), tr('Daten importieren', 'Import data')),
@@ -80,7 +80,7 @@ function menu() {
 }
 
 /** Export: auf dem iPhone über „Teilen“ (→ „In Dateien sichern“), sonst als Download. */
-async function exportData() {
+export async function exportData() {
   const d = new Date();
   const name = `gymtracker-backup-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
   const json = store.exportJson();
@@ -101,7 +101,7 @@ async function exportData() {
   }
 }
 
-function importData() {
+export function importData() {
   const input = h('input', { type: 'file', style: 'display:none' });
   input.addEventListener('change', async () => {
     const f = input.files?.[0];
@@ -133,56 +133,6 @@ function importData() {
   });
   document.body.append(input);
   input.click();
-}
-
-// Eingabetext des Profils (auch halb getippt) – gespeichert wird nur Gültiges (wie ProfileSettings in HomeScreen.kt)
-const profileDraft = { year: '', height: '' };
-
-function profileSettings() {
-  const p = store.profile;
-  const numInput = (id, key, max, valid, label, field) => h('label', { class: 'field' + (profileDraft[key] && !valid(Number(profileDraft[key])) ? ' error' : '') },
-    h('input', {
-      id, type: 'text', inputmode: 'numeric', value: profileDraft[key], autocomplete: 'off', placeholder: ' ',
-      oninput: e => {
-        profileDraft[key] = e.target.value.replace(/D/g, '').slice(0, max);
-        const n = Number(profileDraft[key]);
-        store.updateProfile({ [field]: valid(n) ? n : null });
-      },
-    }),
-    h('span', null, label));
-  return [
-    h('b', { class: 'small-title' }, tr('Profil für Kalorien (optional)', 'Profile for calories (optional)')),
-    muted(tr('Mit Geschlecht, Geburtsjahr und Größe (plus Körpergewicht) wird der Verbrauch über deinen Grundumsatz genauer geschätzt.',
-      'With sex, birth year and height (plus body weight) calories are estimated more precisely from your resting metabolic rate.'), 'small'),
-    h('div', { class: 'chips' }, [['m', tr('Männlich', 'Male')], ['f', tr('Weiblich', 'Female')]].map(([k, l]) =>
-      chip(l, p.sex === k, () => store.updateProfile({ sex: p.sex === k ? null : k })))), // erneut tippen = abwählen
-    h('div', { class: 'row' },
-      numInput('profile-year', 'year', 4, validYear, tr('Geburtsjahr', 'Birth year'), 'birthYear'),
-      numInput('profile-height', 'height', 3, validHeight, tr('Größe (cm)', 'Height (cm)'), 'height')),
-    profileComplete(p) && !store.weights.length ? muted(tr('Trag im Tab „Körper“ noch dein Gewicht ein.', 'Also log your weight in the "Body" tab.'), 'small accent') : null,
-  ];
-}
-
-function settingsDialog() {
-  profileDraft.year = store.profile.birthYear ? String(store.profile.birthYear) : '';
-  profileDraft.height = store.profile.height ? String(store.profile.height) : '';
-  openDialog(() => dialog(tr('Einstellungen', 'Settings'), [
-    h('b', { class: 'small-title' }, tr('Design', 'Theme')),
-    h('div', { class: 'chips' }, [['system', 'System'], ['light', tr('☀ Hell', '☀ Light')], ['dark', tr('☾ Dunkel', '☾ Dark')]]
-      .map(([m, l]) => chip(l, store.themeMode === m, () => store.setTheme(m)))),
-    h('b', { class: 'small-title' }, tr('Sprache', 'Language')),
-    h('div', { class: 'chips' }, [['de', 'Deutsch'], ['en', 'English']].map(([l, label]) => chip(label, appLanguage === l, () => store.setLanguage(l)))),
-    // Gewichtseinheit: nur Anzeige/Eingabe, gespeichert wird immer kg (wie SettingsDialog in HomeScreen.kt)
-    h('b', { class: 'small-title' }, tr('Gewichtseinheit', 'Weight unit')),
-    h('div', { class: 'chips' }, [['kg', 'kg'], ['lb', 'lbs']].map(([u, label]) => chip(label, weightUnit === u, () => store.setUnit(u)))),
-    profileSettings(),
-    cycleSettings(),
-    // Fortschritt zurücksetzen (wie SettingsDialog in HomeScreen.kt): Nachfrage, danach „Rückgängig“
-    h('hr'),
-    h('b', { class: 'small-title' }, tr('Fortschritt', 'Progress')),
-    muted(tr('Löscht alle Sätze, Trainingseinheiten, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.', 'Deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay.'), 'small'),
-    h('div', null, h('button', { class: 'btn outline danger-outline', onclick: resetDialog }, icon('delete', 18), tr('Fortschritt zurücksetzen', 'Reset progress'))),
-  ], [{ label: 'OK', onClick: closeDialog }], closeDialog));
 }
 
 // ---------- Tab 0: Übersicht ----------
@@ -573,19 +523,3 @@ function weightEditDialog(entry) {
 }
 
 
-function resetDialog() {
-  openDialog(() => dialog(tr('Fortschritt zurücksetzen?', 'Reset progress?'),
-    h('p', null, tr(
-      `${plural(store.sets.length, 'Satz', 'Sätze')}, ${plural(store.sessions.length, 'Trainingseinheit', 'Trainingseinheiten')} und ${plural(store.weights.length, 'Gewichtseintrag', 'Gewichtseinträge')} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.`,
-      `${plural(store.sets.length, 'set', 'sets')}, ${plural(store.sessions.length, 'workout', 'workouts')} and ${plural(store.weights.length, 'weight entry', 'weight entries')} will be deleted. Tip: back up first via ⋮ → "Export data".`)),
-    [
-      { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
-      {
-        label: tr('Zurücksetzen', 'Reset'), danger: true, onClick: () => {
-          const snap = store.resetProgress();
-          closeDialog();
-          undoToast(tr('Fortschritt zurückgesetzt', 'Progress reset'), () => store.restoreProgress(snap));
-        },
-      },
-    ], closeDialog));
-}

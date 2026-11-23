@@ -32,7 +32,7 @@ export function cycleSettings() {
   const c = store.cycle;
   return h('div', { class: 'cycle-settings' },
     h('div', { class: 'row' },
-      h('div', { class: 'grow' }, h('b', { class: 'small-title' }, tr('Trainingsblock mit Deload', 'Training block with deload')),
+      h('div', { class: 'grow' },
         h('small', { class: 'muted' }, tr('Ein paar Wochen Aufbau, dann eine leichte Woche: halbe Ziel-Sätze, ca. 60 % Gewicht. Beugt Übertraining vor.',
           'A few weeks of building, then a light week: half the target sets, about 60 % weight. Helps prevent overtraining.')))),
     h('div', { class: 'chips' },

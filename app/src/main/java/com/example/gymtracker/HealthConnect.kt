@@ -404,7 +404,6 @@ fun HealthSettings(store: GymStore) {
 
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (!HealthSync.available(context)) {
-            Text("Health Connect", style = MaterialTheme.typography.titleSmall)
             Text(
                 tr("Abgleich mit anderen Gesundheits-Apps – ab Android 14 verfügbar.",
                     "Sync with other health apps – available from Android 14."),
@@ -414,7 +413,6 @@ fun HealthSettings(store: GymStore) {
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Health Connect", style = MaterialTheme.typography.titleSmall)
                 Text(
                     tr("Körpergewicht abgleichen, Trainings eintragen, Puls und Erholung übernehmen – für Samsung Health, Fitbit, Google Fit, Smartwatches, smarte Waagen …",
                         "Sync body weight, log workouts, import heart rate and recovery – for Samsung Health, Fitbit, Google Fit, smartwatches, smart scales …"),

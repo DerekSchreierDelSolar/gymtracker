@@ -187,7 +187,6 @@ fun ReminderSettings() {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(tr("Trainings-Erinnerung", "Workout reminder"), style = MaterialTheme.typography.titleSmall)
                 Text(
                     tr("An geplanten Trainingstagen, wenn du noch nicht trainiert hast.", "On planned training days if you haven't trained yet."),
                     style = MaterialTheme.typography.bodySmall,

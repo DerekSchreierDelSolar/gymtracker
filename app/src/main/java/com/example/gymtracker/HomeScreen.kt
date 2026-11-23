@@ -56,6 +56,7 @@ fun HomeScreen(
     onCatalog: () -> Unit,
     onWiki: () -> Unit,
     onBot: () -> Unit,
+    onSettings: () -> Unit,
     onOpenWorkout: (Long) -> Unit,
     onCreatedWorkout: (Long) -> Unit,
     calMonth: Int,
@@ -70,7 +71,6 @@ fun HomeScreen(
     trainingBar: (@Composable () -> Unit)? = null
 ) {
     var showNewWorkout by remember { mutableStateOf(false) }
-    var showSettings by remember { mutableStateOf(false) }
     val listUi = rememberFilterUi(listFilter)
 
     // Pager für die fünf Hauptbereiche, synchron mit `tab` („Fragen“ ist jetzt ein eigener Bildschirm im ⋮-Menü)
@@ -83,44 +83,8 @@ fun HomeScreen(
         snapshotFlow { pagerState.settledPage }.collect { currentOnTab(it) }
     }
     var menuOpen by remember { mutableStateOf(false) }
-    // Inhalt einer gewählten Backup-Datei, die noch bestätigt werden muss
-    var pendingImport by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
-    fun toast(msg: String) = Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-
-    // Android-Dateidialog „Speichern unter…“. Liefert eine Uri (oder null bei Abbruch).
-    // Die App braucht dafür keine Speicher-Berechtigung: der Nutzer wählt den Ort selbst.
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        runCatching {
-            val out = context.contentResolver.openOutputStream(uri)
-                ?: error(tr("Datei nicht beschreibbar", "File not writable"))
-            out.use { it.write(store.exportJson().toByteArray(Charsets.UTF_8)) }
-        }.onSuccess {
-            store.markExported()
-            toast(tr("Backup gespeichert", "Backup saved"))
-        }.onFailure { toast(tr("Export fehlgeschlagen: ", "Export failed: ") + it.message) }
-    }
-
-    // Android-Dateidialog „Öffnen…“
-    val importLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        // Höchstens 20 MB lesen (echte Sicherungen sind weit kleiner): eine riesige Datei würde sonst
-        // den Arbeitsspeicher sprengen und die App abstürzen lassen
-        val maxBytes = 20 * 1024 * 1024
-        val text = runCatching {
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                val bytes = input.readNBytesCompat(maxBytes + 1)
-                if (bytes.size > maxBytes) null else String(bytes, Charsets.UTF_8)
-            }
-        }.getOrNull()
-        if (text != null && store.inspectBackup(text) != null) pendingImport = text
-        else toast(tr("Das ist keine gültige GymTracker-Sicherung.", "This is not a valid GymTracker backup."))
-    }
+    // Export/Import (SettingsScreen.kt) – auch auf der Einstellungsseite
+    val backup = rememberBackupActions(store)
 
     Scaffold(
         topBar = {
@@ -151,7 +115,7 @@ fun HomeScreen(
                             DropdownMenuItem(
                                 text = { Text(tr("Einstellungen", "Settings")) },
                                 leadingIcon = { AppIcon(Ico.SETTINGS) },
-                                onClick = { menuOpen = false; showSettings = true }
+                                onClick = { menuOpen = false; onSettings() }
                             )
                             HorizontalDivider()
                             DropdownMenuItem(
@@ -159,8 +123,7 @@ fun HomeScreen(
                                 leadingIcon = { AppIcon(Ico.UPLOAD) },
                                 onClick = {
                                     menuOpen = false
-                                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(Date())
-                                    exportLauncher.launch("gymtracker-backup-$date.json")
+                                    backup.export()
                                 }
                             )
                             DropdownMenuItem(
@@ -168,8 +131,7 @@ fun HomeScreen(
                                 leadingIcon = { AppIcon(Ico.DOWNLOAD) },
                                 onClick = {
                                     menuOpen = false
-                                    // */*: manche Dateimanager kennzeichnen .json nicht als application/json
-                                    importLauncher.launch(arrayOf("*/*"))
+                                    backup.import()
                                 }
                             )
                             DropdownMenuItem(
@@ -256,39 +218,6 @@ fun HomeScreen(
         }
     }
 
-    val importText = pendingImport
-    val info = importText?.let { store.inspectBackup(it) }
-    if (importText != null && info != null) {
-        AlertDialog(
-            onDismissRequest = { pendingImport = null },
-            title = { Text(tr("Sicherung importieren?", "Import backup?")) },
-            text = {
-                Text(
-                    tr("Die Sicherung enthält:", "The backup contains:") + "\n" +
-                        "• ${plural(info.exercises, tr("Übung", "exercise"), tr("Übungen", "exercises"))}\n" +
-                        "• ${plural(info.sets, tr("Satz", "set"), tr("Sätze", "sets"))}\n" +
-                        "• ${plural(info.workouts, "Workout", "Workouts")}\n" +
-                        "• ${plural(info.sessions, tr("Trainingseinheit", "session"), tr("Trainingseinheiten", "sessions"))}\n\n" +
-                        tr(
-                            "Deine aktuellen Daten werden dadurch ersetzt. Eine Kopie davon wird vorher in der App abgelegt.",
-                            "Your current data will be replaced. A copy of it is kept in the app first."
-                        )
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    pendingImport = null
-                    runCatching { store.importJson(importText) }
-                        .onSuccess { toast(tr("Sicherung importiert", "Backup imported")) }
-                        .onFailure { toast(tr("Import fehlgeschlagen: ", "Import failed: ") + it.message) }
-                }) { Text(tr("Importieren", "Import")) }
-            },
-            dismissButton = { TextButton(onClick = { pendingImport = null }) { Text(tr("Abbrechen", "Cancel")) } }
-        )
-    }
-
-    if (showSettings) SettingsDialog(store, onDismiss = { showSettings = false })
-
     if (showNewWorkout) {
         NewWorkoutDialog(
             onDismiss = { showNewWorkout = false },
@@ -315,7 +244,6 @@ fun ProfileSettings(store: GymStore) {
     // Eingabetext lokal halten (auch halb getippte Werte), gespeichert wird nur Gültiges
     var year by remember { mutableStateOf(p.birthYear?.toString() ?: "") }
     var height by remember { mutableStateOf(p.heightCm?.toString() ?: "") }
-    Text(tr("Profil für Kalorien (optional)", "Profile for calories (optional)"), style = MaterialTheme.typography.titleSmall)
     Text(
         tr("Mit Geschlecht, Geburtsjahr und Größe (plus Körpergewicht) wird der Verbrauch über deinen Grundumsatz genauer geschätzt.",
             "With sex, birth year and height (plus body weight) calories are estimated more precisely from your resting metabolic rate."),
@@ -364,115 +292,6 @@ fun ProfileSettings(store: GymStore) {
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.primary
     )
-}
-
-/** Einstellungen: Design, Sprache, Profil, Backup, Erinnerung und „Fortschritt zurücksetzen“. */
-@Composable
-fun SettingsDialog(store: GymStore, onDismiss: () -> Unit) {
-    var confirmReset by remember { mutableStateOf(false) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(tr("Einstellungen", "Settings")) },
-        text = {
-            // scrollbar, damit auf kleinen Displays alles erreichbar bleibt
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(tr("Design", "Theme"), style = MaterialTheme.typography.titleSmall)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf(
-                        "system" to tr("System", "System"),
-                        "light" to tr("☀ Hell", "☀ Light"),
-                        "dark" to tr("☾ Dunkel", "☾ Dark")
-                    ).forEach { (mode, label) ->
-                        FilterChip(
-                            selected = store.themeMode == mode,
-                            onClick = { store.setTheme(mode) },
-                            label = { Text(label) }
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-                Text(tr("Sprache", "Language"), style = MaterialTheme.typography.titleSmall)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf("de" to "Deutsch", "en" to "English").forEach { (lang, label) ->
-                        FilterChip(
-                            selected = appLanguage == lang,
-                            onClick = { store.setLanguage(lang) },
-                            label = { Text(label) }
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-                Text(tr("Gewichtseinheit", "Weight unit"), style = MaterialTheme.typography.titleSmall)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    // nur Anzeige/Eingabe – gespeichert wird immer in kg, Umschalten ändert keine Daten
-                    listOf("kg" to "kg", "lb" to "lbs").forEach { (unit, label) ->
-                        FilterChip(
-                            selected = weightUnit == unit,
-                            onClick = { store.setUnit(unit) },
-                            label = { Text(label) }
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-                ProfileSettings(store)
-                Spacer(Modifier.height(8.dp))
-                AutoBackupSettings(store)
-                Spacer(Modifier.height(8.dp))
-                CycleSettings(store)
-                Spacer(Modifier.height(8.dp))
-                ReminderSettings()
-                Spacer(Modifier.height(8.dp))
-                HealthSettings(store)
-                Spacer(Modifier.height(8.dp))
-                HorizontalDivider()
-                // Fortschritt zurücksetzen (rot, mit Nachfrage und danach „Rückgängig“)
-                Text(tr("Fortschritt", "Progress"), style = MaterialTheme.typography.titleSmall)
-                Text(
-                    tr("Löscht alle Sätze, Trainingseinheiten, Notizen und Gewichtseinträge. Übungen und Workouts bleiben.",
-                        "Deletes all sets, workouts done, notes and weight entries. Exercises and workouts stay."),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                OutlinedButton(
-                    onClick = { confirmReset = true },
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                ) {
-                    AppIcon(Ico.DELETE, Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(tr("Fortschritt zurücksetzen", "Reset progress"))
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } }
-    )
-
-    if (confirmReset) {
-        AlertDialog(
-            onDismissRequest = { confirmReset = false },
-            title = { Text(tr("Fortschritt zurücksetzen?", "Reset progress?")) },
-            text = {
-                Text(
-                    tr(
-                        "${plural(store.sets.size, "Satz", "Sätze")}, ${plural(store.sessions.size, "Trainingseinheit", "Trainingseinheiten")} und ${plural(store.weights.size, "Gewichtseintrag", "Gewichtseinträge")} werden gelöscht. Tipp: vorher über ⋮ → „Daten exportieren“ sichern.",
-                        "${plural(store.sets.size, "set", "sets")}, ${plural(store.sessions.size, "workout", "workouts")} and ${plural(store.weights.size, "weight entry", "weight entries")} will be deleted. Tip: back up first via ⋮ → \"Export data\"."
-                    )
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val snap = store.resetProgress()
-                        confirmReset = false
-                        onDismiss()
-                        Undo.show(tr("Fortschritt zurückgesetzt", "Progress reset")) { store.restoreProgress(snap) }
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) { Text(tr("Zurücksetzen", "Reset")) }
-            },
-            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text(tr("Abbrechen", "Cancel")) } }
-        )
-    }
 }
 
 /** Alle eigenen Übungen als Kacheln, gruppiert nach Kategorie. */
@@ -734,7 +553,7 @@ fun ExerciseTile(
 
 
 /** Liest höchstens [limit] Bytes (InputStream.readNBytes gibt es erst ab Android 13). */
-private fun java.io.InputStream.readNBytesCompat(limit: Int): ByteArray {
+internal fun java.io.InputStream.readNBytesCompat(limit: Int): ByteArray {
     val out = java.io.ByteArrayOutputStream()
     val buf = ByteArray(64 * 1024)
     while (out.size() < limit) {

@@ -44,14 +44,13 @@ fun cycleLine(store: GymStore): String? {
     else tr("📆 Block: Woche $w von ${c.length} · Deload in Woche ${c.length}", "📆 Block: week $w of ${c.length} · deload in week ${c.length}")
 }
 
-/** Abschnitt „Trainingsblock“ im Einstellungen-Dialog. */
+/** Unterseite „Trainingsblock“ der Einstellungen (SettingsScreen.kt). */
 @Composable
 fun CycleSettings(store: GymStore) {
     val c = store.cycle
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(tr("Trainingsblock mit Deload", "Training block with deload"), style = MaterialTheme.typography.titleSmall)
                 Text(
                     tr("Ein paar Wochen Aufbau, dann eine leichte Woche: halbe Ziel-Sätze, ca. 60 % Gewicht. Beugt Übertraining vor.",
                         "A few weeks of building, then a light week: half the target sets, about 60 % weight. Helps prevent overtraining."),

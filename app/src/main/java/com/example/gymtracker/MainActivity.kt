@@ -91,6 +91,7 @@ fun GymApp(store: GymStore) {
     var current by rememberSaveable { mutableStateOf<String?>(null) }
     var showCatalog by rememberSaveable { mutableStateOf(false) }
     var showWiki by rememberSaveable { mutableStateOf(false) }
+    var showSettings by rememberSaveable { mutableStateOf(false) } // Einstellungen (SettingsScreen.kt)
     var showBot by rememberSaveable { mutableStateOf(false) }   // „Fragen“ (früher ein Tab, jetzt über ⋮ / Wiki)
     var workoutId by rememberSaveable { mutableStateOf<Long?>(null) }
     var pickForWorkout by rememberSaveable { mutableStateOf(false) }
@@ -177,7 +178,7 @@ fun GymApp(store: GymStore) {
 
     val trainingVisible = start != null && session != null && trainingOpen
     val homeVisible = !trainingVisible && summary == null && ex == null && workout == null &&
-        !showCatalog && !showBot && !showWiki
+        !showCatalog && !showBot && !showWiki && !showSettings
     val showBar = start != null && trainingWorkout != null && !trainingVisible
     val bar: @Composable () -> Unit = {
         TrainingBar(trainingWorkout?.name ?: "", start ?: 0L, restEnd, onOpen = { trainingOpen = true })
@@ -262,6 +263,10 @@ fun GymApp(store: GymStore) {
                     BackHandler { showCatalog = false }
                     CatalogScreen(store, catalogFilter, onFilter = { catalogFilter = it }, onBack = { showCatalog = false })
                 }
+                showSettings -> {
+                    BackHandler { showSettings = false }
+                    SettingsScreen(store, onBack = { showSettings = false })
+                }
                 showBot -> {
                     BackHandler { showBot = false }
                     BotScreen(store, onBack = { showBot = false }, onOpenWorkout = { showBot = false; workoutId = it })
@@ -278,6 +283,7 @@ fun GymApp(store: GymStore) {
                     onCatalog = { showCatalog = true },
                     onWiki = { showWiki = true },
                     onBot = { showBot = true },
+                    onSettings = { showSettings = true },
                     onOpenWorkout = { workoutId = it },
                     onCreatedWorkout = { workoutId = it; pickForWorkout = true },
                     calMonth = calMonth,
