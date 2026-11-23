@@ -65,6 +65,7 @@ fun MuscleGroup.defaultMotion(): Motion = when (this) {
 val MOTION_OF: Map<String, Motion> = mapOf(
     // Brust
     "Bankdrücken (Langhantel)" to Motion.BENCH_PRESS,
+    "Bankdrücken (Langhantel, breiter Griff)" to Motion.BENCH_PRESS,
     "Bankdrücken (Kurzhantel)" to Motion.BENCH_PRESS,
     "Bankdrücken (Kurzhantel, einarmig)" to Motion.BENCH_PRESS,
     "Bankdrücken (Multipresse)" to Motion.BENCH_PRESS,
@@ -131,6 +132,7 @@ val MOTION_OF: Map<String, Motion> = mapOf(
     "Klimmzüge (Körpergewicht)" to Motion.PULL_UP,
     "Klimmzüge (Körpergewicht, breiter Griff)" to Motion.PULL_UP,
     "Klimmzüge (Körpergewicht, Parallelgriff)" to Motion.PULL_UP,
+    "Klimmzüge (Körpergewicht, enger Griff)" to Motion.PULL_UP,
     "Klimmzüge (Körpergewicht, Untergriff)" to Motion.PULL_UP,
     "Klimmzüge (Maschine / unterstützt)" to Motion.PULL_UP,
     "Klimmzüge (Widerstandsband)" to Motion.PULL_UP,
@@ -317,6 +319,7 @@ val MOTION_OF: Map<String, Motion> = mapOf(
     "Butterfly Reverse (Kabelzug, von unten)" to Motion.LATERAL_RAISE,
     "Butterfly Reverse (Kabelzug, einarmig)" to Motion.LATERAL_RAISE,
     "Face Pulls (Kabelzug)" to Motion.FACE_PULL,
+    "Face Pulls (Kabelzug, Stange)" to Motion.FACE_PULL,
     "Face Pulls (Theraband)" to Motion.FACE_PULL,
     "Band Pull-Aparts (Widerstandsband)" to Motion.LATERAL_RAISE,
     "Aufrechtes Rudern (Langhantel)" to Motion.SHRUG,

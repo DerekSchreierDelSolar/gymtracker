@@ -100,7 +100,17 @@
       ["Leichtes Gewicht – es geht um saubere Bewegung, nicht um Last.", "Use light weight – it's about clean movement, not load."],
       ["Nicht nach hinten lehnen.", "Don't lean back."],
       ["Gut für gesunde Schultern, wenn man viel drückt.", "Great for healthy shoulders if you do a lot of pressing."]
-    ]
+    ],
+    "variants": {
+      "Kabelzug": ["Mit Seil: Die Enden lassen sich auseinanderziehen und die Hände am Ende nach hinten drehen – so arbeitet auch die Rotatorenmanschette mit.", "With a rope: you can spread the ends and rotate your hands back at the end – that brings in the rotator cuff too."],
+      "Kabelzug, Stange": ["Gerade oder breite Stange im Obergriff breit fassen, mit hohen Ellbogen zur Stirn ziehen. Mehr oberer Rücken und Trapez, mehr Gewicht möglich – aber ohne die Drehung am Ende, die Rotatorenmanschette arbeitet weniger.", "Take a straight or wide bar with a wide overhand grip and pull it to your forehead with high elbows. More upper back and traps, and you can go heavier – but without the rotation at the end, the rotator cuff works less."]
+    },
+    "variantMuscles": {
+      "Kabelzug, Stange": {
+        "muscles": ["Hintere Schulter, oberer und mittlerer Rücken (Trapez)", "Rear delts, upper and mid back (traps)"],
+        "regions": { "delts.rear": 1, "delts.side": 0.3, "traps.middle": 1, "traps.upper": 0.6 }
+      }
+    }
   },
   "Band Pull-Aparts": {
     "muscles": ["Hintere Schulter, oberer Rücken", "Rear delts, upper back"],

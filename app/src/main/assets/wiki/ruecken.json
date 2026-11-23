@@ -250,9 +250,14 @@
       "Widerstandsband": ["Band um die Stange schlingen und Knie oder Fuß hineinstellen; dickeres Band = mehr Hilfe.", "Loop the band over the bar and put your knee or foot in it; thicker band = more help."],
       "Körpergewicht, Untergriff": ["Stange im Untergriff schulterbreit fassen. Meist etwas leichter als Klimmzüge im Obergriff, weil der Bizeps stärker hilft.", "Grip the bar underhand at shoulder width. Usually a bit easier than overhand pull-ups since the biceps help more."],
       "Körpergewicht, breiter Griff": ["Deutlich breiter als schulterbreit greifen. Kürzerer Weg, schwerer – betont den oberen, äußeren Latissimus (Rückenbreite), der Bizeps hilft kaum.", "Grip well outside shoulder width. Shorter range and harder – emphasises the upper, outer lats (back width); the biceps help little."],
+      "Körpergewicht, enger Griff": ["Im Obergriff enger als schulterbreit fassen (Hände etwa eine Handbreit auseinander), Brust zur Stange ziehen. Langer Weg mit viel Dehnung – unterer Latissimus, Brachialis und Unterarm arbeiten stärker.", "Grip overhand narrower than shoulder width (hands about a hand's width apart) and pull your chest to the bar. Long range with a big stretch – the lower lats, brachialis and forearms work harder."],
       "Körpergewicht, Parallelgriff": ["An parallelen Griffen hängen, Handflächen zueinander. Schonend für Schultern und Handgelenke; Oberarmmuskel (Brachialis) und Unterarm arbeiten stärker.", "Hang from parallel handles, palms facing each other. Easy on shoulders and wrists; the brachialis and forearms work harder."]
     },
     "variantMuscles": {
+      "Körpergewicht, enger Griff": {
+        "muscles": ["Unterer Latissimus, Oberarmmuskel (Brachialis), Bizeps, Unterarm", "Lower lats, brachialis, biceps, forearms"],
+        "regions": { "lats.lower": 1, "lats.upper": 0.6, "traps.lower": 0.6, "delts.rear": 0.3, "biceps.brachialis": 1, "biceps.long": 0.6, "biceps.short": 0.3 }
+      },
       "Körpergewicht, breiter Griff": {
         "muscles": ["Oberer Latissimus (Rückenbreite), oberer Rücken, Griffkraft", "Upper lats (back width), upper back, grip"],
         "regions": { "lats.upper": 1, "lats.lower": 0.6, "traps.lower": 0.6, "traps.middle": 0.3, "delts.rear": 0.6, "biceps.long": 0.3, "biceps.short": 0.3, "biceps.brachialis": 0.3 }

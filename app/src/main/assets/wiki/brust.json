@@ -18,7 +18,14 @@
     "variants": {
       "Langhantel": ["Bei schweren Sätzen mit Sicherungsablagen oder Partner trainieren.", "Use safety arms or a spotter for heavy sets."],
       "Kurzhantel": ["Größerer Bewegungsradius; unten tiefer gehen, oben die Hanteln nicht zusammenschlagen.", "Greater range of motion; go a little deeper and don't clank the dumbbells together at the top."],
-      "Multipresse": ["Bank so stellen, dass die Stange auf die untere Brust trifft. Sicherungshaken nutzen.", "Position the bench so the bar touches your lower chest. Use the safety catches."]
+      "Multipresse": ["Bank so stellen, dass die Stange auf die untere Brust trifft. Sicherungshaken nutzen.", "Position the bench so the bar touches your lower chest. Use the safety catches."],
+      "Langhantel, breiter Griff": ["Etwa 1,5× schulterbreit greifen (Zeigefinger an den Ringen der Stange). Kürzerer Weg – mehr Brust, weniger Trizeps. Ellbogen trotzdem nicht ganz abspreizen, sonst leidet die Schulter; nicht breiter als die Ringe.", "Grip about 1.5× shoulder width (index fingers on the bar's rings). Shorter range – more chest, less triceps. Still don't flare your elbows fully or your shoulders suffer; don't go wider than the rings."]
+    },
+    "variantMuscles": {
+      "Langhantel, breiter Griff": {
+        "muscles": ["Brust (v. a. äußerer Teil), vordere Schulter", "Chest (especially the outer part), front delts"],
+        "regions": { "chest.mid": 1, "chest.upper": 0.6, "chest.lower": 1, "delts.front": 0.6, "triceps.lateral": 0.3, "triceps.medial": 0.3, "triceps.long": 0.3 }
+      }
     }
   },
   "Schrägbankdrücken": {

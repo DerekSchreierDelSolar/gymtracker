@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 val CATALOG = listOf(
     // ----- Brust -----
     CatalogExercise("Bankdrücken (Langhantel)", "Bankdrücken", MuscleGroup.BRUST, Equipment.LANGHANTEL, "Bench Press"),
+    CatalogExercise("Bankdrücken (Langhantel, breiter Griff)", "Bankdrücken", MuscleGroup.BRUST, Equipment.LANGHANTEL, "Wide-Grip Bench Press"),
     CatalogExercise("Bankdrücken (Kurzhantel)", "Bankdrücken", MuscleGroup.BRUST, Equipment.KURZHANTEL, "Dumbbell Bench Press"),
     CatalogExercise("Bankdrücken (Kurzhantel, einarmig)", "Bankdrücken", MuscleGroup.BRUST, Equipment.KURZHANTEL, "Single-Arm Dumbbell Bench Press"),
     CatalogExercise("Bankdrücken (Multipresse)", "Bankdrücken", MuscleGroup.BRUST, Equipment.MASCHINE, "Smith Machine Bench Press"),
@@ -75,6 +76,7 @@ val CATALOG = listOf(
     CatalogExercise("Klimmzüge (Körpergewicht)", "Klimmzüge", MuscleGroup.RUECKEN, Equipment.KOERPER, "Pull-ups"),
     CatalogExercise("Klimmzüge (Körpergewicht, breiter Griff)", "Klimmzüge", MuscleGroup.RUECKEN, Equipment.KOERPER, "Wide-Grip Pull-ups"),
     CatalogExercise("Klimmzüge (Körpergewicht, Parallelgriff)", "Klimmzüge", MuscleGroup.RUECKEN, Equipment.KOERPER, "Neutral-Grip Pull-ups"),
+    CatalogExercise("Klimmzüge (Körpergewicht, enger Griff)", "Klimmzüge", MuscleGroup.RUECKEN, Equipment.KOERPER, "Close-Grip Pull-ups"),
     CatalogExercise("Klimmzüge (Körpergewicht, Untergriff)", "Klimmzüge", MuscleGroup.RUECKEN, Equipment.KOERPER, "Chin-ups"),
     CatalogExercise("Klimmzüge (Maschine / unterstützt)", "Klimmzüge", MuscleGroup.RUECKEN, Equipment.MASCHINE, "Assisted Pull-up Machine"),
     CatalogExercise("Klimmzüge (Widerstandsband)", "Klimmzüge", MuscleGroup.RUECKEN, Equipment.BAND, "Band-Assisted Pull-ups"),
@@ -264,6 +266,7 @@ val CATALOG = listOf(
     CatalogExercise("Butterfly Reverse (Kabelzug, von unten)", "Butterfly Reverse", MuscleGroup.SCHULTERN, Equipment.KABEL, "Low Cable Reverse Fly"),
     CatalogExercise("Butterfly Reverse (Kabelzug, einarmig)", "Butterfly Reverse", MuscleGroup.SCHULTERN, Equipment.KABEL, "Single-Arm Cable Reverse Fly"),
     CatalogExercise("Face Pulls (Kabelzug)", "Face Pulls", MuscleGroup.SCHULTERN, Equipment.KABEL, "Face Pulls"),
+    CatalogExercise("Face Pulls (Kabelzug, Stange)", "Face Pulls", MuscleGroup.SCHULTERN, Equipment.KABEL, "Bar Face Pulls"),
     CatalogExercise("Face Pulls (Theraband)", "Face Pulls", MuscleGroup.SCHULTERN, Equipment.BAND, "Band Face Pulls"),
     CatalogExercise("Band Pull-Aparts (Widerstandsband)", "Band Pull-Aparts", MuscleGroup.SCHULTERN, Equipment.BAND, "Band Pull-Aparts"),
     CatalogExercise("Aufrechtes Rudern (Langhantel)", "Aufrechtes Rudern", MuscleGroup.SCHULTERN, Equipment.LANGHANTEL, "Upright Row"),
