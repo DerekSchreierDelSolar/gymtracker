@@ -323,7 +323,10 @@
       ["Oben nicht überstrecken (kein Hohlkreuz).", "Don't hyperextend at the top (no arching)."],
       ["Langsam und ohne Schwung.", "Move slowly, without momentum."],
       ["Für mehr Gewicht eine Scheibe vor der Brust halten.", "Hold a plate against your chest for extra load."]
-    ]
+    ],
+    "variants": {
+      "Ball": ["Bauch und Hüfte auf einem Gymnastikball, Füße an der Wand oder weit auseinander abstützen. Oberkörper über den Ball nach unten rollen und wieder aufrichten, bis der Körper eine Linie bildet. Gut für zu Hause, kleinerer Bewegungsweg.", "Lie with your stomach and hips on a stability ball, feet braced against a wall or set wide. Round down over the ball and lift back up until your body forms a straight line. Great at home, smaller range of motion."]
+    }
   },
   "Superman": {
     "muscles": ["Unterer Rücken, Gesäß, hintere Schulter", "Lower back, glutes, rear delts"],

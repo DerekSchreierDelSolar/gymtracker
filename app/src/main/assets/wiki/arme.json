@@ -246,7 +246,10 @@
       ["Nicht zu tief – das belastet die Schulter vorne.", "Don't go too deep – it stresses the front of the shoulder."],
       ["Rücken nah an der Bank.", "Keep your back close to the bench."],
       ["Leichter: Knie anwinkeln. Schwerer: Füße erhöht.", "Easier: bend your knees. Harder: elevate your feet."]
-    ]
+    ],
+    "variants": {
+      "Körpergewicht, Füße erhöht": ["Füße auf eine zweite Bank oder einen Kasten legen, Beine gestreckt. Mehr Körpergewicht lastet auf den Armen – deutlich schwerer. Schultern bleiben unten, nicht tiefer als bis zu etwa 90° im Ellbogen.", "Rest your feet on a second bench or box with your legs straight. More of your body weight goes onto your arms – much harder. Keep your shoulders down and go no deeper than about 90° at the elbow."]
+    }
   },
   "Enge Liegestütze": {
     "muscles": ["Trizeps, Brust", "Triceps, chest"],

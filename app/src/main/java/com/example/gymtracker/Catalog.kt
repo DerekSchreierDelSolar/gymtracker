@@ -40,6 +40,10 @@ val CATALOG = listOf(
     CatalogExercise("Liegestütze (Körpergewicht, kniend)", "Liegestütze", MuscleGroup.BRUST, Equipment.KOERPER, "Knee Push-ups"),
     CatalogExercise("Liegestütze (Körpergewicht, negativ)", "Liegestütze", MuscleGroup.BRUST, Equipment.KOERPER, "Decline Push-ups"),
     CatalogExercise("Liegestütze (Körpergewicht, positiv)", "Liegestütze", MuscleGroup.BRUST, Equipment.KOERPER, "Incline Push-ups"),
+    CatalogExercise("Liegestütze (Körpergewicht, Klatschen)", "Liegestütze", MuscleGroup.BRUST, Equipment.KOERPER, "Clap Push-ups"),
+    CatalogExercise("Liegestütze (Körpergewicht, einarmig)", "Liegestütze", MuscleGroup.BRUST, Equipment.KOERPER, "One-Arm Push-ups"),
+    CatalogExercise("Liegestütze (Schlingentrainer)", "Liegestütze", MuscleGroup.BRUST, Equipment.KOERPER, "Suspension Trainer Push-ups"),
+    CatalogExercise("Liegestütze (Ringe)", "Liegestütze", MuscleGroup.BRUST, Equipment.KOERPER, "Ring Push-ups"),
 
     // ----- Rücken -----
     CatalogExercise("Kreuzheben (Langhantel)", "Kreuzheben", MuscleGroup.RUECKEN, Equipment.LANGHANTEL, "Deadlift"),
@@ -86,6 +90,7 @@ val CATALOG = listOf(
     CatalogExercise("Australische Klimmzüge (Körpergewicht)", "Australische Klimmzüge", MuscleGroup.RUECKEN, Equipment.KOERPER, "Inverted Rows"),
     CatalogExercise("Hyperextensions (Körpergewicht)", "Hyperextensions", MuscleGroup.RUECKEN, Equipment.KOERPER, "Back Extensions"),
     CatalogExercise("Hyperextensions (Maschine)", "Hyperextensions", MuscleGroup.RUECKEN, Equipment.MASCHINE, "Back Extension Machine"),
+    CatalogExercise("Hyperextensions (Ball)", "Hyperextensions", MuscleGroup.RUECKEN, Equipment.KOERPER, "Stability Ball Back Extension"),
     CatalogExercise("Superman (Körpergewicht)", "Superman", MuscleGroup.RUECKEN, Equipment.KOERPER, "Superman"),
     CatalogExercise("Bird-Dog (Körpergewicht)", "Bird-Dog", MuscleGroup.RUECKEN, Equipment.KOERPER, "Bird Dog"),
 
@@ -220,6 +225,7 @@ val CATALOG = listOf(
     CatalogExercise("Seitliches Beinheben (Körpergewicht, stehend)", "Seitliches Beinheben", MuscleGroup.GLUTEUS, Equipment.KOERPER, "Standing Side Leg Raise"),
     CatalogExercise("Seitliches Beinheben (Körpergewicht, Seitstütz)", "Seitliches Beinheben", MuscleGroup.GLUTEUS, Equipment.KOERPER, "Side Plank Leg Raise"),
     CatalogExercise("Clamshell (Theraband)", "Clamshell", MuscleGroup.GLUTEUS, Equipment.BAND, "Clamshell"),
+    CatalogExercise("Clamshell (Körpergewicht)", "Clamshell", MuscleGroup.GLUTEUS, Equipment.KOERPER, "Clamshells"),
     CatalogExercise("Seitliches Gehen (Widerstandsband)", "Seitliches Gehen", MuscleGroup.GLUTEUS, Equipment.BAND, "Lateral Band Walk"),
     CatalogExercise("Monster Walk (Theraband)", "Monster Walk", MuscleGroup.GLUTEUS, Equipment.BAND, "Monster Walk"),
     CatalogExercise("Feuerhydrant (Körpergewicht)", "Feuerhydrant", MuscleGroup.GLUTEUS, Equipment.KOERPER, "Fire Hydrants"),
@@ -374,6 +380,7 @@ val CATALOG = listOf(
     CatalogExercise("Arnold Dips (Körpergewicht)", "Arnold Dips", MuscleGroup.TRIZEPS, Equipment.KOERPER, "Arnold Dips"),
     CatalogExercise("Arnold Dips (Zusatzgewicht)", "Arnold Dips", MuscleGroup.TRIZEPS, Equipment.KOERPER, "Weighted Arnold Dips"),
     CatalogExercise("Bankdips (Körpergewicht)", "Bankdips", MuscleGroup.TRIZEPS, Equipment.KOERPER, "Bench Dips"),
+    CatalogExercise("Bankdips (Körpergewicht, Füße erhöht)", "Bankdips", MuscleGroup.TRIZEPS, Equipment.KOERPER, "Feet-Elevated Bench Dips"),
     CatalogExercise("Enge Liegestütze (Körpergewicht)", "Enge Liegestütze", MuscleGroup.TRIZEPS, Equipment.KOERPER, "Close-Grip Push-ups"),
     CatalogExercise("Enge Liegestütze (Körpergewicht, Diamond)", "Enge Liegestütze", MuscleGroup.TRIZEPS, Equipment.KOERPER, "Diamond Push-ups"),
 
@@ -435,9 +442,15 @@ val CATALOG = listOf(
     CatalogExercise("Knieheben am Gerät (Körpergewicht, gestreckte Beine)", "Knieheben am Gerät", MuscleGroup.BAUCH, Equipment.KOERPER, "Captain's Chair Leg Raises"),
     CatalogExercise("Knieheben am Gerät (Körpergewicht, seitlich)", "Knieheben am Gerät", MuscleGroup.BAUCH, Equipment.KOERPER, "Captain's Chair Oblique Knee Raises"),
     CatalogExercise("Mountain Climbers (Körpergewicht)", "Mountain Climbers", MuscleGroup.BAUCH, Equipment.KOERPER, "Mountain Climbers"),
+    CatalogExercise("Mountain Climbers (Körpergewicht, Kreuz)", "Mountain Climbers", MuscleGroup.BAUCH, Equipment.KOERPER, "Cross-Body Mountain Climbers"),
+    CatalogExercise("Mountain Climbers (Körpergewicht, Spiderman)", "Mountain Climbers", MuscleGroup.BAUCH, Equipment.KOERPER, "Spiderman Mountain Climbers"),
     CatalogExercise("Dead Bug (Körpergewicht)", "Dead Bug", MuscleGroup.BAUCH, Equipment.KOERPER, "Dead Bug"),
+    CatalogExercise("McGill Curl-up (Körpergewicht)", "McGill Curl-up", MuscleGroup.BAUCH, Equipment.KOERPER, "McGill Curl-up"),
+    CatalogExercise("Scheibenwischer (Körpergewicht)", "Scheibenwischer", MuscleGroup.BAUCH, Equipment.KOERPER, "Windshield Wipers"),
+    CatalogExercise("Scheibenwischer (Körpergewicht, hängend)", "Scheibenwischer", MuscleGroup.BAUCH, Equipment.KOERPER, "Hanging Windshield Wipers"),
     CatalogExercise("Bauchroller (Körpergewicht)", "Bauchroller", MuscleGroup.BAUCH, Equipment.KOERPER, "Ab Wheel Rollout"),
     CatalogExercise("Bauchroller (Langhantel)", "Bauchroller", MuscleGroup.BAUCH, Equipment.LANGHANTEL, "Barbell Rollout"),
+    CatalogExercise("Bauchroller (Ball)", "Bauchroller", MuscleGroup.BAUCH, Equipment.KOERPER, "Stability Ball Rollout"),
     CatalogExercise("Russian Twist (Körpergewicht)", "Russian Twist", MuscleGroup.BAUCH, Equipment.KOERPER, "Russian Twists"),
     CatalogExercise("Russian Twist (Kurzhantel)", "Russian Twist", MuscleGroup.BAUCH, Equipment.KURZHANTEL, "Weighted Russian Twists"),
     CatalogExercise("Russian Twist (Körpergewicht, Partner)", "Russian Twist", MuscleGroup.BAUCH, Equipment.KOERPER, "Partner Russian Twists"),
@@ -477,6 +490,11 @@ val CATALOG = listOf(
     CatalogExercise("Box Jumps (Körpergewicht)", "Box Jumps", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Box Jumps"),
     CatalogExercise("Wall Balls (Medizinball)", "Wall Balls", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Wall Balls"),
     CatalogExercise("Ball Slams (Medizinball)", "Ball Slams", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Medicine Ball Slams"),
+    CatalogExercise("Bärengang (Körpergewicht)", "Bärengang", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Bear Crawl"),
+    CatalogExercise("Raupengang (Körpergewicht)", "Raupengang", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Inchworm"),
+    CatalogExercise("Skater Jumps (Körpergewicht)", "Skater Jumps", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Skater Jumps"),
+    CatalogExercise("Tuck Jumps (Körpergewicht)", "Tuck Jumps", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Tuck Jumps"),
+    CatalogExercise("Broad Jumps (Körpergewicht)", "Broad Jumps", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Broad Jumps"),
     CatalogExercise("Hampelmann (Körpergewicht)", "Hampelmann", MuscleGroup.GANZKOERPER, Equipment.KOERPER, "Jumping Jacks"),
 
     // ----- Cardio -----

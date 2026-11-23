@@ -136,7 +136,23 @@
     "tips": [
       ["Hüfte nicht hochstrecken.", "Don't pike your hips up."],
       ["Schultern bleiben über den Händen.", "Shoulders stay over your hands."]
-    ]
+    ],
+    "variants": {
+      "Körpergewicht, Kreuz": ["Das Knie diagonal zum gegenüberliegenden Ellbogen ziehen – trifft zusätzlich die schrägen Bauchmuskeln.", "Drive each knee diagonally toward the opposite elbow – also hits the obliques."],
+      "Körpergewicht, Spiderman": ["Das Knie außen am Körper vorbei zum Ellbogen derselben Seite ziehen. Langsamer als normal – fordert schräge Bauchmuskeln und Hüftbeweglichkeit.", "Bring your knee up along the outside of your body to the elbow on the same side. Slower than regular – works the obliques and hip mobility."]
+    },
+    "variantMuscles": {
+      "Körpergewicht, Kreuz": {
+        "muscles": ["Schräge Bauchmuskeln, gerader Bauch, Schultern", "Obliques, abs, shoulders"],
+        "secondary": ["delts", "quads", "obliques"],
+        "regions": { "abs.lower": 1, "abs.upper": 0.6, "obliques": 1 }
+      },
+      "Körpergewicht, Spiderman": {
+        "muscles": ["Schräge Bauchmuskeln, Hüftbeweglichkeit, Schultern", "Obliques, hip mobility, shoulders"],
+        "secondary": ["delts", "quads", "obliques", "adductors"],
+        "regions": { "abs.lower": 1, "abs.upper": 0.6, "obliques": 1, "adductors": 0.3 }
+      }
+    }
   },
   "Dead Bug": {
     "muscles": ["Tiefe Rumpfmuskulatur", "Deep core"],
@@ -153,6 +169,49 @@
       ["Langsam und mit ruhigem Atem.", "Move slowly and breathe steadily."],
       ["Sehr rückenfreundliche Bauchübung.", "A very back-friendly core exercise."]
     ]
+  },
+  "McGill Curl-up": {
+    "muscles": ["Gerader Bauchmuskel, rückenschonend", "Abs, easy on the back"],
+    "primary": ["abs"],
+    "secondary": ["obliques"],
+    "regions": { "abs.upper": 1, "abs.lower": 0.6, "obliques": 0.6 },
+    "how": [
+      ["Auf den Rücken legen, ein Bein gestreckt, das andere angewinkelt. Hände flach unter den unteren Rücken, um die natürliche Krümmung zu halten.", "Lie on your back with one leg straight and the other bent. Slide your hands under your lower back to keep its natural curve."],
+      ["Bauch anspannen, als ob gleich ein Schlag käme.", "Brace your abs as if about to take a punch."],
+      ["Kopf und Schultern nur wenige Zentimeter anheben, Nacken lang – der Rücken bleibt flach.", "Lift your head and shoulders just a few centimetres, neck long – your back stays still."],
+      ["8–10 Sekunden halten, absenken; nach der Hälfte das Bein wechseln.", "Hold 8–10 seconds and lower; switch legs halfway through."]
+    ],
+    "tips": [
+      ["Kein Einrollen der Wirbelsäule wie beim Crunch – es geht ums Halten.", "Don't curl your spine like a crunch – it's about holding."],
+      ["Kinn nicht zur Brust ziehen, Blick zur Decke.", "Don't tuck your chin; look at the ceiling."],
+      ["Entwickelt von Stuart McGill – gut bei empfindlichem Rücken. Bei Schmerzen ärztlich abklären.", "Developed by Stuart McGill – good for sensitive backs. Get pain checked by a doctor."]
+    ]
+  },
+  "Scheibenwischer": {
+    "muscles": ["Schräge Bauchmuskeln, unterer Bauch", "Obliques, lower abs"],
+    "primary": ["obliques", "abs"],
+    "secondary": ["lowerback"],
+    "regions": { "obliques": 1, "abs.lower": 1, "abs.upper": 0.3, "lowerback": 0.3 },
+    "how": [
+      ["Auf den Rücken legen, Arme seitlich ausgestreckt, Beine senkrecht nach oben (gestreckt oder angewinkelt).", "Lie on your back, arms out to the sides, legs straight up (straight or bent)."],
+      ["Beine kontrolliert zu einer Seite absenken, die Schultern bleiben am Boden.", "Lower your legs to one side under control, keeping your shoulders on the floor."],
+      ["Kurz vor dem Boden stoppen und mit dem Bauch zurück zur Mitte und zur anderen Seite.", "Stop just above the floor and use your abs to bring them back through the middle to the other side."]
+    ],
+    "tips": [
+      ["Nur so weit absenken, wie beide Schultern liegen bleiben.", "Only go as far as both shoulders stay down."],
+      ["Leichter: Knie angewinkelt; schwerer: Beine gestreckt.", "Easier: bent knees; harder: straight legs."],
+      ["Langsam – Schwung nimmt dem Bauch die Arbeit ab.", "Go slowly – momentum takes the work away from your abs."]
+    ],
+    "variants": {
+      "Körpergewicht, hängend": ["An der Klimmzugstange hängen, Beine (gestreckt) bis zur Stange heben und dann von Seite zu Seite pendeln. Sehr schwer, braucht viel Griff- und Schulterkraft.", "Hang from a pull-up bar, raise your straight legs up to the bar, then sweep them from side to side. Very hard and demands a lot of grip and shoulder strength."]
+    },
+    "variantMuscles": {
+      "Körpergewicht, hängend": {
+        "muscles": ["Schräge Bauchmuskeln, unterer Bauch, Griffkraft", "Obliques, lower abs, grip"],
+        "secondary": ["lats", "forearms"],
+        "regions": { "obliques": 1, "abs.lower": 1, "abs.upper": 0.6, "lats.upper": 0.3, "lats.lower": 0.3, "forearms": 0.6 }
+      }
+    }
   },
   "V-Ups": {
     "muscles": ["Gerader Bauchmuskel, Hüftbeuger", "Rectus abdominis, hip flexors"],
@@ -184,7 +243,8 @@
       ["Weiche Unterlage für die Knie.", "Use a pad under your knees."]
     ],
     "variants": {
-      "Langhantel": ["Stange mit runden Scheiben statt des Rads – gleiche Ausführung.", "A barbell with round plates instead of the wheel – same technique."]
+      "Langhantel": ["Stange mit runden Scheiben statt des Rads – gleiche Ausführung.", "A barbell with round plates instead of the wheel – same technique."],
+      "Ball": ["Kniend, Unterarme auf einem Gymnastikball. Ball nach vorne rollen, bis die Arme fast gestreckt sind, dann mit dem Bauch zurückziehen. Leichter als das Rad – guter Einstieg.", "Kneel with your forearms on a stability ball. Roll it forward until your arms are almost straight, then pull it back with your abs. Easier than the wheel – a good place to start."]
     }
   },
   "Russian Twist": {

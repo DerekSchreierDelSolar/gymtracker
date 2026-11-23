@@ -709,7 +709,10 @@
     "tips": [
       ["Becken bleibt still, nicht nach hinten kippen.", "Keep your pelvis still; don't roll back."],
       ["Gut zum Aufwärmen und bei Knieproblemen.", "Good as a warm-up and for knee problems."]
-    ]
+    ],
+    "variants": {
+      "Körpergewicht": ["Ohne Band – zum Lernen, zum Aufwärmen oder in der Reha. Langsam und mit kurzer Pause oben, dann brennt es trotzdem.", "Without a band – for learning, warming up or rehab. Go slowly with a short pause at the top and it still burns."]
+    }
   },
   "Monster Walk": {
     "muscles": ["Seitliches Gesäß, Gesäß", "Side glutes, glutes"],

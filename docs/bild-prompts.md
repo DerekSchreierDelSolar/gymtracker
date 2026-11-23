@@ -1,6 +1,6 @@
 # Übungsbilder per KI – Prompt-Liste
 
-Ein Bild pro **Grundübung** (169 Stück) – es gilt automatisch für alle Varianten (Langhantel, Kurzhantel, einarmig …).
+Ein Bild pro **Grundübung** (176 Stück) – es gilt automatisch für alle Varianten (Langhantel, Kurzhantel, einarmig …).
 Stil = das vorhandene Bild `app/src/main/assets/exercises/bankdruecken.jpg` (Meerschweinchen-Bodybuilder, wie das App-Icon).
 Erzeugt aus `CATALOG` (Catalog.kt); kommen neue Grundübungen dazu, hier ergänzen.
 
@@ -911,4 +911,39 @@ Next exercise, same character and style. The guinea pig, standing up out of a de
 **169 · Ball Slams** (Medicine Ball Slams) → `ball-slams.png`
 ```
 Next exercise, same character and style. The guinea pig, slamming a heavy black slam ball down onto the floor in front of the feet with both arms, hips and knees bent, the ball just hitting the floor (side view).
+```
+
+**170 · McGill Curl-up** (McGill Curl-up) → `mcgill-curl-up.png`
+```
+Next exercise, same character and style. The guinea pig, lying on its back on a mat, one leg straight and one knee bent, hands under the lower back, lifting only the head and shoulders a few centimetres off the floor (side view).
+```
+
+**171 · Scheibenwischer** (Windshield Wipers) → `scheibenwischer.png`
+```
+Next exercise, same character and style. The guinea pig, lying on its back on a mat with arms stretched out to the sides, both straight legs raised and lowered toward one side, shoulders flat on the floor (front three-quarter view from above).
+```
+
+**172 · Bärengang** (Bear Crawl) → `baerengang.png`
+```
+Next exercise, same character and style. The guinea pig, crawling on hands and feet with the knees hovering just above the floor, back flat like a table, right hand and left foot stepping forward (side view).
+```
+
+**173 · Raupengang** (Inchworm) → `raupengang.png`
+```
+Next exercise, same character and style. The guinea pig, bent forward with nearly straight legs, hands on the floor walking forward toward a high plank position (side view).
+```
+
+**174 · Skater Jumps** (Skater Jumps) → `skater-jumps.png`
+```
+Next exercise, same character and style. The guinea pig, landing on one leg after a sideways jump like a speed skater, standing knee bent, free leg sweeping behind, arms swinging across the body (front view).
+```
+
+**175 · Tuck Jumps** (Tuck Jumps) → `tuck-jumps.png`
+```
+Next exercise, same character and style. The guinea pig, in mid-air at the top of a jump with both knees pulled up toward the chest, arms forward (side view).
+```
+
+**176 · Broad Jumps** (Broad Jumps) → `broad-jumps.png`
+```
+Next exercise, same character and style. The guinea pig, flying forward in a long standing jump, arms swung forward, legs reaching ahead for the landing (side view).
 ```

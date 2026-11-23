@@ -178,6 +178,89 @@
       ["Beim Aufheben nicht den Rücken runden.", "Don't round your back when picking the ball up."]
     ]
   },
+  "Bärengang": {
+    "muscles": ["Schultern, Rumpf, Oberschenkel, Koordination", "Shoulders, core, quads, coordination"],
+    "primary": ["delts", "abs"],
+    "secondary": ["quads", "chest", "triceps", "obliques", "glutes"],
+    "regions": { "delts.front": 1, "delts.side": 0.3, "abs.upper": 1, "abs.lower": 1, "obliques": 0.6, "quads.outer": 0.6, "quads.middle": 0.6, "quads.inner": 0.6, "chest.mid": 0.3 },
+    "how": [
+      ["Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte. Knie ein paar Zentimeter vom Boden abheben.", "On all fours: hands under shoulders, knees under hips. Lift your knees a few centimetres off the floor."],
+      ["Diagonal krabbeln – rechte Hand und linker Fuß gleichzeitig nach vorne, dann die andere Seite.", "Crawl diagonally – right hand and left foot forward together, then the other side."],
+      ["Kleine Schritte, Rücken flach wie ein Tisch, Knie bleiben knapp über dem Boden.", "Small steps, back flat like a table, knees just above the floor."],
+      ["Auf Zeit (z. B. 30 Sekunden) vorwärts, rückwärts oder seitwärts.", "For time (e.g. 30 seconds) forward, backward or sideways."]
+    ],
+    "tips": [
+      ["Hüfte nicht hochstrecken – sie bleibt etwa auf Schulterhöhe.", "Don't hike your hips up – keep them about level with your shoulders."],
+      ["Ruhig atmen, Bauch bleibt die ganze Zeit fest.", "Breathe steadily and keep your abs tight throughout."],
+      ["Leichter: auf der Stelle halten (Bear Hold) statt krabbeln.", "Easier: hold the position in place (bear hold) instead of crawling."]
+    ]
+  },
+  "Raupengang": {
+    "muscles": ["Beinbeuger (Dehnung), Rumpf, Schultern", "Hamstrings (stretch), core, shoulders"],
+    "primary": ["hamstrings", "abs", "delts"],
+    "secondary": ["chest", "triceps", "lowerback", "calves"],
+    "how": [
+      ["Aufrecht stehen, mit möglichst gestreckten Beinen vorbeugen und die Hände vor die Füße auf den Boden setzen.", "Stand tall, hinge forward with legs as straight as you can and place your hands on the floor in front of your feet."],
+      ["Mit den Händen nach vorne laufen, bis du im hohen Liegestütz bist (optional ein Liegestütz).", "Walk your hands forward until you are in a high plank (optionally do a push-up)."],
+      ["Mit kleinen Schritten die Füße zu den Händen laufen, Beine so gestreckt wie möglich.", "Walk your feet up to your hands in small steps, legs as straight as possible."],
+      ["Aufrichten und wiederholen – oder weiter vorwärts „kriechen“.", "Stand up and repeat – or keep inching forward."]
+    ],
+    "tips": [
+      ["Im Liegestütz keine durchhängende Hüfte.", "No sagging hips in the plank."],
+      ["Knie dürfen leicht gebeugt sein, wenn die Dehnung zu stark ist.", "Bend your knees slightly if the stretch is too strong."],
+      ["Gut zum Aufwärmen vor dem Training.", "Great as a warm-up before training."]
+    ]
+  },
+  "Skater Jumps": {
+    "muscles": ["Gesäß (seitlich), Oberschenkel, Gleichgewicht, Ausdauer", "Glutes (side), quads, balance, conditioning"],
+    "primary": ["glutes", "quads"],
+    "secondary": ["adductors", "calves", "hamstrings", "abs"],
+    "regions": { "glutes.med": 1, "glutes.max": 1, "quads.outer": 1, "quads.middle": 1, "quads.inner": 0.6, "adductors": 0.6, "calves.outer": 0.6, "calves.inner": 0.6 },
+    "how": [
+      ["Auf einem Bein stehen, leicht in die Knie gehen, Oberkörper etwas nach vorne.", "Stand on one leg with a slight knee bend, torso leaning forward a little."],
+      ["Seitlich zur anderen Seite abspringen, so weit es kontrolliert geht.", "Jump sideways to the other side as far as you can control."],
+      ["Auf dem anderen Bein weich landen, das freie Bein schwingt hinter dem Standbein vorbei; Arme schwingen mit wie beim Eisschnelllauf.", "Land softly on the other leg, your free leg sweeping behind the standing leg; swing your arms like a speed skater."],
+      ["Landung kurz halten, dann zurückspringen.", "Hold the landing briefly, then jump back."]
+    ],
+    "tips": [
+      ["Bei der Landung zeigt das Knie über die Zehen, nicht nach innen.", "On landing, your knee tracks over your toes, not inward."],
+      ["Erst kleine Sprünge mit sicherer Landung, dann weiter.", "Start with small jumps and stable landings, then go wider."],
+      ["Leichter: Schritt statt Sprung, das freie Bein tippt kurz auf.", "Easier: step instead of jumping and let your free foot tap down."]
+    ]
+  },
+  "Tuck Jumps": {
+    "muscles": ["Oberschenkel, Gesäß, unterer Bauch, Sprungkraft", "Quads, glutes, lower abs, explosive power"],
+    "primary": ["quads", "glutes", "abs"],
+    "secondary": ["calves", "hamstrings"],
+    "regions": { "quads.outer": 1, "quads.middle": 1, "quads.inner": 1, "glutes.max": 1, "abs.lower": 1, "abs.upper": 0.3, "calves.outer": 0.6, "calves.inner": 0.6, "hamstrings.outer": 0.3, "hamstrings.inner": 0.3 },
+    "how": [
+      ["Hüftbreit stehen, kurz in die Knie gehen.", "Stand hip-width apart and dip into a quarter squat."],
+      ["Explosiv hochspringen und die Knie in der Luft Richtung Brust ziehen.", "Jump up explosively and pull your knees toward your chest in the air."],
+      ["Beine vor der Landung wieder strecken, weich auf den Fußballen landen und direkt den nächsten Sprung anschließen.", "Straighten your legs before landing, land softly on the balls of your feet and go straight into the next jump."]
+    ],
+    "tips": [
+      ["Knie zur Brust bringen, nicht den Oberkörper zu den Knien beugen.", "Bring your knees to your chest; don't fold your chest down to your knees."],
+      ["Sehr intensiv – wenige Wiederholungen oder kurze Intervalle.", "Very intense – few reps or short intervals."],
+      ["Leichter: Jump Squat ohne Knieanziehen.", "Easier: a jump squat without the knee tuck."]
+    ]
+  },
+  "Broad Jumps": {
+    "muscles": ["Gesäß, Oberschenkel, Beinbeuger, Sprungkraft", "Glutes, quads, hamstrings, explosive power"],
+    "primary": ["glutes", "quads", "hamstrings"],
+    "secondary": ["calves", "lowerback", "abs"],
+    "regions": { "glutes.max": 1, "quads.outer": 1, "quads.middle": 1, "quads.inner": 1, "hamstrings.outer": 1, "hamstrings.inner": 1, "calves.outer": 0.6, "calves.inner": 0.6 },
+    "how": [
+      ["Hüftbreit stehen, Arme nach oben.", "Stand hip-width apart with your arms up."],
+      ["Arme nach hinten schwingen, Hüfte nach hinten schieben und in die halbe Kniebeuge gehen.", "Swing your arms back, push your hips back and drop into a half squat."],
+      ["Mit kräftigem Armschwung so weit wie möglich nach vorne springen.", "Jump forward as far as you can with a powerful arm swing."],
+      ["Weich in einer Viertel-Kniebeuge landen, stehen bleiben, zurückgehen und wiederholen.", "Land softly in a quarter squat, stick the landing, walk back and repeat."]
+    ],
+    "tips": [
+      ["Die Landung zählt – stabil stehen, Knie nicht nach innen.", "The landing counts – stick it with your knees out, not caving in."],
+      ["Zwischen den Sprüngen kurz Pause, es geht um Weite, nicht ums Tempo.", "Rest briefly between jumps; it's about distance, not speed."],
+      ["Nur auf rutschfestem Boden mit Platz nach vorne.", "Only on a non-slip floor with room in front of you."]
+    ]
+  },
   "Hampelmann": {
     "muscles": ["Ausdauer, Waden, Schultern", "Conditioning, calves, shoulders"],
     "primary": ["calves"],

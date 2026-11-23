@@ -170,7 +170,26 @@
       "Körpergewicht, negativ": ["Füße auf einer Bank oder Stufe, Hände am Boden. Je höher die Füße, desto schwerer und desto mehr Schulter.", "Feet on a bench or step, hands on the floor. The higher your feet, the harder it gets and the more shoulders work."],
       "Körpergewicht, kniend": ["Auf den Knien statt auf den Füßen – Körper von Knie bis Kopf gerade.", "On your knees instead of your feet – body straight from knees to head."],
       "Körpergewicht, positiv": ["Hände erhöht auf Bank oder Stufe – leichter, gut für Anfänger.", "Hands raised on a bench or step – easier and good for beginners."],
-      "Körpergewicht, breit": ["Hände deutlich breiter als schulterbreit – mehr Brust, weniger Trizeps.", "Hands clearly wider than shoulder width – more chest, less triceps."]
+      "Körpergewicht, breit": ["Hände deutlich breiter als schulterbreit – mehr Brust, weniger Trizeps.", "Hands clearly wider than shoulder width – more chest, less triceps."],
+      "Körpergewicht, Klatschen": ["Explosiv hochdrücken, sodass die Hände kurz vom Boden abheben, in der Luft klatschen und mit leicht gebeugten Armen weich landen. Plyometrisch – erst 15 saubere normale Liegestütze schaffen.", "Push up explosively so your hands leave the floor, clap, and land softly with slightly bent arms. Plyometric – be able to do 15 clean regular push-ups first."],
+      "Körpergewicht, einarmig": ["Füße weit auseinander, eine Hand unter der Brustmitte, der andere Arm auf dem Rücken. Absenken, ohne dass Hüfte oder Schultern aufdrehen. Sehr schwer – zum Herantasten erst mit der Hand auf einer Erhöhung üben.", "Feet wide, one hand under the middle of your chest, the other arm behind your back. Lower without letting your hips or shoulders rotate. Very hard – build up with your hand on a raised surface first."],
+      "Schlingentrainer": ["Griffe des Schlingentrainers fassen, schräg nach vorne lehnen, Körper gerade. Je flacher du stehst, desto schwerer. Die Griffe wackeln – Brust und Rumpf müssen zusätzlich stabilisieren.", "Hold the suspension trainer handles and lean forward with a straight body. The lower you are, the harder it gets. The handles move, so chest and core have to stabilize as well."],
+      "Ringe": ["Ringe knapp über dem Boden aufhängen, Liegestütz mit den Händen in den Ringen. Unten die Ringe nah am Körper halten, oben die Arme ganz strecken und die Ringe leicht nach außen drehen. Die instabilste und schwerste Variante.", "Hang the rings just above the floor and do push-ups holding them. Keep the rings close to your body at the bottom; at the top lock your arms and turn the rings slightly out. The least stable and hardest variant."]
+    },
+    "variantMuscles": {
+      "Körpergewicht, einarmig": {
+        "muscles": ["Brust, Trizeps, Schultern, Rumpf (gegen das Verdrehen)", "Chest, triceps, shoulders, core (anti-rotation)"],
+        "secondary": ["triceps", "delts", "abs", "obliques"],
+        "regions": { "chest.mid": 1, "chest.upper": 0.6, "chest.lower": 0.6, "delts.front": 0.6, "triceps.lateral": 1, "triceps.medial": 1, "triceps.long": 0.6, "obliques": 0.6 }
+      },
+      "Schlingentrainer": {
+        "muscles": ["Brust, Trizeps, Schultern, Rumpf (Stabilität)", "Chest, triceps, shoulders, core (stability)"],
+        "regions": { "chest.mid": 1, "chest.upper": 0.6, "chest.lower": 0.6, "delts.front": 0.6, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3, "abs.upper": 0.6, "abs.lower": 0.6 }
+      },
+      "Ringe": {
+        "muscles": ["Brust, Trizeps, Schultern, Rumpf (Stabilität)", "Chest, triceps, shoulders, core (stability)"],
+        "regions": { "chest.mid": 1, "chest.upper": 0.6, "chest.lower": 0.6, "delts.front": 1, "triceps.lateral": 0.6, "triceps.medial": 0.6, "triceps.long": 0.3, "abs.upper": 0.6, "abs.lower": 0.6 }
+      }
     }
   },
   "Brustpresse": {

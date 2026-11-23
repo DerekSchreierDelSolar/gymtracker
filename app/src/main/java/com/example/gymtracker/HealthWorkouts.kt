@@ -87,6 +87,7 @@ object HealthWorkouts {
         "Swing" to Seg.EXERCISE_SEGMENT_TYPE_KETTLEBELL_SWING,
         "Mountain Climbers" to Seg.EXERCISE_SEGMENT_TYPE_MOUNTAIN_CLIMBER,
         "Crunches" to Seg.EXERCISE_SEGMENT_TYPE_CRUNCH,
+        "McGill Curl-up" to Seg.EXERCISE_SEGMENT_TYPE_CRUNCH,
         "Bicycle Crunches" to Seg.EXERCISE_SEGMENT_TYPE_CRUNCH,
         "Sit-Ups" to Seg.EXERCISE_SEGMENT_TYPE_SIT_UP,
         "V-Ups" to Seg.EXERCISE_SEGMENT_TYPE_SIT_UP,
