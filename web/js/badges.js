@@ -143,15 +143,15 @@ function badgesDialog(earned) {
   ], [{ label: 'OK', onClick: closeDialog }], closeDialog));
 }
 
-/** Karte auf der Startseite (wie BadgesCard). */
-export function badgesCard() {
+/** Zeile unten in der Level-Karte (wie BadgesRow): Anzahl + die neuesten; antippen = Übersicht. */
+export function badgesRow() {
   const earned = earnedBadges();
   if (!earned.size) return null;
   const all = badges();
   const latest = all.filter(b => earned.has(b.id)).sort((a, b) => earned.get(b.id) - earned.get(a.id)).slice(0, 5);
-  return h('button', { class: 'card level-card badges-card', onclick: () => badgesDialog(earned) },
-    h('div', { class: 'row' },
-      h('div', { class: 'grow' }, h('b', null, tr('🏅 Abzeichen', '🏅 Badges')),
-        h('small', { class: 'muted' }, tr(`${earned.size} von ${all.length} · antippen für alle`, `${earned.size} of ${all.length} · tap for all`))),
-      h('span', { class: 'badges-latest' }, latest.map(b => b.emoji).join(' '))));
+  return h('button', { class: 'badges-row', onclick: () => badgesDialog(earned) },
+    h('span', { class: 'level-star' }, '🏅'),
+    h('div', { class: 'grow' }, h('b', null, tr('Abzeichen', 'Badges')),
+      h('small', { class: 'muted' }, tr(`${earned.size} von ${all.length} · antippen für alle`, `${earned.size} of ${all.length} · tap for all`))),
+    h('span', { class: 'badges-latest' }, latest.map(b => b.emoji).join(' ')));
 }

@@ -137,8 +137,8 @@
     },
     {
       "keys": ["als naechstes", "meilenstein", "meilensteine", "naechster meilenstein", "wie viel fehlt", "up next", "milestone", "milestones"],
-      "a": ["Die Karte „🏁 Als Nächstes“ auf der Startseite zeigt die drei Meilensteine, die du am ehesten bald erreichst: runde Gewichte bei deinen häufigsten Übungen und Ziel-Übungen (z. B. „Noch 2,5 kg bis 80 kg Kniebeugen“), die nächste Trainings-Anzahl (10., 25., 50. …), das Gesamtvolumen in Tonnen, das Wochenziel (wenn nur noch eins fehlt), deine Serie und dein Cardio-Wochenziel.",
-            "The \"🏁 Up next\" card on the home screen shows the three milestones you're closest to: round weights on your most frequent and goal exercises (e.g. \"2.5 kg to 80 kg squat\"), the next workout count (10th, 25th, 50th …), total volume in tonnes, your weekly goal (when only one is missing), your streak and your cardio goal."]
+      "a": ["Unten in der Karte „🎯 Meine Ziele“ auf der Startseite zeigt „🏁 Als Nächstes“ bis zu drei Meilensteine (mit eigenen Zielen zwei), die du am ehesten bald erreichst: runde Gewichte bei deinen häufigsten Übungen und Ziel-Übungen (z. B. „Noch 2,5 kg bis 80 kg Kniebeugen“), die nächste Trainings-Anzahl (10., 25., 50. …), das Gesamtvolumen in Tonnen, das Wochenziel (wenn nur noch eins fehlt), deine Serie und dein Cardio-Wochenziel.",
+            "At the bottom of the \"🎯 My goals\" card on the home screen, \"🏁 Up next\" shows up to three milestones you're closest to (two if you have goals of your own): round weights on your most frequent and goal exercises (e.g. \"2.5 kg to 80 kg squat\"), the next workout count (10th, 25th, 50th …), total volume in tonnes, your weekly goal (when only one is missing), your streak and your cardio goal."]
     },
     {
       "keys": ["gestern", "letztes training", "neue woche", "neuer monat", "neues jahr", "schaffst du", "vorschlag erinnerung", "yesterday", "last workout", "fresh start"],
@@ -152,8 +152,8 @@
     },
     {
       "keys": ["abzeichen", "badge", "badges", "geheim", "geheime abzeichen", "fruehaufsteher", "nachteule", "medaille", "auszeichnung"],
-      "a": ["Abzeichen bekommst du automatisch für Meilensteine: 1., 10., 50., 100. und 250. Training, 4 bzw. 12 Wochen in Folge, 10 Wochen mit Wochenziel, Rekorde, 10 t an einem Tag, 100 t insgesamt, ein erreichtes Ziel, alle großen Muskelgruppen in einer Woche, 30 min Cardio oder 2 min Zeitübung am Stück und 25 verschiedene Übungen. Dazu kommen 7 geheime Überraschungen, die erst verraten werden, wenn du sie schaffst. Die Karte „🏅 Abzeichen“ auf der Startseite antippen zeigt alle; ein neues Abzeichen wird nach dem Training gefeiert.",
-            "You earn badges automatically for milestones: 1st, 10th, 50th, 100th and 250th workout, 4 or 12 weeks in a row, 10 weeks with your weekly goal, records, 10 t in one day, 100 t in total, a goal reached, all major muscle groups in one week, 30 min of cardio or 2 min on a timed exercise in one go and 25 different exercises. On top there are 7 secret surprises that are only revealed once you earn them. Tap the \"🏅 Badges\" card on the home screen to see them all; a new badge is celebrated after the workout."]
+      "a": ["Abzeichen bekommst du automatisch für Meilensteine: 1., 10., 50., 100. und 250. Training, 4 bzw. 12 Wochen in Folge, 10 Wochen mit Wochenziel, Rekorde, 10 t an einem Tag, 100 t insgesamt, ein erreichtes Ziel, alle großen Muskelgruppen in einer Woche, 30 min Cardio oder 2 min Zeitübung am Stück und 25 verschiedene Übungen. Dazu kommen 7 geheime Überraschungen, die erst verraten werden, wenn du sie schaffst. Die Zeile „🏅 Abzeichen“ unten in der Level-Karte auf der Startseite antippen zeigt alle; ein neues Abzeichen wird nach dem Training gefeiert.",
+            "You earn badges automatically for milestones: 1st, 10th, 50th, 100th and 250th workout, 4 or 12 weeks in a row, 10 weeks with your weekly goal, records, 10 t in one day, 100 t in total, a goal reached, all major muscle groups in one week, 30 min of cardio or 2 min on a timed exercise in one go and 25 different exercises. On top there are 7 secret surprises that are only revealed once you earn them. Tap the \"🏅 Badges\" row at the bottom of the level card on the home screen to see them all; a new badge is celebrated after the workout."]
     },
     {
       "keys": ["waerme", "aufwaermen", "aufwaermrampe", "aufwaermsaetze", "warm up sets", "warm-up"],
@@ -182,8 +182,8 @@
     },
     {
       "keys": ["jahresrueckblick", "mein jahr", "dein jahr", "jahr", "wrapped", "jahresbilanz", "year in review", "my year"],
-      "a": ["Unten in der Rückblick-Karte auf der Startseite öffnet „🎉 Dein Jahr … ansehen“ den Jahresrückblick: Trainings, Trainingszeit, Sätze, bewegte Tonnen, kcal und Rekorde des Jahres, dazu Lieblingsübung, größter Gewichtssprung, meisttrainierte Muskelgruppe, stärkster Monat, längste Serie, Level-Aufstieg, erreichte Ziele und neue Abzeichen. Im Januar zeigt er das Vorjahr; ältere Jahre lassen sich oben umschalten.",
-            "At the bottom of the review card on the home screen, \"🎉 See your year …\" opens your year in review: workouts, training time, sets, tonnes lifted, kcal and records of the year, plus favourite exercise, biggest weight jump, most trained muscle group, best month, longest streak, level-up, goals reached and new badges. In January it shows the previous year; older years can be switched at the top."]
+      "a": ["Unten in der Rückblick-Karte auf der Startseite öffnet „🎉 Dein Jahr … ansehen“ den Jahresrückblick: Trainings, Trainingszeit, Sätze, bewegte Tonnen, kcal und Rekorde des Jahres, dazu Lieblingsübung, größter Gewichtssprung, meisttrainierte Muskelgruppe, stärkster Monat, längste Serie, Level-Aufstieg, erreichte Ziele und neue Abzeichen. Er erscheint erst, wenn ein Jahr vorbei ist (also ab 1. Januar für das Vorjahr); ältere Jahre lassen sich oben umschalten.",
+            "At the bottom of the review card on the home screen, \"🎉 See your year …\" opens your year in review: workouts, training time, sets, tonnes lifted, kcal and records of the year, plus favourite exercise, biggest weight jump, most trained muscle group, best month, longest streak, level-up, goals reached and new badges. It only appears once a year is over (from 1 January for the previous year); older years can be switched at the top."]
     },
     {
       "keys": ["serie", "wochen in folge", "streak", "joker", "urlaub", "krank", "pause serie"],

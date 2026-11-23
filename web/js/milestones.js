@@ -100,14 +100,10 @@ export function nextMilestones(limit = 3) {
   return out.map((m, i) => [m, i]).sort((a, b) => b[0].fraction - a[0].fraction || a[1] - b[1]).map(x => x[0]).slice(0, limit);
 }
 
-/** Karte „🏁 Als Nächstes“ auf der Startseite (wie MilestonesCard). */
-export function milestonesCard() {
-  const list = nextMilestones();
-  if (!list.length) return null;
-  return h('div', { class: 'card goals-card milestones-card' },
-    h('b', { class: 'goals-title' }, tr('🏁 Als Nächstes', '🏁 Up next')),
-    list.map(m => h('div', { class: 'goal-row' },
-      h('div', { class: 'goal-head' }, h('span', { class: 'goal-emoji' }, m.emoji), h('b', { class: 'grow' }, m.title)),
-      h('div', { class: 'goal-bar' }, h('span', { style: `width:${Math.round(m.fraction * 100)}%` })),
-      m.detail ? h('small', { class: 'muted goal-detail' }, m.detail) : null)));
+/** „🏁 Als Nächstes“ als Zeilen unten in der Ziele-Karte (wie MilestoneRows). */
+export function milestoneRows(list) {
+  return list.map(m => h('div', { class: 'goal-row' },
+    h('div', { class: 'goal-head' }, h('span', { class: 'goal-emoji' }, m.emoji), h('b', { class: 'grow' }, m.title)),
+    h('div', { class: 'goal-bar' }, h('span', { style: `width:${Math.round(m.fraction * 100)}%` })),
+    m.detail ? h('small', { class: 'muted goal-detail' }, m.detail) : null));
 }

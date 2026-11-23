@@ -18,12 +18,10 @@ import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { reviewCard } from '../review.js';
 import { goalsCard } from '../goals.js';
-import { milestonesCard } from '../milestones.js';
 import { morningCard, anticipation } from '../morning.js';
 import { levelCard } from '../levels.js';
 import { cycleSettings, cycleLine } from '../cycle.js';
 import { measuresCard } from '../measures.js';
-import { badgesCard } from '../badges.js';
 import { workoutList, newWorkoutDialog } from './workout.js';
 import { filterActions, filterBar, matches, noFilterResults } from '../filter.js';
 
@@ -205,14 +203,8 @@ function dashboardTab(onStartWorkout) {
   const next = pick?.workout ?? nextWorkoutAfter(store.workouts, lastSession?.workoutId);
 
   const volumes = weeklyVolumes(store, 8);
-  // Zeitraum für „Trainierte Muskeln“ und „Sätze pro Muskelgruppe“
-  const perGroup = new Map();
-  for (const s of periodFilter(nav.statPeriod, store.sets.filter(isWork))) { // ohne Aufwärmsätze
-    const g = store.groupOf(s.exercise);
-    perGroup.set(g, (perGroup.get(g) ?? 0) + 1);
-  }
-  const groupItems = [...perGroup.entries()].map(([g, n]) => [groupLabel(g), n]).sort((a, b) => b[1] - a[1]);
-  const records = recordEvents(store).slice(0, 5);
+  const kcalWeeks = (k => (k && k.some(v => v[1] > 0) ? k : null))(weeklyKcal(store, 8));
+  const records = recordEvents(store).slice(0, 10);
   const weekKcal = weekStats.reduce((a, s) => a + (s.kcal ?? 0), 0);
   const backupDue = store.sets.length > 0 && Date.now() - store.lastExport > 14 * 24 * 3600 * 1000;
 
@@ -227,6 +219,7 @@ function dashboardTab(onStartWorkout) {
     morningCard(),
 
     h('button', { class: 'card week-card', onclick: () => { hintUsed('weekGoal'); weeklyGoalDialog(); } },
+     h('div', { class: 'week-main' },
       percentRing(Math.min(1, weekSessions.length / goal), 84),
       h('div', { class: 'grow' },
         h('small', { class: 'muted' }, tr('Wochenziel', 'Weekly goal')),
@@ -242,6 +235,12 @@ function dashboardTab(onStartWorkout) {
         showHint('weekGoal') || weekSessions.length >= goal ? h('small', { class: 'muted' }, weekSessions.length >= goal
           ? tr(`Ziel ${goal}/Woche`, `Goal ${goal}/week`) + (showHint('weekGoal') ? tr(' · tippen zum Ändern', ' · tap to change') : '')
           : tr('Tippen, um das Ziel zu ändern', 'Tap to change goal')) : null)),
+     // Kennzahlen dieser Woche (früher eigene Kachel „Diese Woche“, wie DashboardTab.kt)
+     h('hr', { class: 'card-divider' }),
+     h('div', { class: 'week-stats' },
+       weekStat(tr('Sätze', 'Sets'), String(weekStats.reduce((a, s) => a + s.sets, 0))),
+       weekStat(tr('Volumen', 'Volume'), `${fmtVolume(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
+       weekStat('🔥 kcal', weekKcal > 0 ? `~${fmtKcal(weekKcal)}` : '–'))),
 
     next ? h('div', { class: 'card primary-card', onclick: () => go({ workoutId: next.id }) },
       h('div', { class: 'grow' },
@@ -260,13 +259,11 @@ function dashboardTab(onStartWorkout) {
         h('p', null, tr("So geht's: 1. Workout aus einer Vorlage anlegen · 2. Training starten · 3. Sätze eintragen.", 'How it works: 1. Create a workout from a template · 2. Start training · 3. Log your sets.')),
         h('button', { class: 'btn', onclick: newWorkoutDialog }, tr('Vorlage wählen', 'Choose a template'))),
 
-    // Level (levels.js) + Abzeichen – unter dem Schnellstart, damit der ohne Scrollen sichtbar ist (wie DashboardTab.kt)
+    // Level (levels.js) mit Abzeichen-Zeile – unter dem Schnellstart, damit der ohne Scrollen sichtbar ist (wie DashboardTab.kt)
     levelCard(),
-    badgesCard(),
 
-    // Langfristige Ziele (goals.js, wie GoalsCard in Goals.kt)
+    // Langfristige Ziele mit den nächsten Meilensteinen (goals.js, wie GoalsCard in Goals.kt)
     goalsCard(),
-    milestonesCard(),
 
     backupDue ? h('div', { class: 'card hint' }, h('span', { class: 'hint-emoji' }, '💾'),
       h('div', { class: 'grow' }, h('b', null, tr('Backup machen', 'Make a backup')),
@@ -274,37 +271,51 @@ function dashboardTab(onStartWorkout) {
           'Your data only lives on this device. Back it up regularly via ⋮ → "Export data".'))),
       h('button', { class: 'btn text', onclick: exportData }, tr('Jetzt', 'Now'))) : null,
 
-    h('small', { class: 'muted stat-caption' }, tr('Diese Woche', 'This week')), // Zeitraum der Kennzahlen
-    h('div', { class: 'stat-grid three' },
-      statBox(tr('Sätze', 'Sets'), String(weekStats.reduce((a, s) => a + s.sets, 0))),
-      statBox(tr('Volumen', 'Volume'), `${fmtVolume(weekStats.reduce((a, s) => a + s.volume, 0))} kg`),
-      statBox('🔥 kcal', weekKcal > 0 ? `~${fmtKcal(weekKcal)}` : '–')),
-
     // Rückblick: letzte Woche bzw. letzter Monat im Vergleich (review.js)
     store.sets.length ? reviewCard() : null,
 
+    // Heatmap, darunter aufklappbar „Sätze pro Muskelgruppe“ (bodymap.js)
     store.sets.length ? muscleHeatCard(store.sets, nav.statPeriod, p => update({ statPeriod: p })) : null,
 
-    volumes.some(v => v[1] > 0) ? chartCard(tr('Volumen pro Woche', 'Weekly volume'),
-      tr('Letzte 8 Wochen · aktuelle Woche hervorgehoben', 'Last 8 weeks · current week highlighted'),
-      historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtVolume(v)} kg`)) : null,
+    // Verlauf: Volumen bzw. kcal pro Woche in einer Karte mit Umschalter (wie TrendCard)
+    volumes.some(v => v[1] > 0) || kcalWeeks ? trendCard(volumes, kcalWeeks) : null,
 
-    // geschätzter Kalorienverbrauch pro Woche (nur mit Körpergewicht) – wie DashboardTab.kt
-    (k => k && k.some(v => v[1] > 0) ? chartCard(tr('🔥 Kalorien pro Woche', '🔥 Calories per week'),
-      tr('Letzte 8 Wochen · geschätzt', 'Last 8 weeks · estimated'),
-      historyBars(k.map(v => v[1]), k.map(v => fmtWeek(v[0])), v => `~${fmtKcal(v)} kcal`)) : null)(weeklyKcal(store, 8)),
+    // Neueste Rekorde kompakt (wie RecordsCard)
+    records.length ? recordsCard(records) : null);
+}
 
-    groupItems.length ? chartCard(tr('Sätze pro Muskelgruppe', 'Sets per muscle group'), periodLabel(nav.statPeriod),
-      horizontalBars(groupItems, v => String(v))) : null,
+/** Kleine Kennzahl in der Wochenziel-Karte (wie WeekStat). */
+const weekStat = (label, value) => h('div', null, h('b', null, value), h('small', { class: 'muted' }, label));
 
-    records.length ? [h('h2', { class: 'section' }, tr('Neueste Rekorde', 'Latest records')),
-      records.map(r => {
-        const g = store.groupOf(r.exercise);
-        return h('div', { class: 'card row-card' },
-          h('span', { html: exerciseIconHtml(r.exercise, g, 36) }),
-          h('div', { class: 'grow' }, h('b', null, exName(r.exercise)), muted(fmtDate(r.set.time), 'small')),
-          h('b', null, '🏆 ' + fmtSet(r.set, isCardio(g))));
-      })] : null);
+/** Karte „Verlauf pro Woche“ (wie TrendCard in DashboardTab.kt); Umschalter nur, wenn es kcal gibt. */
+let showTrendKcal = false;
+function trendCard(volumes, kcalWeeks) {
+  const hasVolume = volumes.some(v => v[1] > 0);
+  const kcal = (showTrendKcal && kcalWeeks) || !hasVolume;
+  return chartCard(tr('Verlauf pro Woche', 'Weekly trend'),
+    kcal ? tr('Letzte 8 Wochen · geschätzt', 'Last 8 weeks · estimated')
+      : tr('Letzte 8 Wochen · aktuelle Woche hervorgehoben', 'Last 8 weeks · current week highlighted'),
+    kcalWeeks && hasVolume ? h('div', { class: 'segments trend-switch' },
+      chip(tr('Volumen', 'Volume'), !kcal, () => { showTrendKcal = false; rerender(); }),
+      chip('🔥 kcal', kcal, () => { showTrendKcal = true; rerender(); })) : null,
+    kcal ? historyBars(kcalWeeks.map(v => v[1]), kcalWeeks.map(v => fmtWeek(v[0])), v => `~${fmtKcal(v)} kcal`)
+      : historyBars(volumes.map(v => v[1]), volumes.map(v => fmtWeek(v[0])), v => `${fmtVolume(v)} kg`));
+}
+
+/** Karte „Neueste Rekorde“: 3 Zeilen, „Mehr anzeigen“ klappt bis 10 auf (wie RecordsCard). */
+let showAllRecords = false;
+function recordsCard(records) {
+  return h('div', { class: 'card records-card' },
+    h('h3', null, tr('🏆 Neueste Rekorde', '🏆 Latest records')),
+    (showAllRecords ? records : records.slice(0, 3)).map(r => {
+      const g = store.groupOf(r.exercise);
+      return h('div', { class: 'record-row' },
+        h('span', { html: exerciseIconHtml(r.exercise, g, 32) }),
+        h('div', { class: 'grow' }, h('b', null, exName(r.exercise)), h('small', { class: 'muted' }, fmtDate(r.set.time))),
+        h('b', null, fmtSet(r.set, isCardio(g))));
+    }),
+    records.length > 3 ? h('button', { class: 'btn text show-all', onclick: () => { showAllRecords = !showAllRecords; rerender(); } },
+      showAllRecords ? tr('Weniger anzeigen', 'Show less') : tr(`Mehr anzeigen (${records.length})`, `Show more (${records.length})`)) : null);
 }
 
 function weeklyGoalDialog() {

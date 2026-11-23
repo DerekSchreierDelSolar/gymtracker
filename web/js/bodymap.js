@@ -2,7 +2,7 @@
 // Die Formen kommen aus body-data.js (erzeugt aus BodyMap.kt); hier wird nur ein <svg> daraus gebaut.
 
 import { MUSCLES, REGION_NAMES, BODY, BODY_SHAPES } from './body-data.js';
-import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural, isWork } from './core.js';
+import { tr, isEnglish, CustomMeta, dayKey, fmtW, plural, isWork, groupLabel } from './core.js';
 import { h, chip, dialog, horizontalBars } from './ui.js';
 import { wikiFor, openMuscle } from './wiki.js';
 import { MUSCLE_INFO } from './muscle-data.js';
@@ -364,8 +364,18 @@ export function periodFilter(p, sets) {
   return sets;
 }
 
+// „Sätze pro Muskelgruppe“ unter der Heatmap der Startseite aufgeklappt? (wie rememberSaveable in MuscleHeatCard)
+let groupsOpen = false;
+
 /** Startseite: Karte „Trainierte Muskeln“ mit Zeitraum-Umschalter, Werte in Prozent. */
 export function muscleHeatCard(sets, period, onPeriod) {
+  // Sätze pro Muskelgruppe (früher eigene Karte), gleicher Zeitraum, ohne Aufwärmsätze
+  const perGroup = new Map();
+  for (const s of periodFilter(period, sets.filter(isWork))) {
+    const g = store.groupOf(s.exercise);
+    perGroup.set(g, (perGroup.get(g) ?? 0) + 1);
+  }
+  const groupItems = [...perGroup.entries()].map(([g, n]) => [groupLabel(g), n]).sort((a, b) => b[1] - a[1]);
   return heatCard({
     title: tr('Trainierte Muskeln', 'Trained muscles'),
     score: regionScore(periodFilter(period, sets)),
@@ -373,6 +383,10 @@ export function muscleHeatCard(sets, period, onPeriod) {
     empty: tr('Keine Trainingseinheiten in diesem Zeitraum.', 'No workouts in this period.'),
     // 4 gleich breite Knöpfe über die volle Breite, kurze Beschriftung (wie MuscleHeatCard in BodyMap.kt)
     header: h('div', { class: 'segments' }, STAT_PERIODS.map(p => chip(p === 'LAST' ? tr('Zuletzt', 'Latest') : periodLabel(p), p === period, () => onPeriod(p)))),
+    footer: groupItems.length ? [h('hr', { class: 'card-divider' }),
+      h('button', { class: 'btn text show-all', onclick: () => { groupsOpen = !groupsOpen; rerender(); } },
+        tr('Sätze pro Muskelgruppe', 'Sets per muscle group') + (groupsOpen ? ' ▴' : ' ▾')),
+      groupsOpen ? horizontalBars(groupItems, v => String(v)) : null] : null,
   });
 }
 
@@ -388,7 +402,7 @@ const expandedHeat = new Set();
  * Karte mit Heatmap. score = Sätze je Region (regionScore): die Figur färbt Regionen, die Liste fasst je Muskel zusammen.
  * showSets = Summe der Sätze je Muskel (Trainingsübersicht), sonst Prozent.
  */
-export function heatCard({ title, score: regions, showSets, empty, header = null }) {
+export function heatCard({ title, score: regions, showSets, empty, header = null, footer = null }) {
   const regionLoad = relativeLoad(regions);
   const score = muscleScoreOf(regions);
   const load = relativeLoad(score);
@@ -417,7 +431,8 @@ export function heatCard({ title, score: regions, showSets, empty, header = null
           : null,
         showSets ? h('b', null, tr('Summe: ', 'Total: ') + `${fmtSets(total)} ` + tr('Muskel-Sätze', 'muscle sets') + ' · ' +
           plural(entries.length, tr('Muskel', 'muscle'), tr('Muskeln', 'muscles')) + tr(' (Hilfsmuskel zählt ½)', ' (secondary counts ½)')) : null]
-      : h('p', { class: 'muted' }, empty));
+      : h('p', { class: 'muted' }, empty),
+    footer);
 }
 
 // ---------- Muskel-Karten pro Seite (Reiter „Info“ der Übungsdetails, wie MuscleSideCard) ----------

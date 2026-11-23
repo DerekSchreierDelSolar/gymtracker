@@ -8,6 +8,7 @@ import { allSessions } from './stats.js';
 import { exerciseIconHtml } from './pictograms.js';
 import { h, dialog, textField, muted, undoToast } from './ui.js';
 import { openDialog, closeDialog, rerender } from './nav.js';
+import { nextMilestones, milestoneRows } from './milestones.js';
 
 const TYPES = () => [
   ['STRENGTH', '🏋️', tr('Gewicht schaffen', 'Lift a weight'), tr('z. B. 100 kg Bankdrücken', 'e.g. 100 kg bench press')],
@@ -116,15 +117,20 @@ export function goalProgress(g) {
   };
 }
 
-/** Karte „Meine Ziele“ auf der Startseite: offene Ziele zuerst, geschaffte danach. Antippen = bearbeiten. */
+/** Karte „Meine Ziele“ auf der Startseite: offene Ziele zuerst, geschaffte danach, unten die nächsten Meilensteine. Antippen = bearbeiten. */
 export function goalsCard() {
   const items = store.goals.map(g => [g, goalProgress(g)]).sort((a, b) => (a[1].reachedAt ? 1 : 0) - (b[1].reachedAt ? 1 : 0));
+  // Meilensteine (milestones.js) – mit eigenen Zielen nur die 2 nächsten (wie GoalsCard)
+  const miles = nextMilestones(items.length ? 2 : 3);
   return h('div', { class: 'card goals-card' },
     h('div', { class: 'row' }, h('b', { class: 'grow goals-title' }, tr('🎯 Meine Ziele', '🎯 My goals')),
       h('button', { class: 'btn text', onclick: () => goalDialog(null) }, tr('+ Ziel', '+ Goal'))),
-    items.length ? null : muted(tr('Setz dir ein langfristiges Ziel – z. B. 100 kg Bankdrücken, 30 min laufen oder 10 kg abnehmen. Hier siehst du dann, wie nah du dran bist.',
-      "Set yourself a long-term goal – e.g. 100 kg bench press, run 30 min or lose 10 kg. You'll see here how close you are."), 'goals-empty'),
-    items.map(([g, p]) => goalRow(g, p, () => goalDialog(g))));
+    items.length ? null : miles.length
+      ? muted(tr('Noch kein eigenes Ziel – z. B. 100 kg Bankdrücken oder 10 kg abnehmen.', 'No goal of your own yet – e.g. 100 kg bench press or lose 10 kg.'), 'goals-empty small')
+      : muted(tr('Setz dir ein langfristiges Ziel – z. B. 100 kg Bankdrücken, 30 min laufen oder 10 kg abnehmen. Hier siehst du dann, wie nah du dran bist.',
+        "Set yourself a long-term goal – e.g. 100 kg bench press, run 30 min or lose 10 kg. You'll see here how close you are."), 'goals-empty'),
+    items.map(([g, p]) => goalRow(g, p, () => goalDialog(g))),
+    miles.length ? [h('small', { class: 'muted goals-sub' }, tr('🏁 Als Nächstes', '🏁 Up next')), milestoneRows(miles)] : null);
 }
 
 /** Ein Ziel mit Balken (Startseite, Summary) – wie GoalRow. onClick = null: nicht antippbar. */

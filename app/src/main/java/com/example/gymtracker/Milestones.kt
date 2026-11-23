@@ -117,27 +117,20 @@ fun nextMilestones(store: GymStore, limit: Int = 3): List<Milestone> {
     return out.sortedByDescending { it.fraction }.take(limit)
 }
 
-/** Karte „🏁 Als Nächstes“ auf der Startseite. */
+/** „🏁 Als Nächstes“ als Zeilen unten in der Ziele-Karte (GoalsCard in Goals.kt). */
 @Composable
-fun MilestonesCard(store: GymStore) {
-    val list = nextMilestones(store)
-    if (list.isEmpty()) return
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 8.dp)) {
-            Text(tr("🏁 Als Nächstes", "🏁 Up next"), style = MaterialTheme.typography.titleMedium)
-            list.forEach { m ->
-                Column(Modifier.padding(vertical = 8.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(m.emoji, modifier = Modifier.width(32.dp))
-                        Text(m.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    ProgressBar(m.fraction, Modifier.padding(start = 32.dp))
-                    m.detail?.let {
-                        Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 32.dp, top = 4.dp))
-                    }
-                }
+fun MilestoneRows(list: List<Milestone>) {
+    list.forEach { m ->
+        Column(Modifier.padding(top = 8.dp, bottom = 8.dp, end = 8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(m.emoji, modifier = Modifier.width(32.dp))
+                Text(m.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(6.dp))
+            ProgressBar(m.fraction, Modifier.padding(start = 32.dp))
+            m.detail?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 32.dp, top = 4.dp))
             }
         }
     }

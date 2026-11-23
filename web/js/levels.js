@@ -7,6 +7,7 @@ import { allSessions, recordEvents } from './stats.js';
 import { goalProgress } from './goals.js';
 import { h, dialog } from './ui.js';
 import { openDialog, closeDialog } from './nav.js';
+import { badgesRow } from './badges.js';
 
 export const XP = { SESSION: 50, SET: 5, RECORD: 25, WEEK_GOAL: 50, GOAL: 200 };
 
@@ -69,15 +70,18 @@ function explainDialog(xp) {
   ], [{ label: 'OK', onClick: closeDialog }], closeDialog));
 }
 
-/** Schmale Karte auf der Startseite (wie LevelCard). */
+/** Karte auf der Startseite (wie LevelCard): Level oben, Abzeichen-Zeile darunter. */
 export function levelCard() {
   const xp = xpBreakdown();
   if (!xp.total) return null;
   const info = levelOf(xp.total);
-  return h('button', { class: 'card level-card', onclick: () => explainDialog(xp) },
-    h('div', { class: 'row' }, h('span', { class: 'level-star' }, '⭐'),
-      h('div', { class: 'grow' }, h('b', null, tr(`Level ${info.level} · ${levelTitle(info.level)}`, `Level ${info.level} · ${levelTitle(info.level)}`)),
-        h('small', { class: 'muted' }, tr(`Noch ${info.needed - info.into} Punkte bis Level ${info.level + 1}`, `${info.needed - info.into} points to level ${info.level + 1}`))),
-      h('b', { class: 'goal-short' }, `${fmtKcal(xp.total)} XP`)),
-    h('div', { class: 'goal-bar level-bar' }, h('span', { style: `width:${Math.round(info.fraction * 100)}%` })));
+  const badges = badgesRow();
+  return h('div', { class: 'card level-card' },
+    h('button', { class: 'level-main', onclick: () => explainDialog(xp) },
+      h('div', { class: 'row' }, h('span', { class: 'level-star' }, '⭐'),
+        h('div', { class: 'grow' }, h('b', null, tr(`Level ${info.level} · ${levelTitle(info.level)}`, `Level ${info.level} · ${levelTitle(info.level)}`)),
+          h('small', { class: 'muted' }, tr(`Noch ${info.needed - info.into} Punkte bis Level ${info.level + 1}`, `${info.needed - info.into} points to level ${info.level + 1}`))),
+        h('b', { class: 'goal-short' }, `${fmtKcal(xp.total)} XP`)),
+      h('div', { class: 'goal-bar level-bar' }, h('span', { style: `width:${Math.round(info.fraction * 100)}%` }))),
+    badges ? [h('hr', { class: 'card-divider' }), badges] : null);
 }

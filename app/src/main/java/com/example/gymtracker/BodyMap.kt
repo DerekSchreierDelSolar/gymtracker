@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -796,15 +797,31 @@ fun MuscleHeatCard(store: GymStore, period: StatPeriod, onPeriod: (StatPeriod) -
         title = tr("Trainierte Muskeln", "Trained muscles"),
         score = regionScore(period.filter(store.sets)),
         showSets = false,
-        empty = tr("Keine Trainingseinheiten in diesem Zeitraum.", "No workouts in this period.")
-    ) {
-        // 4 gleich breite Buttons über die volle Breite (kurze Beschriftung, damit alle passen)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            StatPeriod.entries.forEach { p ->
-                SegmentChip(p.shortLabel, p == period, onClick = { onPeriod(p) }, modifier = Modifier.weight(1f))
+        empty = tr("Keine Trainingseinheiten in diesem Zeitraum.", "No workouts in this period."),
+        header = {
+            // 4 gleich breite Buttons über die volle Breite (kurze Beschriftung, damit alle passen)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                StatPeriod.entries.forEach { p ->
+                    SegmentChip(p.shortLabel, p == period, onClick = { onPeriod(p) }, modifier = Modifier.weight(1f))
+                }
+            }
+        },
+        footer = {
+            // Sätze pro Muskelgruppe (früher eigene Karte) zum Aufklappen, gleicher Zeitraum, ohne Aufwärmsätze
+            val perGroup = period.filter(store.sets.work())
+                .groupBy { store.groupOf(it.exercise) }
+                .map { (g, l) -> g.label to l.size.toDouble() }
+                .sortedByDescending { it.second }
+            if (perGroup.isNotEmpty()) {
+                var open by rememberSaveable { mutableStateOf(false) }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                TextButton(onClick = { open = !open }, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                    Text(tr("Sätze pro Muskelgruppe", "Sets per muscle group") + if (open) " ▴" else " ▾")
+                }
+                if (open) HorizontalBars(perGroup) { it.toInt().toString() }
             }
         }
-    }
+    )
 }
 
 /** So viele Muskeln zeigt die Liste unter der Heatmap, bevor „Alle anzeigen“ nötig ist */
@@ -825,11 +842,12 @@ fun MuscleHeatCard(
     score: Map<String, Float>,
     showSets: Boolean,
     empty: String,
-    header: (@Composable () -> Unit)? = null
+    header: (@Composable () -> Unit)? = null,
+    footer: (@Composable () -> Unit)? = null
 ) {
     val regionLoad = relativeLoad(score)
     val muscles = muscleScoreOf(score)
-    MuscleHeatCardContent(title, muscles, regionLoad, showSets, empty, header)
+    MuscleHeatCardContent(title, muscles, regionLoad, showSets, empty, header, footer)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -840,7 +858,8 @@ private fun MuscleHeatCardContent(
     regionLoad: Map<String, Float>,
     showSets: Boolean,
     empty: String,
-    header: (@Composable () -> Unit)?
+    header: (@Composable () -> Unit)?,
+    footer: (@Composable () -> Unit)?
 ) {
     val load = relativeLoad(score)
     Card(Modifier.fillMaxWidth()) {
@@ -904,6 +923,7 @@ private fun MuscleHeatCardContent(
                     style = MaterialTheme.typography.titleSmall
                 )
             }
+            footer?.invoke()
         }
     }
 }

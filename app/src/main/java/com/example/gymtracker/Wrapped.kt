@@ -39,16 +39,12 @@ private fun yearOf(t: Long) = Calendar.getInstance().apply { timeInMillis = t }.
 private fun monthOf(t: Long) = Calendar.getInstance().apply { timeInMillis = t }.get(Calendar.MONTH)
 private fun yearStart(y: Int) = Calendar.getInstance().apply { clear(); set(y, 0, 1) }.timeInMillis
 
-/** Jahre mit Trainings, neuestes zuerst. */
-fun reviewYears(store: GymStore): List<Int> = allSessions(store).map { yearOf(it.start) }.distinct().sortedDescending()
+/** Abgeschlossene Jahre mit Trainings, neuestes zuerst – das laufende Jahr gibt es erst, wenn es um ist. */
+fun reviewYears(store: GymStore, now: Long = System.currentTimeMillis()): List<Int> =
+    allSessions(store).map { yearOf(it.start) }.filter { it < yearOf(now) }.distinct().sortedDescending()
 
-/** Standardjahr: im Januar das Vorjahr (falls es Daten hat), sonst das laufende. */
-fun defaultReviewYear(store: GymStore, now: Long = System.currentTimeMillis()): Int? {
-    val years = reviewYears(store)
-    if (years.isEmpty()) return null
-    val y = yearOf(now)
-    return if (monthOf(now) == 0 && (y - 1) in years) y - 1 else years.firstOrNull { it <= y } ?: years.first()
-}
+/** Standardjahr: das zuletzt abgeschlossene Jahr mit Trainings; null = noch keins (Knopf ausgeblendet). */
+fun defaultReviewYear(store: GymStore, now: Long = System.currentTimeMillis()): Int? = reviewYears(store, now).firstOrNull()
 
 fun yearReview(store: GymStore, year: Int): YearReview {
     val from = yearStart(year)

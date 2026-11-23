@@ -118,7 +118,12 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .hint-emoji { font-size: 24px; }
 .record-card { padding: 14px; background: var(--tertiary-container); color: var(--on-tertiary-container); font-size: 17px; font-weight: 600; }
 .big-emoji { font-size: 24px; }
-.week-card { display: flex; align-items: center; gap: 16px; padding: 20px; text-align: left; }
+.week-card { padding: 20px 20px 10px; text-align: left; }
+.week-main { display: flex; align-items: center; gap: 16px; }
+.card-divider { border: none; border-top: 1px solid var(--outline-variant, rgba(128,128,128,.3)); margin: 12px 0 8px; }
+.week-stats { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
+.week-stats b { display: block; font-size: 15px; }
+.week-stats small { font-size: 12px; }
 .week-card h2 { font-size: 22px; }
 .primary-card { display: flex; align-items: center; gap: 8px; padding: 16px; background: var(--primary-container); color: var(--on-primary-container); cursor: pointer; }
 .primary-card h2 { font-size: 24px; font-weight: 700; }
@@ -705,6 +710,14 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .primary-card .anticipation { display: block; margin-top: 4px; }
 /* Level (levels.js) */
 .level-card { padding: 12px 16px; text-align: left; }
+.level-main, .badges-row { display: block; width: 100%; text-align: left; background: none; color: inherit; padding: 0; }
+.badges-row { display: flex; align-items: center; gap: 10px; }
+.badges-row .grow b { font-size: 14px; }
+.goals-sub { display: block; margin-top: 12px; font-weight: 600; }
+.records-card { padding: 14px 16px 8px; }
+.record-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.record-row small { display: block; }
+.trend-switch { margin-bottom: 12px; }
 .level-star { font-size: 22px; }
 .level-card small { display: block; }
 .level-bar { margin: 8px 0 0; }

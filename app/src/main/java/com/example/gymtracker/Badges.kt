@@ -126,29 +126,30 @@ fun earnedBadges(store: GymStore): Map<String, Long> = store.memo("earnedBadges"
 fun badgesIn(store: GymStore, t: TrainingSession, earned: Map<String, Long> = earnedBadges(store)): List<Badge> =
     BADGES.filter { b -> earned[b.id]?.let { it in t.start..t.end } == true }
 
-/** Karte auf der Startseite: Anzahl + die neuesten; antippen = Übersicht. */
+/** Zeile unten in der Level-Karte (Levels.kt): Anzahl + die neuesten; antippen = Übersicht. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BadgesCard(store: GymStore) {
+fun BadgesRow(store: GymStore) {
     val earned = earnedBadges(store)
     if (earned.isEmpty()) return
     var open by remember { mutableStateOf(false) }
     val all = BADGES
     val latest = all.filter { it.id in earned }.sortedByDescending { earned[it.id] }.take(5)
-    Card(
+    Row(
         Modifier
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
             .clickable { open = true }
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(tr("🏅 Abzeichen", "🏅 Badges"), style = MaterialTheme.typography.titleMedium)
-                Text(tr("${earned.size} von ${all.size} · antippen für alle", "${earned.size} of ${all.size} · tap for all"),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Text(latest.joinToString(" ") { it.emoji }, style = MaterialTheme.typography.titleLarge)
+        Text("🏅", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(tr("Abzeichen", "Badges"), style = MaterialTheme.typography.titleSmall)
+            Text(tr("${earned.size} von ${all.size} · antippen für alle", "${earned.size} of ${all.size} · tap for all"),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        Text(latest.joinToString(" ") { it.emoji }, style = MaterialTheme.typography.titleLarge)
     }
     if (open) ModalBottomSheet(onDismissRequest = { open = false }) {
         Column(Modifier.padding(horizontal = 16.dp)) {

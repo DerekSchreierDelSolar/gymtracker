@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 // ---------- Tab „Übersicht“ (Dashboard) ----------
@@ -158,7 +159,7 @@ fun DashboardTab(
                     .clip(MaterialTheme.shapes.medium)
                     .clickable { editGoal = true; Hints.used(Hints.WEEK_GOAL) }
             ) {
-                Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     PercentRing((weekSessions.size.toFloat() / goal).coerceAtMost(1f), Modifier.size(84.dp))
                     Spacer(Modifier.width(16.dp))
                     Column(Modifier.weight(1f)) {
@@ -187,6 +188,14 @@ fun DashboardTab(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+                }
+                // Kennzahlen dieser Woche (früher eigene Kachel „Diese Woche“)
+                HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp)) {
+                    val kcal = weekStats.mapNotNull { it.kcal }.sum()
+                    WeekStat(tr("Sätze", "Sets"), weekStats.sumOf { it.sets }.toString(), Modifier.weight(1f))
+                    WeekStat(tr("Volumen", "Volume"), "${fmtVolume(weekStats.sumOf { it.volume })} kg", Modifier.weight(1f))
+                    WeekStat("🔥 kcal", if (kcal > 0) "~${fmtKcal(kcal)}" else "–", Modifier.weight(1f))
                 }
             }
         }
@@ -248,90 +257,26 @@ fun DashboardTab(
             }
         }
 
-        // Level (Levels.kt) + Abzeichen (Badges.kt) – unter dem Schnellstart, damit der ohne Scrollen sichtbar ist
+        // Level (Levels.kt) mit Abzeichen-Zeile (Badges.kt) – unter dem Schnellstart, damit der ohne Scrollen sichtbar ist
         item { LevelCard(store) }
-        item { BadgesCard(store) }
 
-        // Langfristige Ziele (Goals.kt)
+        // Langfristige Ziele (Goals.kt) mit den nächsten Meilensteinen (Milestones.kt)
         item { GoalsCard(store) }
-        // Nächste erreichbare Meilensteine (Milestones.kt)
-        item { MilestonesCard(store) }
-
-        // Kennzahlen dieser Woche (mit Überschrift, damit der Zeitraum klar ist)
-        item { Column {
-            Text(
-                tr("Diese Woche", "This week"),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatBox(tr("Sätze", "Sets"), weekStats.sumOf { it.sets }.toString(), Modifier.weight(1f))
-                StatBox(tr("Volumen", "Volume"), "${fmtVolume(weekStats.sumOf { it.volume })} kg", Modifier.weight(1f))
-                val kcal = weekStats.mapNotNull { it.kcal }.sum()
-                StatBox("🔥 kcal", if (kcal > 0) "~${fmtKcal(kcal)}" else "–", Modifier.weight(1f))
-            }
-        } }
 
         // Rückblick: letzte Woche bzw. letzter Monat im Vergleich (Review.kt)
         if (store.sets.isNotEmpty()) item { ReviewCard(store) }
 
-        // Muskel-Heatmap (Meerschweinchen)
+        // Muskel-Heatmap (Meerschweinchen), darunter aufklappbar „Sätze pro Muskelgruppe“
         if (store.sets.isNotEmpty()) item { MuscleHeatCard(store, period, onPeriod = { period = it }) }
 
-        // Diagramm: Volumen pro Woche (8 Wochen)
+        // Verlauf: Volumen bzw. kcal pro Woche (8 Wochen) in einer Karte mit Umschalter
         val volumes = weeklyVolumes(store, 8)
-        if (volumes.any { it.second > 0 }) {
-            item {
-                ChartCard(tr("Volumen pro Woche", "Weekly volume"), tr("Letzte 8 Wochen · aktuelle Woche hervorgehoben", "Last 8 weeks · current week highlighted")) {
-                    HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtVolume(it)} kg" }
-                }
-            }
-        }
+        val kcalWeeks = weeklyKcal(store, 8)?.takeIf { w -> w.any { it.second > 0 } }
+        if (volumes.any { it.second > 0 } || kcalWeeks != null) item { TrendCard(volumes, kcalWeeks) }
 
-        // Diagramm: geschätzter Kalorienverbrauch pro Woche (8 Wochen), nur mit Körpergewicht
-        val kcalWeeks = weeklyKcal(store, 8)
-        if (kcalWeeks != null && kcalWeeks.any { it.second > 0 }) {
-            item {
-                ChartCard(tr("🔥 Kalorien pro Woche", "🔥 Calories per week"), tr("Letzte 8 Wochen · geschätzt", "Last 8 weeks · estimated")) {
-                    HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${fmtKcal(it)} kcal" }
-                }
-            }
-        }
-
-        // Diagramm: Sätze pro Muskelgruppe (gleicher Zeitraum wie die Heatmap)
-        val perGroup = period.filter(store.sets.work()) // ohne Aufwärmsätze
-            .groupBy { store.groupOf(it.exercise) }
-            .map { (g, l) -> g.label to l.size.toDouble() }
-            .sortedByDescending { it.second }
-        if (perGroup.isNotEmpty()) {
-            item {
-                ChartCard(tr("Sätze pro Muskelgruppe", "Sets per muscle group"), period.label) {
-                    HorizontalBars(perGroup) { it.toInt().toString() }
-                }
-            }
-        }
-
-        // Neueste Rekorde
-        val records = recordEvents(store).take(5)
-        if (records.isNotEmpty()) {
-            item { Text(tr("Neueste Rekorde", "Latest records"), style = MaterialTheme.typography.titleMedium) }
-            items(records, key = { "rec_${it.exercise}_${it.set.id}" }) { r ->
-                val g = store.groupOf(r.exercise)
-                Card(Modifier.fillMaxWidth()) {
-                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        ExerciseIcon(r.exercise, g, Modifier.size(36.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(exName(r.exercise), style = MaterialTheme.typography.titleSmall)
-                            Text(fmtDate(r.set.time), style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Text("🏆 " + fmtSet(r.set, g.isCardio), style = MaterialTheme.typography.titleSmall)
-                    }
-                }
-            }
-        }
+        // Neueste Rekorde (kompakt in einer Karte)
+        val records = recordEvents(store).take(10)
+        if (records.isNotEmpty()) item { RecordsCard(store, records) }
     }
 
     if (editGoal) {
@@ -367,3 +312,59 @@ fun DashboardTab(
 }
 
 
+
+/** Kleine Kennzahl in der Wochenziel-Karte (Wert fett, Beschriftung darunter). */
+@Composable
+private fun WeekStat(label: String, value: String, modifier: Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** Karte „Verlauf“: Volumen bzw. geschätzte kcal pro Woche (8 Wochen), Umschalter nur, wenn es kcal gibt. Web: trendCard (home.js). */
+@Composable
+private fun TrendCard(volumes: List<Pair<Long, Double>>, kcalWeeks: List<Pair<Long, Double>>?) {
+    var showKcal by rememberSaveable { mutableStateOf(false) }
+    val kcal = showKcal && kcalWeeks != null || volumes.none { it.second > 0 }
+    ChartCard(tr("Verlauf pro Woche", "Weekly trend"),
+        if (kcal) tr("Letzte 8 Wochen · geschätzt", "Last 8 weeks · estimated")
+        else tr("Letzte 8 Wochen · aktuelle Woche hervorgehoben", "Last 8 weeks · current week highlighted")) {
+        if (kcalWeeks != null && volumes.any { it.second > 0 }) {
+            Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                SegmentChip(tr("Volumen", "Volume"), !kcal, { showKcal = false }, Modifier.weight(1f))
+                SegmentChip("🔥 kcal", kcal, { showKcal = true }, Modifier.weight(1f))
+            }
+        }
+        if (kcal && kcalWeeks != null) HistoryBars(kcalWeeks.map { it.second }, kcalWeeks.map { fmtWeek(it.first) }) { "~${fmtKcal(it)} kcal" }
+        else HistoryBars(volumes.map { it.second }, volumes.map { fmtWeek(it.first) }) { "${fmtVolume(it)} kg" }
+    }
+}
+
+/** Karte „Neueste Rekorde“: 3 Zeilen, „Alle anzeigen“ klappt bis 10 auf. Web: recordsCard (home.js). */
+@Composable
+private fun RecordsCard(store: GymStore, records: List<RecordEvent>) {
+    var all by rememberSaveable { mutableStateOf(false) }
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 4.dp)) {
+            Text(tr("🏆 Neueste Rekorde", "🏆 Latest records"), style = MaterialTheme.typography.titleMedium)
+            (if (all) records else records.take(3)).forEach { r ->
+                val g = store.groupOf(r.exercise)
+                Row(Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    ExerciseIcon(r.exercise, g, Modifier.size(32.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(exName(r.exercise), style = MaterialTheme.typography.titleSmall)
+                        Text(fmtDate(r.set.time), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text(fmtSet(r.set, g.isCardio), style = MaterialTheme.typography.titleSmall)
+                }
+            }
+            if (records.size > 3) TextButton(onClick = { all = !all }, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                Text(if (all) tr("Weniger anzeigen", "Show less") else tr("Mehr anzeigen (${records.size})", "Show more (${records.size})"))
+            }
+            if (records.size <= 3) Spacer(Modifier.height(8.dp))
+        }
+    }
+}

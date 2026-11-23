@@ -85,13 +85,9 @@ fun LevelCard(store: GymStore) {
     if (xp.total == 0) return
     val info = levelOf(xp.total)
     var explain by remember { mutableStateOf(false) }
-    Card(
-        Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
-            .clickable { explain = true }
-    ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+    // Level oben, Abzeichen (Badges.kt) als Zeile darunter – eine Karte für „Belohnung“
+    Card(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)) {
+        Column(Modifier.fillMaxWidth().clickable { explain = true }.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("⭐", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.width(10.dp))
@@ -105,6 +101,10 @@ fun LevelCard(store: GymStore) {
             }
             Spacer(Modifier.height(8.dp))
             ProgressBar(info.fraction)
+        }
+        if (earnedBadges(store).isNotEmpty()) {
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            BadgesRow(store)
         }
     }
     if (explain) AlertDialog(

@@ -203,6 +203,8 @@ fun GoalsCard(store: GymStore) {
     var edit by remember { mutableStateOf<Goal?>(null) }
     var create by remember { mutableStateOf(false) }
     val items = store.goals.map { it to goalProgress(store, it) }.sortedBy { if (it.second.reachedAt != null) 1 else 0 }
+    // Nächste Meilensteine (Milestones.kt) unten in derselben Karte – mit eigenen Zielen nur die 2 nächsten
+    val miles = nextMilestones(store, if (items.isEmpty()) 3 else 2)
 
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 12.dp)) {
@@ -210,7 +212,12 @@ fun GoalsCard(store: GymStore) {
                 Text(tr("🎯 Meine Ziele", "🎯 My goals"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 TextButton(onClick = { create = true }) { Text(tr("+ Ziel", "+ Goal")) }
             }
-            if (items.isEmpty()) {
+            if (items.isEmpty() && miles.isNotEmpty()) {
+                // kurz halten – die Meilensteine darunter zeigen schon, was als Nächstes kommt
+                Text(tr("Noch kein eigenes Ziel – z. B. 100 kg Bankdrücken oder 10 kg abnehmen.", "No goal of your own yet – e.g. 100 kg bench press or lose 10 kg."),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(end = 8.dp))
+            } else if (items.isEmpty()) {
                 Text(
                     tr("Setz dir ein langfristiges Ziel – z. B. 100 kg Bankdrücken, 30 min laufen oder 10 kg abnehmen. Hier siehst du dann, wie nah du dran bist.",
                         "Set yourself a long-term goal – e.g. 100 kg bench press, run 30 min or lose 10 kg. You'll see here how close you are."),
@@ -220,6 +227,11 @@ fun GoalsCard(store: GymStore) {
                 )
             }
             items.forEach { (g, p) -> GoalRow(store, g, p) { edit = g } }
+            if (miles.isNotEmpty()) {
+                Text(tr("🏁 Als Nächstes", "🏁 Up next"), style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 12.dp))
+                MilestoneRows(miles)
+            }
         }
     }
 

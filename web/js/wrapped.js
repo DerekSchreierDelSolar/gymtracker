@@ -14,16 +14,12 @@ const yearStart = y => new Date(y, 0, 1).getTime();
 const fmtHoursMinutes = ms => { const m = Math.floor(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`; };
 const count = (items, key) => { const m = new Map(); for (const x of items) m.set(key(x), (m.get(key(x)) ?? 0) + 1); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
 
-/** Jahre mit Trainings, neuestes zuerst. */
-export const reviewYears = () => [...new Set(allSessions(store).map(t => yearOf(t.start)))].sort((a, b) => b - a);
+/** Abgeschlossene Jahre mit Trainings, neuestes zuerst – das laufende Jahr gibt es erst, wenn es um ist (wie Wrapped.kt). */
+export const reviewYears = (now = Date.now()) =>
+  [...new Set(allSessions(store).map(t => yearOf(t.start)))].filter(y => y < yearOf(now)).sort((a, b) => b - a);
 
-/** Standardjahr: im Januar das Vorjahr (falls Daten), sonst das laufende. */
-export function defaultReviewYear(now = Date.now()) {
-  const years = reviewYears();
-  if (!years.length) return null;
-  const d = new Date(now), y = d.getFullYear();
-  return d.getMonth() === 0 && years.includes(y - 1) ? y - 1 : years.find(x => x <= y) ?? years[0];
-}
+/** Standardjahr: das zuletzt abgeschlossene Jahr mit Trainings; null = noch keins (Knopf ausgeblendet). */
+export const defaultReviewYear = (now = Date.now()) => reviewYears(now)[0] ?? null;
 
 /** Zahlen und Höhepunkte eines Jahres (wie yearReview). */
 export function yearReview(year) {
