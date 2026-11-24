@@ -112,15 +112,17 @@ fun CatalogScreen(
     onBack: () -> Unit
 ) {
     // Erst Kategorien zeigen, nach Antippen deren Übungen. Mit Suche/Filter: direkt alle Treffer.
-    var openGroup by rememberSaveable { mutableStateOf<String?>(null) }
-    val group = openGroup?.let { runCatching { MuscleGroup.valueOf(it) }.getOrNull() }
-    val overview = group == null && !filter.isActive
-    if (group != null) BackHandler { openGroup = null }
-    val inGroup = { g: MuscleGroup -> group == null || g == group }
-    val visible = CATALOG.filter { inGroup(it.group) && filter.matches(it.name, it.group) }.sortedByName { exName(it.name) }.favoritesFirst(store) { it.name } // alphabetisch, Favoriten zuerst
+    // Die angetippte Kategorie ist ein normaler Filter-Chip (sichtbar, abwählbar); Zurück wählt ihn wieder ab.
+    var fromCategory by rememberSaveable { mutableStateOf(false) }
+    val group = filter.groups.singleOrNull()
+    val overview = !filter.isActive
+    val inCategory = fromCategory && filter.groups.isNotEmpty()
+    val closeCategory = { fromCategory = false; onFilter(filter.copy(groups = emptySet())) }
+    if (inCategory) BackHandler { closeCategory() }
+    val visible = CATALOG.filter { filter.matches(it.name, it.group) }.sortedByName { exName(it.name) }.favoritesFirst(store) { it.name } // alphabetisch, Favoriten zuerst
     // Eigene Übungen = gespeicherte Übungen, die nicht im Katalog stehen (auch aus der Liste entfernte → wieder hinzufügbar)
     val customVisible = store.customNames
-        .filter { catalogGroup(it) == null && inGroup(store.groupOf(it)) && filter.matches(it, store.groupOf(it)) }
+        .filter { catalogGroup(it) == null && filter.matches(it, store.groupOf(it)) }
         .sortedByName { it }.favoritesFirst(store) { it }
     val ui = rememberFilterUi(filter)
     var showCustom by remember { mutableStateOf(false) }
@@ -129,7 +131,7 @@ fun CatalogScreen(
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(group?.label ?: tr("Übungskatalog", "Exercise catalog")) },
-            navigationIcon = { IconAction(Ico.BACK, onClick = { if (group != null) openGroup = null else onBack() }) },
+            navigationIcon = { IconAction(Ico.BACK, onClick = { if (inCategory) closeCategory() else onBack() }) },
             actions = {
                 IconAction(Ico.ADD, onClick = { showCustom = true })
                 FilterActions(ui, filter, onFilter)
@@ -167,7 +169,7 @@ fun CatalogScreen(
                     }
                     items(MuscleGroup.entries.filter { g -> visible.any { it.group == g } || customVisible.any { store.groupOf(it) == g } }, key = { it.name }) { g ->
                         val names = visible.filter { it.group == g }.map { it.name } + customVisible.filter { store.groupOf(it) == g }
-                        CategoryRow(g, names.size, names.count { store.hasExercise(it) }, onClick = { openGroup = g.name })
+                        CategoryRow(g, names.size, names.count { store.hasExercise(it) }, onClick = { fromCategory = true; onFilter(filter.copy(groups = setOf(g))) })
                     }
                 }
                 return@Column
@@ -227,8 +229,8 @@ fun CatalogScreen(
                         }
                     }
                 }
-                visible.groupBy { it.group }.toSortedMap().forEach { (group, list) -> // Kategorien in enum-Reihenfolge
-                    if (openGroup == null) item(key = group.name) { GroupHeader(group) } // in einer Kategorie steht sie schon im Titel
+                visible.groupBy { it.group }.toSortedMap().forEach { (g, list) -> // Kategorien in enum-Reihenfolge
+                    if (group == null) item(key = g.name) { GroupHeader(g) } // bei genau einer Kategorie steht sie schon im Titel
                     items(list, key = { it.name }) { entry ->
                         val added = store.hasExercise(entry.name)
                         Row(
@@ -239,7 +241,7 @@ fun CatalogScreen(
                                 .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            ExerciseIcon(entry.name, group, Modifier.size(40.dp))
+                            ExerciseIcon(entry.name, g, Modifier.size(40.dp))
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 NameWithStar(store, entry.name, exName(entry.name))

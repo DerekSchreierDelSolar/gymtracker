@@ -25,8 +25,8 @@ export const nav = {
   pick: false,           // Übungsauswahl fürs Workout
   pickDetail: null,      // beim Bearbeiten geöffnete Übung (Info + Ziel-Sätze + Hinzufügen)
   editInTraining: null,  // Workout wird während des Trainings bearbeitet (Wert = vorher angezeigte Übung)
-  pickGroup: null,       // beim Bearbeiten geöffnete Kategorie (null = Übersicht)
-  catalogGroup: null,    // im Katalog geöffnete Kategorie (null = Übersicht)
+  pickGroup: null,       // beim Bearbeiten per Kategorie geöffnet (Zurück wählt den Filter-Chip wieder ab; Kategorie selbst = pickFilter.groups)
+  catalogGroup: null,    // im Katalog per Kategorie geöffnet (Zurück wählt den Filter-Chip wieder ab; Kategorie selbst = catalogFilter.groups)
   trainingStart: null,   // laufendes Training (Startzeit)
   trainingWorkoutId: null, // Workout des laufenden Trainings (unabhängig von workoutId = angezeigtes Workout)
   trainingOpen: true,    // false = minimiert (Leiste „Training läuft“ statt Trainingsbildschirm)

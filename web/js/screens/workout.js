@@ -328,9 +328,9 @@ const targetLabel = (target, g) => target === 0 ? 'optional' : isCardio(g) ? `${
 export function workoutPickerScreen(w) {
   const all = [...CATALOG.map(c => c.name), ...store.customNames.filter(n => !catalogEntry(n))]; // inkl. aus der Liste entfernter
   // Erst Kategorien, dann deren Übungen (wie WorkoutPickerScreen in WorkoutScreens.kt); mit Suche/Filter direkt alle Treffer
-  const group = nav.pickGroup;
-  const overview = group == null && !filterActive(nav.pickFilter);
-  const visible = all.filter(n => (group == null || store.groupOf(n) === group) && matches(nav.pickFilter, n, store.groupOf(n)));
+  const f = nav.pickFilter, group = f.groups.size === 1 ? [...f.groups][0] : null; // angetippte Kategorie = Filter-Chip (sichtbar, abwählbar)
+  const overview = !filterActive(f);
+  const visible = all.filter(n => matches(f, n, store.groupOf(n)));
   const row = name => {
     const g = store.groupOf(name);
     return h('button', { class: 'pick-row', onclick: () => go({ pickDetail: name }) },
@@ -354,7 +354,7 @@ export function workoutPickerScreen(w) {
       h('div', { class: 'category-list' }, GROUP_KEYS.map(g => {
         const names = visible.filter(n => store.groupOf(n) === g);
         return names.length ? categoryRow(g, groupLabel(g), muscleIconHtml(g, 44), groupColor(g), names.length,
-          names.filter(n => w.exercises.includes(n)).length, () => go({ pickGroup: g })) : null;
+          names.filter(n => w.exercises.includes(n)).length, () => { f.groups = new Set([g]); go({ pickGroup: g }); }) : null;
       })));
   } else {
     content = h('div', { class: 'pad' },
@@ -406,10 +406,10 @@ export function workoutExercisePage(w, name) {
 export function catalogScreen() {
   const f = nav.catalogFilter;
   // Erst Kategorien, dann deren Übungen (wie CatalogScreen.kt); mit Suche/Filter direkt alle Treffer
-  const group = nav.catalogGroup;
-  const overview = group == null && !filterActive(f);
-  const visible = CATALOG.filter(c => (group == null || c.group === group) && matches(f, c.name, c.group));
-  const custom = favoritesFirst(sortByName(store.customNames.filter(n => (group == null || store.groupOf(n) === group) && matches(f, n, store.groupOf(n)))), isFav); // Favoriten zuerst, inkl. aus der Liste entfernter → wieder hinzufügbar
+  const group = f.groups.size === 1 ? [...f.groups][0] : null; // angetippte Kategorie = Filter-Chip (sichtbar, abwählbar)
+  const overview = !filterActive(f);
+  const visible = CATALOG.filter(c => matches(f, c.name, c.group));
+  const custom = favoritesFirst(sortByName(store.customNames.filter(n => matches(f, n, store.groupOf(n)))), isFav); // Favoriten zuerst, inkl. aus der Liste entfernter → wieder hinzufügbar
   const byGroup = GROUP_KEYS.map(g => [g, favoritesFirst(sortByName(visible.filter(c => c.group === g), c => exName(c.name)), isFav, c => c.name)]).filter(([, l]) => l.length);
 
   let content;
@@ -420,7 +420,7 @@ export function catalogScreen() {
       h('div', { class: 'category-list' }, GROUP_KEYS.map(g => {
         const names = [...visible.filter(c => c.group === g).map(c => c.name), ...custom.filter(n => store.groupOf(n) === g)];
         return names.length ? categoryRow(g, groupLabel(g), muscleIconHtml(g, 44), groupColor(g), names.length,
-          names.filter(n => store.hasExercise(n)).length, () => go({ catalogGroup: g })) : null;
+          names.filter(n => store.hasExercise(n)).length, () => { f.groups = new Set([g]); go({ catalogGroup: g }); }) : null;
       })));
   } else {
     content = h('div', { class: 'pad' },

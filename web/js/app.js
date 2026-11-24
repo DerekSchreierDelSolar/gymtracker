@@ -74,6 +74,19 @@ function currentScreen() {
   return homeScreen(startTraining);
 }
 
+/**
+ * Über eine Kategorie geöffnete Liste schließen: deren Filter-Chip wieder abwählen (wie closeCategory in CatalogScreen.kt).
+ * true = war offen (Zurück erledigt); wurde der Chip schon von Hand abgewählt, geht Zurück direkt weiter.
+ */
+function closeCategory(key) {
+  const marker = key + 'Group', groups = nav[key + 'Filter'].groups;
+  if (nav[marker] == null) return false;
+  const open = groups.size > 0;
+  groups.clear();
+  update({ [marker]: null });
+  return open;
+}
+
 /** „Zurück“ – gleiche Reihenfolge wie die BackHandler in GymApp. false = nicht zurückgehen. */
 setBackHandler(() => {
   if (nav.dialog) { closeDialog(); return false; }
@@ -82,7 +95,7 @@ setBackHandler(() => {
   const trainingVisible = nav.trainingStart != null && nav.trainingOpen;
   if (trainingVisible && nav.editInTraining != null) {
     if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }
-    if (nav.pickGroup != null) { update({ pickGroup: null }); return true; }
+    if (closeCategory('pick')) return true;
     backToTraining();
     return true;
   }
@@ -90,10 +103,10 @@ setBackHandler(() => {
   if (trainingVisible) { keepScreenOn(false); update({ trainingOpen: false }); return true; }
   if (nav.exercise != null) { update({ exercise: null }); return true; }
   if (nav.pickDetail != null) { update({ pickDetail: null }); return true; }
-  if (nav.pickGroup != null) { update({ pickGroup: null }); return true; }
+  if (closeCategory('pick')) return true;
   if (nav.pick) { update({ pick: false, pickDetail: null, pickGroup: null }); return true; }
   if (nav.workoutId != null) { update({ workoutId: null }); return true; }
-  if (nav.catalogGroup != null) { update({ catalogGroup: null }); return true; }
+  if (closeCategory('catalog')) return true;
   if (nav.catalog) { update({ catalog: false }); return true; }
   if (nav.settingsPage) { update({ settingsPage: null }); return true; }
   if (nav.settings) { update({ settings: false }); return true; }

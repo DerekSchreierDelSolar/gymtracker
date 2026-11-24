@@ -625,11 +625,14 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
     val ui = rememberFilterUi(filter)
     // Geöffnete Übung (null = Liste). rememberSaveable: übersteht Drehen; Zurück schließt erst die Seite.
     var detail by rememberSaveable { mutableStateOf<String?>(null) }
-    // Geöffnete Kategorie (null = Übersicht). Mit Suche/Filter: direkt alle Treffer.
-    var openGroup by rememberSaveable { mutableStateOf<String?>(null) }
-    val group = openGroup?.let { runCatching { MuscleGroup.valueOf(it) }.getOrNull() }
-    val overview = group == null && !filter.isActive
-    val visible = all.filter { (group == null || store.groupOf(it) == group) && filter.matches(it, store.groupOf(it)) }
+    // Kategorie antippen = Filter-Chip dieser Kategorie setzen (sichtbar, abwählbar); Zurück wählt ihn wieder ab.
+    // Ohne Suche/Filter: Übersicht, sonst direkt alle Treffer.
+    var fromCategory by rememberSaveable { mutableStateOf(false) }
+    val group = filter.groups.singleOrNull()
+    val overview = !filter.isActive
+    val inCategory = fromCategory && filter.groups.isNotEmpty()
+    val closeCategory = { fromCategory = false; filter = filter.copy(groups = emptySet()) }
+    val visible = all.filter { filter.matches(it, store.groupOf(it)) }
     val listState = rememberLazyListState() // außerhalb des if → Scroll-Position bleibt beim Zurückkehren erhalten
 
     detail?.let { name ->
@@ -637,12 +640,12 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
         WorkoutExercisePage(store, workout, name, onBack = { detail = null })
         return
     }
-    if (group != null) BackHandler { openGroup = null }
+    if (inCategory) BackHandler { closeCategory() }
 
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(group?.label ?: (tr("Übungen: ", "Exercises: ") + workout.name)) },
-            navigationIcon = { IconAction(Ico.BACK, onClick = { if (group != null) openGroup = null else onBack() }) },
+            navigationIcon = { IconAction(Ico.BACK, onClick = { if (inCategory) closeCategory() else onBack() }) },
             actions = { FilterActions(ui, filter, { filter = it }) }
         )
     }) { padding ->
@@ -699,7 +702,7 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                     items(MuscleGroup.entries.filter { g -> visible.any { store.groupOf(it) == g } }, key = { "g_${it.name}" }) { g ->
                         val names = visible.filter { store.groupOf(it) == g }
                         Box(Modifier.padding(bottom = 8.dp)) {
-                            CategoryRow(g, names.size, names.count { it in workout.exercises }, onClick = { openGroup = g.name })
+                            CategoryRow(g, names.size, names.count { it in workout.exercises }, onClick = { fromCategory = true; filter = filter.copy(groups = setOf(g)) })
                         }
                     }
                 } else {
