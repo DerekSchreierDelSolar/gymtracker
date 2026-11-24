@@ -158,7 +158,7 @@ fun HomeScreen(
                     listOf(
                         Triple(Ico.HOME, tr("Start", "Home"), 0),
                         Triple(Ico.DUMBBELL, tr("Übungen", "Exercises"), 1),
-                        Triple(Ico.LIST, "Workouts", 2),
+                        Triple(Ico.LIST, tr("Workouts", "Workouts"), 2),
                         Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 3),
                         Triple(Ico.BODY, tr("Körper", "Body"), 4)
                     ).forEach { (icon, label, i) ->
@@ -193,7 +193,7 @@ fun HomeScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     onClick = { showNewWorkout = true },
                     icon = { AppIcon(Ico.ADD) },
-                    text = { Text("Workout") }
+                    text = { Text(tr("Workout", "Workout")) }
                 )
             }
         }

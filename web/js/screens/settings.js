@@ -3,7 +3,7 @@
 // (nav.settingsPage: 'profile' | 'cycle'). Erinnerung, Health Connect und automatisches Backup gibt es nur in Android.
 
 import { store } from '../store.js';
-import { tr, plural, fmtDate, appLanguage, weightUnit, validYear, validHeight, profileComplete } from '../core.js';
+import { tr, plural, fmtDate, appLanguage, LANGUAGES, weightUnit, validYear, validHeight, profileComplete } from '../core.js';
 import { h, icon, chip, dialog, muted, undoToast } from '../ui.js';
 import { nav, go, openDialog, closeDialog } from '../nav.js';
 import { screen } from '../layout.js';
@@ -47,12 +47,12 @@ function overview() {
 
   return [
     group(tr('Darstellung', 'Appearance'),
-      choiceRow(tr('Design', 'Theme'), [['system', 'System'], ['light', tr('Hell', 'Light')], ['dark', tr('Dunkel', 'Dark')]],
+      choiceRow(tr('Design', 'Theme'), [['system', tr('System', 'System')], ['light', tr('Hell', 'Light')], ['dark', tr('Dunkel', 'Dark')]],
         store.themeMode, m => store.setTheme(m)),
-      choiceRow(tr('Sprache', 'Language'), [['de', 'Deutsch'], ['en', 'English']], appLanguage, l => store.setLanguage(l)),
+      languageRow(),
       // nur Anzeige/Eingabe – gespeichert wird immer kg
       choiceRow(tr('Einheit', 'Unit'), [['kg', 'kg'], ['lb', 'lbs']], weightUnit, u => store.setUnit(u))),
-    group('Training',
+    group(tr('Training', 'Training'),
       navRow('👤', PAGES.profile(), profileSummary, () => openPage('profile')),
       navRow('📆', PAGES.cycle(), cycleSummary, () => openPage('cycle'))),
     group(tr('Daten', 'Data'),
@@ -75,6 +75,12 @@ const group = (title, ...rows) => h('section', { class: 'settings-group' },
 const choiceRow = (label, options, selected, onSelect) => h('div', { class: 'choice-row' },
   h('span', null, label),
   h('div', { class: 'segments' }, options.map(([k, l]) => chip(l, selected === k, () => onSelect(k)))));
+
+/** Sprache: Auswahlfeld (6 Sprachen passen nicht als Chips in eine Zeile; wie LanguageRow in SettingsScreen.kt) */
+const languageRow = () => h('div', { class: 'choice-row' },
+  h('span', null, tr('Sprache', 'Language')),
+  h('select', { id: 'language-select', class: 'chip selected language-select', onchange: e => store.setLanguage(e.target.value) },
+    LANGUAGES.map(([k, l]) => h('option', { value: k, selected: k === appLanguage }, l))));
 
 /** Symbol, Titel, Zusammenfassung, › (wie NavRow). */
 const navRow = (emoji, title, summary, onClick, chevron = true, cls = '') => h('button', { class: ['nav-row', cls], onclick: onClick },
@@ -113,9 +119,12 @@ function profileSettings() {
 
 function resetDialog() {
   openDialog(() => dialog(tr('Fortschritt zurücksetzen?', 'Reset progress?'),
-    h('p', null, tr(
-      `${plural(store.sets.length, 'Satz', 'Sätze')}, ${plural(store.sessions.length, 'Trainingseinheit', 'Trainingseinheiten')} und ${plural(store.weights.length, 'Gewichtseintrag', 'Gewichtseinträge')} werden gelöscht. Tipp: vorher „Daten exportieren“.`,
-      `${plural(store.sets.length, 'set', 'sets')}, ${plural(store.sessions.length, 'workout', 'workouts')} and ${plural(store.weights.length, 'weight entry', 'weight entries')} will be deleted. Tip: "Export data" first.`)),
+    h('p', null, ((sets, units, weights) => tr(
+      `${sets}, ${units} und ${weights} werden gelöscht. Tipp: vorher „Daten exportieren“.`,
+      `${sets}, ${units} and ${weights} will be deleted. Tip: "Export data" first.`))(
+      plural(store.sets.length, tr('Satz', 'set'), tr('Sätze', 'sets')),
+      plural(store.sessions.length, tr('Trainingseinheit', 'workout'), tr('Trainingseinheiten', 'workouts')),
+      plural(store.weights.length, tr('Gewichtseintrag', 'weight entry'), tr('Gewichtseinträge', 'weight entries')))),
     [
       { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
       {

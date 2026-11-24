@@ -172,10 +172,7 @@ fun DashboardTab(
                             style = MaterialTheme.typography.titleLarge
                         )
                         Text(
-                            if (streak > 0) "🔥 " + tr(
-                                "${plural(streak, "Woche", "Wochen")} in Folge",
-                                "${plural(streak, "week", "weeks")} in a row"
-                            ) + (if (jokerRecent) tr(" · 🃏 Joker hat sie gerettet", " · 🃏 saved by a joker") else "") else tr("Starte deine Serie!", "Start your streak!"),
+                            if (streak > 0) "🔥 " + plural(streak, tr("Woche", "week"), tr("Wochen", "weeks")).let { tr("$it in Folge", "$it in a row") } + (if (jokerRecent) tr(" · 🃏 Joker hat sie gerettet", " · 🃏 saved by a joker") else "") else tr("Starte deine Serie!", "Start your streak!"),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         // Trainingsblock (Cycle.kt)

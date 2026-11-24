@@ -177,7 +177,7 @@ private fun MuscleBullet(bullet: String, text: String, color: androidx.compose.u
 fun muscleSearch(query: String): List<String> {
     val q = query.trim()
     return MuscleWiki.entries.filter { (id, m) ->
-        q.isEmpty() || listOf(MUSCLES.getValue(id).de, MUSCLES.getValue(id).en, m.latin, m.parts.de, m.parts.en).any { it.contains(q, true) }
+        q.isEmpty() || listOf(MUSCLES.getValue(id).de, MUSCLES.getValue(id).en, MUSCLES.getValue(id).text, m.latin, m.parts.de, m.parts.en, m.parts.text).any { it.contains(q, true) }
     }.keys.toList().sortedByName { muscleLabel(it) }
 }
 

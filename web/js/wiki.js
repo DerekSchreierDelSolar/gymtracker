@@ -5,7 +5,7 @@ import { MUSCLE_INFO } from './muscle-data.js';
 import { SUPPLEMENTS } from './supplement-data.js';
 import { MUSCLES } from './body-data.js';
 import { CATALOG } from './data.js';
-import { tr, exName, sortByName, isEnglish, isCardio, GROUP_KEYS, equipmentLabel } from './core.js';
+import { tr, exName, sortByName, isGerman, isCardio, GROUP_KEYS, equipmentLabel } from './core.js';
 import { exerciseIconHtml } from './pictograms.js';
 import { h, icon, iconBtn, groupHeader, muted, chip } from './ui.js';
 import { nav, update, openDialog, closeDialog } from './nav.js';
@@ -13,7 +13,7 @@ import { screen } from './layout.js';
 import { muscleMap, musclesOf, levelsOf, bodyFigure, tappableFigure, muscleLabel, muscleOfRegion, PRIMARY_COLOR } from './bodymap.js';
 
 /** [de, en] → aktuelle Sprache */
-const t = pair => (isEnglish() ? pair[1] : pair[0]);
+const t = pair => tr(pair[0], pair[1]);
 
 const byName = new Map(CATALOG.map(c => [c.name, c]));
 /** Klammertext eines Katalog-Namens: „Bankdrücken (Kurzhantel)“ → „Kurzhantel“. */
@@ -30,9 +30,9 @@ export function wikiFor(name) {
 
 /** Anzeigename einer Grundübung. Englisch: kürzester EN-Name der Varianten (z. B. „Bench Press“). */
 export function baseName(base) {
-  if (!isEnglish()) return base;
+  if (isGerman()) return base;
   const en = CATALOG.filter(c => c.base === base).map(c => c.en).sort((a, b) => a.length - b.length)[0];
-  return en ?? base;
+  return tr(base, en ?? base);
 }
 
 /** ⓘ-Button, der das Wiki zu einer Übung öffnet (nichts, wenn es keinen Eintrag gibt). */
@@ -149,7 +149,7 @@ function muscleContent(id) {
 function muscleList(query) {
   const q = query.trim().toLowerCase();
   const ids = sortByName(Object.keys(MUSCLE_INFO).filter(id => MUSCLES[id] && (!q ||
-    [MUSCLES[id].de, MUSCLES[id].en, MUSCLE_INFO[id].latin, ...MUSCLE_INFO[id].parts].some(s => s.toLowerCase().includes(q)))), muscleLabel);
+    [MUSCLES[id].de, MUSCLES[id].en, muscleLabel(id), MUSCLE_INFO[id].latin, ...MUSCLE_INFO[id].parts, t(MUSCLE_INFO[id].parts)].some(s => s.toLowerCase().includes(q)))), muscleLabel);
   return [
     q ? null : h('div', { class: 'muscle-wiki-figure' }, tappableFigure(() => null, openMuscle),
       muted(tr('Muskel antippen oder aus der Liste wählen', 'Tap a muscle or pick one from the list'), 'small center')),
@@ -163,7 +163,8 @@ function muscleList(query) {
 // ---------- Supplement-Wiki (entspricht SupplementWiki.kt), Inhalte: supplement-data.js aus assets/supplements.json ----------
 
 /** Kleinbuchstaben, Umlaute ausgeschrieben (wie Bot.norm) – für die Suche */
-const norm = s => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+const norm = s => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+  .replace(/ı/g, 'i').replace(/œ/g, 'oe').replace(/æ/g, 'ae').normalize('NFD').replace(/\p{M}+/gu, '').replace(/[^a-z0-9]+/g, ' ').trim();
 export const evidenceLabel = l => [tr('Kein Nutzen belegt', 'No proven benefit'), tr('Schwach belegt', 'Weak evidence'), tr('Teilweise belegt', 'Some evidence'), tr('Gut belegt', 'Well proven')][l] ?? '';
 export const evidenceColor = l => ['#9E9E9E', '#EF6C00', '#F9A825', '#43A047'][l] ?? '#9E9E9E';
 const evidenceBadge = l => h('span', { class: 'evidence-badge', style: `--ev:${evidenceColor(l)}` }, h('i'), evidenceLabel(l));
@@ -194,7 +195,7 @@ function supplementSheet(id) {
 function supplementList(query) {
   const q = norm(query);
   const all = Object.entries(SUPPLEMENTS).filter(([, s]) => !q ||
-    [...s.name, ...s.category].some(x => norm(x).includes(q)) || s.keys.some(k => norm(k).includes(q)));
+    [...s.name, ...s.category, t(s.name), t(s.category)].some(x => norm(x).includes(q)) || s.keys.some(k => norm(k).includes(q)));
   return [
     q ? null : muted(tr('Was bringt was? Einstufung nach aktueller Studienlage – das meiste erreichst du über Training, Schlaf und Ernährung.',
       'What actually works? Rated by current evidence – most results come from training, sleep and diet.'), 'small'),
@@ -222,7 +223,7 @@ export function wikiScreen() {
   for (const c of CATALOG) {
     if (seen.has(c.base) || !WIKI[c.base]) continue;
     seen.add(c.base);
-    if (!q || CATALOG.some(v => v.base === c.base && (v.name.toLowerCase().includes(q) || v.en.toLowerCase().includes(q)))) bases.push(c);
+    if (!q || CATALOG.some(v => v.base === c.base && (v.name.toLowerCase().includes(q) || v.en.toLowerCase().includes(q) || exName(v.name).toLowerCase().includes(q)))) bases.push(c);
   }
   const byGroup = GROUP_KEYS.map(g => [g, sortByName(bases.filter(c => c.group === g), c => baseName(c.base))]).filter(([, l]) => l.length);
 

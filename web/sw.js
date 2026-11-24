@@ -3,12 +3,13 @@
 // (Updates landen ohne Zutun auf dem Handy), ohne Internet die zuletzt geladene.
 // Die Trainingsdaten selbst liegen im localStorage, nicht hier.
 
-const CACHE = 'gymtracker-v91';
+const CACHE = 'gymtracker-v92';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/core.js', './js/data.js', './js/store.js', './js/stats.js', './js/pictograms.js',
   './js/ui.js', './js/nav.js', './js/layout.js', './js/filter.js', './js/wiki.js', './js/wiki-data.js', './js/muscle-data.js', './js/supplement-data.js', './js/bodymap.js', './js/body-data.js', './js/image-data.js', './js/bot.js', './js/wizard.js', './js/review.js', './js/goals.js', './js/favorites.js', './js/achievements.js', './js/celebration.js', './js/milestones.js', './js/morning.js', './js/levels.js', './js/badges.js', './js/quotes.js', './js/warmup.js', './js/supersets.js', './js/cycle.js', './js/measures.js', './js/wrapped.js', './js/effort.js', './js/bot-data.js',
   './js/screens/home.js', './js/screens/settings.js', './js/screens/exercise.js', './js/screens/workout.js', './js/screens/training.js',
+  './i18n/fr.json', './i18n/it.json', './i18n/es.json', './i18n/tr.json',
   './icons/apple-touch-icon.png', './icons/icon-192.png', './icons/icon-512.png', './icons/favicon-32.png',
 ];
 

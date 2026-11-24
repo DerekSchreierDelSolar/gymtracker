@@ -84,8 +84,8 @@ fun nextMilestones(store: GymStore, limit: Int = 3): List<Milestone> {
     if (count > 0) {
         val next = nextCountMilestone(count)
         val prev = if (count >= 100) (count / 50) * 50 else listOf(1, 5, 10, 25, 50, 75).lastOrNull { it <= count } ?: 0
-        out += Milestone("🎉", tr("Noch ${plural(next - count, "Training", "Trainings")} bis zum $next. Training",
-            "${plural(next - count, "workout", "workouts")} to workout #$next"),
+        val left = plural(next - count, tr("Training", "workout"), tr("Trainings", "workouts"))
+        out += Milestone("🎉", tr("Noch $left bis zum $next. Training", "$left to workout #$next"),
             tr("$count Trainings bisher", "$count workouts so far"), frac(prev.toDouble(), count.toDouble(), next.toDouble()))
     }
 

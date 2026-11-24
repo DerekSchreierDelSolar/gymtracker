@@ -1,0 +1,33 @@
+{
+ "_info": "Handgepflegte Übersetzungen für deutsche Texte, die im Code mit verschiedenem Englisch (= verschiedener Bedeutung) vorkommen. Schlüssel: deutsch + U+241F + englisch. Reine Groß-/Kleinschreibungs-Varianten erzeugt i18n.mjs --merge selbst.",
+ "fr": {
+  "Start␟Home": "Accueil",
+  "Einheit␟Unit": "Unité",
+  "Einheiten␟Workouts": "Séances",
+  "Training␟Training": "Entraînement",
+  "Weiter␟Next": "Suivant"
+ },
+ "it": {
+  "Start␟Home": "Home",
+  "Einheit␟Unit": "Unità",
+  "Einheiten␟Workouts": "Allenamenti",
+  "Training␟Training": "Allenamento",
+  "Weiter␟Next": "Avanti"
+ },
+ "es": {
+  "Start␟Home": "Inicio",
+  "Einheit␟Unit": "Unidad",
+  "Einheiten␟Workouts": "Entrenamientos",
+  "Training␟Training": "Entrenamiento",
+  "Weiter␟Next": "Siguiente"
+ },
+ "tr": {
+  "Start␟Home": "Ana sayfa",
+  "Einheit␟Unit": "Birim",
+  "Einheiten␟Workouts": "Antrenmanlar",
+  "Training␟Training": "Antrenman",
+  "Weiter␟Next": "İleri",
+  "Übungen␟Exercises": "Egzersizler",
+  "Workouts␟Workouts": "Programlar"
+ }
+}

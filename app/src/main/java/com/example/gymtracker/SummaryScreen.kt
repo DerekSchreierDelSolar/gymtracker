@@ -75,7 +75,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
                         add((if (stats.kcalFromHr) tr("❤ Verbrauch", "❤ Burned") else tr("🔥 Verbrauch", "🔥 Burned")) to "~${fmtKcal(it)}\u00A0kcal")
                     }
                     if (stats.volume > 0) add(tr("Volumen", "Volume") to "${fmtVol(stats.volume)}")
-                    if (stats.cardioMinutes > 0) add("Cardio" to "${stats.cardioMinutes}\u00A0min")
+                    if (stats.cardioMinutes > 0) add(tr("Cardio", "Cardio") to "${stats.cardioMinutes}\u00A0min")
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     tiles.chunked(3).forEach { row ->

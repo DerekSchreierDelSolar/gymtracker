@@ -41,12 +41,12 @@ data class ExerciseFilter(
             (equipment.isEmpty() || equipmentOf(name) in equipment) &&
             matchesQuery(name)
 
-    /** Sucht im gespeicherten (deutschen) und im englischen Namen, Groß-/Kleinschreibung egal. */
+    /** Sucht im gespeicherten (deutschen), im englischen und im angezeigten Namen (andere Sprachen), Groß-/Kleinschreibung egal. */
     private fun matchesQuery(name: String): Boolean {
         val q = query.trim()
         if (q.isEmpty()) return true
         val en = CATALOG.firstOrNull { it.name.equals(name, ignoreCase = true) }?.en ?: ""
-        return name.contains(q, ignoreCase = true) || en.contains(q, ignoreCase = true)
+        return name.contains(q, ignoreCase = true) || en.contains(q, ignoreCase = true) || exName(name).contains(q, ignoreCase = true)
     }
 }
 

@@ -1,7 +1,7 @@
 // Filter für Übungslisten (Kategorie / Gerät / Suche) – entspricht Filter.kt.
 // Innerhalb einer Dimension ODER (Brust oder Rücken), zwischen den Dimensionen UND.
 
-import { equipmentOf, catalogEntry, groupLabel, equipmentLabel, tr } from './core.js';
+import { equipmentOf, catalogEntry, groupLabel, equipmentLabel, tr, exName } from './core.js';
 import { muscleIconHtml } from './pictograms.js';
 import { h, iconBtn, icon, chip } from './ui.js';
 import { nav, rerender, emptyFilter } from './nav.js';
@@ -14,7 +14,7 @@ export function matches(f, name, group) {
   const q = f.query.trim().toLowerCase();
   if (!q) return true;
   const en = catalogEntry(name)?.en ?? '';
-  return name.toLowerCase().includes(q) || en.toLowerCase().includes(q);
+  return name.toLowerCase().includes(q) || en.toLowerCase().includes(q) || exName(name).toLowerCase().includes(q);
 }
 
 const toggle = (set, x) => (set.has(x) ? set.delete(x) : set.add(x));
@@ -31,7 +31,7 @@ export function filterActions(key) {
       if (ui.search) document.getElementById(`search-${key}`)?.focus();
     }, { active: ui.search, label: tr('Suchen', 'Search') }),
     iconBtn('filter', () => { ui.filters = !ui.filters; rerender(); },
-      { active: ui.filters, badge: count || null, label: 'Filter' }),
+      { active: ui.filters, badge: count || null, label: tr('Filter', 'Filter') }),
   ];
 }
 

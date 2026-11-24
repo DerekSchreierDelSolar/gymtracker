@@ -112,7 +112,7 @@ fun EvidenceBadge(level: Int) {
 fun supplementSearch(query: String): List<Supplement> {
     val q = Bot.norm(query)
     return SupplementWiki.entries.filter { s ->
-        q.isEmpty() || listOf(s.name.de, s.name.en, s.category.de, s.category.en).any { Bot.norm(it).contains(q) } ||
+        q.isEmpty() || listOf(s.name.de, s.name.en, s.name.text, s.category.de, s.category.en, s.category.text).any { Bot.norm(it).contains(q) } ||
             s.keys.any { Bot.norm(it).contains(q) }
     }
 }

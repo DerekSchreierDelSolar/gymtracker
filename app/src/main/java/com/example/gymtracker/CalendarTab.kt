@@ -136,8 +136,7 @@ fun CalendarTab(
         // Wochentage
         item {
             Row {
-                (if (isEnglish) listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-                else listOf("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")).forEach {
+                (1..7).map { weekdayShort(it) }.forEach {
                     Text(
                         it,
                         modifier = Modifier.weight(1f),
@@ -192,10 +191,10 @@ fun CalendarTab(
                 val days = monthSessions.map { dayKey(it.start) }.distinct().size
                 val n = monthSessions.size
                 val kcal = monthSessions.mapNotNull { statsBySession.getValue(it.id).kcal }.sum()
-                tr(
-                    "${plural(n, "Trainingseinheit", "Trainingseinheiten")} an ${plural(days, "Tag", "Tagen")} · Ø $avg\u00A0% abgeschlossen",
-                    "${plural(n, "workout", "workouts")} on ${plural(days, "day", "days")} · avg. $avg\u00A0% completed"
-                ) + (if (kcal > 0) " · 🔥 ~${fmtKcal(kcal)}\u00A0kcal" else "")
+                val units = plural(n, tr("Trainingseinheit", "workout"), tr("Trainingseinheiten", "workouts"))
+                val onDays = plural(days, tr("Tag", "day"), tr("Tagen", "days"))
+                tr("$units an $onDays · Ø $avg % abgeschlossen", "$units on $onDays · avg. $avg % completed") +
+                    (if (kcal > 0) " · 🔥 ~${fmtKcal(kcal)} kcal" else "")
             }
             Card(Modifier.fillMaxWidth()) {
                 Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(12.dp))
@@ -210,7 +209,7 @@ fun CalendarTab(
                 clear(); set(selectedDay / 10000, selectedDay / 100 % 100 - 1, selectedDay % 100)
             }
             Text(
-                SimpleDateFormat(tr("EEEE, dd.MM.yyyy", "EEEE, dd/MM/yyyy"), appLocale()).format(c.time),
+                SimpleDateFormat(if (dateDots) "EEEE, dd.MM.yyyy" else "EEEE, dd/MM/yyyy", appLocale()).format(c.time),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 8.dp)
             )

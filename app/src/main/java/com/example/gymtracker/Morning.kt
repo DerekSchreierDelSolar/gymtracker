@@ -45,7 +45,8 @@ fun freshStart(store: GymStore, now: Long = System.currentTimeMillis()): String?
         c.get(Calendar.DAY_OF_MONTH) <= 2 && noneSince(monthStart) ->
             tr("📅 Neuer Monat – leg einen starken Start hin", "📅 New month – make it a strong start")
         weekdayOf(now) == 1 && noneSince(startOfWeek(now)) ->
-            tr("🌱 Neue Woche – ${plural(goal, "Training wartet", "Trainings warten")} auf dich", "🌱 New week – ${plural(goal, "workout is", "workouts are")} waiting for you")
+            if (goal == 1) tr("🌱 Neue Woche – 1 Training wartet auf dich", "🌱 New week – 1 workout is waiting for you")
+            else tr("🌱 Neue Woche – $goal Trainings warten auf dich", "🌱 New week – $goal workouts are waiting for you")
         else -> null
     }
 }
@@ -55,8 +56,7 @@ fun freshStart(store: GymStore, now: Long = System.currentTimeMillis()): String?
  * null = keine Übung mit Verlauf.
  */
 fun anticipation(store: GymStore, w: Workout, today: Boolean = true): String? {
-    val whenDe = if (today) "heute" else "nächstes\u00A0Mal"
-    val whenEn = if (today) "today" else "next\u00A0time"
+    val whenText = if (today) tr("heute", "today") else tr("nächstes Mal", "next time")
     val goalEx = store.goals.filter { it.type.needsExercise && goalProgress(store, it).reachedAt == null }.mapNotNull { it.exercise }.toSet()
     val dayStart = startOfToday()
     for (ex in w.exercises.sortedBy { if (it in goalEx) 0 else 1 }) {
@@ -68,17 +68,17 @@ fun anticipation(store: GymStore, w: Workout, today: Boolean = true): String? {
         val name = exName(ex)
         if (isTimed(ex)) {
             val best = lastDay.maxOf { it.reps }
-            return tr("Letztes Mal ${fmtSeconds(best)} $name – schaffst du $whenDe ${fmtSeconds(best + 10)}?",
-                "Last time ${fmtSeconds(best)} $name – can you do ${fmtSeconds(best + 10)} $whenEn?")
+            return tr("Letztes Mal ${fmtSeconds(best)} $name – schaffst du $whenText ${fmtSeconds(best + 10)}?",
+                "Last time ${fmtSeconds(best)} $name – can you do ${fmtSeconds(best + 10)} $whenText?")
         }
         val top = lastDay.maxOf { it.weight }
         val reps = lastDay.filter { it.weight == top }.maxOf { it.reps }
         return when {
-            s.weight != null && s.weight > top -> tr("Letztes Mal ${fmtKg(top)} $name – schaffst du $whenDe ${fmtWU(s.weight)}?",
-                "Last time ${fmtKg(top)} $name – can you do ${fmtWU(s.weight)} $whenEn?")
-            top <= 0 -> tr("Letztes Mal $reps × $name – $whenDe ${reps + 1}?", "Last time $reps × $name – ${reps + 1} $whenEn?")
-            else -> tr("Letztes Mal ${fmtKg(top)} × $reps $name – $whenDe ${reps + 1} Wdh.?",
-                "Last time ${fmtKg(top)} × $reps $name – ${reps + 1} reps $whenEn?")
+            s.weight != null && s.weight > top -> tr("Letztes Mal ${fmtKg(top)} $name – schaffst du $whenText ${fmtWU(s.weight)}?",
+                "Last time ${fmtKg(top)} $name – can you do ${fmtWU(s.weight)} $whenText?")
+            top <= 0 -> tr("Letztes Mal $reps × $name – $whenText ${reps + 1}?", "Last time $reps × $name – ${reps + 1} $whenText?")
+            else -> tr("Letztes Mal ${fmtKg(top)} × $reps $name – $whenText ${reps + 1} Wdh.?",
+                "Last time ${fmtKg(top)} × $reps $name – ${reps + 1} reps $whenText?")
         }
     }
     return null

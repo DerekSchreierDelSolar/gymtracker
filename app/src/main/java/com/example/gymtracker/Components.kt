@@ -216,7 +216,7 @@ fun fmtWeek(t: Long): String {
 
 /** Kurzes Datum für Achsen-Beschriftungen („18.11.“ bzw. „18/11“). */
 fun fmtShortDate(t: Long): String =
-    SimpleDateFormat(tr("dd.MM.", "dd/MM"), appLocale()).format(Date(t))
+    SimpleDateFormat(if (isGerman) "dd.MM." else if (dateDots) "dd.MM" else "dd/MM", appLocale()).format(Date(t))
 
 // ---------- Diagramm ----------
 

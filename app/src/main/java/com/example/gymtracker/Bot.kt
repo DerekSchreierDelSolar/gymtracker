@@ -79,9 +79,12 @@ object Bot {
     // ----- Text vergleichen -----
 
     /** Kleinbuchstaben, Umlaute ausgeschrieben, nur Buchstaben/Ziffern, Wörter durch ein Leerzeichen getrennt */
-    fun norm(s: String): String = s.lowercase()
-        .replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
-        .replace(Regex("[^a-z0-9]+"), " ").trim()
+    /** Kleinbuchstaben, deutsche Umlaute als ae/oe/ue, andere Akzente weg (é → e, ç → c, ş → s, ı → i), Rest = Leerzeichen */
+    fun norm(s: String): String = java.text.Normalizer.normalize(
+        s.lowercase().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
+            .replace("ı", "i").replace("œ", "oe").replace("æ", "ae"),
+        java.text.Normalizer.Form.NFD
+    ).replace(Regex("\\p{M}+"), "").replace(Regex("[^a-z0-9]+"), " ").trim()
 
     fun tokens(s: String): List<String> = norm(s).split(' ').filter { it.isNotEmpty() }
 
@@ -119,13 +122,17 @@ object Bot {
     // ----- Übungen erkennen -----
 
     /** Grundübung → Wortfolgen (deutscher Name, Teile bei „/“, englische Namen ohne Gerät) */
-    private val exercisePhrases: Map<String, List<List<String>>> by lazy {
-        Wiki.entries.keys.associateWith { base ->
-            val names = base.split('/').map { it.trim() } + base +
-                CATALOG.filter { it.base == base }.map { it.en.substringBefore(" (") }
-            names.map(::tokens).filter { it.isNotEmpty() }.distinct()
+    // je Sprache, weil die übersetzten Namen (exName/baseName) dazukommen
+    private val phrasesByLang = HashMap<String, Map<String, List<List<String>>>>()
+    private val exercisePhrases: Map<String, List<List<String>>>
+        get() = phrasesByLang.getOrPut(appLanguage) {
+            Wiki.entries.keys.associateWith { base ->
+                val variants = CATALOG.filter { it.base == base }
+                val names = base.split('/').map { it.trim() } + base + baseName(base) +
+                    variants.map { it.en.substringBefore(" (") } + variants.map { exName(it.name).substringBefore(" (") }
+                names.map(::tokens).filter { it.isNotEmpty() }.distinct()
+            }
         }
-    }
 
     /** Am besten passende Übung: die mit der längsten erkannten Wortfolge („Rumänisches Kreuzheben“ vor „Kreuzheben“) */
     /** Supplement-ID → Wortfolgen (Suchbegriffe aus supplements.json) */

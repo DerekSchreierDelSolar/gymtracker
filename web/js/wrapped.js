@@ -1,7 +1,7 @@
 // Jahresrückblick „Dein Jahr“ (Roadmap Schritt 17) – entspricht Wrapped.kt.
 
 import { store } from './store.js';
-import { fmtWU, fmtKg, toBig, bigUnit, tr, exName, fmtW, fmtKcal, plural, isTop, isWork, isTimed, isCardio, dayKey, startOfWeek, groupLabel, appLanguage } from './core.js';
+import { fmtWU, fmtKg, toBig, bigUnit, tr, exName, fmtW, fmtKcal, plural, isTop, isWork, isTimed, isCardio, dayKey, startOfWeek, groupLabel, appLocale } from './core.js';
 import { allSessions, sessionStats, recordEvents, streakFrom } from './stats.js';
 import { goalProgress, goalTitle } from './goals.js';
 import { badges, earnedBadges } from './badges.js';
@@ -73,7 +73,7 @@ function yearDialog(initial) {
   openDialog(() => {
     const r = yearReview(st.year);
     const years = reviewYears();
-    const monthName = m => new Date(r.year, m, 1).toLocaleDateString(appLanguage === 'en' ? 'en-GB' : 'de-DE', { month: 'long' });
+    const monthName = m => new Date(r.year, m, 1).toLocaleDateString(appLocale(), { month: 'long' });
     const tiles = [[tr('Trainings', 'Workouts'), String(r.sessions)]];
     if (r.durationMs > 0) tiles.push([tr('Trainingszeit', 'Training time'), fmtHoursMinutes(r.durationMs)]);
     tiles.push([tr('Sätze', 'Sets'), fmtKcal(r.sets)]);
@@ -90,7 +90,7 @@ function yearDialog(initial) {
         r.topGroup ? line('💪', tr('Am meisten trainiert', 'Most trained'), groupLabel(r.topGroup)) : null,
         r.bestMonth ? line('📅', tr('Stärkster Monat', 'Best month'), `${monthName(r.bestMonth[0])} · ` + plural(r.bestMonth[1], 'Training', tr('Trainings', 'workouts'))) : null,
         r.longestStreak >= 2 ? line('🔥', tr('Längste Serie', 'Longest streak'), tr(`${r.longestStreak} Wochen in Folge`, `${r.longestStreak} weeks in a row`)) : null,
-        r.levelTo > r.levelFrom ? line('⭐', 'Level', tr(`von ${r.levelFrom} auf ${r.levelTo} · ${levelTitle(r.levelTo)}`, `from ${r.levelFrom} to ${r.levelTo} · ${levelTitle(r.levelTo)}`)) : null,
+        r.levelTo > r.levelFrom ? line('⭐', tr('Level', 'Level'), tr(`von ${r.levelFrom} auf ${r.levelTo} · ${levelTitle(r.levelTo)}`, `from ${r.levelFrom} to ${r.levelTo} · ${levelTitle(r.levelTo)}`)) : null,
         r.goals.length ? line('🎯', tr('Erreichte Ziele', 'Goals reached'), r.goals.map(goalTitle).join(', ')) : null,
         r.badges.length ? line('🏅', tr('Neue Abzeichen', 'New badges'), r.badges.map(b => b.emoji).join(' ') + ` (${r.badges.length})`) : null,
         h('hr'),

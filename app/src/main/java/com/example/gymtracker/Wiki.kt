@@ -247,7 +247,7 @@ fun WikiScreen(onBack: () -> Unit, onAsk: () -> Unit) {
     val bases = CATALOG.distinctBy { it.base }.filter { Wiki.entries.containsKey(it.base) }
     val q = query.trim()
     val visible = bases.filter { c ->
-        q.isEmpty() || CATALOG.any { it.base == c.base && (it.name.contains(q, true) || it.en.contains(q, true)) }
+        q.isEmpty() || CATALOG.any { it.base == c.base && (it.name.contains(q, true) || it.en.contains(q, true) || exName(it.name).contains(q, true)) }
     }
 
     Scaffold(topBar = {

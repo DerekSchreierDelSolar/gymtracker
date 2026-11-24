@@ -24,3 +24,4 @@ keystore.properties
 /.idea/
 /.kotlin/
 /app/build/
+i18n-todo/

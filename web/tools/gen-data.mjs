@@ -229,3 +229,11 @@ writeFileSync(join(root, 'web/js/image-data.js'),
   `// AUTOMATISCH ERZEUGT von web/tools/gen-data.mjs – nicht von Hand ändern!\n` +
   `export const EXERCISE_IMAGES = new Set(${JSON.stringify(imageKeys)});\n`);
 console.log(`image-data.js: ${imageKeys.length} Übungsbilder`);
+
+// ----- Übersetzungen: app/src/main/assets/i18n/*.json → web/i18n/ (Prüfen/Ergänzen: node web/tools/i18n.mjs) -----
+const i18nSrc = join(root, 'app/src/main/assets/i18n');
+const i18nDst = join(root, 'web/i18n');
+mkdirSync(i18nDst, { recursive: true });
+const i18nFiles = existsSync(i18nSrc) ? readdirSync(i18nSrc).filter(f => /^[a-z]{2}\.json$/.test(f)) : [];
+for (const f of i18nFiles) writeFileSync(join(i18nDst, f), JSON.stringify(JSON.parse(readFileSync(join(i18nSrc, f), 'utf8'))));
+console.log(`i18n: ${i18nFiles.join(', ') || 'keine'}`);

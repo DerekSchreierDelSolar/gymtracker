@@ -42,6 +42,12 @@ fun weekdayLong(d: Int): String = tr(
     listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")[d - 1]
 )
 
+/** „montags“ / „Mondays“ (für „am liebsten montags“) */
+fun weekdayPlural(d: Int): String = tr(
+    listOf("montags", "dienstags", "mittwochs", "donnerstags", "freitags", "samstags", "sonntags")[d - 1],
+    listOf("Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays", "Sundays")[d - 1]
+)
+
 /** „Mo · Mi · Fr“ */
 fun daysLabel(days: Set<Int>): String = days.sorted().joinToString(" · ") { weekdayShort(it) }
 

@@ -1,7 +1,7 @@
 // Einstieg: welcher Bildschirm oben liegt (wie GymApp in MainActivity.kt), Neuzeichnen, Design, Takt.
 
 import { store } from './store.js';
-import { tr } from './core.js';
+import { tr, translationsReady, appLanguage } from './core.js';
 import { tickers, dialog, h, toast } from './ui.js';
 import { nav, update, setRenderer, setBackHandler, go, goBack, openDialog, closeDialog } from './nav.js';
 import { homeScreen } from './screens/home.js';
@@ -122,7 +122,7 @@ function render() {
 
       tickers.length = 0;
       applyTheme();
-      document.documentElement.lang = tr('de', 'en');
+      document.documentElement.lang = appLanguage;
       const view = currentScreen();
       addTrainingBar(view);
       root.replaceChildren(view, nav.dialog ? nav.dialog() : '');
@@ -171,7 +171,10 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 // Browser bitten, die Daten nicht automatisch zu löschen
 navigator.storage?.persist?.();
 
+// Übersetzungstabelle der gespeicherten Sprache abwarten (sonst kurz Englisch); bei Sprachwechsel neu zeichnen
+await translationsReady();
 render();
+window.addEventListener('gym-language-loaded', () => render());
 
 /** Workout fürs laufende Training: getauschte Übungen ersetzt, Ziele übernommen (wie sessionWorkout in MainActivity.kt) */
 function sessionWorkout(w, swaps = {}, deload = isDeload()) {

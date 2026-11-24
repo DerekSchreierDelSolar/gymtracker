@@ -12,10 +12,10 @@ import { store } from './store.js';
 export const PRIMARY_COLOR = '#E24B4A';
 export const SECONDARY_COLOR = '#EF9F27';
 
-export const muscleLabel = id => (MUSCLES[id] ? (isEnglish() ? MUSCLES[id].en : MUSCLES[id].de) : id);
+export const muscleLabel = id => (MUSCLES[id] ? tr(MUSCLES[id].de, MUSCLES[id].en) : id);
 
 // ---------- Regionen (Teile eines Muskels, „muskel.teil“) – wie REGION_NAMES/MUSCLE_REGIONS in BodyMap.kt ----------
-export const regionLabel = k => (REGION_NAMES[k] ? (isEnglish() ? REGION_NAMES[k].en : REGION_NAMES[k].de) : muscleLabel(k));
+export const regionLabel = k => (REGION_NAMES[k] ? tr(REGION_NAMES[k].de, REGION_NAMES[k].en) : muscleLabel(k));
 export const muscleOfRegion = k => k.split('.')[0];
 /** Teilflächen einer Form: [[key, Polygon], …] */
 const regionPolys = s => s._polys ??= (s.regions ? s.regions.split(';').map(r => [r.split(':')[0].trim(), r.split(':')[1].trim()]) : []);

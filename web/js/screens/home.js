@@ -6,7 +6,7 @@ import { fmtKg, fmtVol, fmtWU, wUnit, toUnit, parseW, isLb, weightUnit,
   GROUP_KEYS, startOfWeek, addDays, dayKey, monthName, weekdayDate, parseNum, appLanguage, equipmentOf, isWork,
   validYear, validHeight, profileComplete,
 } from '../core.js';
-import { allSessions, sessionStats, recordEvents, weekStreakInfo, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick, dueToday } from '../stats.js';
+import { allSessions, sessionStats, recordEvents, weekStreakInfo, weeklyVolumes, weeklyKcal, nextWorkoutAfter, planPick, dueToday, weekdayShort } from '../stats.js';
 import { exerciseIconHtml } from '../pictograms.js';
 import {
   h, icon, iconBtn, chip, dialog, textField, dateField, isoDay, timeOfIsoDay, statBox, chartCard, horizontalBars, historyBars, lineChart,
@@ -30,7 +30,7 @@ import { filterActions, filterBar, matches, noFilterResults } from '../filter.js
 const TABS = () => [
   ['home', tr('Start', 'Home'), tr('Übersicht', 'Overview')],
   ['dumbbell', tr('Übungen', 'Exercises'), tr('Übungen', 'Exercises')],
-  ['list', 'Workouts', 'Workouts'],
+  ['list', tr('Workouts', 'Workouts'), tr('Workouts', 'Workouts')],
   ['calendar', tr('Kalender', 'Calendar'), tr('Kalender', 'Calendar')],
   ['body', tr('Körper', 'Body'), tr('Körper', 'Body')],
 ];
@@ -50,13 +50,13 @@ export function homeScreen(onStartWorkout) {
       iconBtn('book', () => go({ wiki: true }), { label: tr('Wiki', 'Wiki') }),
       iconBtn('chat', () => go({ bot: true }), { label: tr('Fragen', 'Ask') }),
       h('div', { class: 'menu-anchor' },
-        iconBtn('more', () => update({ menuOpen: !nav.menuOpen }), { label: 'Menü' }),
+        iconBtn('more', () => update({ menuOpen: !nav.menuOpen }), { label: tr('Menü', 'Menu') }),
         nav.menuOpen ? menu() : null),
     ],
     top: tab === 1 && store.exercises.length ? filterBar('list', exerciseGroups(), exerciseEquipment()) : null,
     content: wrap,
     fab: tab === 1 ? fab(tr('Übung', 'Exercise'), 'add', () => go({ catalog: true }))
-      : tab === 2 ? fab('Workout', 'add', newWorkoutDialog) : null,
+      : tab === 2 ? fab(tr('Workout', 'Workout'), 'add', newWorkoutDialog) : null,
 
     bottom: h('nav', { class: 'bottom-nav' }, TABS().map(([ico, label], i) =>
       h('button', { class: ['nav-item', i === tab && 'selected'], onclick: () => setTab(i) },
@@ -118,7 +118,7 @@ export function importData() {
       h('ul', null,
         h('li', null, plural(info.exercises, tr('Übung', 'exercise'), tr('Übungen', 'exercises'))),
         h('li', null, plural(info.sets, tr('Satz', 'set'), tr('Sätze', 'sets'))),
-        h('li', null, plural(info.workouts, 'Workout', 'Workouts')),
+        h('li', null, plural(info.workouts, tr('Workout', 'workout'), tr('Workouts', 'workouts'))),
         h('li', null, plural(info.sessions, tr('Trainingseinheit', 'session'), tr('Trainingseinheiten', 'sessions')))),
       h('p', null, tr('Deine aktuellen Daten werden dadurch ersetzt. Eine Kopie davon wird vorher in der App abgelegt.',
         'Your current data will be replaced. A copy of it is kept in the app first.')),
@@ -180,7 +180,7 @@ function dashboardTab(onStartWorkout) {
         // Ziel erreicht/übertroffen → „5 Trainings ✓“ statt „5 von 3“ (wie DashboardTab.kt)
         h('h2', null, weekSessions.length >= goal ? plural(weekSessions.length, tr('Training', 'workout'), tr('Trainings', 'workouts')) + ' ✓'
           : tr(`${weekSessions.length} von ${goal} Trainings`, `${weekSessions.length} of ${goal} workouts`)),
-        h('span', null, streak > 0 ? '🔥 ' + tr(`${plural(streak, 'Woche', 'Wochen')} in Folge`, `${plural(streak, 'week', 'weeks')} in a row`)
+        h('span', null, streak > 0 ? '🔥 ' + (w => tr(`${w} in Folge`, `${w} in a row`))(plural(streak, tr('Woche', 'week'), tr('Wochen', 'weeks')))
           + (jokerRecent ? tr(' · 🃏 Joker hat sie gerettet', ' · 🃏 saved by a joker') : '')
           : tr('Starte deine Serie!', 'Start your streak!')),
         // Trainingsblock (cycle.js)
@@ -408,8 +408,9 @@ function calendarTab() {
     const days = new Set(monthSessions.map(t => dayKey(t.start))).size;
     const n = monthSessions.length;
     const kcal = monthSessions.reduce((a, t) => a + (stats.get(t.id).kcal ?? 0), 0);
-    monthText = tr(`${plural(n, 'Trainingseinheit', 'Trainingseinheiten')} an ${plural(days, 'Tag', 'Tagen')} · Ø ${avg}\u00A0% abgeschlossen`,
-      `${plural(n, 'workout', 'workouts')} on ${plural(days, 'day', 'days')} · avg. ${avg}\u00A0% completed`) + (kcal > 0 ? ` · 🔥 ~${fmtKcal(kcal)}\u00A0kcal` : '');
+    const units = plural(n, tr('Trainingseinheit', 'workout'), tr('Trainingseinheiten', 'workouts'));
+    const onDays = plural(days, tr('Tag', 'day'), tr('Tagen', 'days'));
+    monthText = tr(`${units} an ${onDays} · Ø ${avg}\u00A0% abgeschlossen`, `${units} on ${onDays} · avg. ${avg}\u00A0% completed`) + (kcal > 0 ? ` · 🔥 ~${fmtKcal(kcal)}\u00A0kcal` : '');
   }
   const daySessions = (byDay.get(nav.calDay) ?? []).slice().sort((a, b) => a.start - b.start);
 
@@ -418,7 +419,7 @@ function calendarTab() {
       h('button', { class: 'icon-btn', onclick: () => update({ calMonth: month - 1 }) }, icon('chevronLeft')),
       h('h2', null, monthName(year, m)),
       h('button', { class: 'icon-btn', onclick: () => update({ calMonth: month + 1 }) }, icon('chevron'))),
-    h('div', { class: 'cal-grid weekdays' }, (isEnglish() ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']).map(d => h('small', null, d))),
+    h('div', { class: 'cal-grid weekdays' }, [1, 2, 3, 4, 5, 6, 7].map(d => h('small', null, weekdayShort(d)))),
     h('div', { class: 'cal-grid' }, cells),
     h('div', { class: 'card pad-s' }, monthText),
     h('h2', { class: 'section' }, weekdayDate(nav.calDay)),

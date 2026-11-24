@@ -32,13 +32,14 @@ export function freshStart(now = Date.now()) {
     return tr(`🎆 Neues Jahr, neuer Anfang – dein erstes Training ${d.getFullYear()} wartet`, `🎆 New year, fresh start – your first workout of ${d.getFullYear()} is waiting`);
   }
   if (d.getDate() <= 2 && noneSince(monthStart)) return tr('📅 Neuer Monat – leg einen starken Start hin', '📅 New month – make it a strong start');
-  if (weekdayOf(now) === 1 && noneSince(startOfWeek(now))) return tr(`🌱 Neue Woche – ${plural(goal, 'Training wartet', 'Trainings warten')} auf dich`, `🌱 New week – ${plural(goal, 'workout is', 'workouts are')} waiting for you`);
+  if (weekdayOf(now) === 1 && noneSince(startOfWeek(now))) return goal === 1 ? tr('🌱 Neue Woche – 1 Training wartet auf dich', '🌱 New week – 1 workout is waiting for you')
+    : tr(`🌱 Neue Woche – ${goal} Trainings warten auf dich`, `🌱 New week – ${goal} workouts are waiting for you`);
   return null;
 }
 
 /** Vorfreude-Satz für ein Workout (Ziel-Übungen zuerst, Vorschlag aus progressionSuggestion); null = keine Übung mit Verlauf. */
 export function anticipation(w, today = true) {
-  const [wDe, wEn] = today ? ['heute', 'today'] : ['nächstes\u00A0Mal', 'next\u00A0time'];
+  const when = today ? tr('heute', 'today') : tr('nächstes\u00A0Mal', 'next\u00A0time');
   const goalEx = new Set(store.goals.filter(g => g.exercise && goalProgress(g).reachedAt == null).map(g => g.exercise));
   const dayStart = startOfToday();
   const order = w.exercises.map((e, i) => [e, i]).sort((a, b) => (goalEx.has(b[0]) - goalEx.has(a[0])) || a[1] - b[1]).map(x => x[0]);
@@ -52,16 +53,16 @@ export function anticipation(w, today = true) {
     const name = exName(ex);
     if (isTimed(ex)) {
       const best = Math.max(...lastDay.map(x => x.reps));
-      return tr(`Letztes Mal ${fmtSeconds(best)} ${name} – schaffst du ${wDe} ${fmtSeconds(best + 10)}?`,
-        `Last time ${fmtSeconds(best)} ${name} – can you do ${fmtSeconds(best + 10)} ${wEn}?`);
+      return tr(`Letztes Mal ${fmtSeconds(best)} ${name} – schaffst du ${when} ${fmtSeconds(best + 10)}?`,
+        `Last time ${fmtSeconds(best)} ${name} – can you do ${fmtSeconds(best + 10)} ${when}?`);
     }
     const top = Math.max(...lastDay.map(x => x.weight));
     const reps = Math.max(...lastDay.filter(x => x.weight === top).map(x => x.reps));
     if (s.weight != null && s.weight > top) {
-      return tr(`Letztes Mal ${fmtKg(top)} ${name} – schaffst du ${wDe} ${fmtWU(s.weight)}?`, `Last time ${fmtKg(top)} ${name} – can you do ${fmtWU(s.weight)} ${wEn}?`);
+      return tr(`Letztes Mal ${fmtKg(top)} ${name} – schaffst du ${when} ${fmtWU(s.weight)}?`, `Last time ${fmtKg(top)} ${name} – can you do ${fmtWU(s.weight)} ${when}?`);
     }
-    if (top <= 0) return tr(`Letztes Mal ${reps} × ${name} – ${wDe} ${reps + 1}?`, `Last time ${reps} × ${name} – ${reps + 1} ${wEn}?`);
-    return tr(`Letztes Mal ${fmtKg(top)} × ${reps} ${name} – ${wDe} ${reps + 1} Wdh.?`, `Last time ${fmtKg(top)} × ${reps} ${name} – ${reps + 1} reps ${wEn}?`);
+    if (top <= 0) return tr(`Letztes Mal ${reps} × ${name} – ${when} ${reps + 1}?`, `Last time ${reps} × ${name} – ${reps + 1} ${when}?`);
+    return tr(`Letztes Mal ${fmtKg(top)} × ${reps} ${name} – ${when} ${reps + 1} Wdh.?`, `Last time ${fmtKg(top)} × ${reps} ${name} – ${reps + 1} reps ${when}?`);
   }
   return null;
 }

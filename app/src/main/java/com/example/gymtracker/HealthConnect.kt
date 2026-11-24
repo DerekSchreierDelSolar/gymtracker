@@ -470,8 +470,8 @@ fun HealthSettings(store: GymStore) {
                         " · " + tr("${HealthSync.lastImported} Gewicht(e) übernommen", "${HealthSync.lastImported} weight(s) imported")
                     else "") +
                     (if (HealthSync.lastWorkouts > 0)
-                        " · " + tr(plural(HealthSync.lastWorkouts, "Training", "Trainings") + " eingetragen",
-                            plural(HealthSync.lastWorkouts, "workout", "workouts") + " logged")
+                        " · " + plural(HealthSync.lastWorkouts, tr("Training", "workout"), tr("Trainings", "workouts"))
+                            .let { tr("$it eingetragen", "$it logged") }
                     else ""),
                 style = small, color = muted
             )
@@ -506,7 +506,8 @@ class HealthPrivacyActivity : ComponentActivity() {
         runCatching {
             val f = File(filesDir, "gym_data.json")
             val s = if (f.exists()) JSONObject(f.readText()).optJSONObject("settings") else null
-            s?.optString("language")?.takeIf { it == "de" || it == "en" }?.let { appLanguage = it }
+            Translations.assets = assets
+            s?.optString("language")?.takeIf { it.isNotEmpty() }?.let { appLanguage = it }
             s?.optString("theme")?.let { theme = it }
         }
         setContent {

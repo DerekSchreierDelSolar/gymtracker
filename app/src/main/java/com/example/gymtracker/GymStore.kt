@@ -9,7 +9,7 @@ import org.json.JSONObject
 import java.io.File
 
 class GymStore(context: Context) {
-    private val appContext = context.applicationContext
+    private val appContext = context.applicationContext.also { Translations.assets = it.assets } // vor load(): setzt die Sprache
     private val file = File(context.filesDir, "gym_data.json")
 
     /**
@@ -106,7 +106,7 @@ class GymStore(context: Context) {
         save()
     }
 
-    /** Sprache: "de" oder "en". Setzt auch den globalen State appLanguage. */
+    /** Sprache: Code aus LANGUAGES (I18n.kt). Setzt auch den globalen State appLanguage. */
     fun setLanguage(lang: String) {
         appLanguage = lang
         save()

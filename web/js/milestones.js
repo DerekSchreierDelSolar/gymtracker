@@ -58,7 +58,7 @@ export function nextMilestones(limit = 3) {
     const prev = count >= 100 ? Math.floor(count / 50) * 50 : [1, 5, 10, 25, 50, 75].filter(m => m <= count).at(-1) ?? 0;
     out.push({
       emoji: '🎉', fraction: frac(prev, count, next),
-      title: tr(`Noch ${plural(next - count, 'Training', 'Trainings')} bis zum ${next}. Training`, `${plural(next - count, 'workout', 'workouts')} to workout #${next}`),
+      title: (left => tr(`Noch ${left} bis zum ${next}. Training`, `${left} to workout #${next}`))(plural(next - count, tr('Training', 'workout'), tr('Trainings', 'workouts'))),
       detail: tr(`${count} Trainings bisher`, `${count} workouts so far`),
     });
   }

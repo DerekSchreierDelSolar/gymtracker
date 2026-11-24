@@ -1,9 +1,9 @@
 // Wochen-/Monatsrückblick (Karte auf der Startseite) – entspricht Review.kt.
 // Zeigt den letzten ABGESCHLOSSENEN Zeitraum (letzte Woche Mo–So bzw. letzten Kalendermonat) im Vergleich zum Zeitraum davor.
 
-import { fmtVol, tr, exName, fmtW, fmtVolume, fmtKcal, fmtDate, plural, startOfWeek, addDays, isWork, groupLabel } from './core.js';
+import { fmtVol, appLocale, tr, exName, fmtW, fmtVolume, fmtKcal, fmtDate, plural, startOfWeek, addDays, isWork, groupLabel } from './core.js';
 import { h, chip } from './ui.js';
-import { allSessions, sessionStats, recordEvents, weekdayOf, weekdayLong } from './stats.js';
+import { allSessions, sessionStats, recordEvents, weekdayOf, weekdayPlural } from './stats.js';
 import { regionScore, muscleScoreOf, relativeLoad, muscleLabel } from './bodymap.js';
 import { MUSCLES } from './body-data.js';
 import { nav, update } from './nav.js';
@@ -75,7 +75,7 @@ export function reviewMonths(store, now = Date.now()) {
 function reviewMonthLabel(start, now = Date.now()) {
   const d = new Date(start);
   const opts = d.getFullYear() === new Date(now).getFullYear() ? { month: 'long' } : { month: 'long', year: 'numeric' };
-  return d.toLocaleDateString(tr('de-DE', 'en-GB'), opts);
+  return d.toLocaleDateString(appLocale(), opts);
 }
 
 /**
@@ -148,7 +148,7 @@ export function identityLines(now = Date.now()) {
   const top = (items, key) => { const m = new Map(); for (const x of items) m.set(key(x), (m.get(key(x)) ?? 0) + 1); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
   // Lieblingsübung: die meisten Sätze
   const fav = top(recent, s => s.exercise)[0];
-  if (fav && fav[1] >= 5) out.push(['❤️', tr(`Lieblingsübung: ${exName(fav[0])} · ${plural(fav[1], 'Satz', 'Sätze')}`, `Favourite exercise: ${exName(fav[0])} · ${plural(fav[1], 'set', 'sets')}`)]);
+  if (fav && fav[1] >= 5) out.push(['❤️', (sets => tr(`Lieblingsübung: ${exName(fav[0])} · ${sets}`, `Favourite exercise: ${exName(fav[0])} · ${sets}`))(plural(fav[1], tr('Satz', 'set'), tr('Sätze', 'sets')))]);
   // Typische Trainingszeit + Lieblings-Wochentag
   const starts = sessions.filter(t => t.start >= since).map(t => t.start);
   if (starts.length >= 3) {
@@ -157,7 +157,7 @@ export function identityLines(now = Date.now()) {
         : hr <= 20 ? tr('abends', 'in the evening') : tr('spätabends', 'late at night'); };
     const time = top(starts, bucket)[0][0];
     const [day, n] = top(starts, weekdayOf)[0];
-    const dayText = n * 10 >= starts.length * 3 ? tr(`, am liebsten ${weekdayLong(day).toLowerCase()}s`, `, mostly on ${weekdayLong(day)}s`) : '';
+    const dayText = n * 10 >= starts.length * 3 ? tr(`, am liebsten ${weekdayPlural(day)}`, `, mostly on ${weekdayPlural(day)}`) : '';
     out.push(['🕐', tr(`Du trainierst meist ${time}${dayText}`, `You usually train ${time}${dayText}`)]);
   }
   // Stärkste Muskelgruppe (ohne Cardio/Sonstige)

@@ -252,7 +252,8 @@ fun identityLines(store: GymStore, now: Long = System.currentTimeMillis()): List
     val recent = store.sets.filter { it.isWork && it.time >= since }
     // Lieblingsübung: die meisten Sätze
     recent.groupingBy { it.exercise }.eachCount().maxByOrNull { it.value }?.takeIf { it.value >= 5 }?.let { (ex, n) ->
-        out += "❤️" to tr("Lieblingsübung: ${exName(ex)} · ${plural(n, "Satz", "Sätze")}", "Favourite exercise: ${exName(ex)} · ${plural(n, "set", "sets")}")
+        val sets = plural(n, tr("Satz", "set"), tr("Sätze", "sets"))
+        out += "❤️" to tr("Lieblingsübung: ${exName(ex)} · $sets", "Favourite exercise: ${exName(ex)} · $sets")
     }
     // Typische Trainingszeit + Lieblings-Wochentag
     val starts = sessions.filter { it.start >= since }.map { it.start }
@@ -266,7 +267,7 @@ fun identityLines(store: GymStore, now: Long = System.currentTimeMillis()): List
         }
         val time = starts.groupingBy { bucket(it) }.eachCount().maxBy { it.value }.key
         val day = starts.groupingBy { weekdayOf(it) }.eachCount().maxBy { it.value }
-        val dayText = if (day.value * 10 >= starts.size * 3) tr(", am liebsten ${weekdayLong(day.key).lowercase()}s", ", mostly on ${weekdayLong(day.key)}s") else ""
+        val dayText = if (day.value * 10 >= starts.size * 3) tr(", am liebsten ${weekdayPlural(day.key)}", ", mostly on ${weekdayPlural(day.key)}") else ""
         out += "🕐" to tr("Du trainierst meist $time$dayText", "You usually train $time$dayText")
     }
     // Stärkste Muskelgruppe (die meisten Sätze, ohne Cardio/Sonstige)

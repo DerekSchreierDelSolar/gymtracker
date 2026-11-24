@@ -61,7 +61,7 @@ export function achievements(t, stats = sessionStats(store, t)) {
   if (lv) {
     out.push(item('LEVEL_UP', tr(`Level ${lv} erreicht!`, `Level ${lv} reached!`),
       levelTitle(lv) !== levelTitle(lv - 1) ? tr(`Neuer Titel: ${levelTitle(lv)}`, `New title: ${levelTitle(lv)}`)
-        : (n => (n ? tr(`Noch ${plural(n - lv, 'Level', 'Level')} bis „${levelTitle(n)}“`, `${plural(n - lv, 'level', 'levels')} to "${levelTitle(n)}"`) : null))(nextTitleLevel(lv))));
+        : (n => (n ? (left => tr(`Noch ${left} bis „${levelTitle(n)}“`, `${left} to "${levelTitle(n)}"`))(plural(n - lv, tr('Level', 'level'), tr('Level', 'levels'))) : null))(nextTitleLevel(lv))));
   }
 
   // Neue Abzeichen (badges.js)

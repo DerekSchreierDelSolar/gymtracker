@@ -56,11 +56,14 @@ fun fmtKcal(v: Number): String = fmtVolume(Math.round(v.toDouble()).toDouble())
 
 fun plural(n: Int, one: String, many: String): String = "$n ${if (n == 1) one else many}"
 
+/** Datum mit Punkten (Deutsch, Türkisch) oder Schrägstrichen (Englisch, Französisch, Italienisch, Spanisch) – immer Tag zuerst. */
+val dateDots: Boolean get() = appLanguage == "de" || appLanguage == "tr"
+
 fun fmtDate(t: Long): String =
-    SimpleDateFormat(tr("dd.MM.yyyy", "dd/MM/yyyy"), appLocale()).format(Date(t))
+    SimpleDateFormat(if (dateDots) "dd.MM.yyyy" else "dd/MM/yyyy", appLocale()).format(Date(t))
 
 fun fmtDateTime(t: Long): String =
-    SimpleDateFormat(tr("dd.MM.yyyy, HH:mm 'Uhr'", "dd/MM/yyyy, HH:mm"), appLocale()).format(Date(t))
+    SimpleDateFormat(if (isGerman) "dd.MM.yyyy, HH:mm 'Uhr'" else if (dateDots) "dd.MM.yyyy, HH:mm" else "dd/MM/yyyy, HH:mm", appLocale()).format(Date(t))
 
 /** Dauer als „m:ss“ bzw. „h:mm:ss“. */
 fun fmtDuration(ms: Long): String {

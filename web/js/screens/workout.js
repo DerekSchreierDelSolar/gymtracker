@@ -460,7 +460,7 @@ export function customExerciseDialog() {
   openDialog(() => {
     const exists = st.name.trim() !== '' && (store.hasExercise(st.name) || catalogGroup(st.name.trim()) != null);
     return dialog(tr('Eigene Übung', 'Custom exercise'), [
-      textField({ id: 'custom-name', label: 'Name', value: st.name, error: exists ? tr('Gibt es schon', 'Already exists') : null, oninput: v => { st.name = v; rerender(); } }),
+      textField({ id: 'custom-name', label: tr('Name', 'Name'), value: st.name, error: exists ? tr('Gibt es schon', 'Already exists') : null, oninput: v => { st.name = v; rerender(); } }),
       h('b', { class: 'small-title' }, tr('Kategorie', 'Category')),
       h('div', { class: 'chips wrap' }, GROUP_KEYS.map(g => chip(groupLabel(g), st.group === g, () => { st.group = g; rerender(); }, muscleIconHtml(g, 18)))),
       h('b', { class: 'small-title' }, tr('Gerät', 'Equipment')),

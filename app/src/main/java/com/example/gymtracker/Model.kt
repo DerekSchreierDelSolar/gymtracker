@@ -159,10 +159,10 @@ enum class Equipment(private val de: String, private val en: String) {
 fun equipmentOf(name: String): Equipment? =
     CATALOG.firstOrNull { it.name.equals(name, ignoreCase = true) }?.equipment ?: CustomMeta.equipment[name]
 
-/** Anzeigename einer Übung: im Englischen der Katalog-Name, sonst der gespeicherte Name. */
+/** Anzeigename einer Übung: auf Deutsch der gespeicherte Name, sonst der übersetzte Katalog-Name (eigene Übungen bleiben, wie sie sind). */
 fun exName(name: String): String =
-    if (isEnglish) CATALOG.firstOrNull { it.name.equals(name, ignoreCase = true) }?.en ?: name
-    else name
+    if (isGerman) name
+    else CATALOG.firstOrNull { it.name.equals(name, ignoreCase = true) }?.let { tr(it.name, it.en) } ?: name
 
 /** Ein Workout ist eine benannte, geordnete Liste von Übungsnamen. */
 data class Workout(

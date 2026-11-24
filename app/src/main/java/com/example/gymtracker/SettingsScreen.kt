@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
@@ -86,14 +87,14 @@ private fun SettingsOverview(store: GymStore, backup: BackupActions, onPage: (Se
     val off = tr("Aus", "Off")
 
     SettingsGroup(tr("Darstellung", "Appearance")) {
-        ChoiceRow(tr("Design", "Theme"), listOf("system" to "System", "light" to tr("Hell", "Light"), "dark" to tr("Dunkel", "Dark")),
+        ChoiceRow(tr("Design", "Theme"), listOf("system" to tr("System", "System"), "light" to tr("Hell", "Light"), "dark" to tr("Dunkel", "Dark")),
             store.themeMode) { store.setTheme(it) }
-        ChoiceRow(tr("Sprache", "Language"), listOf("de" to "Deutsch", "en" to "English"), appLanguage) { store.setLanguage(it) }
+        LanguageRow(store)
         // nur Anzeige/Eingabe – gespeichert wird immer in kg, Umschalten ändert keine Daten
         ChoiceRow(tr("Einheit", "Unit"), listOf("kg" to "kg", "lb" to "lbs"), weightUnit) { store.setUnit(it) }
     }
 
-    SettingsGroup("Training") {
+    SettingsGroup(tr("Training", "Training")) {
         val p = store.profile
         NavRow("👤", SettingsPage.PROFILE.title(),
             listOfNotNull(
@@ -158,6 +159,32 @@ private fun SettingsGroup(title: String?, content: @Composable ColumnScope.() ->
     }
 }
 
+/** Sprache: ein Feld mit der aktuellen Sprache, antippen = Liste aller Sprachen (6 passen nicht als Chips in eine Zeile). */
+@Composable
+private fun LanguageRow(store: GymStore) {
+    var open by remember { mutableStateOf(false) }
+    Row(
+        Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(tr("Sprache", "Language"), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.width(76.dp))
+        Box(Modifier.weight(1f)) {
+            SegmentChip("🌐 " + (LANGUAGES.firstOrNull { it.first == appLanguage }?.second ?: appLanguage) + "  ▾", true, { open = true },
+                Modifier.fillMaxWidth())
+            DropdownMenu(open, onDismissRequest = { open = false }) {
+                LANGUAGES.forEach { (code, name) ->
+                    DropdownMenuItem(
+                        text = { Text(name, fontWeight = if (code == appLanguage) FontWeight.Bold else null) },
+                        trailingIcon = if (code == appLanguage) ({ Text("✓") }) else null,
+                        onClick = { open = false; store.setLanguage(code) }
+                    )
+                }
+            }
+        }
+    }
+}
+
 /** Eine Zeile: Beschriftung links, gleich breite Auswahl-Knöpfe rechts (statt Überschrift + Chip-Reihe darunter). */
 @Composable
 private fun ChoiceRow(label: String, options: List<Pair<String, String>>, selected: String, onSelect: (String) -> Unit) {
@@ -209,10 +236,13 @@ private fun ResetProgressDialog(store: GymStore, onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text(tr("Fortschritt zurücksetzen?", "Reset progress?")) },
         text = {
+            val sets = plural(store.sets.size, tr("Satz", "set"), tr("Sätze", "sets"))
+            val units = plural(store.sessions.size, tr("Trainingseinheit", "workout"), tr("Trainingseinheiten", "workouts"))
+            val weights = plural(store.weights.size, tr("Gewichtseintrag", "weight entry"), tr("Gewichtseinträge", "weight entries"))
             Text(
                 tr(
-                    "${plural(store.sets.size, "Satz", "Sätze")}, ${plural(store.sessions.size, "Trainingseinheit", "Trainingseinheiten")} und ${plural(store.weights.size, "Gewichtseintrag", "Gewichtseinträge")} werden gelöscht. Tipp: vorher „Daten exportieren“.",
-                    "${plural(store.sets.size, "set", "sets")}, ${plural(store.sessions.size, "workout", "workouts")} and ${plural(store.weights.size, "weight entry", "weight entries")} will be deleted. Tip: \"Export data\" first."
+                    "$sets, $units und $weights werden gelöscht. Tipp: vorher „Daten exportieren“.",
+                    "$sets, $units and $weights will be deleted. Tip: \"Export data\" first."
                 )
             )
         },
@@ -285,7 +315,7 @@ fun rememberBackupActions(store: GymStore): BackupActions {
                     tr("Die Sicherung enthält:", "The backup contains:") + "\n" +
                         "• ${plural(info.exercises, tr("Übung", "exercise"), tr("Übungen", "exercises"))}\n" +
                         "• ${plural(info.sets, tr("Satz", "set"), tr("Sätze", "sets"))}\n" +
-                        "• ${plural(info.workouts, "Workout", "Workouts")}\n" +
+                        "• ${plural(info.workouts, tr("Workout", "workout"), tr("Workouts", "workouts"))}\n" +
                         "• ${plural(info.sessions, tr("Trainingseinheit", "session"), tr("Trainingseinheiten", "sessions"))}\n\n" +
                         tr(
                             "Deine aktuellen Daten werden dadurch ersetzt. Eine Kopie davon wird vorher in der App abgelegt.",

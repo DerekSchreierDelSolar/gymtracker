@@ -4,7 +4,7 @@
 import { BOT } from './bot-data.js';
 import { WIKI } from './wiki-data.js';
 import { CATALOG } from './data.js';
-import { tr, isEnglish, isCardio, exName, equipmentLabel, fmtDate, fmtKcal } from './core.js';
+import { tr, appLanguage, isCardio, exName, equipmentLabel, fmtDate, fmtKcal } from './core.js';
 import { store } from './store.js';
 import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames } from './stats.js';
 import { h, icon, chip } from './ui.js';
@@ -20,7 +20,9 @@ import { wizard, WIZARD_STAGES, equipmentChoices, pickExercises, createWizardWor
 // ---------- Text vergleichen ----------
 
 /** Kleinbuchstaben, Umlaute ausgeschrieben, nur Buchstaben/Ziffern, ein Leerzeichen zwischen Wörtern */
-const norm = s => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+/** Kleinbuchstaben, deutsche Umlaute als ae/oe/ue, andere Akzente weg (é → e, ç → c, ş → s, ı → i), wie Bot.norm */
+export const norm = s => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+  .replace(/ı/g, 'i').replace(/œ/g, 'oe').replace(/æ/g, 'ae').normalize('NFD').replace(/\p{M}+/gu, '')
   .replace(/[^a-z0-9]+/g, ' ').trim();
 const tokens = s => norm(s).split(' ').filter(Boolean);
 
@@ -60,12 +62,18 @@ const ANATOMY = Object.entries(BOT.anatomyWords ?? {}).map(([k, list]) => [k, li
 
 // ---------- Übungen und Muskeln erkennen ----------
 
-/** Grundübung → Wortfolgen (deutscher Name, Teile bei „/“, englische Namen ohne Gerät) */
-const EXERCISES = Object.keys(WIKI).map(base => {
-  const names = [...base.split('/').map(s => s.trim()), base, ...CATALOG.filter(c => c.base === base).map(c => c.en.split(' (')[0])];
-  const seen = new Set();
-  return [base, names.map(tokens).filter(p => p.length && !seen.has(p.join(' ')) && seen.add(p.join(' ')))];
-});
+/** Grundübung → Wortfolgen (deutscher Name, Teile bei „/“, englische und übersetzte Namen ohne Gerät) – je Sprache */
+const exercisesByLang = new Map();
+const exercisePhrases = () => {
+  if (!exercisesByLang.has(appLanguage)) exercisesByLang.set(appLanguage, Object.keys(WIKI).map(base => {
+    const variants = CATALOG.filter(c => c.base === base);
+    const names = [...base.split('/').map(s => s.trim()), base, baseName(base), ...variants.map(c => c.en.split(' (')[0]),
+      ...variants.map(c => exName(c.name).split(' (')[0])];
+    const seen = new Set();
+    return [base, names.map(tokens).filter(p => p.length && !seen.has(p.join(' ')) && seen.add(p.join(' ')))];
+  }));
+  return exercisesByLang.get(appLanguage);
+};
 
 /** Beste Übereinstimmung: längste Wortfolge („Rumänisches Kreuzheben“ vor „Kreuzheben“) */
 function best(entries, words, strict = false) {
@@ -79,7 +87,7 @@ function best(entries, words, strict = false) {
 }
 
 const levelsOfBase = base => (WIKI[base] ? levelsOf({ primary: WIKI[base].primary ?? [], secondary: WIKI[base].secondary ?? [], regions: WIKI[base].regions ?? {} }) : {});
-const t = pair => (isEnglish() ? pair[1] : pair[0]);
+const t = pair => tr(pair[0], pair[1]);
 
 // ---------- Antworten ----------
 
@@ -184,7 +192,7 @@ export function answer(question) {
   // Persönliche Fragen zu den eigenen Daten (Puls, Health-Connect-Status) vor allem anderen
   const personal = personalAnswer(words);
   if (personal) return personal;
-  const ex = best(EXERCISES, words);
+  const ex = best(exercisePhrases(), words);
   const target = best(TARGETS, words);
   let faqHit = null, faqScore = 0;
   for (const f of FAQ) {

@@ -72,7 +72,8 @@ fun achievements(store: GymStore, t: TrainingSession, stats: SessionStats = sess
     levelUpIn(store, t)?.let { lv ->
         out += Achievement(AchievementKind.LEVEL_UP, tr("Level $lv erreicht!", "Level $lv reached!"),
             if (levelTitle(lv) != levelTitle(lv - 1)) tr("Neuer Titel: ${levelTitle(lv)}", "New title: ${levelTitle(lv)}")
-            else nextTitleLevel(lv)?.let { n -> tr("Noch ${plural(n - lv, "Level", "Level")} bis „${levelTitle(n)}“", "${plural(n - lv, "level", "levels")} to \"${levelTitle(n)}\"") })
+            else nextTitleLevel(lv)?.let { n -> val left = plural(n - lv, tr("Level", "level"), tr("Level", "levels"))
+                tr("Noch $left bis „${levelTitle(n)}“", "$left to \"${levelTitle(n)}\"") })
     }
 
     // Neue Abzeichen (Badges.kt)

@@ -9,6 +9,7 @@ import { fmtKg, fmtVol, fmtWU, wUnit, toUnit, parseW, roundPlate, isLb,
   tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
   oneRepMax, parseNum, parseIntStrict, startOfToday, groupColor, catalogGroup, dayKey, monthIndex, startOfWeek,
   fmtShortDate, completionColor, SET_TYPES, setTypeOf, setTypeLabel, setTypeShort, setLabels, isWork, isTop,
+  appLanguage,
 } from '../core.js';
 import { progressionSuggestion } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
@@ -45,7 +46,7 @@ export function splitExerciseName(display) {
 /** Kachel-Name: Grundübung + darunter klein das Gerät; feste Höhe, damit alle Kacheln gleich hoch sind. */
 function tileName(display) {
   const [base, detail] = splitExerciseName(display);
-  return h('span', { class: 'tile-name', lang: tr('de', 'en') },
+  return h('span', { class: 'tile-name', lang: appLanguage },
     // Ein einzelnes Wort bleibt in einer Zeile und wird dafür kleiner (CSS: --chars, wie autoSize in ExerciseTile)
     base.includes(' ') ? h('span', { class: 'tile-base' }, base)
       : h('span', { class: 'tile-base one-word', style: `--chars:${base.length}` }, base), detail ? h('small', { class: 'tile-detail' }, detail) : null);
@@ -238,7 +239,7 @@ export function implausibleSet(name, weight, reps) {
 /** Umschalter für den Satz-Typ (wie SetTypeButton in ExerciseDetail.kt): Kürzel groß, Name klein. */
 function setTypeButton(type, onclick) {
   return h('button', { class: ['set-type-btn', 'st-' + type], onclick, 'aria-label': tr('Satz-Typ', 'Set type') },
-    h('b', null, setTypeShort(type) || 'N'), h('small', null, setTypeLabel(type)));
+    h('b', null, setTypeShort(type) || 'N'), h('small', { style: `--chars: ${setTypeLabel(type).length}` }, setTypeLabel(type)));
 }
 
 /** Liste älteste zuerst → Satz-Zeilen neueste zuerst, Arbeitssätze nummeriert, Aufwärmsätze „A“. */

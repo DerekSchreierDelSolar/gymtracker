@@ -304,7 +304,10 @@ fun SetTypeButton(type: SetType, onClick: () -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(type.short.ifEmpty { "N" }, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = color)
-        Text(type.label, fontSize = 10.sp, maxLines = 1, color = color)
+        // längere Wörter anderer Sprachen („Échauffement“, „Riscaldamento“) verkleinern statt abschneiden
+        Text(type.label, maxLines = 1, softWrap = false, color = color, modifier = Modifier.padding(horizontal = 2.dp),
+            style = LocalTextStyle.current.copy(fontSize = 10.sp),
+            autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 10.sp))
     }
 }
 

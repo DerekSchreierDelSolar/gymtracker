@@ -11,7 +11,8 @@ Android-/Kotlin-Konzepte kurz erklären** (gern mit JS/SQL-Vergleich).
   - Navigation über State in `GymApp` (kein Navigation-Compose), Zurück via `BackHandler`
   - Speicherung als JSON (`org.json`) in `filesDir/gym_data.json`, kein Room
   - `java.util.Calendar` statt `java.time` (minSdk 24)
-- Übersetzung DE/EN über `tr("de", "en")` (I18n.kt), **keine strings.xml**
+- Sprachen: Deutsch, Englisch, Französisch, Italienisch, Spanisch, Türkisch. Im Code nur `tr("de", "en")` (I18n.kt), **keine strings.xml**;
+  FR/IT/ES/TR kommen aus Tabellen `assets/i18n/<lang>.json` (deutscher Text → Übersetzung, fehlt einer → Englisch) – siehe „Übersetzungen“ unten
 
 ## Bauen & Testen (Windows, Git-Bash)
 ```bash
@@ -43,7 +44,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 | `AutoBackup.kt` | Automatisches Backup: Ordner per SAF (`OpenDocumentTree`, Berechtigung persistent), beim Verlassen der App (`onStop`) höchstens 1×/Tag `gymtracker-auto-JJJJ-MM-TT.json`, die 7 neuesten bleiben; Einstellungen in SharedPreferences (gerätegebunden, nicht im Export); `AutoBackupSettings` in den Einstellungen |
 | `Model.kt` | `GymSet`, `MuscleGroup`, `Equipment`, `Workout`, `TrainingSession`, `CustomMeta`, `TEMPLATES`, `fmtSet`, `oneRepMax`, `isTimed` |
 | `Catalog.kt` | `CATALOG` (496 Übungen: DE-Name = Schlüssel, Grundübung, Gruppe, Gerät, EN-Name), `RENAMED_EXERCISES`, MET-Werte, `WeightEntry` |
-| `I18n.kt` | `appLanguage`, `tr()`, `appLocale()` |
+| `I18n.kt` | `LANGUAGES` (Code → Name), `appLanguage` (Setter lädt die Tabelle), `isGerman`/`isEnglish`, `tr()`, `appLocale()` (de-DE, en-GB, fr-FR, it-IT, es-ES, tr-TR), `Translations` (Tabelle aus assets/i18n, exakte Texte + Vorlagen mit `{0}` per Regex, Zwischenspeicher; `assets` setzt GymStore bzw. HealthPrivacyActivity). Sprachwahl in den Einstellungen als Ausklappmenü `LanguageRow` (Web: `languageRow`, natives `select`) |
 | `Format.kt` | `fmtW`, `fmtDate`, `fmtDateTime`, `fmtDuration`, `plural`, `fmtVolume`, `fmtKcal` (kcal-Anzeigen immer darüber, Tausenderpunkt; Web: core.js); **Gewichtseinheit kg/lbs**: `weightUnit` ("kg"/"lb", JSON `settings.unit` nur bei lb, Chips in den Einstellungen, `store.setUnit`) – gespeichert wird immer kg, Anzeige über `fmtKg` (Gewicht + Einheit), `fmtWU` (Zahl, Eingabefelder), `fmtVol`, `toUnit`/`fromUnit`, `toBig`/`bigUnit` (t bzw. k lbs), Eingabe über `parseW`; Rundung auf Scheiben über `roundPlate`/`plateStep` (2,5 kg bzw. 5 lbs), Stange `barKg` (20 kg / 45 lbs) |
 | `Stats.kt` | `ExerciseResult`, `SessionStats`, `sessionStats()`, `estimateKcal()`, `allSessions()`; `Profile` (optional Geschlecht/Geburtsjahr/Größe, im JSON `profile` = { sex: m/f, birthYear, height } nur wenn gesetzt, Eingabe `ProfileSettings` in den Einstellungen), `bmrKcalPerDay` (Mifflin-St-Jeor), `kcalPerMetHour` = Grundumsatz/24 statt kg, sobald das Profil vollständig ist (Web: stats.js, Validierung `validYear`/`validHeight` in core.js) |
 | `Filter.kt` | `ExerciseFilter` (Kategorie/Gerät/Suche), `FilterUiState`, `FilterActions`, `FilterBar` |
@@ -141,7 +142,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 - **Kotlin-Falle:** Properties in `GymStore`, die `load()` befüllt, müssen **vor** `init { load() }` stehen.
 - `HomeScreen`-Tabs: 0 Start, 1 Übungen, 2 Workouts, 3 Kalender, 4 Körper (Pager-Größe 5; Web: `TABS` in home.js). „Fragen“ ist seit der UX-Runde kein Tab mehr.
 - Reihen gleich breiter Auswahl-Knöpfe: `SegmentChip` mit `Modifier.weight(1f)` (Components.kt; Web: `.segments`).
-- Alle UI-Texte über `tr(...)`; Zahlen/Datum über `fmtW`/`fmtDate` (locale-abhängig). **Gewichte nie als `"${fmtW(x)} kg"`**, sondern `fmtKg(x)` / `fmtVol(x)` (Einheit kg/lbs), Eingabefelder mit `fmtWU` füllen und mit `parseW` lesen (Web gleich in core.js). Volumen-Anzeigen über `fmtVolume` (ab 1000 mit Tausenderpunkt, gerundet) – nie in Eingabefelder, dort `fmtW`. Datum immer europäisch: DE TT.MM.JJJJ, EN TT/MM/JJJJ + 24 h (`appLocale()` = Locale.UK bzw. en-GB im Web). Datumsauswahl nur über `DayPickerDialog` / `dateField`, nie das rohe Systemformat zeigen.
+- Alle UI-Texte über `tr(...)`; Zahlen/Datum über `fmtW`/`fmtDate` (locale-abhängig). **Gewichte nie als `"${fmtW(x)} kg"`**, sondern `fmtKg(x)` / `fmtVol(x)` (Einheit kg/lbs), Eingabefelder mit `fmtWU` füllen und mit `parseW` lesen (Web gleich in core.js). Volumen-Anzeigen über `fmtVolume` (ab 1000 mit Tausenderpunkt, gerundet) – nie in Eingabefelder, dort `fmtW`. Datum immer europäisch, Tag zuerst: DE/TR TT.MM.JJJJ, EN/FR/IT/ES TT/MM/JJJJ (`dateDots`), 24 h, „Uhr“ nur auf Deutsch (`appLocale()` = Locale.UK bzw. en-GB im Web für Englisch). Wochentage über `weekdayShort`/`weekdayLong`/`weekdayPlural` (Plan.kt / stats.js), nie eigene Listen. Datumsauswahl nur über `DayPickerDialog` / `dateField`, nie das rohe Systemformat zeigen.
 - **Neue Katalog-Übung** = Zeile in `CATALOG` (Catalog.kt) **und** Eintrag in `MOTION_OF` (Pictograms.kt),
   bei Cardio zusätzlich MET in `CARDIO_MET`, bei Zeitübung in `TIMED_CATALOG`.
   Prüfen, dass `MOTION_OF` alle Katalog-Namen abdeckt (Vergleich per grep/comm).
@@ -180,6 +181,23 @@ PWA (Web-App „Zum Home-Bildschirm“) mit gleichem Funktionsumfang, für iPhon
 - iOS-Grenzen: keine Vibration (stattdessen Ton per WebAudio, muss per Tipp „entsperrt“ werden),
   Timer laufen im Hintergrund nicht, Wake Lock nur ab iOS 16.4. Für „Zum Home-Bildschirm“ +
   Offline braucht es **HTTPS** (z. B. GitHub Pages).
+
+## Übersetzungen (FR/IT/ES/TR)
+- Tabellen `app/src/main/assets/i18n/{fr,it,es,tr}.json` = { "deutscher Text": "Übersetzung" } (wie gettext, Schlüssel = deutscher Text). Gilt für alles,
+  was durch `tr(de, en)` läuft: UI-Texte, Enum-Paare, `WikiText` (Wiki, Muskeln, Supplements, Bot-Antworten), Übungsnamen (`exName` = `tr(name, en)`),
+  Grundübungen (`baseName`). Web lädt dieselben Dateien per fetch aus `web/i18n/` (gen-data kopiert sie; `sw.js` hält sie offline vor),
+  `app.js` wartet vor dem ersten Zeichnen (`translationsReady`), Ereignis `gym-language-loaded` → neu zeichnen.
+- **Eingesetzte Werte** stehen als Vorlage drin: `tr("$n Sätze", …)` → Schlüssel `"{0} Sätze"`; zur Laufzeit wird der fertige deutsche Text gegen die
+  Vorlage gematcht. Deshalb: im deutschen und englischen Text **dieselben Ausdrücke** einsetzen – nie `plural(n, "Satz", "Sätze")` im deutschen und
+  `plural(n, "set", "sets")` im englischen Teil, sondern vorher `val sets = plural(n, tr("Satz", "set"), tr("Sätze", "sets"))` und `$sets` in beiden.
+  Keine Sprachlogik über `isEnglish` (dann fehlen die anderen Sprachen), sondern `tr()`.
+- **Werkzeug:** `node web/tools/i18n.mjs` sammelt alle deutschen Texte (tr-Aufrufe in Kotlin + JS, Konstruktor-Paare, Katalog, Wiki-/Muskel-/Supplement-JSON,
+  Bot-Antworten, Sprüche, Wochentage) und meldet je Sprache Fehlendes, Unbenutztes, falsche Platzhalter und Stellen mit unterschiedlichen Ausdrücken (de ≠ en).
+  `--todo <lang>` schreibt fehlende Texte in Paketen nach `i18n-todo/` (gitignored; Regeln + Glossar: `i18n-todo/ANLEITUNG.md` bzw. `docs/uebersetzen.md`),
+  `--prune` entfernt Veraltetes. **Nach neuen/geänderten Texten**: Übersetzungen ergänzen (sonst erscheint dort Englisch), danach `node web/tools/gen-data.mjs`.
+- Bot: Stichwörter in bot.json enthalten auch FR/IT/ES/TR (ohne Akzente; `Bot.norm`/`norm` entfernt Akzente, ı → i), ergänzt per `web/tools/bot-words-add.mjs`.
+  Übungen erkennt der Bot zusätzlich am übersetzten Namen (`exercisePhrases` je Sprache). Kurze Stichwörter vermeiden, die in einer anderen Sprache Alltagswörter sind („not“, „come“, „dos“).
+- Übersetzungen sind maschinell (KI) erstellt, nicht muttersprachlich geprüft – vor einer Veröffentlichung gegenlesen lassen.
 
 ## Ideen-Backlog (vom Nutzer noch nicht umgesetzt)
 Ernährungstagebuch, Körpermaße (umgesetzt 22.11.2026, Measures.kt), Fortschrittsfotos,

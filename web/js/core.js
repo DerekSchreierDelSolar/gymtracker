@@ -5,13 +5,67 @@ import { CATALOG, TIMED_CATALOG, CARDIO_MET } from './data.js';
 
 // ---------- Sprache ----------
 
-/** Aktuelle Sprache ("de" | "en"); wird vom Store beim Laden gesetzt. */
+/** Sprachen: Code → Name in der Sprache selbst (wie LANGUAGES in I18n.kt) */
+export const LANGUAGES = [['de', 'Deutsch'], ['en', 'English'], ['fr', 'Français'], ['it', 'Italiano'], ['es', 'Español'], ['tr', 'Türkçe']];
+const LOCALES = { de: 'de-DE', en: 'en-GB', fr: 'fr-FR', it: 'it-IT', es: 'es-ES', tr: 'tr-TR' };
+
+/** Aktuelle Sprache (Code aus LANGUAGES); wird vom Store beim Laden gesetzt. */
 export let appLanguage = 'de';
-export function setAppLanguage(lang) { appLanguage = lang === 'en' ? 'en' : 'de'; }
+export function setAppLanguage(lang) {
+  appLanguage = LOCALES[lang] ? lang : 'de';
+  loadTranslations(appLanguage);
+}
 export const isEnglish = () => appLanguage === 'en';
-/** Text in der aktuellen Sprache – beide Varianten stehen direkt nebeneinander im Code. */
-export const tr = (de, en) => (appLanguage === 'en' ? en : de);
-const locale = () => (isEnglish() ? 'en-GB' : 'de-DE'); // europäisches Datumsformat auch auf Englisch
+export const isGerman = () => appLanguage === 'de';
+/**
+ * Text in der aktuellen Sprache – Deutsch und Englisch stehen direkt nebeneinander im Code,
+ * die anderen Sprachen kommen aus i18n/<lang>.json (Schlüssel = deutscher Text), sonst Englisch.
+ */
+export const tr = (de, en) => (appLanguage === 'de' ? de : appLanguage === 'en' ? en : lookup(de, en) ?? en);
+export const appLocale = () => LOCALES[appLanguage] ?? 'de-DE'; // europäisches Datumsformat auch auf Englisch
+const locale = appLocale;
+
+// Übersetzungstabellen (wie Translations in I18n.kt): exakte Texte + Vorlagen mit {0}, {1} … für eingesetzte Werte.
+// Geladen per fetch (Service Worker hält sie offline vor); bis sie da sind, erscheint Englisch.
+let table = { lang: '', exact: new Map(), templates: [], cache: new Map() };
+let loading = null;
+/** Promise, die erfüllt ist, sobald die Tabelle der aktuellen Sprache geladen ist (app.js wartet vor dem ersten Zeichnen). */
+export const translationsReady = () => loading ?? Promise.resolve();
+function loadTranslations(lang) {
+  if (lang === 'de' || lang === 'en' || table.lang === lang) { loading = null; return; }
+  const p = loading = fetch(`i18n/${lang}.json`).then(r => (r.ok ? r.json() : {})).catch(() => ({})).then(o => {
+    if (appLanguage !== lang) return;
+    const exact = new Map(), templates = [];
+    for (const [k, v] of Object.entries(o)) {
+      if (typeof v !== 'string') continue;
+      if (!/\{\d+\}/.test(k)) { exact.set(k, v); continue; }
+      const holes = [...k.matchAll(/\{(\d+)\}/g)].map(m => m[1]);
+      const re = new RegExp('^' + k.split(/\{\d+\}/).map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('([\\s\\S]*?)') + '$');
+      templates.push({ re, holes, text: v, len: k.replace(/\{\d+\}/g, '').length });
+    }
+    templates.sort((a, b) => b.len - a.len); // genauere Vorlagen zuerst
+    table = { lang, exact, templates, cache: new Map() };
+    if (p === loading) loading = null;
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('gym-language-loaded'));
+  });
+}
+/** Gleicher deutscher Text mit anderer Bedeutung (z. B. „Start“ = Home bzw. Start): Eintrag „deutsch␟englisch“ hat Vorrang. */
+function lookup(de, en) {
+  if (table.lang !== appLanguage) return null;
+  const hit = table.exact.get(de + '␟' + en) ?? table.exact.get(de);
+  if (hit != null) return hit;
+  if (table.cache.has(de)) return table.cache.get(de);
+  if (table.cache.size > 3000) table.cache.clear();
+  let out = null;
+  for (const t of table.templates) {
+    const m = t.re.exec(de);
+    if (!m) continue;
+    out = t.holes.reduce((s, n, i) => s.split(`{${n}}`).join(m[i + 1]), t.text);
+    break;
+  }
+  table.cache.set(de, out);
+  return out;
+}
 
 // ---------- Muskelgruppen & Geräte (Reihenfolge = enum-Reihenfolge in Kotlin) ----------
 
@@ -65,8 +119,12 @@ export const CustomMeta = { equipment: {}, timed: new Set(), muscles: {} }; // m
 
 export const isTimed = name => TIMED_CATALOG.has(name) || CustomMeta.timed.has(name);
 export const equipmentOf = name => catalogEntry(name)?.equipment ?? CustomMeta.equipment[name] ?? null;
-/** Anzeigename: im Englischen der Katalog-Name, sonst der gespeicherte (deutsche) Name. */
-export const exName = name => (isEnglish() ? catalogEntry(name)?.en ?? name : name);
+/** Anzeigename: auf Deutsch der gespeicherte Name, sonst der übersetzte Katalog-Name (eigene Übungen bleiben, wie sie sind). */
+export const exName = name => {
+  if (isGerman()) return name;
+  const c = catalogEntry(name);
+  return c ? tr(c.name, c.en) : name;
+};
 export const cardioMet = name => CARDIO_MET[name] ?? 7.0;
 
 // ---------- Formatierung ----------
@@ -109,11 +167,12 @@ export const fmtKcal = v => fmtVolume(Math.round(v));
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const pad2 = n => String(n).padStart(2, '0');
 
+/** Punkte (Deutsch, Türkisch) oder Schrägstriche (Englisch, Französisch, Italienisch, Spanisch) – wie dateDots in Format.kt */
+const dateDots = () => appLanguage === 'de' || appLanguage === 'tr';
 export function fmtDate(t) {
   const d = new Date(t);
-  return isEnglish()
-    ? `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`
-    : `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
+  const s = dateDots() ? '.' : '/';
+  return `${pad2(d.getDate())}${s}${pad2(d.getMonth() + 1)}${s}${d.getFullYear()}`;
 }
 export function fmtTime(t) {
   const d = new Date(t);
@@ -121,7 +180,7 @@ export function fmtTime(t) {
 }
 export function fmtDateTime(t) {
   const d = new Date(t);
-  return isEnglish() ? `${fmtDate(t)}, ${fmtTime(t)}` : `${fmtDate(t)}, ${fmtTime(t)} Uhr`;
+  return isGerman() ? `${fmtDate(t)}, ${fmtTime(t)} Uhr` : `${fmtDate(t)}, ${fmtTime(t)}`;
 }
 /** Kalenderwoche nach ISO 8601 (wie fmtWeek in Components.kt): „KW 47“ bzw. „W47“ */
 export function fmtWeek(t) {
@@ -130,12 +189,12 @@ export function fmtWeek(t) {
   const thu = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day + 3); // Donnerstag dieser Woche
   const firstThu = new Date(thu.getFullYear(), 0, 4); // 4. Januar liegt immer in KW 1
   const w = 1 + Math.round(((thu - firstThu) / 86400000 - 3 + ((firstThu.getDay() + 6) % 7)) / 7);
-  return isEnglish() ? `W${w}` : `KW ${w}`;
+  return tr(`KW ${w}`, `W${w}`);
 }
 /** Kurzes Datum für Achsen („18.11.“ bzw. „18/11“). */
 export function fmtShortDate(t) {
   const d = new Date(t);
-  return isEnglish() ? `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}` : `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.`;
+  return isGerman() ? `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.` : `${pad2(d.getDate())}${dateDots() ? '.' : '/'}${pad2(d.getMonth() + 1)}`;
 }
 /** Dauer als „m:ss“ bzw. „h:mm:ss“. */
 export function fmtDuration(ms) {
@@ -241,7 +300,7 @@ export function migrateArmGroup(muscles) {
 
 /** Alphabetisch nach Anzeigenamen (wie sortedByName in I18n.kt): Umlaute wie Grundbuchstaben, Groß/klein egal */
 export function sortByName(list, name = x => x) {
-  const lang = appLanguage === 'en' ? 'en' : 'de';
+  const lang = locale();
   // Einseitige Variante direkt unter der normalen: „Bizeps-Curls (Kurzhantel)“ vor „… (Kurzhantel, einarmig)“
   const key = x => name(x).replace(/, (einarmig|einbeinig)\)/i, ')');
   const one = x => (key(x) === name(x) ? 0 : 1); // 1 = einseitige Variante

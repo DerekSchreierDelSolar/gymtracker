@@ -363,7 +363,7 @@ export function summaryScreen(t, onDone) {
   tiles.push([tr('Sätze', 'Sets'), String(stats.sets)]);
   if (stats.kcal != null) tiles.push([stats.kcalFromHr ? tr('❤ Verbrauch', '❤ Burned') : tr('🔥 Verbrauch', '🔥 Burned'), `~${fmtKcal(stats.kcal)}\u00A0kcal`]);
   if (stats.volume > 0) tiles.push([tr('Volumen', 'Volume'), `${fmtVol(stats.volume)}`]);
-  if (stats.cardioMinutes > 0) tiles.push(['Cardio', `${stats.cardioMinutes}\u00A0min`]);
+  if (stats.cardioMinutes > 0) tiles.push([tr('Cardio', 'Cardio'), `${stats.cardioMinutes}\u00A0min`]);
 
   const volumeItems = stats.results
     .filter(r => !isCardio(r.group) && !isTimed(r.name) && r.sets.length)

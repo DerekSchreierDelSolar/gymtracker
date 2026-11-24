@@ -158,6 +158,9 @@ export const weekdayOf = (t = Date.now()) => ((new Date(t).getDay() + 6) % 7) + 
 export const weekdayShort = d => tr(['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][d - 1], ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][d - 1]);
 export const weekdayLong = d => tr(['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'][d - 1],
   ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][d - 1]);
+/** „montags“ / „Mondays“ (wie weekdayPlural in Plan.kt) */
+export const weekdayPlural = d => tr(['montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags', 'sonntags'][d - 1],
+  ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'][d - 1]);
 export const daysLabel = days => [...days].sort().map(weekdayShort).join(' · ');
 
 /** Heute geplantes Workout, das heute noch nicht trainiert wurde */
