@@ -17,21 +17,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
-/** „Fragen“ als eigener Bildschirm (erreichbar über ⋮ und das Wiki). */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * „Fragen“ als eigener Bildschirm (Knopf in der Navigationsleiste, Wiki). Unten dieselbe Navigationsleiste
+ * wie auf der Startseite (`onTab` = zu diesem Tab wechseln), bei offener Tastatur ausgeblendet.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun BotScreen(store: GymStore, onBack: () -> Unit, onOpenWorkout: (Long) -> Unit = {}) {
+fun BotScreen(
+    store: GymStore,
+    onBack: () -> Unit,
+    onOpenWorkout: (Long) -> Unit = {},
+    onTab: (Int) -> Unit = {},
+    /** Leiste „Training läuft“ (minimiertes Training) – über der Navigationsleiste */
+    trainingBar: (@Composable () -> Unit)? = null
+) {
     // Zuletzt trainierte Übung (Grundübung mit Wiki-Eintrag) → erster Vorschlag „Wie mache ich …?“
     val recent = store.sets.maxByOrNull { it.time }?.exercise
         ?.let { ex -> CATALOG.firstOrNull { it.name == ex }?.base }
         ?.takeIf { Wiki.entries.containsKey(it) }
         ?.let { baseName(it) }
-    Scaffold(topBar = {
-        TopAppBar(
-            title = { Text(tr("Fragen", "Ask")) },
-            navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
-        )
-    }) { padding -> BotTab(Modifier.padding(padding).fillMaxSize(), recent, store, onOpenWorkout) }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(tr("Fragen", "Ask")) },
+                navigationIcon = { IconAction(Ico.BACK, onClick = onBack) }
+            )
+        },
+        bottomBar = {
+            if (!WindowInsets.isImeVisible) Column {
+                trainingBar?.invoke()
+                MainNavBar(selected = -1, onSelect = { i -> if (i >= 0) onTab(i) })
+            }
+        }
+    ) { padding ->
+        // consumeWindowInsets: imePadding im Chat rechnet den schon belegten Platz unten nicht doppelt
+        BotTab(Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize(), recent, store, onOpenWorkout)
+    }
 }
 
 /**

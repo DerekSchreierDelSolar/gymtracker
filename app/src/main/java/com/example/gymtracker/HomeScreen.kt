@@ -147,28 +147,7 @@ fun HomeScreen(
         bottomBar = {
             Column {
                 trainingBar?.invoke()
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                    listOf(
-                        Triple(Ico.HOME, tr("Start", "Home"), 0),
-                        Triple(Ico.LIST, tr("Workouts", "Workouts"), 1),
-                        Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 2),
-                        Triple(Ico.BODY, tr("Körper", "Body"), 3),
-                        Triple(Ico.CHAT, tr("Fragen", "Ask"), -1) // kein Tab: öffnet den Bildschirm „Fragen“
-                    ).forEach { (icon, label, i) ->
-                        NavigationBarItem(
-                            selected = tab == i,
-                            onClick = { if (i < 0) onBot() else onTab(i) },
-                            icon = { AppIcon(icon) },
-                            label = { Text(label, maxLines = 1, softWrap = false) },
-                            // Akzentfarbe statt der Standard-Zweitfarbe
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                selectedTextColor = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    }
-                }
+                MainNavBar(selected = tab, onSelect = { i -> if (i < 0) onBot() else onTab(i) })
             }
         },
         // Schwebender Haupt-Button je nach Bereich
@@ -216,6 +195,36 @@ fun HomeScreen(
                 onOpenWorkout(store.addWorkoutFromTemplate(t).id)
             }
         )
+    }
+}
+
+/**
+ * Navigationsleiste unten: 4 Tabs (0–3) + Knopf „Fragen“ (-1, kein Tab, eigener Bildschirm).
+ * Wird auf der Startseite und im Bildschirm „Fragen“ gezeigt; `selected` = markierter Eintrag.
+ */
+@Composable
+fun MainNavBar(selected: Int, onSelect: (Int) -> Unit) {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        listOf(
+            Triple(Ico.HOME, tr("Start", "Home"), 0),
+            Triple(Ico.LIST, tr("Workouts", "Workouts"), 1),
+            Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 2),
+            Triple(Ico.BODY, tr("Körper", "Body"), 3),
+            Triple(Ico.CHAT, tr("Fragen", "Ask"), -1)
+        ).forEach { (icon, label, i) ->
+            NavigationBarItem(
+                selected = selected == i,
+                onClick = { onSelect(i) },
+                icon = { AppIcon(icon) },
+                label = { Text(label, maxLines = 1, softWrap = false) },
+                // Akzentfarbe statt der Standard-Zweitfarbe
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
     }
 }
 

@@ -14,7 +14,7 @@ import {
   percentRing, ring, muted, toast, groupHeader, undoToast, showHint, hintUsed,
 } from '../ui.js';
 import { nav, go, update, rerender, openDialog, closeDialog, onSwipe } from '../nav.js';
-import { screen, fab } from '../layout.js';
+import { screen, fab, bottomNav } from '../layout.js';
 import { exerciseTile } from './exercise.js';
 import { muscleHeatCard, periodFilter, periodLabel } from '../bodymap.js';
 import { reviewCard } from '../review.js';
@@ -54,13 +54,8 @@ export function homeScreen(onStartWorkout) {
     content: wrap,
     fab: tab === 1 ? fab(tr('Workout', 'Workout'), 'add', newWorkoutDialog) : null,
 
-    bottom: h('nav', { class: 'bottom-nav' },
-      TABS().map(([ico, label], i) =>
-        h('button', { class: ['nav-item', i === tab && 'selected'], onclick: () => setTab(i) },
-          h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label))),
-      // kein Tab: öffnet den Bildschirm „Fragen“
-      h('button', { class: 'nav-item', onclick: () => go({ bot: true }) },
-        h('span', { class: 'nav-icon' }, icon('chat')), h('span', null, tr('Fragen', 'Ask')))),
+    // „Fragen“ ist kein Tab, sondern öffnet den eigenen Bildschirm
+    bottom: bottomNav(tab, setTab, () => go({ bot: true })),
   });
 }
 

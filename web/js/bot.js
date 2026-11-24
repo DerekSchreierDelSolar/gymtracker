@@ -8,11 +8,11 @@ import { tr, appLanguage, isCardio, exName, equipmentLabel, fmtDate, fmtKcal } f
 import { store } from './store.js';
 import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames } from './stats.js';
 import { h, icon, chip } from './ui.js';
-import { rerender, go } from './nav.js';
+import { rerender, go, update } from './nav.js';
 import { baseName, openWiki, mainExercisesFor, evidenceLabel } from './wiki.js';
 import { MUSCLE_INFO } from './muscle-data.js';
 import { SUPPLEMENTS } from './supplement-data.js';
-import { screen } from './layout.js';
+import { screen, bottomNav } from './layout.js';
 import { levelsOf, levelLabels, levelTitle, regionLabel, muscleLabel, muscleOfRegion, levelColor, tappableFigure } from './bodymap.js';
 import { MUSCLES } from './body-data.js';
 import { wizard, WIZARD_STAGES, equipmentChoices, pickExercises, createWizardWorkout } from './wizard.js';
@@ -503,6 +503,7 @@ export function botScreen(store) {
   return screen({
     title: tr('Fragen', 'Ask'), back: true, key: 'bot',
     content: h('div', { class: 'pad' }, botTab(recent)),
-    bottom: botInput(),
+    // Eingabe + dieselbe Navigationsleiste wie auf der Startseite (Tab → Startseite mit diesem Tab)
+    bottom: [botInput(), bottomNav(-1, i => update({ bot: false, wiki: false, free: false, tab: i }), () => {})],
   });
 }

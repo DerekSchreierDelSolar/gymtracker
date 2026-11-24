@@ -2,6 +2,7 @@
 
 import { h, icon } from './ui.js';
 import { goBack } from './nav.js';
+import { tr } from './core.js';
 
 /**
  * title/subtitle: Kopfzeile · back: Zurück-Pfeil anzeigen · actions: Buttons rechts
@@ -32,4 +33,24 @@ export function screen({ title, subtitle, titleIcon, back = false, onBack = goBa
 
 export function fab(label, iconName, onClick, id) {
   return h('button', { class: 'fab', onclick: onClick, id }, icon(iconName), h('span', null, label));
+}
+
+const NAV_TABS = () => [
+  ['home', tr('Start', 'Home')],
+  ['list', tr('Workouts', 'Workouts')],
+  ['calendar', tr('Kalender', 'Calendar')],
+  ['body', tr('Körper', 'Body')],
+];
+
+/**
+ * Navigationsleiste unten (wie MainNavBar in HomeScreen.kt): 4 Tabs + Knopf „Fragen“ (kein Tab, eigener Bildschirm).
+ * selected = markierter Tab (-1 = „Fragen“); onTab(i) = Tab wählen, onBot = „Fragen“ öffnen.
+ */
+export function bottomNav(selected, onTab, onBot) {
+  return h('nav', { class: 'bottom-nav' },
+    NAV_TABS().map(([ico, label], i) =>
+      h('button', { class: ['nav-item', i === selected && 'selected'], onclick: () => onTab(i) },
+        h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label))),
+    h('button', { class: ['nav-item', selected === -1 && 'selected'], onclick: onBot },
+      h('span', { class: 'nav-icon' }, icon('chat')), h('span', null, tr('Fragen', 'Ask'))));
 }

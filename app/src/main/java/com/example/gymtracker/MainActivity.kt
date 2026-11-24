@@ -196,6 +196,9 @@ fun GymApp(store: GymStore) {
     val trainingVisible = start != null && session != null && trainingOpen
     val homeVisible = !trainingVisible && summary == null && ex == null && workout == null &&
         !showCatalog && !showBot && !showWiki && !showSettings && !showFree
+    // „Fragen“ oben → hat wie die Startseite die Navigationsleiste (Trainingsleiste darüber)
+    val botVisible = showBot && !trainingVisible && summary == null && ex == null && workout == null &&
+        !showCatalog && !showSettings
     val showBar = start != null && trainingWorkout != null && !trainingVisible
     val bar: @Composable () -> Unit = {
         TrainingBar(trainingWorkout?.name ?: "", start ?: 0L, restEnd, onOpen = { trainingOpen = true })
@@ -208,7 +211,7 @@ fun GymApp(store: GymStore) {
     // Leiste unten auf allen anderen Bildschirmen (Startseite: über der Navigationsleiste).
     // consumeWindowInsets: der Bildschirm darüber lässt unten keinen Platz mehr für die Systemleiste frei,
     // das übernimmt die Leiste. Bei offener Tastatur ausgeblendet.
-    val globalBar = showBar && !homeVisible && !WindowInsets.isImeVisible
+    val globalBar = showBar && !homeVisible && !botVisible && !WindowInsets.isImeVisible
     Column(Modifier.fillMaxSize()) {
         Box(
             Modifier
@@ -298,7 +301,12 @@ fun GymApp(store: GymStore) {
                 }
                 showBot -> {
                     BackHandler { showBot = false }
-                    BotScreen(store, onBack = { showBot = false }, onOpenWorkout = { showBot = false; workoutId = it })
+                    BotScreen(
+                        store, onBack = { showBot = false }, onOpenWorkout = { showBot = false; workoutId = it },
+                        // Tab in der Navigationsleiste → zur Startseite mit diesem Tab (auch wenn das Wiki darunter lag)
+                        onTab = { showBot = false; showWiki = false; showFree = false; tab = it },
+                        trainingBar = if (showBar) bar else null
+                    )
                 }
                 showWiki -> {
                     BackHandler { showWiki = false }
