@@ -236,7 +236,8 @@ fun SetInput(
 /**
  * Tippfehler-Schutz: Hinweistext, wenn ein Satz ungewöhnlich ist (z. B. 800 statt 80 kg) – sonst null.
  * Ein falscher Rekord bliebe sonst dauerhaft (Rekorde, XP, Abzeichen, Diagramme). Web: implausibleSet in exercise.js.
- * Gewicht: mehr als 1,5× und mindestens 10 kg über dem bisherigen Höchstgewicht der Übung (ohne Verlauf: über 300 kg).
+ * Gewicht: mehr als 1,5× und mindestens 10 kg über dem bisherigen Höchstgewicht der Übung aus Arbeitssätzen
+ * (Aufwärmsätze zählen nicht; ohne Verlauf: über 300 kg).
  */
 fun implausibleSet(store: GymStore, exercise: String, weight: Double, reps: Int): String? {
     val cardio = store.groupOf(exercise).isCardio
@@ -244,7 +245,8 @@ fun implausibleSet(store: GymStore, exercise: String, weight: Double, reps: Int)
     if (cardio) return if (reps > 300) tr("$reps Minuten sind über 5 Stunden. Tippfehler?", "$reps minutes is over 5 hours. Typo?") else null
     if (timed && reps > 1800) return tr("$reps Sekunden sind über 30 Minuten. Tippfehler?", "$reps seconds is over 30 minutes. Typo?")
     if (!timed && reps > 100) return tr("$reps Wiederholungen in einem Satz? Tippfehler?", "$reps reps in one set? Typo?")
-    val best = store.setsOf(exercise).maxOfOrNull { it.weight } ?: 0.0
+    // nur Arbeitssätze: nach einem leichten Aufwärmsatz ist der Sprung zum Arbeitsgewicht normal
+    val best = store.setsOf(exercise).filter { it.isWork }.maxOfOrNull { it.weight } ?: 0.0
     return when {
         best > 0 && weight > best * 1.5 && weight - best >= 10 -> tr(
             "${fmtKg(weight)} ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtKg(best)}). Tippfehler?",

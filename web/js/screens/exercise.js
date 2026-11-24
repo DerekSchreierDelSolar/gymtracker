@@ -219,14 +219,15 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
 
 /**
  * Tippfehler-Schutz (wie implausibleSet in ExerciseDetail.kt): Hinweistext bei ungewöhnlichem Satz, sonst null.
- * Gewicht: mehr als 1,5× und mindestens 10 kg über dem bisherigen Höchstgewicht (ohne Verlauf: über 300 kg).
+ * Gewicht: mehr als 1,5× und mindestens 10 kg über dem bisherigen Höchstgewicht aus Arbeitssätzen (ohne Aufwärmen; ohne Verlauf: über 300 kg).
  */
 export function implausibleSet(name, weight, reps) {
   const cardio = isCardio(store.groupOf(name)), timed = isTimed(name);
   if (cardio) return reps > 300 ? tr(`${reps} Minuten sind über 5 Stunden. Tippfehler?`, `${reps} minutes is over 5 hours. Typo?`) : null;
   if (timed && reps > 1800) return tr(`${reps} Sekunden sind über 30 Minuten. Tippfehler?`, `${reps} seconds is over 30 minutes. Typo?`);
   if (!timed && reps > 100) return tr(`${reps} Wiederholungen in einem Satz? Tippfehler?`, `${reps} reps in one set? Typo?`);
-  const best = Math.max(0, ...store.setsOf(name).map(s => s.weight));
+  // nur Arbeitssätze: nach einem leichten Aufwärmsatz ist der Sprung zum Arbeitsgewicht normal
+  const best = Math.max(0, ...store.setsOf(name).filter(isWork).map(s => s.weight));
   if (best > 0 && weight > best * 1.5 && weight - best >= 10) return tr(
     `${fmtKg(weight)} ist deutlich mehr als dein bisheriges Höchstgewicht (${fmtKg(best)}). Tippfehler?`,
     `${fmtKg(weight)} is far more than your heaviest so far (${fmtKg(best)}). Typo?`);
