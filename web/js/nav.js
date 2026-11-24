@@ -16,7 +16,7 @@ export const nav = {
   wiki: false,           // Übungs-Wiki geöffnet
   bot: false,            // Bildschirm „Fragen“ geöffnet
   settings: false,       // Einstellungen geöffnet (screens/settings.js)
-  settingsPage: null,    // Unterseite der Einstellungen: profile | cycle
+  settingsPage: null,    // Unterseite der Einstellungen: profile | rest | cycle
   wikiQuery: '',
   wikiTab: 0,            // Wiki-Reiter: 0 Übungen, 1 Muskeln, 2 Supplements
   statPeriod: 'WEEK',     // Zeitraum Heatmap/Muskelgruppen auf der Startseite

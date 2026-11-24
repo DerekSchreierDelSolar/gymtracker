@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
@@ -28,11 +29,12 @@ import java.util.Locale
 // Zeile mit Kurz-Zusammenfassung → Unterseite mit den eigentlichen Einstellungen (ProfileSettings, CycleSettings …).
 // Web: settingsScreen in screens/settings.js (nav.settings / nav.settingsPage).
 
-private enum class SettingsPage { PROFILE, CYCLE, REMINDER, HEALTH, BACKUP }
+private enum class SettingsPage { PROFILE, REST, CYCLE, REMINDER, HEALTH, BACKUP }
 
 @Composable
 private fun SettingsPage.title(): String = when (this) {
     SettingsPage.PROFILE -> tr("Profil für Kalorien", "Profile for calories")
+    SettingsPage.REST -> tr("Pausen-Timer", "Rest timer")
     SettingsPage.CYCLE -> tr("Trainingsblock mit Deload", "Training block with deload")
     SettingsPage.REMINDER -> tr("Trainings-Erinnerung", "Workout reminder")
     SettingsPage.HEALTH -> "Health Connect"
@@ -69,6 +71,7 @@ fun SettingsScreen(store: GymStore, onBack: () -> Unit) {
             when (page) {
                 null -> SettingsOverview(store, backup, onPage = { pageName = it.name }, onReset = { confirmReset = true })
                 SettingsPage.PROFILE -> ProfileSettings(store)
+                SettingsPage.REST -> RestSettings(store)
                 SettingsPage.CYCLE -> CycleSettings(store)
                 SettingsPage.REMINDER -> ReminderSettings()
                 SettingsPage.HEALTH -> HealthSettings(store)
@@ -103,6 +106,9 @@ private fun SettingsOverview(store: GymStore, backup: BackupActions, onPage: (Se
                 p.heightCm?.let { "$it cm" }
             ).joinToString(" · ").ifEmpty { tr("Nicht ausgefüllt – für genauere kcal", "Not set – for more accurate calories") }
         ) { onPage(SettingsPage.PROFILE) }
+        NavRow("⏱️", SettingsPage.REST.title(),
+            if (store.restSeconds > 0) tr("Standard: ", "Default: ") + fmtRest(store.restSeconds) else off
+        ) { onPage(SettingsPage.REST) }
         val c = store.cycle
         NavRow("📆", SettingsPage.CYCLE.title(),
             if (c == null) off
@@ -142,6 +148,42 @@ private fun SettingsOverview(store: GymStore, backup: BackupActions, onPage: (Se
         NavRow("🗑", tr("Fortschritt zurücksetzen", "Reset progress"),
             tr("Übungen und Workouts bleiben erhalten", "Exercises and workouts are kept"),
             color = MaterialTheme.colorScheme.error, chevron = false, onClick = onReset)
+    }
+}
+
+/** Vorschläge für die Pausenlänge in Sekunden (0 = aus). */
+private val REST_PRESETS = listOf(0, 30, 45, 60, 90, 120, 150, 180, 240, 300)
+
+/** Pausenlänge als „1:30“ (0 = „Aus“). */
+@Composable
+private fun fmtRest(sec: Int) = if (sec > 0) fmtDuration(sec * 1000L) else tr("Aus", "Off")
+
+/** Unterseite Pausen-Timer: Standard-Pause nach jedem Satz (im Training per Pausen-Kreis weiter änderbar). */
+@Composable
+private fun RestSettings(store: GymStore) {
+    val sec = store.restSeconds
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            tr("So lange läuft nach jedem Satz der Pausen-Countdown. Im Training lässt er sich über den Pausen-Kreis weiterhin ändern.",
+                "The rest countdown runs this long after every set. During training you can still change it via the rest circle."),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        // −/+ in 15-s-Schritten (15 s bis 10 min); unter 15 s = aus
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = { store.setRest(if (sec <= 15) 0 else sec - 15) }, enabled = sec > 0) {
+                Text("−", style = MaterialTheme.typography.titleLarge)
+            }
+            Text(fmtRest(sec), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
+            TextButton(onClick = { store.setRest(sec + 15) }, enabled = sec < 600) {
+                Text("+", style = MaterialTheme.typography.titleLarge)
+            }
+        }
+        // Vorschläge in 2 Reihen à 5 gleich breiten Knöpfen
+        REST_PRESETS.chunked(5).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { p -> SegmentChip(fmtRest(p), sec == p, { store.setRest(p) }, Modifier.weight(1f)) }
+            }
+        }
     }
 }
 

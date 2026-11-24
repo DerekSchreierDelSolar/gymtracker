@@ -524,10 +524,10 @@ private fun RestCircle(store: GymStore, now: () -> Long, restEnd: Long?, restTot
             // „tippen zum Ändern“, bis die Pausenlänge einmal geändert wurde; danach reicht das ✎
             label = if (Hints.show(Hints.REST)) tr("Pause · tippen zum Ändern", "Rest · tap to change") else tr("Pause ✎", "Rest ✎"),
             big = true,
-            // nächste Pausenlänge (Aus → 1 min → 90 s → 2 min → 3 min → Aus)
+            // nächste Pausenlänge (Aus → 1 min → 90 s → 2 min → 3 min → Aus; eigene Länge aus den Einstellungen → nächstgrößere Stufe)
             onClick = {
                 Hints.used(Hints.REST)
-                store.setRest(restOptions[(restOptions.indexOf(sec) + 1) % restOptions.size])
+                store.setRest(restOptions.firstOrNull { it > sec } ?: 0)
             }
         )
     }

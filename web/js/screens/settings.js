@@ -1,9 +1,9 @@
 // Einstellungen als eigener Bildschirm (früher ein Dialog) – entspricht SettingsScreen.kt.
 // Übersicht ohne langes Scrollen: Darstellung je in einer Zeile, Größeres als Zeile mit Zusammenfassung → Unterseite
-// (nav.settingsPage: 'profile' | 'cycle'). Erinnerung, Health Connect und automatisches Backup gibt es nur in Android.
+// (nav.settingsPage: 'profile' | 'rest' | 'cycle'). Erinnerung, Health Connect und automatisches Backup gibt es nur in Android.
 
 import { store } from '../store.js';
-import { tr, plural, fmtDate, appLanguage, LANGUAGES, weightUnit, validYear, validHeight, profileComplete } from '../core.js';
+import { tr, plural, fmtDate, fmtDuration, appLanguage, LANGUAGES, weightUnit, validYear, validHeight, profileComplete } from '../core.js';
 import { h, icon, chip, dialog, muted, undoToast } from '../ui.js';
 import { nav, go, openDialog, closeDialog } from '../nav.js';
 import { screen } from '../layout.js';
@@ -12,6 +12,7 @@ import { exportData, importData } from './home.js';
 
 const PAGES = {
   profile: () => tr('Profil für Kalorien', 'Profile for calories'),
+  rest: () => tr('Pausen-Timer', 'Rest timer'),
   cycle: () => tr('Trainingsblock mit Deload', 'Training block with deload'),
 };
 
@@ -21,7 +22,7 @@ export function settingsScreen() {
     title: page ? PAGES[page]() : tr('Einstellungen', 'Settings'),
     back: true, key: 'settings-' + (page ?? 'main'),
     content: h('div', { class: 'stack pad settings' },
-      page === 'profile' ? profileSettings() : page === 'cycle' ? cycleSettings() : overview()),
+      page === 'profile' ? profileSettings() : page === 'rest' ? restSettings() : page === 'cycle' ? cycleSettings() : overview()),
   });
 }
 
@@ -54,6 +55,7 @@ function overview() {
       choiceRow(tr('Einheit', 'Unit'), [['kg', 'kg'], ['lb', 'lbs']], weightUnit, u => store.setUnit(u))),
     group(tr('Training', 'Training'),
       navRow('👤', PAGES.profile(), profileSummary, () => openPage('profile')),
+      navRow('⏱️', PAGES.rest(), store.restSeconds > 0 ? tr('Standard: ', 'Default: ') + fmtRest(store.restSeconds) : off, () => openPage('rest')),
       navRow('📆', PAGES.cycle(), cycleSummary, () => openPage('cycle'))),
     group(tr('Daten', 'Data'),
       navRow('📤', tr('Daten exportieren', 'Export data'),
@@ -135,4 +137,24 @@ function resetDialog() {
         },
       },
     ], closeDialog));
+}
+
+// ---------- Unterseite Pausen-Timer (wie RestSettings in SettingsScreen.kt) ----------
+
+/** Vorschläge für die Pausenlänge in Sekunden (0 = aus). */
+const REST_PRESETS = [0, 30, 45, 60, 90, 120, 150, 180, 240, 300];
+const fmtRest = sec => (sec > 0 ? fmtDuration(sec * 1000) : tr('Aus', 'Off'));
+
+function restSettings() {
+  const sec = store.restSeconds;
+  return [
+    muted(tr('So lange läuft nach jedem Satz der Pausen-Countdown. Im Training lässt er sich über den Pausen-Kreis weiterhin ändern.',
+      'The rest countdown runs this long after every set. During training you can still change it via the rest circle.'), 'small'),
+    // −/+ in 15-s-Schritten (15 s bis 10 min); unter 15 s = aus
+    h('div', { class: 'stepper' },
+      h('button', { class: 'step', disabled: sec <= 0, onclick: () => store.setRest(sec <= 15 ? 0 : sec - 15) }, '−'),
+      h('span', { class: 'step-value wide' }, fmtRest(sec)),
+      h('button', { class: 'step', disabled: sec >= 600, onclick: () => store.setRest(sec + 15) }, '+')),
+    h('div', { class: 'chips' }, REST_PRESETS.map(p => chip(fmtRest(p), sec === p, () => store.setRest(p)))),
+  ];
 }

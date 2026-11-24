@@ -134,7 +134,7 @@ export function restWatch() {
 function restCircle() {
   const el = circleStat(true, () => {
     if (nav.restEnd != null && nav.restEnd > Date.now()) update({ restEnd: null });
-    else { hintUsed('rest'); store.setRest(REST_OPTIONS[(REST_OPTIONS.indexOf(store.restSeconds) + 1) % REST_OPTIONS.length]); }
+    else { hintUsed('rest'); store.setRest(REST_OPTIONS.find(o => o > store.restSeconds) ?? 0); }
   });
   const refresh = () => {
     const now = Date.now();
