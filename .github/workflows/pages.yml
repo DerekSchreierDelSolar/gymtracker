@@ -1,9 +1,9 @@
-# Veröffentlicht den Ordner web/ bei jedem Push auf main als GitHub Pages
+# Veröffentlicht den Ordner web/ als GitHub Pages – nur bei einem Release (Tag v*, z. B. v1.23), nicht bei jedem Push.
+# Von Hand: gh workflow run pages.yml
 name: Web-App veröffentlichen
 on:
   push:
-    branches: [main]
-    paths: ['web/**', '.github/workflows/pages.yml']
+    tags: ['v*']
   workflow_dispatch:
 permissions:
   contents: read

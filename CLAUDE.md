@@ -24,7 +24,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 "$ADB" shell run-as com.example.gymtracker cat files/gym_data.json   # Daten prüfen
 ```
 - **Release-APK:** `./gradlew assembleRelease` → `app/build/outputs/apk/release/app-release.apk`,
-  zum Weitergeben nach `release/GymTracker-<version>.apk` kopieren. Vorher `versionCode` (+1) und
+  zum Weitergeben nach `release/GymTracker-<version>.apk` kopieren. **Web-Version wird nur beim Release veröffentlicht:** nach dem Release-Commit Tag setzen und pushen (`git tag v<versionName> && git push origin v<versionName>`) → GitHub Pages (`.github/workflows/pages.yml`, Trigger nur Tags `v*` bzw. von Hand `gh workflow run pages.yml`); normale Pushes auf main veröffentlichen nichts. Vorher `versionCode` (+1) und
   `versionName` in `app/build.gradle.kts` erhöhen, sonst lässt sich das Update nicht installieren.
   Signiert mit `signing/gymtracker-release.jks` + `signing/keystore.properties` (gitignored, NICHT
   verlieren; fehlen sie, wird der Release-Build unsigniert). Release nicht über eine Debug-Installation
