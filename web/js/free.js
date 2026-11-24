@@ -23,16 +23,6 @@ export const freeSessions = () => allSessions(store).filter(t => t.workoutId ===
 /** Letztes freies Training vor `before` (für „Wie letztes Mal“). */
 export const lastFreeSession = (before = Infinity) => freeSessions().find(t => t.start < before) ?? null;
 
-/** Übungen, die in den freien Trainings der letzten 60 Tage am öftesten vorkamen. */
-export function frequentFreeExercises(before, max = 8) {
-  const from = before - 60 * 24 * 3600 * 1000;
-  const count = new Map();
-  for (const t of freeSessions()) if (t.start >= from && t.start < before) {
-    for (const e of new Set(t.exercises)) count.set(e, (count.get(e) ?? 0) + 1);
-  }
-  return [...count.entries()].sort((a, b) => b[1] - a[1]).map(([e]) => e).slice(0, max);
-}
-
 /** Alle Übungen, die man hinzufügen kann: Katalog + eigene. */
 const allExerciseNames = () => [...CATALOG.map(c => c.name), ...store.customNames.filter(n => !CATALOG.some(c => c.name.toLowerCase() === n.toLowerCase()))];
 
@@ -45,18 +35,12 @@ export function addFree(names, extra = {}) {
   update({ freeExercises: list, ...(i >= 0 ? { trainingIndex: i } : {}), ...extra });
 }
 
-function removeFree(name) {
-  const list = nav.freeExercises.filter(n => n !== name);
-  update({ freeExercises: list, trainingIndex: list.length }); // bleibt auf „＋ Übung“
-}
-
 // Suche / geöffnete Kategorie der Seite „＋ Übung“ (nur solange die App offen ist)
 let query = '', openGroup = null;
 
 /**
- * Letzte Seite im freien Training: oben „Im Training“ (antippen = hinspringen, ✕ = weg, solange noch kein Satz),
- * dann das letzte freie Training (einzeln oder alle übernehmen), öfter frei trainierte Übungen, Favoriten und
- * zum Schluss Suche bzw. Kategorien (wie FreeAddPage in FreeTraining.kt).
+ * Letzte Seite im freien Training: oben das letzte freie Training (einzeln oder alle übernehmen), dann Favoriten und
+ * zum Schluss Suche bzw. Kategorien; schon hinzugefügte tragen ein ✓ (wie FreeAddPage in FreeTraining.kt).
  */
 export function freeAddPage(w, start) {
   const exercises = w.exercises;
@@ -65,9 +49,8 @@ export function freeAddPage(w, start) {
   const add = list => addFree(list);
   const last = lastFreeSession(start);
   const lastNames = last ? [...new Set(last.exercises)] : [];
-  const freq = frequentFreeExercises(start).filter(n => !lastNames.includes(n));
   const all = allExerciseNames();
-  const favs = sortByName(all.filter(n => isFav(n) && !lastNames.includes(n) && !freq.includes(n)), exName);
+  const favs = sortByName(all.filter(n => isFav(n) && !lastNames.includes(n)), exName);
 
   const chips = names => h('div', { class: 'chips wrap' }, names.map(n => inTraining(n)
     ? chip('✓ ' + exName(n), true, () => open(n))
@@ -99,12 +82,6 @@ export function freeAddPage(w, start) {
     h('h2', { class: 'headline' }, tr('Übung hinzufügen', 'Add exercise')),
     exercises.length ? null : muted(tr('Freies Training: Wähle die erste Übung – weitere kommen jederzeit hier dazu.',
       'Free workout: pick your first exercise – add more here any time.'), 'small'),
-    exercises.length ? [header(tr('Im Training', 'In this workout')), h('div', { class: 'chips wrap' }, exercises.map(n => {
-      const removable = !store.setsBetween(n, start, Infinity).length;
-      return h('span', { class: 'chip filled free-chip' },
-        h('button', { class: 'free-chip-name', onclick: () => open(n) }, exName(n)),
-        removable ? h('button', { class: 'free-chip-x', 'aria-label': tr('Entfernen', 'Remove'), onclick: () => removeFree(n) }, icon('close', 16)) : null);
-    }))] : null,
     last ? [
       header(tr('Letztes freies Training · ', 'Last free workout · ') + fmtDate(last.start)),
       chips(lastNames),
@@ -112,7 +89,6 @@ export function freeAddPage(w, start) {
         ? h('div', null, h('button', { class: 'btn', onclick: () => add(missing) }, icon('add', 18), tr(`Alle ${missing.length} übernehmen`, `Add all ${missing.length}`)))
         : null)(lastNames.filter(n => !inTraining(n))),
     ] : null,
-    freq.length ? [header(tr('Öfter frei trainiert', 'Often in free workouts')), chips(freq)] : null,
     favs.length ? [header('★ ' + tr('Favoriten', 'Favorites')), chips(favs)] : null,
     header(tr('Alle Übungen', 'All exercises')),
     textField({ id: 'free-search', label: tr('Übung suchen …', 'Search exercises …'), value: query, oninput: v => { query = v; rerender(); } }),

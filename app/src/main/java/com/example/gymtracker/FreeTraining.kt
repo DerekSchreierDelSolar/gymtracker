@@ -28,24 +28,13 @@ fun freeSessions(store: GymStore): List<TrainingSession> =
 fun lastFreeSession(store: GymStore, before: Long = Long.MAX_VALUE): TrainingSession? =
     freeSessions(store).firstOrNull { it.start < before }
 
-/** Übungen, die in den freien Trainings der letzten 60 Tage am öftesten vorkamen (höchstens `max`). */
-fun frequentFreeExercises(store: GymStore, before: Long, max: Int = 8): List<String> {
-    val from = before - 60L * 24 * 3600 * 1000
-    return freeSessions(store).filter { it.start in from until before }
-        .flatMap { it.exercises.distinct() }
-        .groupingBy { it }.eachCount()
-        .entries.sortedByDescending { it.value }
-        .map { it.key }.take(max)
-}
-
 /** Alle Übungen, die man hinzufügen kann: Katalog + eigene. */
 private fun allExerciseNames(store: GymStore): List<String> =
     CATALOG.map { it.name } + store.customNames.filter { n -> CATALOG.none { it.name.equals(n, ignoreCase = true) } }
 
 /**
- * Letzte Seite im freien Training: Übungen hinzufügen. Oben „Im Training“ (antippen = hinspringen, ✕ = wieder weg,
- * solange noch kein Satz), dann das letzte freie Training (einzeln oder alle übernehmen), öfter frei trainierte Übungen,
- * Favoriten und zum Schluss Suche bzw. Kategorien.
+ * Letzte Seite im freien Training: Übungen hinzufügen. Oben das letzte freie Training (einzeln oder alle übernehmen),
+ * dann Favoriten und zum Schluss Suche bzw. Kategorien. Schon hinzugefügte tragen ein ✓ (antippen = hinspringen).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -55,11 +44,9 @@ fun FreeAddPage(
     exercises: List<String>,
     /** Übungen hinzufügen und zur ersten davon springen */
     onAdd: (List<String>) -> Unit,
-    onOpen: (String) -> Unit,
-    onRemove: (String) -> Unit
+    onOpen: (String) -> Unit
 ) {
     val last = remember(start, store.revision) { lastFreeSession(store, start) }
-    val frequent = remember(start, store.revision) { frequentFreeExercises(store, start) }
     var query by rememberSaveable { mutableStateOf("") }
     var openGroup by rememberSaveable { mutableStateOf<String?>(null) }
     val inTraining = { n: String -> n in exercises }
@@ -110,23 +97,6 @@ fun FreeAddPage(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        // Schon im Training: antippen = hinspringen, ✕ entfernt (nur ohne Satz in diesem Training)
-        if (exercises.isNotEmpty()) item {
-            Header(tr("Im Training", "In this workout"))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                exercises.forEach { n ->
-                    val removable = store.setsBetween(n, start, Long.MAX_VALUE).isEmpty()
-                    InputChip(
-                        selected = true,
-                        onClick = { onOpen(n) },
-                        label = { Text(exName(n)) },
-                        trailingIcon = if (removable) {
-                            { IconButton(onClick = { onRemove(n) }, modifier = Modifier.size(24.dp)) { AppIcon(Ico.CLOSE, Modifier.size(16.dp)) } }
-                        } else null
-                    )
-                }
-            }
-        }
         // Wie letztes Mal
         if (last != null) item {
             val names = last.exercises.distinct()
@@ -144,12 +114,7 @@ fun FreeAddPage(
             }
         }
         val lastNames = last?.exercises.orEmpty().toSet()
-        val freq = frequent.filterNot { it in lastNames }
-        if (freq.isNotEmpty()) item {
-            Header(tr("Öfter frei trainiert", "Often in free workouts"))
-            Chips(freq)
-        }
-        val favs = allExerciseNames(store).filter { store.isFavorite(it) && it !in lastNames && it !in freq }.sortedByName { exName(it) }
+        val favs = allExerciseNames(store).filter { store.isFavorite(it) && it !in lastNames }.sortedByName { exName(it) }
         if (favs.isNotEmpty()) item {
             Header("★ " + tr("Favoriten", "Favorites"))
             Chips(favs)

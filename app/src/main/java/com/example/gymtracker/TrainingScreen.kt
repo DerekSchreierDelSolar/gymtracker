@@ -80,8 +80,7 @@ fun TrainingScreen(
     onFinish: (Long?) -> Unit,
     /** Freies Training (FreeTraining.kt): letzte Seite = „＋ Übung“, Übungen kommen im Training dazu */
     free: Boolean = false,
-    onAddExercises: (List<String>) -> Unit = {},
-    onRemoveExercise: (String) -> Unit = {}
+    onAddExercises: (List<String>) -> Unit = {}
 ) {
     var confirmEnd by remember { mutableStateOf(false) }
     // Zurück-Taste beendet das Training nicht, sondern minimiert es (Beenden nur über „Beenden“)
@@ -272,8 +271,7 @@ fun TrainingScreen(
                     FreeAddPage(
                         store, start, workout.exercises,
                         onAdd = onAddExercises,
-                        onOpen = { e -> workout.exercises.indexOf(e).takeIf { it >= 0 }?.let(onIndex) },
-                        onRemove = onRemoveExercise
+                        onOpen = { e -> workout.exercises.indexOf(e).takeIf { it >= 0 }?.let(onIndex) }
                     )
                     return@HorizontalPager
                 }

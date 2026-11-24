@@ -262,11 +262,7 @@ fun GymApp(store: GymStore) {
                             celebrateId = t?.id
                         },
                         free = freeRunning,
-                        onAddExercises = { addFree(it) },
-                        onRemoveExercise = { e ->
-                            freeExercises = ArrayList(freeExercises - e)
-                            trainingIndex = freeExercises.size // bleibt auf „＋ Übung“
-                        }
+                        onAddExercises = { addFree(it) }
                     )
                 }
                 ex != null -> {

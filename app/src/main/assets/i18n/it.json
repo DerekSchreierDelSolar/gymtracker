@@ -3334,17 +3334,14 @@
  "Workout␟Workout": "Workout",
  "Weiter␟Next": "Avanti",
  "Einzelne Übungen ohne festen Plan": "Singoli esercizi senza un piano fisso",
- "Ganz oben im Tab „Workouts“ steht „Freies Training“. Mit ▶ startest du es wie ein Workout – mit Dauer, Pausen-Timer und Übersicht am Ende. Es startet leer: Über „＋ Übung“ fügst du Übungen hinzu, vorgeschlagen werden die vom letzten freien Training (auch alle auf einmal) und deine öfter frei trainierten. In der Übersicht danach kannst du es „Als Workout speichern“. Sätze, die du ohne gestartetes Training einträgst (Karte antippen → Übung öffnen), werden pro Tag als „Freies Training“ zusammengefasst und zählen mit 100 %.": "In cima alla scheda «Workout» c'è «Allenamento libero». Con ▶ lo avvii come un workout – con durata, timer di recupero e riepilogo alla fine. Parte vuoto: aggiungi esercizi con «＋ Esercizio»; ti vengono proposti quelli dell'ultimo allenamento libero (anche tutti insieme) e quelli che fai più spesso. Nel riepilogo puoi poi «Salvare come workout». Le serie che registri senza aver avviato un allenamento (tocca la scheda → apri un esercizio) vengono raggruppate per giorno come «Allenamento libero» e contano al 100 %.",
  "Freies Training: Wähle die erste Übung – weitere kommen jederzeit hier dazu.": "Allenamento libero: scegli il primo esercizio – puoi aggiungerne altri qui in qualsiasi momento.",
- "Im Training": "Nell'allenamento",
  "Letztes freies Training · ": "Ultimo allenamento libero · ",
  "Alle {0} übernehmen": "Aggiungi tutti e {0}",
- "Öfter frei trainiert": "Spesso nell'allenamento libero",
  "Alle Übungen": "Tutti gli esercizi",
  "Als Workout speichern": "Salva come workout",
  "Gleiche Übungen, Ziel-Sätze wie heute – zum Wiederholen.": "Stessi esercizi, serie obiettivo come oggi – per ripeterlo.",
  "Fortsetzen": "Riprendi",
- "Entfernen": "Rimuovi",
  "＋ Übung": "＋ Esercizio",
- "Zuletzt: ": "Ultima volta: "
+ "Zuletzt: ": "Ultima volta: ",
+ "Ganz oben im Tab „Workouts“ steht „Freies Training“. Mit ▶ startest du es wie ein Workout – mit Dauer, Pausen-Timer und Übersicht am Ende. Es startet leer: Über „＋ Übung“ fügst du Übungen hinzu, vorgeschlagen werden die vom letzten freien Training (auch alle auf einmal) und deine Favoriten. In der Übersicht danach kannst du es „Als Workout speichern“. Sätze, die du ohne gestartetes Training einträgst (Karte antippen → Übung öffnen), werden pro Tag als „Freies Training“ zusammengefasst und zählen mit 100 %.": "In cima alla scheda «Workout» c'è «Allenamento libero». Con ▶ lo avvii come un workout – con durata, timer di recupero e riepilogo alla fine. Parte vuoto: aggiungi esercizi con «＋ Esercizio»; ti vengono proposti quelli dell'ultimo allenamento libero (anche tutti insieme) e i tuoi preferiti. Nel riepilogo puoi poi «Salvare come workout». Le serie che registri senza aver avviato un allenamento (tocca la scheda → apri un esercizio) vengono raggruppate per giorno come «Allenamento libero» e contano al 100 %."
 }
