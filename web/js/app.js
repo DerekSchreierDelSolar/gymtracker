@@ -4,7 +4,7 @@ import { store } from './store.js';
 import { tr, translationsReady, appLanguage } from './core.js';
 import { tickers, dialog, h, toast } from './ui.js';
 import { nav, update, setRenderer, setBackHandler, go, goBack, openDialog, closeDialog } from './nav.js';
-import { homeScreen } from './screens/home.js';
+import { homeScreen, freeTrainingScreen } from './screens/home.js';
 import { exerciseDetailScreen } from './screens/exercise.js';
 import { workoutScreen, workoutPickerScreen, workoutExercisePage, catalogScreen } from './screens/workout.js';
 import { wikiScreen } from './wiki.js';
@@ -71,6 +71,7 @@ function currentScreen() {
   if (nav.settings) return settingsScreen();
   if (nav.bot) return botScreen(store);
   if (nav.wiki) return wikiScreen();
+  if (nav.free) return freeTrainingScreen();
   return homeScreen(startTraining);
 }
 
@@ -112,6 +113,7 @@ setBackHandler(() => {
   if (nav.settings) { update({ settings: false }); return true; }
   if (nav.bot) { update({ bot: false }); return true; }
   if (nav.wiki) { update({ wiki: false, wikiQuery: '', wikiTab: 0 }); return true; }
+  if (nav.free) { update({ free: false }); return true; }
   return true;
 });
 

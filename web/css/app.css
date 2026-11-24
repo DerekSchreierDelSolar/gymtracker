@@ -134,6 +134,11 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .play-btn:active { filter: brightness(.9); }
 .play-btn.tonal { width: 52px; height: 52px; background: var(--primary-container); color: var(--on-primary-container); }
 .workout-card[role=button] { cursor: pointer; }
+/* „Freies Training“ oben in der Workout-Liste (wie FreeTrainingCard) */
+.free-card { background: var(--primary-container); color: var(--on-primary-container); gap: 14px; }
+.free-card .grow { display: flex; flex-direction: column; gap: 2px; }
+.free-card .free-meta { opacity: .75; }
+.free-icon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--primary); color: var(--on-primary); }
 
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat-box { padding: 14px 4px; text-align: center; }

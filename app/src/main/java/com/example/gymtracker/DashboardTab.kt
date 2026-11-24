@@ -121,7 +121,7 @@ fun DashboardTab(
     onOpenWorkout: (Long) -> Unit,
     onOpenSession: (Long) -> Unit,
     onGoTo: (Int) -> Unit,
-    onNewWorkout: () -> Unit = { onGoTo(2) }
+    onNewWorkout: () -> Unit = { onGoTo(1) }
 ) {
     val sessions = allSessions(store)
     val weekStart = startOfWeek()

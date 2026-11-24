@@ -44,7 +44,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// ---------- Bildschirm 1: Startseite mit Tabs „Übungen“ und „Workouts“ ----------
+// ---------- Bildschirm 1: Startseite mit Tabs Start, Workouts, Kalender, Körper (+ „Fragen“ unten als Knopf) ----------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,8 +52,7 @@ fun HomeScreen(
     store: GymStore,
     tab: Int,
     onTab: (Int) -> Unit,
-    onOpen: (String) -> Unit,
-    onCatalog: () -> Unit,
+    onFree: () -> Unit,
     onWiki: () -> Unit,
     onBot: () -> Unit,
     onSettings: () -> Unit,
@@ -64,17 +63,15 @@ fun HomeScreen(
     calDay: Int,
     onCalDay: (Int) -> Unit,
     onOpenSession: (Long) -> Unit,
-    listFilter: ExerciseFilter,
-    onListFilter: (ExerciseFilter) -> Unit,
     onStartWorkout: (Long) -> Unit,
     /** Leiste „Training läuft“ (minimiertes Training) – sitzt über der Navigationsleiste */
     trainingBar: (@Composable () -> Unit)? = null
 ) {
     var showNewWorkout by remember { mutableStateOf(false) }
-    val listUi = rememberFilterUi(listFilter)
 
-    // Pager für die fünf Hauptbereiche, synchron mit `tab` („Fragen“ ist jetzt ein eigener Bildschirm im ⋮-Menü)
-    val pagerState = rememberPagerState(initialPage = tab.coerceAtMost(4)) { 5 }
+    // Pager für die vier Hauptbereiche, synchron mit `tab`. „Fragen“ ist ein eigener Bildschirm (Knopf in der Navigation),
+    // die frühere Übungsliste steckt im Workout „Freies Training“ (FreeTrainingScreen).
+    val pagerState = rememberPagerState(initialPage = tab.coerceIn(0, 3)) { 4 }
     val currentOnTab by rememberUpdatedState(onTab)
     LaunchedEffect(tab) {
         if (pagerState.currentPage != tab) pagerState.animateScrollToPage(tab)
@@ -94,20 +91,16 @@ fun HomeScreen(
                     Text(
                         when (tab) {
                             0 -> tr("Übersicht", "Overview")
-                            1 -> tr("Übungen", "Exercises")
-                            2 -> "Workouts"
-                            3 -> tr("Kalender", "Calendar")
+                            1 -> "Workouts"
+                            2 -> tr("Kalender", "Calendar")
                             else -> tr("Körper", "Body")
                         },
                         style = MaterialTheme.typography.headlineSmall
                     )
                 },
                 actions = {
-                    // Suche + Filter nur im Übungen-Bereich (und nur, wenn es Übungen gibt)
-                    if (tab == 1 && store.exercises.isNotEmpty()) FilterActions(listUi, listFilter, onListFilter)
-                    // Wiki und Fragen immer direkt erreichbar (auf allen Tabs)
+                    // Wiki immer direkt erreichbar (auf allen Tabs); „Fragen“ sitzt unten in der Navigation
                     IconAction(Ico.BOOK, onClick = onWiki)
-                    IconAction(Ico.CHAT, onClick = onBot)
                     // ⋮-Menü: Box ist der Anker, an dem sich das DropdownMenu ausrichtet
                     Box {
                         IconAction(Ico.MORE, onClick = { menuOpen = true })
@@ -157,14 +150,14 @@ fun HomeScreen(
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                     listOf(
                         Triple(Ico.HOME, tr("Start", "Home"), 0),
-                        Triple(Ico.DUMBBELL, tr("Übungen", "Exercises"), 1),
-                        Triple(Ico.LIST, tr("Workouts", "Workouts"), 2),
-                        Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 3),
-                        Triple(Ico.BODY, tr("Körper", "Body"), 4)
+                        Triple(Ico.LIST, tr("Workouts", "Workouts"), 1),
+                        Triple(Ico.CALENDAR, tr("Kalender", "Calendar"), 2),
+                        Triple(Ico.BODY, tr("Körper", "Body"), 3),
+                        Triple(Ico.CHAT, tr("Fragen", "Ask"), -1) // kein Tab: öffnet den Bildschirm „Fragen“
                     ).forEach { (icon, label, i) ->
                         NavigationBarItem(
                             selected = tab == i,
-                            onClick = { onTab(i) },
+                            onClick = { if (i < 0) onBot() else onTab(i) },
                             icon = { AppIcon(icon) },
                             label = { Text(label, maxLines = 1, softWrap = false) },
                             // Akzentfarbe statt der Standard-Zweitfarbe
@@ -182,13 +175,6 @@ fun HomeScreen(
         floatingActionButton = {
             when (tab) {
                 1 -> ExtendedFloatingActionButton(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    onClick = onCatalog,
-                    icon = { AppIcon(Ico.ADD) },
-                    text = { Text(tr("Übung", "Exercise")) }
-                )
-                2 -> ExtendedFloatingActionButton(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     onClick = { showNewWorkout = true },
@@ -210,9 +196,8 @@ fun HomeScreen(
             val modifier = Modifier.fillMaxSize()
             when (page) {
                 0 -> DashboardTab(store, modifier, onStartWorkout, onOpenWorkout, onOpenSession, onGoTo = onTab, onNewWorkout = { showNewWorkout = true })
-                1 -> ExerciseGrid(store, modifier, listFilter, onListFilter, listUi, onOpen, onCatalog)
-                2 -> WorkoutList(store, modifier, onOpenWorkout, onNew = { showNewWorkout = true }, onStart = onStartWorkout)
-                3 -> CalendarTab(store, modifier, calMonth, onCalMonth, calDay, onCalDay, onOpenSession)
+                1 -> WorkoutList(store, modifier, onOpenWorkout, onNew = { showNewWorkout = true }, onStart = onStartWorkout, onFree = onFree)
+                2 -> CalendarTab(store, modifier, calMonth, onCalMonth, calDay, onCalDay, onOpenSession)
                 else -> BodyTab(store, modifier)
             }
         }
@@ -292,6 +277,41 @@ fun ProfileSettings(store: GymStore) {
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.primary
     )
+}
+
+/**
+ * „Freies Training“: fest oben in der Workout-Liste, nicht löschbar (kein echtes Workout). Zeigt „Meine Übungen“
+ * als Kacheln (früher Tab „Übungen“); Sätze ohne Workout zählen als freies Training des Tages. Web: freeTrainingScreen in home.js.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FreeTrainingScreen(
+    store: GymStore,
+    filter: ExerciseFilter,
+    onFilter: (ExerciseFilter) -> Unit,
+    onOpen: (String) -> Unit,
+    onCatalog: () -> Unit,
+    onBack: () -> Unit
+) {
+    val ui = rememberFilterUi(filter)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(tr("Freies Training", "Free workout")) },
+                navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
+                actions = { if (store.exercises.isNotEmpty()) FilterActions(ui, filter, onFilter) }
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                onClick = onCatalog,
+                icon = { AppIcon(Ico.ADD) },
+                text = { Text(tr("Übung", "Exercise")) }
+            )
+        }
+    ) { padding -> ExerciseGrid(store, Modifier.padding(padding).fillMaxSize(), filter, onFilter, ui, onOpen, onCatalog) }
 }
 
 /** Alle eigenen Übungen als Kacheln, gruppiert nach Kategorie. */

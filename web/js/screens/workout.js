@@ -22,14 +22,30 @@ const sortedGroups = names => [...new Set(names.map(n => store.groupOf(n)))].sor
 
 // ---------- Tab „Workouts“ ----------
 
+/** Fester Eintrag „Freies Training“ oben in der Workout-Liste (wie FreeTrainingCard in WorkoutScreens.kt). */
+function freeTrainingCard() {
+  const byDay = store.freeSetsByDay();
+  const lastDay = byDay.size ? Math.max(...byDay.keys()) : null;
+  const last = lastDay != null ? Math.max(...byDay.get(lastDay).map(s => s.time)) : null;
+  return h('div', { class: 'card workout-card free-card', role: 'button', tabindex: 0, onclick: () => go({ free: true }) },
+    h('span', { class: 'free-icon' }, icon('dumbbell', 26)),
+    h('div', { class: 'grow' },
+      h('h2', null, tr('Freies Training', 'Free workout')),
+      h('small', null, tr('Einzelne Übungen ohne festen Plan', 'Single exercises without a fixed plan')),
+      h('small', { class: 'free-meta' }, plural(store.exercises.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) +
+        (last ? tr(' · zuletzt ', ' · last ') + fmtDate(last) : ''))),
+    icon('chevron'));
+}
+
 export function workoutList(onStartWorkout) {
   if (!store.workouts.length) {
     return h('div', { class: 'pad stack' },
+      freeTrainingCard(),
       h('p', null, tr('Noch keine Workouts. Ein Workout fasst mehrere Übungen zusammen, z. B. „Push-Tag“ oder „Beine“.',
         'No workouts yet. A workout groups several exercises, e.g. "Push day" or "Legs".')),
       h('div', null, h('button', { class: 'btn', onclick: newWorkoutDialog }, tr('Workout anlegen', 'Create workout'))));
   }
-  return h('div', { class: 'stack pad list-bottom' }, store.workouts.map(w => {
+  return h('div', { class: 'stack pad list-bottom' }, freeTrainingCard(), store.workouts.map(w => {
     const last = store.sessionsFor(w.id)[0];
     // div statt button, weil ▶ darin ein eigener Knopf ist (Knöpfe dürfen nicht verschachtelt sein)
     return h('div', { class: 'card workout-card', role: 'button', tabindex: 0, onclick: () => go({ workoutId: w.id }) },

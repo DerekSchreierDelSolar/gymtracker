@@ -2,6 +2,7 @@ package com.example.gymtracker
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,9 +39,11 @@ import androidx.compose.ui.unit.dp
 
 /** Tab „Workouts“: Liste aller Workouts. */
 @Composable
-fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onNew: () -> Unit, onStart: (Long) -> Unit) {
+fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onNew: () -> Unit, onStart: (Long) -> Unit, onFree: () -> Unit) {
     if (store.workouts.isEmpty()) {
-        Column(modifier.padding(16.dp)) {
+        Column(modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            FreeTrainingCard(store, onFree)
+            Spacer(Modifier.height(16.dp))
             Text(
                 tr(
                     "Noch keine Workouts. Ein Workout fasst mehrere Übungen zusammen, z. B. „Push-Tag“ oder „Beine“.",
@@ -57,6 +60,7 @@ fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onN
         contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        item(key = "free") { FreeTrainingCard(store, onFree) }
         items(store.workouts, key = { it.id }) { w ->
             Card(
                 Modifier
@@ -97,6 +101,48 @@ fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onN
                     } else AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
+        }
+    }
+}
+
+/**
+ * Fester Eintrag „Freies Training“ oben in der Workout-Liste (kein echtes Workout, daher nicht löschbar):
+ * öffnet FreeTrainingScreen mit allen eigenen Übungen. Web: freeTrainingCard in workout.js.
+ */
+@Composable
+private fun FreeTrainingCard(store: GymStore, onClick: () -> Unit) {
+    val last = store.freeSetsByDay().maxByOrNull { it.key }?.value?.maxOf { it.time }
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) { AppIcon(Ico.DUMBBELL, tint = MaterialTheme.colorScheme.onPrimary) }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(tr("Freies Training", "Free workout"), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                Text(
+                    tr("Einzelne Übungen ohne festen Plan", "Single exercises without a fixed plan"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Text(
+                    plural(store.exercises.size, tr("Übung", "exercise"), tr("Übungen", "exercises")) +
+                        (last?.let { tr(" · zuletzt ", " · last ") + fmtDate(it) } ?: ""),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f)
+                )
+            }
+            AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSecondaryContainer)
         }
     }
 }

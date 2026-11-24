@@ -1,4 +1,5 @@
-// Startseite mit 5 Tabs – entspricht HomeScreen.kt, DashboardTab.kt, CalendarTab.kt, BodyTab.kt („Fragen“ ist ein eigener Bildschirm).
+// Startseite mit 4 Tabs – entspricht HomeScreen.kt, DashboardTab.kt, CalendarTab.kt, BodyTab.kt („Fragen“ = Knopf in der Navigation,
+// eigener Bildschirm; die frühere Übungsliste ist der Bildschirm „Freies Training“ = freeTrainingScreen).
 
 import { store } from '../store.js';
 import { fmtKg, fmtVol, fmtWU, wUnit, toUnit, parseW, isLb, weightUnit,
@@ -29,38 +30,51 @@ import { filterActions, filterBar, matches, noFilterResults } from '../filter.js
 
 const TABS = () => [
   ['home', tr('Start', 'Home'), tr('Übersicht', 'Overview')],
-  ['dumbbell', tr('Übungen', 'Exercises'), tr('Übungen', 'Exercises')],
   ['list', tr('Workouts', 'Workouts'), tr('Workouts', 'Workouts')],
   ['calendar', tr('Kalender', 'Calendar'), tr('Kalender', 'Calendar')],
   ['body', tr('Körper', 'Body'), tr('Körper', 'Body')],
 ];
 
 export function homeScreen(onStartWorkout) {
-  const tab = Math.min(nav.tab, 4); // früher gab es Tab 5 („Fragen“) – alte gespeicherte Zustände abfangen
-  const setTab = i => { if (i >= 0 && i < 5) update({ tab: i, menuOpen: false }); };
-  const content = [dashboardTab, exerciseGrid, workoutList, calendarTab, bodyTab][tab](onStartWorkout);
+  const tab = Math.min(nav.tab, 3); // früher gab es mehr Tabs – alte gespeicherte Zustände abfangen
+  const setTab = i => { if (i >= 0 && i < 4) update({ tab: i, menuOpen: false }); };
+  const content = [dashboardTab, workoutList, calendarTab, bodyTab][tab](onStartWorkout);
   const wrap = h('div', { class: 'tab-page' }, content);
   onSwipe(wrap, () => setTab(tab + 1), () => setTab(tab - 1));
 
   return screen({
     title: TABS()[tab][2], large: true, key: 'tab-' + tab, // nur der Bereichsname (ohne App-Namen darunter)
     actions: [
-      tab === 1 && store.exercises.length ? filterActions('list') : null,
-      // Wiki und Fragen immer direkt erreichbar (wie HomeScreen.kt)
+      // Wiki immer direkt erreichbar, „Fragen“ unten in der Navigation (wie HomeScreen.kt)
       iconBtn('book', () => go({ wiki: true }), { label: tr('Wiki', 'Wiki') }),
-      iconBtn('chat', () => go({ bot: true }), { label: tr('Fragen', 'Ask') }),
       h('div', { class: 'menu-anchor' },
         iconBtn('more', () => update({ menuOpen: !nav.menuOpen }), { label: tr('Menü', 'Menu') }),
         nav.menuOpen ? menu() : null),
     ],
-    top: tab === 1 && store.exercises.length ? filterBar('list', exerciseGroups(), exerciseEquipment()) : null,
     content: wrap,
-    fab: tab === 1 ? fab(tr('Übung', 'Exercise'), 'add', () => go({ catalog: true }))
-      : tab === 2 ? fab(tr('Workout', 'Workout'), 'add', newWorkoutDialog) : null,
+    fab: tab === 1 ? fab(tr('Workout', 'Workout'), 'add', newWorkoutDialog) : null,
 
-    bottom: h('nav', { class: 'bottom-nav' }, TABS().map(([ico, label], i) =>
-      h('button', { class: ['nav-item', i === tab && 'selected'], onclick: () => setTab(i) },
-        h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label)))),
+    bottom: h('nav', { class: 'bottom-nav' },
+      TABS().map(([ico, label], i) =>
+        h('button', { class: ['nav-item', i === tab && 'selected'], onclick: () => setTab(i) },
+          h('span', { class: 'nav-icon' }, icon(ico)), h('span', null, label))),
+      // kein Tab: öffnet den Bildschirm „Fragen“
+      h('button', { class: 'nav-item', onclick: () => go({ bot: true }) },
+        h('span', { class: 'nav-icon' }, icon('chat')), h('span', null, tr('Fragen', 'Ask')))),
+  });
+}
+
+/**
+ * „Freies Training“: fest oben in der Workout-Liste, nicht löschbar (kein echtes Workout); zeigt „Meine Übungen“ als Kacheln
+ * (früher Tab „Übungen“). Sätze ohne Workout zählen als freies Training des Tages. Wie FreeTrainingScreen in HomeScreen.kt.
+ */
+export function freeTrainingScreen() {
+  return screen({
+    title: tr('Freies Training', 'Free workout'), back: true, key: 'free',
+    actions: [store.exercises.length ? filterActions('list') : null],
+    top: store.exercises.length ? filterBar('list', exerciseGroups(), exerciseEquipment()) : null,
+    content: exerciseGrid(),
+    fab: fab(tr('Übung', 'Exercise'), 'add', () => go({ catalog: true })),
   });
 }
 

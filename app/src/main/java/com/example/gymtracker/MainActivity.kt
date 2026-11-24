@@ -92,7 +92,8 @@ fun GymApp(store: GymStore) {
     var showCatalog by rememberSaveable { mutableStateOf(false) }
     var showWiki by rememberSaveable { mutableStateOf(false) }
     var showSettings by rememberSaveable { mutableStateOf(false) } // Einstellungen (SettingsScreen.kt)
-    var showBot by rememberSaveable { mutableStateOf(false) }   // „Fragen“ (früher ein Tab, jetzt über ⋮ / Wiki)
+    var showBot by rememberSaveable { mutableStateOf(false) }   // „Fragen“ (Knopf in der Navigation unten, Wiki)
+    var showFree by rememberSaveable { mutableStateOf(false) }  // „Freies Training“ = eigene Übungen (früher Tab „Übungen“)
     var workoutId by rememberSaveable { mutableStateOf<Long?>(null) }
     // Reiter im Workout (0 = Übungen, 1 = Überblick); liegt hier, damit er beim Zurückkehren aus Übung/Training erhalten bleibt
     var workoutTab by rememberSaveable(workoutId) { mutableIntStateOf(0) }
@@ -126,7 +127,7 @@ fun GymApp(store: GymStore) {
     // bleiben, wenn man aus dem Kalender eine Trainingsübersicht öffnet und zurückkommt.
     var calMonth by rememberSaveable { mutableIntStateOf(monthIndex(System.currentTimeMillis())) }
     var calDay by rememberSaveable { mutableIntStateOf(dayKey(System.currentTimeMillis())) }
-    // Filter für Übungsliste und Katalog (getrennt). Hier oben gehalten, damit sie erhalten
+    // Filter für Übungsliste (Freies Training) und Katalog (getrennt). Hier oben gehalten, damit sie erhalten
     // bleiben, wenn man eine Übung öffnet und zurückkommt.
     var listFilter by remember { mutableStateOf(ExerciseFilter()) }
     var catalogFilter by remember { mutableStateOf(ExerciseFilter()) }
@@ -180,7 +181,7 @@ fun GymApp(store: GymStore) {
 
     val trainingVisible = start != null && session != null && trainingOpen
     val homeVisible = !trainingVisible && summary == null && ex == null && workout == null &&
-        !showCatalog && !showBot && !showWiki && !showSettings
+        !showCatalog && !showBot && !showWiki && !showSettings && !showFree
     val showBar = start != null && trainingWorkout != null && !trainingVisible
     val bar: @Composable () -> Unit = {
         TrainingBar(trainingWorkout?.name ?: "", start ?: 0L, restEnd, onOpen = { trainingOpen = true })
@@ -279,12 +280,21 @@ fun GymApp(store: GymStore) {
                     BackHandler { showWiki = false }
                     WikiScreen(onBack = { showWiki = false }, onAsk = { showBot = true })
                 }
+                // unter Katalog und Übungsdetail, damit „Zurück“ von dort wieder hierher führt
+                showFree -> {
+                    BackHandler { showFree = false }
+                    FreeTrainingScreen(
+                        store, listFilter, onFilter = { listFilter = it },
+                        onOpen = { current = it },
+                        onCatalog = { showCatalog = true },
+                        onBack = { showFree = false }
+                    )
+                }
                 else -> HomeScreen(
                     store,
                     tab = tab,
                     onTab = { tab = it },
-                    onOpen = { current = it },
-                    onCatalog = { showCatalog = true },
+                    onFree = { showFree = true },
                     onWiki = { showWiki = true },
                     onBot = { showBot = true },
                     onSettings = { showSettings = true },
@@ -295,8 +305,6 @@ fun GymApp(store: GymStore) {
                     calDay = calDay,
                     onCalDay = { calDay = it },
                     onOpenSession = { summaryId = it },
-                    listFilter = listFilter,
-                    onListFilter = { listFilter = it },
                     // Schnellstart (Dashboard, ▶ in der Workout-Liste): Training direkt starten
                     onStartWorkout = { id -> startTraining(id) },
                     trainingBar = if (showBar) bar else null

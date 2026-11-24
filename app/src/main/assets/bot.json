@@ -17,8 +17,8 @@
     },
     {
       "keys": ["uebung entfernen", "uebung loeschen", "entfernen", "ausblenden", "remove exercise", "delete exercise", "remove", "hide", "retirer exercice", "masquer", "rimuovere esercizio", "nascondere", "quitar ejercicio", "ocultar", "egzersizi kaldir", "gizle"],
-      "a": ["Im Tab „Übungen“ eine Kachel gedrückt halten: Ein Menü erscheint mit „Öffnen“, „Zu Workout hinzufügen“ und „Aus der Liste entfernen“. Entfernen nimmt die Übung nur aus deiner Liste (unten „Rückgängig“) – sie bleibt in deinen Workouts, und der Verlauf bleibt erhalten. Über den Katalog kannst du sie wieder hinzufügen. Ganz löschen (mit allen Sätzen) geht in der Übung oben über das Papierkorb-Symbol.",
-            "In the \"Exercises\" tab long-press a tile: a menu offers \"Open\", \"Add to workout\" and \"Remove from list\". Removing only takes it off your list (\"Undo\" at the bottom) – it stays in your workouts, and your history is kept. Add it again from the catalog. To delete it completely (with all sets), open the exercise and use the trash icon at the top."]
+      "a": ["Unter „Workouts“ → „Freies Training“ eine Kachel gedrückt halten: Ein Menü erscheint mit „Öffnen“, „Zu Workout hinzufügen“ und „Aus der Liste entfernen“. Entfernen nimmt die Übung nur aus deiner Liste (unten „Rückgängig“) – sie bleibt in deinen Workouts, und der Verlauf bleibt erhalten. Über den Katalog kannst du sie wieder hinzufügen. Ganz löschen (mit allen Sätzen) geht in der Übung oben über das Papierkorb-Symbol.",
+            "Under \"Workouts\" → \"Free workout\" long-press a tile: a menu offers \"Open\", \"Add to workout\" and \"Remove from list\". Removing only takes it off your list (\"Undo\" at the bottom) – it stays in your workouts, and your history is kept. Add it again from the catalog. To delete it completely (with all sets), open the exercise and use the trash icon at the top."]
     },
     {
       "keys": ["notiz", "notizen", "note", "notes", "kommentar", "nota", "notas", "notlar", "not ekle"],
@@ -87,8 +87,8 @@
     },
     {
       "keys": ["katalog", "uebungskatalog", "uebung hinzufuegen", "catalog", "add exercise", "catalogue", "ajouter exercice", "catalogo", "aggiungere esercizio", "anadir ejercicio", "egzersiz ekle"],
-      "a": ["Der Katalog hat 177 Übungen. Im Tab „Übungen“ unten rechts auf „＋ Übung“ – dann Übungen antippen, um sie zu deiner Liste hinzuzufügen. Suche und Filter (Muskelgruppe, Gerät) helfen beim Finden.",
-            "The catalog has 177 exercises. In the \"Exercises\" tab tap \"＋ Exercise\" – then tap exercises to add them to your list. Search and filters (muscle group, equipment) help you find them."]
+      "a": ["Der Katalog hat 177 Übungen. Unter „Workouts“ → „Freies Training“ unten rechts auf „＋ Übung“ – dann Übungen antippen, um sie zu deiner Liste hinzuzufügen. Suche und Filter (Muskelgruppe, Gerät) helfen beim Finden.",
+            "The catalog has 177 exercises. Under \"Workouts\" → \"Free workout\" tap \"＋ Exercise\" – then tap exercises to add them to your list. Search and filters (muscle group, equipment) help you find them."]
     },
     {
       "keys": ["wiki", "anleitung", "erklaerung", "guide", "explication", "spiegazione", "explicacion", "aciklama", "rehber"],
@@ -167,8 +167,8 @@
     },
     {
       "keys": ["favorit", "favoriten", "lieblingsuebung", "lieblingsuebungen", "stern", "markieren", "favorite", "favorites", "star", "oben anzeigen", "favori", "favoris", "etoile", "preferito", "preferiti", "stella", "favorito", "favoritos", "estrella", "favoriler", "yildiz"],
-      "a": ["Übungen kannst du als Favorit markieren: Kachel im Tab „Übungen“ gedrückt halten → „Als Favorit markieren“, oder in der Übung oben auf den Stern ☆ tippen. Favoriten tragen einen ★ (im Tab „Übungen“ klein oben rechts auf der Kachel). Beim Bearbeiten eines Workouts stehen sie als eigener Abschnitt „Favoriten“ oben, im Katalog und bei der Ziel-Auswahl zuerst. Nochmal auf den Stern tippen entfernt den Favoriten wieder.",
-            "You can mark exercises as favorites: long-press a tile in the \"Exercises\" tab → \"Mark as favorite\", or tap the star ☆ at the top of an exercise. Favorites get a ★ (in the \"Exercises\" tab a small one at the top right of the tile). When editing a workout they have their own \"Favorites\" section at the top; in the catalog and the goal picker they come first. Tap the star again to remove it."]
+      "a": ["Übungen kannst du als Favorit markieren: Kachel unter „Workouts“ → „Freies Training“ gedrückt halten → „Als Favorit markieren“, oder in der Übung oben auf den Stern ☆ tippen. Favoriten tragen einen ★ (bei „Freies Training“ klein oben rechts auf der Kachel). Beim Bearbeiten eines Workouts stehen sie als eigener Abschnitt „Favoriten“ oben, im Katalog und bei der Ziel-Auswahl zuerst. Nochmal auf den Stern tippen entfernt den Favoriten wieder.",
+            "You can mark exercises as favorites: long-press a tile under \"Workouts\" → \"Free workout\" → \"Mark as favorite\", or tap the star ☆ at the top of an exercise. Favorites get a ★ (in \"Free workout\" a small one at the top right of the tile). When editing a workout they have their own \"Favorites\" section at the top; in the catalog and the goal picker they come first. Tap the star again to remove it."]
     },
     {
       "keys": ["griff", "griffe", "griffbreite", "breiter griff", "enger griff", "v griff", "untergriff", "obergriff", "parallelgriff", "seil", "grip", "wide grip", "close grip", "v bar", "underhand", "rope", "prise", "prise large", "prise serree", "corde", "presa", "presa larga", "presa stretta", "corda", "agarre", "agarre ancho", "agarre cerrado", "cuerda", "tutus", "genis tutus", "dar tutus", "halat"],
@@ -207,8 +207,8 @@
     },
     {
       "keys": ["freies training", "ohne workout", "free workout", "free training", "seance libre", "sans workout", "allenamento libero", "entrenamiento libre", "serbest antrenman"],
-      "a": ["Sätze, die du ohne gestartetes Workout einträgst, werden pro Tag als „Freies Training“ zusammengefasst und zählen mit 100 %.",
-            "Sets logged without a started workout are grouped per day as a \"Free workout\" and count as 100%."]
+      "a": ["Ganz oben im Tab „Workouts“ steht „Freies Training“: Dort findest du alle deine Übungen, öffnest eine und trägst Sätze ein – ohne festen Plan. Sätze, die du ohne gestartetes Workout einträgst, werden pro Tag als „Freies Training“ zusammengefasst und zählen mit 100 %.",
+            "At the top of the \"Workouts\" tab you find \"Free workout\": it holds all your exercises – open one and log sets, without a fixed plan. Sets logged without a started workout are grouped per day as a \"Free workout\" and count as 100%."]
     },
     {
       "keys": ["uebersicht", "zusammenfassung", "nach dem training", "summary", "vergleich", "comparison", "resume", "apercu", "comparaison", "panoramica", "confronto", "comparacion", "genel bakis", "karsilastirma"],

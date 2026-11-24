@@ -12,6 +12,7 @@ export const nav = {
   tab: 0,
   exercise: null,        // geöffnete Übung
   catalog: false,
+  free: false,           // Bildschirm „Freies Training“ (eigene Übungen, früher Tab „Übungen“)
   wiki: false,           // Übungs-Wiki geöffnet
   bot: false,            // Bildschirm „Fragen“ geöffnet
   settings: false,       // Einstellungen geöffnet (screens/settings.js)
