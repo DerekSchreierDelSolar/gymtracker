@@ -609,15 +609,14 @@ class GymStore(context: Context) {
         save()
     }
 
-    /** Übung im Workout von Position `from` nach `to` verschieben (für Drag & Drop). */
-    fun moveInWorkout(workoutId: Long, from: Int, to: Int) {
+    /**
+     * Drag & Drop: Reihenfolge + Verbindungen setzen (nur im Speicher; gespeichert wird beim Loslassen per saveNow).
+     * Die Verbindungen berechnet der Aufrufer mit movedLinks() gegenüber dem Stand beim Greifen.
+     */
+    fun reorderWorkout(workoutId: Long, exercises: List<String>, links: Set<String>) {
         val i = workouts.indexOfFirst { it.id == workoutId }
-        if (i < 0) return
-        val list = workouts[i].exercises.toMutableList()
-        if (from !in list.indices || to !in list.indices || from == to) return
-        list.add(to, list.removeAt(from))
-        // Nur im Speicher ändern; gespeichert wird beim Loslassen (saveNow), nicht bei jedem Schritt
-        workouts[i] = workouts[i].copy(exercises = list, links = movedLinks(workouts[i], from, to))
+        if (i < 0 || exercises.toSet() != workouts[i].exercises.toSet()) return
+        workouts[i] = workouts[i].copy(exercises = exercises, links = links)
     }
 
     /** Aktuellen Stand sofort in die Datei schreiben. */

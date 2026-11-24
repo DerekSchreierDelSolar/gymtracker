@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 // ---------- Workouts ----------
 
@@ -216,7 +218,7 @@ fun WorkoutScreen(
     onTab: (Int) -> Unit = {}
 ) {
     var confirmDelete by remember { mutableStateOf(false) }
-    val history = store.sessionsFor(workout.id)
+
 
     // ----- Supersatz bilden: Auswahlmodus (Kästchen statt Griff, unten „Verbinden“) -----
     var selecting by rememberSaveable(workout.id) { mutableStateOf(false) }
@@ -227,56 +229,94 @@ fun WorkoutScreen(
     // ----- Drag & Drop zum Umsortieren (Liste) -----
     val listState = rememberLazyListState()
     val overviewState = rememberLazyListState()
+    // Prinzip: Gemerkt wird nur, wo die Zeile beim Greifen stand (dragStart, Bildschirm-Koordinaten der Liste)
+    // und wie weit der Finger seitdem gewandert ist (dragDelta). Die Verschiebung der Zeile wird beim Zeichnen
+    // aus dem AKTUELLEN Layout berechnet (dragShift) – so bleibt sie unter dem Finger, egal wann Tausch und
+    // Neuaufbau passieren (kein Nachrechnen mit veralteten Positionen mehr).
     var dragKey by remember { mutableStateOf<String?>(null) }  // gerade gezogene Übung
-    var dragY by remember { mutableFloatStateOf(0f) }          // senkrechte Verschiebung gegenüber ihrem Listenplatz
+    var dragStart by remember { mutableFloatStateOf(0f) }
+    var dragDelta by remember { mutableFloatStateOf(0f) }
+    // Stand beim Greifen: Supersatz-Verbindungen werden immer gegenüber diesem Stand berechnet (movedLinks),
+    // sonst würde schon das Vorbeiziehen an einem Supersatz ihn auflösen
+    var dragOrigin by remember { mutableStateOf<Workout?>(null) }
+    // Loslassen: Zeile gleitet von der Finger-Position an ihren Platz
+    var settleKey by remember { mutableStateOf<String?>(null) }
+    val settle = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-    // Die Gesten-Coroutine läuft länger als eine Recomposition – mit rememberUpdatedState
-    // sieht sie trotzdem immer die aktuelle Reihenfolge.
-    val currentExercises by rememberUpdatedState(workout.exercises)
+
+    /** Aktuelle Übungsliste direkt aus dem Store (die Gesten-Coroutine überdauert Recompositions). */
+    fun liveExercises(): List<String> = store.workouts.firstOrNull { it.id == workout.id }?.exercises ?: emptyList()
+
+    /** Verschiebung der Zeile gegenüber ihrem Platz im aktuellen Layout. */
+    fun dragShift(name: String): Float {
+        val cur = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == name } ?: return 0f
+        return dragStart + dragDelta - cur.offset
+    }
 
     fun startDrag(name: String) {
         if (selecting) return // im Auswahlmodus wird nicht umsortiert
+        val cur = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == name } ?: return
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        settleKey = null
+        dragOrigin = store.workouts.firstOrNull { it.id == workout.id }
+        dragStart = cur.offset.toFloat()
+        dragDelta = 0f
         dragKey = name
-        dragY = 0f
     }
 
-    /** Finger bewegt: Zeile mitziehen; überdeckt sie den Nachbarn zur Hälfte → Plätze tauschen. */
-    fun dragBy(name: String, dy: Float) {
-        if (dragKey != name) return
-        dragY += dy
+    /** Überdeckt die gezogene Zeile den Nachbarn zur Hälfte → Plätze tauschen. */
+    fun checkSwap(name: String) {
+        val origin = dragOrigin ?: return
+        val exercises = liveExercises()
         val items = listState.layoutInfo.visibleItemsInfo
+        // Erst wieder tauschen, wenn das Layout den letzten Tausch schon zeigt (sonst doppelte/falsche Tausche)
+        val shown = items.mapNotNull { it.key as? String }.filter { it in exercises }
+        val first = exercises.indexOf(shown.firstOrNull() ?: return)
+        if (first < 0 || first + shown.size > exercises.size || exercises.subList(first, first + shown.size) != shown) return
         val cur = items.firstOrNull { it.key == name } ?: return
-        val idx = currentExercises.indexOf(name)
-        val neighbor = when {
-            dragY > 0 -> currentExercises.getOrNull(idx + 1)
-            dragY < 0 -> currentExercises.getOrNull(idx - 1)
-            else -> null
-        } ?: return
-        val t = items.firstOrNull { it.key == neighbor } ?: return
-        // Vorderkante der gezogenen Zeile (unten beim Ziehen nach unten, oben nach oben) über der Mitte des Nachbarn?
-        val edge = if (dragY > 0) cur.offset + cur.size + dragY else cur.offset + dragY
-        val passed = if (dragY > 0) edge > t.offset + t.size / 2f else edge < t.offset + t.size / 2f
-        if (!passed) return
+        val idx = exercises.indexOf(name)
+        val top = dragStart + dragDelta
+        val below = exercises.getOrNull(idx + 1)?.let { n -> items.firstOrNull { it.key == n } }
+        val above = exercises.getOrNull(idx - 1)?.let { n -> items.firstOrNull { it.key == n } }
+        val target = when {
+            below != null && top + cur.size > below.offset + below.size / 2f -> idx + 1
+            above != null && top < above.offset + above.size / 2f -> idx - 1
+            else -> return
+        }
+        val neighbor = exercises[target]
         // LazyColumn hält ihre Position am obersten sichtbaren Eintrag (per key) fest. Wird der getauscht,
         // würde die Liste ihm hinterherscrollen – daher die aktuelle Position ausdrücklich beibehalten.
         val firstIndex = listState.firstVisibleItemIndex
         val firstOffset = listState.firstVisibleItemScrollOffset
         val firstKey = items.firstOrNull()?.key
-        store.moveInWorkout(workout.id, idx, currentExercises.indexOf(neighbor))
+        val order = exercises.toMutableList().apply { add(target, removeAt(idx)) }
+        val from = origin.exercises.indexOf(name)
+        val links = if (from < 0) origin.links else movedLinks(origin, from, target)
+        store.reorderWorkout(workout.id, order, links)
         if (firstKey == name || firstKey == neighbor) listState.requestScrollToItem(firstIndex, firstOffset)
-        // Die Zeile springt im Layout an den neuen Platz – Verschiebung ausgleichen, damit sie unter dem Finger bleibt
-        val newOffset = if (dragY > 0) t.offset + t.size - cur.size else t.offset
-        dragY -= newOffset - cur.offset
+    }
+
+    fun dragBy(name: String, dy: Float) {
+        if (dragKey != name) return
+        dragDelta += dy
+        checkSwap(name)
     }
 
     fun endDrag() {
         // onDragCancel kommt auch, wenn Compose die Gesten-Coroutine abbricht (z. B. Bildschirm verlassen),
         // ohne dass gezogen wurde → nur nach echtem Ziehen als „benutzt“ merken
-        if (dragKey == null) return
+        val name = dragKey ?: return
         Hints.used(Hints.DRAG)
+        val shift = dragShift(name)
         dragKey = null
-        dragY = 0f
+        dragOrigin = null
+        settleKey = name
+        scope.launch {
+            settle.snapTo(shift)
+            settle.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow))
+            settleKey = null
+        }
         store.saveNow()
     }
 
@@ -293,7 +333,7 @@ fun WorkoutScreen(
             withFrameNanos { }
             val info = listState.layoutInfo
             val cur = info.visibleItemsInfo.firstOrNull { it.key == name } ?: continue
-            val top = cur.offset + dragY
+            val top = dragStart + dragDelta   // die Zeile bleibt unter dem Finger, auch wenn die Liste scrollt
             val bottom = top + cur.size
             val start = info.viewportStartOffset.toFloat()
             val end = info.viewportEndOffset - fab
@@ -303,11 +343,8 @@ fun WorkoutScreen(
                 else -> 0f
             }
             if (speed == 0f) continue
-            val scrolled = listState.scrollBy(speed)
-            if (scrolled != 0f) {
-                // Inhalt ist um `scrolled` gewandert – Zeile bleibt unter dem Finger, ggf. mit Nachbarn tauschen
-                dragBy(name, scrolled)
-            }
+            // Inhalt wandert unter der Zeile durch → ggf. mit dem Nachbarn tauschen
+            if (listState.scrollBy(speed) != 0f) checkSwap(name)
         }
     }
 
@@ -378,7 +415,7 @@ fun WorkoutScreen(
             .padding(padding)
             .fillMaxSize()
         if (tab == 1) {
-            WorkoutOverview(store, workout, history, overviewState, modifier, onOpenSession)
+            WorkoutOverview(store, workout, store.sessionsFor(workout.id), overviewState, modifier, onOpenSession)
         } else if (workout.exercises.isEmpty()) {
             Column(modifier.padding(16.dp)) {
                 Text(tr("Dieses Workout hat noch keine Übungen.", "This workout has no exercises yet."))
@@ -417,6 +454,7 @@ fun WorkoutScreen(
                 }
                 item(key = name) {
                     val dragging = name == dragKey
+                    val lifted = dragging || name == settleKey
                     // Wichtig: die Modifier-Kette hat immer dieselbe Struktur (nur Werte ändern sich),
                     // sonst würde Compose den pointerInput-Knoten neu anlegen und die Geste abbrechen.
                     WorkoutExerciseRow(
@@ -427,16 +465,20 @@ fun WorkoutScreen(
                         modifier = Modifier
                             // Andere Zeilen gleiten animiert an ihren neuen Platz; die gezogene folgt dem Finger
                             .animateItem(
-                                placementSpec = if (dragging) null
+                                placementSpec = if (lifted) null
                                 else spring(stiffness = Spring.StiffnessMediumLow, visibilityThreshold = IntOffset.VisibilityThreshold)
                             )
-                            .zIndex(if (dragging) 1f else 0f)
+                            .zIndex(if (lifted) 1f else 0f)
                             .graphicsLayer {
-                                if (dragging) {
-                                    translationY = dragY
-                                    scaleX = 1.02f; scaleY = 1.02f
-                                    shadowElevation = 24f
+                                // nur in der Zeichenphase gelesen → Fingerbewegung baut nichts neu auf
+                                translationY = when {
+                                    dragging -> dragShift(name)
+                                    name == settleKey -> settle.value
+                                    else -> 0f
                                 }
+                                val s = if (dragging) 1.02f else 1f
+                                scaleX = s; scaleY = s
+                                shadowElevation = if (lifted) 24f else 0f
                             }
                             // ganze Zeile: erst gedrückt halten, dann ziehen
                             .pointerInput(name) {
