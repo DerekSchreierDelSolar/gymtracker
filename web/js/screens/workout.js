@@ -373,7 +373,7 @@ export function workoutPickerScreen(w) {
       muted(tr('Wähle eine Kategorie – oder suche oben direkt nach einer Übung.', 'Pick a category – or search for an exercise at the top.'), 'small'),
       // Favoriten (★) vor den Kategorien – aufklappbar, standardmäßig zu (wie WorkoutPickerScreen)
       (() => {
-        const favs = sortByName(visible.filter(isFav), exName);
+        const favs = sortByName(visible.filter(n => isFav(n) && !w.exercises.includes(n)), exName); // schon im Workout → steht oben
         const toggle = () => { pickFavsOpen = !pickFavsOpen; rerender(); };
         return favs.length ? [favoritesHeader({ count: favs.length, expanded: pickFavsOpen, onToggle: toggle }),
           pickFavsOpen ? favs.map(row) : null, h('h2', { class: 'section' }, tr('Kategorien', 'Categories'))] : null;

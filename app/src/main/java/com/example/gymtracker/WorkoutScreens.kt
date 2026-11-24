@@ -791,7 +791,7 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                         }
                     }
                     // Favoriten (★) vor den Kategorien – aufklappbar, standardmäßig zu (sonst schieben sie die Kategorien weg)
-                    val favs = visible.filter { store.isFavorite(it) }.sortedByName { exName(it) }
+                    val favs = visible.filter { store.isFavorite(it) && it !in workout.exercises }.sortedByName { exName(it) } // schon im Workout → steht oben
                     if (favs.isNotEmpty()) {
                         item(key = "h_fav") { FavoritesHeader(count = favs.size, expanded = favsOpen, onToggle = { favsOpen = !favsOpen }) }
                         if (favsOpen) items(favs, key = { "fav_$it" }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
