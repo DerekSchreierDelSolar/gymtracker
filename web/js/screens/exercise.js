@@ -5,7 +5,7 @@ import { rirLabel, rirChips, rirPrompt, oneRmTable } from '../effort.js';
 import { wikiFor, wikiContent } from '../wiki.js';
 import { musclesOf, muscleEditDialog, muscleSideCard, levelsOf } from '../bodymap.js';
 import { store } from '../store.js';
-import { fmtKg, fmtVol, fmtWU, wUnit, toUnit, parseW, roundPlate, isLb,
+import { fmtKg, fmtVol, fmtWU, wUnit, toUnit, parseW, isLb,
   tr, exName, fmtSet, fmtW, fmtVolume, fmtDate, fmtDateTime, fmtTime, fmtSeconds, plural, isCardio, isTimed, equipmentOf,
   oneRepMax, parseNum, parseIntStrict, startOfToday, groupColor, catalogGroup, dayKey, monthIndex, startOfWeek,
   fmtShortDate, completionColor, SET_TYPES, setTypeOf, setTypeLabel, setTypeShort, setLabels, isWork, isTop,
@@ -81,31 +81,17 @@ export function progressionHint(name, before = startOfToday()) {
 
 // ---------- Eingabe eines Satzes ----------
 
-/** Eingabewerte je Übung (bleiben erhalten, solange die App offen ist); vorbelegt mit dem letzten Satz. */
+/** Eingabewerte je Übung (bleiben erhalten, solange die App offen ist); anfangs leer, nach jedem Satz geleert. */
 const inputs = new Map();
-/**
- * Vorbelegung [Gewicht, Wdh.] für den nächsten Satz (wie setPrefill in ExerciseDetail.kt); sets = neueste zuerst.
- * Aufwärmen: letzter Aufwärmsatz, sonst halbes Arbeitsgewicht (auf 2,5 kg gerundet) × 10.
- * Sonst: letzter Arbeitssatz (Normal/Versagen), Wdh. = Ziel aus dem Trainingsmodus, falls bekannt.
- */
-export function setPrefill(sets, type, goalReps) {
-  const top = sets.find(isTop) ?? sets[0];
-  if (type === 'WARMUP') {
-    const wu = sets.find(x => x.type === 'WARMUP');
-    if (wu) return [wu.weight, wu.reps];
-    if (top) return [roundPlate(top.weight * 0.5), 10];
-  }
-  return [top?.weight ?? null, goalReps ?? top?.reps ?? null];
-}
 
-/** Felder als Text für den Satz-Typ */
-function prefillText(name, type, goalReps) {
-  const [w, r] = setPrefill(store.setsFor(name), type, goalReps);
-  return { weight: w == null ? '' : fmtWU(w), reps: r == null ? '' : String(r) };
+/** Letzter Aufwärmsatz der Übung als Feldtext (nur für den ersten Satz eines Trainings), sonst leer */
+function lastWarmupText(name) {
+  const wu = store.setsFor(name).find(x => x.type === 'WARMUP');
+  return { weight: wu ? fmtWU(wu.weight) : '', reps: wu ? String(wu.reps) : '' };
 }
 
 function inputState(name) {
-  if (!inputs.has(name)) inputs.set(name, { ...prefillText(name, 'NORMAL', null), watchStart: null, type: 'NORMAL' });
+  if (!inputs.has(name)) inputs.set(name, { weight: '', reps: '', watchStart: null, type: 'NORMAL' });
   return inputs.get(name);
 }
 
@@ -118,21 +104,16 @@ const mmss = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')
  * „Aufwärmen“ (wie startWithWarmup in ExerciseDetail.kt); einmal je Training, danach bleibt die Auswahl des Nutzers.
  * Im Übungsdetail (freies Training) = „day-JJJJMMTT“, solange die Übung heute noch keinen Satz hat.
  */
-export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = null) {
+export function setInput(name, onAdded = () => {}, warmupKey = null) {
   const cardio = isCardio(store.groupOf(name));
   const timed = isTimed(name);
   const st = inputState(name);
-  // Neues Training: Typ Aufwärmen und Felder passend vorbelegen (einmal je Training)
+  // Neues Training: Typ Aufwärmen, Felder mit dem letzten Aufwärmsatz vorbelegen (einmal je Training)
   if (warmupKey != null && st.warmupKey !== warmupKey && !cardio && !timed) {
     st.type = 'WARMUP'; st.warmupKey = warmupKey;
-    Object.assign(st, prefillText(name, 'WARMUP', goalReps));
+    Object.assign(st, lastWarmupText(name));
   }
-  // Typ wechseln: unveränderte Felder gehen mit (eigene Eingaben bleiben stehen)
-  const changeType = t => {
-    const p = prefillText(name, st.type ?? 'NORMAL', goalReps);
-    if (st.weight === p.weight && st.reps === p.reps) Object.assign(st, prefillText(name, t, goalReps));
-    st.type = t;
-  };
+  const changeType = t => { st.type = t; };
   const showWeight = !cardio && (!timed || equipmentOf(name) !== 'KOERPER');
   const idBase = 'in-' + name.replace(/\W+/g, '_');
 
@@ -163,7 +144,7 @@ export function setInput(name, onAdded = () => {}, warmupKey = null, goalReps = 
     const added = store.addSet(name, w, r, st.type ?? 'NORMAL');
     // Nach einem Arbeitssatz: freiwillige Abfrage „Wdh. in Reserve“ (effort.js)
     st.rirFor = (st.type ?? 'NORMAL') !== 'WARMUP' && !cardio && !timed ? added.id : null; // Speichern hat schon neu gezeichnet → unten erneut
-    if (st.type === 'WARMUP') Object.assign(st, prefillText(name, 'NORMAL', goalReps)); // nach dem Aufwärmen: Arbeitssatz
+    st.weight = ''; st.reps = ''; // nach jedem Satz leeren
     st.type = 'NORMAL'; // nach jedem Satz wieder „Normal“
     onAdded();
     rerender();

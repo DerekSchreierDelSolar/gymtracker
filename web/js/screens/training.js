@@ -6,7 +6,7 @@ import { heatCard, regionScore } from '../bodymap.js';
 import { store } from '../store.js';
 import { fmtVol,
   tr, exName, fmtSet, fmtW, fmtVolume, fmtKcal, fmtDate, fmtDateTime, fmtDuration, fmtTime, fmtShortDate, plural, isCardio, isTimed,
-  goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort, parseIntStrict,
+  goalCompletion, completionColor, dayKey, fmtSeconds, isWork, isTop, setTypeShort,
 } from '../core.js';
 import { sessionStats, maxHeartRate, heartZoneMinutes, heartZoneNames, setHeartRates } from '../stats.js';
 import { exerciseIconHtml, exerciseImageUrl } from '../pictograms.js';
@@ -285,7 +285,7 @@ function exercisePage(w, start, name) {
       const { next, rest } = supersetNext(w, name, start, warmup);
       if (rest) startRest();
       if (next) update({ trainingIndex: w.exercises.indexOf(next) });
-    }, today.length ? null : start, cardio || timed ? null : parseIntStrict(goal?.[0] ?? '')), // Wdh. wie im Kreis
+    }, today.length ? null : start),
     noteButton(name),
     today.length ? [h('h2', { class: 'section' }, tr('Heute', 'Today')),
       setRows(today, cardio)] : null,

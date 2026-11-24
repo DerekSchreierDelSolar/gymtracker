@@ -429,8 +429,7 @@ fun TrainingExercisePage(
             val strength = !store.groupOf(name).isCardio && !isTimed(name)
             SetInput(
                 store, name, onAdded = onAdded,
-                startWithWarmup = today.isEmpty() && strength,
-                goalReps = if (strength) repsGoal(store, name, start)?.first?.toIntOrNull() else null // gleiche Zahl wie im Kreis
+                startWithWarmup = today.isEmpty() && strength
             )
         }
         item { NoteButton(store, name) }

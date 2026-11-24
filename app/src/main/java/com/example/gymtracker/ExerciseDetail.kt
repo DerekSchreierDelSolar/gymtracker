@@ -27,7 +27,7 @@ import java.util.Date
 
 /**
  * kg + Wdh. (bzw. Minuten bei Cardio, Sekunden bei Zeitübungen) mit Button.
- * Vorbelegt mit dem letzten Satz der Übung.
+ * Felder sind leer und werden nach jedem Satz geleert; nur der erste Aufwärmsatz ist mit dem letzten Aufwärmsatz der Übung vorbelegt.
  * `remember(exercise)` setzt die Felder zurück, sobald eine andere Übung angezeigt wird.
  * `weightOverride`: wird gesetzt, wenn der Nutzer einen Gewichts-Vorschlag übernimmt.
  * `startWithWarmup`: erster Satz ist vorausgewählt „Aufwärmen“ (Training: Übung im Training noch nicht gemacht; freies Training: heute noch nicht).
@@ -38,27 +38,20 @@ fun SetInput(
     exercise: String,
     onAdded: () -> Unit = {},
     weightOverride: Double? = null,
-    startWithWarmup: Boolean = false,
-    goalReps: Int? = null
+    startWithWarmup: Boolean = false
 ) {
     Column { // Stoppuhr, Eingabezeile und −/+ untereinander
     val cardio = store.groupOf(exercise).isCardio
     val timed = isTimed(exercise)
     // Satz-Typ des nächsten Satzes; springt nach jedem Satz auf Normal zurück (erster Satz im Training ggf. Aufwärmen)
     var type by remember(exercise) { mutableStateOf(if (startWithWarmup) SetType.WARMUP else SetType.NORMAL) }
-    // Vorbelegung passend zum Satz-Typ (Aufwärmen leichter, Arbeitssatz mit Wdh.-Ziel)
-    fun prefill(t: SetType): Pair<String, String> {
-        val (w, r) = setPrefill(store.setsFor(exercise), t, goalReps)
-        return (w?.let { fmtWU(it) } ?: "") to (r?.toString() ?: "")
+    // Leer; nur der erste Satz als Aufwärmen bekommt den letzten Aufwärmsatz der Übung (falls es einen gibt)
+    val initial = remember(exercise) {
+        if (!startWithWarmup) "" to "" else store.setsFor(exercise).firstOrNull { it.type == SetType.WARMUP }
+            ?.let { fmtWU(it.weight) to it.reps.toString() } ?: ("" to "")
     }
-    val initial = remember(exercise) { prefill(type) }
     var weightText by remember(exercise) { mutableStateOf(initial.first) }
     var repsText by remember(exercise) { mutableStateOf(initial.second) }
-    // Typ wechseln: unveränderte Felder gehen mit (eigene Eingaben bleiben stehen)
-    fun changeType(t: SetType) {
-        if (weightText to repsText == prefill(type)) prefill(t).let { weightText = it.first; repsText = it.second }
-        type = t
-    }
     // „+“ mit ungültiger Eingabe getippt → Felder rot markieren (bis zum nächsten gültigen Satz)
     var tried by remember(exercise) { mutableStateOf(false) }
     // Ungewöhnlicher Wert (Tippfehler?) → Nachfrage: Gewicht, Wdh. und Hinweistext
@@ -131,8 +124,7 @@ fun SetInput(
     fun add(w: Double, r: Int) {
         val added = store.addSet(exercise, w, r, type)
         rirFor = added.id.takeIf { type != SetType.WARMUP && !cardio && !timed }
-        // Nach dem Aufwärmen: Felder auf den Arbeitssatz umstellen
-        if (type == SetType.WARMUP) prefill(SetType.NORMAL).let { weightText = it.first; repsText = it.second }
+        weightText = ""; repsText = "" // nach jedem Satz leeren
         type = SetType.NORMAL
         setWatch(null)
         tried = false
@@ -142,7 +134,7 @@ fun SetInput(
     Row(verticalAlignment = Alignment.CenterVertically) {
         // Satz-Typ: antippen = nächster Typ (N → A → D → V); bei Cardio nicht sinnvoll
         if (!cardio) {
-            SetTypeButton(type) { changeType(SetType.entries[(type.ordinal + 1) % SetType.entries.size]) }
+            SetTypeButton(type) { type = SetType.entries[(type.ordinal + 1) % SetType.entries.size] }
             Spacer(Modifier.width(8.dp))
         }
         // Gewicht: bei Kraftübungen immer, bei Zeitübungen nur, wenn ein Gerät im Spiel ist
@@ -255,21 +247,6 @@ fun implausibleSet(store: GymStore, exercise: String, weight: Double, reps: Int)
         best == 0.0 && weight > 300 -> tr("${fmtKg(weight)}? Tippfehler?", "${fmtKg(weight)}? Typo?")
         else -> null
     }
-}
-
-/**
- * Vorbelegung (Gewicht, Wdh.) für den nächsten Satz; `sets` = Sätze der Übung, neueste zuerst.
- * Aufwärmen: letzter Aufwärmsatz, sonst halbes Arbeitsgewicht (auf 2,5 kg gerundet) × 10.
- * Sonst: letzter Arbeitssatz (Normal/Versagen), Wdh. = Ziel aus dem Trainingsmodus, falls bekannt.
- * Web: setPrefill in exercise.js.
- */
-fun setPrefill(sets: List<GymSet>, type: SetType, goalReps: Int?): Pair<Double?, Int?> {
-    val top = sets.firstOrNull { it.isTop } ?: sets.firstOrNull()
-    if (type == SetType.WARMUP) {
-        sets.firstOrNull { it.type == SetType.WARMUP }?.let { return it.weight to it.reps }
-        if (top != null) return roundPlate(top.weight * 0.5) to 10
-    }
-    return top?.weight to (goalReps ?: top?.reps)
 }
 
 /** Zwei kleine Knöpfe „− x“ / „+ x“; onStep(−1 oder +1). */
