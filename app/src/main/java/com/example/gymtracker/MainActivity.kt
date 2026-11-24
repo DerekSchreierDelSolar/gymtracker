@@ -117,6 +117,8 @@ fun GymApp(store: GymStore) {
     var startBlocked by remember { mutableStateOf(false) }
     // Tausch nur für das laufende Training: Original → Alternative (HashMap ist Serializable → rememberSaveable)
     var swaps by rememberSaveable { mutableStateOf<Map<String, String>>(HashMap(restored?.swaps.orEmpty())) }
+    // Freies Training (FreeTraining.kt): die im Training hinzugefügten Übungen (ArrayList ist Serializable → rememberSaveable)
+    var freeExercises by rememberSaveable { mutableStateOf<List<String>>(ArrayList(restored?.free.orEmpty())) }
     // Während des Trainings: Workout bearbeiten offen? Wert = Übung, die im Training gerade angezeigt war
     var editInTraining by rememberSaveable { mutableStateOf<String?>(null) }
     // Geöffnete Trainings-Übersicht
@@ -133,10 +135,10 @@ fun GymApp(store: GymStore) {
     var catalogFilter by remember { mutableStateOf(ExerciseFilter()) }
 
     // Laufendes Training bei jeder Änderung dauerhaft merken (bzw. löschen, sobald es beendet ist)
-    LaunchedEffect(trainingStart, trainingWorkoutId, trainingIndex, trainingOpen, restEnd, restTotal, swaps) {
+    LaunchedEffect(trainingStart, trainingWorkoutId, trainingIndex, trainingOpen, restEnd, restTotal, swaps, freeExercises) {
         val s = trainingStart
         val id = trainingWorkoutId
-        TrainingPrefs.save(context, if (s != null && id != null) TrainingState(s, id, trainingIndex, trainingOpen, swaps, restEnd, restTotal) else null)
+        TrainingPrefs.save(context, if (s != null && id != null) TrainingState(s, id, trainingIndex, trainingOpen, swaps, restEnd, restTotal, freeExercises) else null)
     }
 
     val ex = current
@@ -144,7 +146,9 @@ fun GymApp(store: GymStore) {
     // Negative ID = freies Training (wird aus den Sätzen des Tages gebaut)
     val summary = summaryId?.let { if (it < 0) store.freeSession((-it).toInt()) else store.session(it) }
     val start = trainingStart
-    val trainingWorkout = trainingWorkoutId?.let { store.workout(it) }
+    // Freies Training: Workout nur im Speicher, aus den bisher hinzugefügten Übungen
+    val freeRunning = trainingWorkoutId == FREE_WORKOUT_ID
+    val trainingWorkout = trainingWorkoutId?.let { if (it == FREE_WORKOUT_ID) freeWorkout(freeExercises) else store.workout(it) }
     // Nur für dieses Training getauschte Übungen (Original → Alternative); das Workout selbst bleibt unverändert
     val session = trainingWorkout?.let { sessionWorkout(it, swaps, isDeload(store)) }
 
@@ -154,12 +158,21 @@ fun GymApp(store: GymStore) {
         trainingIndex = 0
         trainingOpen = true
         swaps = HashMap()
+        freeExercises = ArrayList()
         editInTraining = null
         restEnd = null
         RestTimer.cancel(context)
     }
     // Workout gelöscht, während das Training minimiert war → Training aufgeben (Sätze bleiben als freies Training)
     if (start != null && trainingWorkout == null) SideEffect { resetTraining() }
+
+    /** Freies Training: Übungen hinzufügen (auch in „Meine Übungen“) und zur ersten davon springen */
+    fun addFree(names: List<String>) {
+        val new = names.filter { it !in freeExercises }
+        new.forEach { store.addExercise(it) }
+        if (new.isNotEmpty()) freeExercises = ArrayList(freeExercises + new)
+        names.firstOrNull()?.let { first -> freeExercises.indexOf(first).takeIf { it >= 0 }?.let { trainingIndex = it } }
+    }
 
     fun startTraining(id: Long) {
         when {
@@ -169,6 +182,7 @@ fun GymApp(store: GymStore) {
                 trainingIndex = 0
                 trainingOpen = true
                 swaps = HashMap()
+                freeExercises = ArrayList()
                 restEnd = null
             }
             trainingWorkoutId == id -> trainingOpen = true // dasselbe Workout: einfach fortsetzen
@@ -204,7 +218,11 @@ fun GymApp(store: GymStore) {
             when {
                 summary != null -> {
                     BackHandler { summaryId = null; celebrateId = null }
-                    SummaryScreen(store, summary, celebrate = summary.id == celebrateId, onDone = { summaryId = null; celebrateId = null })
+                    SummaryScreen(
+                        store, summary, celebrate = summary.id == celebrateId, onDone = { summaryId = null; celebrateId = null },
+                        // „Als Workout speichern“ (freies Training) → neues Workout öffnen
+                        onOpenWorkout = { summaryId = null; celebrateId = null; showFree = false; workoutId = it }
+                    )
                 }
                 // Workout während des laufenden Trainings bearbeiten (Training läuft weiter, Zurück = zurück ins Training)
                 trainingVisible && editInTraining != null -> {
@@ -220,7 +238,8 @@ fun GymApp(store: GymStore) {
                 trainingVisible -> {
                     TrainingScreen(
                         store, session, start,
-                        index = trainingIndex.coerceIn(0, (session.exercises.size - 1).coerceAtLeast(0)),
+                        // freies Training: eine Seite mehr („＋ Übung“)
+                        index = trainingIndex.coerceIn(0, (session.exercises.size - if (freeRunning) 0 else 1).coerceAtLeast(0)),
                         onIndex = { trainingIndex = it },
                         onSwap = { from, to -> swaps = swapTo(swaps, trainingWorkout, from, to) },
                         originalOf = { e -> swaps.entries.firstOrNull { it.value == e }?.key },
@@ -233,11 +252,20 @@ fun GymApp(store: GymStore) {
                             // Übungen, die vor dem Tausch schon Sätze hatten, gehören trotzdem zum Training
                             val withSets = session.copy(exercises = session.exercises + swaps.keys.filter { o ->
                                 o !in session.exercises && store.setsBetween(o, start, Long.MAX_VALUE).isNotEmpty()
-                            })
+                            }).let { w ->
+                                // freies Training: nur Übungen, die wirklich trainiert wurden
+                                if (freeRunning) w.copy(exercises = w.exercises.filter { store.setsBetween(it, start, Long.MAX_VALUE).isNotEmpty() }) else w
+                            }
                             val t = store.finishTraining(withSets, start, end)
                             resetTraining()
                             summaryId = t?.id
                             celebrateId = t?.id
+                        },
+                        free = freeRunning,
+                        onAddExercises = { addFree(it) },
+                        onRemoveExercise = { e ->
+                            freeExercises = ArrayList(freeExercises - e)
+                            trainingIndex = freeExercises.size // bleibt auf „＋ Übung“
                         }
                     )
                 }
@@ -285,7 +313,10 @@ fun GymApp(store: GymStore) {
                     BackHandler { showFree = false }
                     FreeTrainingScreen(
                         store, listFilter, onFilter = { listFilter = it },
-                        onOpen = { current = it },
+                        // läuft ein freies Training: Kachel = Übung ins Training + dorthin
+                        onOpen = { if (freeRunning && start != null) { addFree(listOf(it)); trainingOpen = true } else current = it },
+                        running = freeRunning && start != null,
+                        onStart = { startTraining(FREE_WORKOUT_ID) },
                         onCatalog = { showCatalog = true },
                         onBack = { showFree = false }
                     )

@@ -505,6 +505,23 @@ class GymStore {
     return w;
   }
 
+  /**
+   * Workout aus einem Training anlegen („Als Workout speichern“ nach einem freien Training, free.js):
+   * Übungen in der Reihenfolge des Trainings, Ziel-Sätze = dort gemachte Arbeitssätze.
+   */
+  addWorkoutFrom(name, exercises, targets) {
+    const n = String(name).trim();
+    if (!n || !exercises.length) return null;
+    exercises.forEach(e => this.addExercise(e));
+    const w = {
+      id: Date.now(), name: n, exercises: [...exercises],
+      targets: Object.fromEntries(Object.entries(targets).map(([e, t]) => [e, Math.max(0, Math.min(20, t))])),
+    };
+    this.workouts.push(w);
+    this.#save();
+    return w;
+  }
+
   deleteWorkout(id) {
     this.workouts = this.workouts.filter(w => w.id !== id);
     this.#save();

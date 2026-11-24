@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onNew: () -> Unit, onStart: (Long) -> Unit, onFree: () -> Unit) {
     if (store.workouts.isEmpty()) {
         Column(modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            FreeTrainingCard(store, onFree)
+            FreeTrainingCard(store, onFree, onStart = { onStart(FREE_WORKOUT_ID) })
             Spacer(Modifier.height(16.dp))
             Text(
                 tr(
@@ -60,7 +60,7 @@ fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onN
         contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        item(key = "free") { FreeTrainingCard(store, onFree) }
+        item(key = "free") { FreeTrainingCard(store, onFree, onStart = { onStart(FREE_WORKOUT_ID) }) }
         items(store.workouts, key = { it.id }) { w ->
             Card(
                 Modifier
@@ -110,8 +110,9 @@ fun WorkoutList(store: GymStore, modifier: Modifier, onOpen: (Long) -> Unit, onN
  * öffnet FreeTrainingScreen mit allen eigenen Übungen. Web: freeTrainingCard in workout.js.
  */
 @Composable
-private fun FreeTrainingCard(store: GymStore, onClick: () -> Unit) {
-    val last = store.freeSetsByDay().maxByOrNull { it.key }?.value?.maxOf { it.time }
+private fun FreeTrainingCard(store: GymStore, onClick: () -> Unit, onStart: () -> Unit) {
+    val lastSession = lastFreeSession(store)
+    val last = lastSession?.start
     Card(
         Modifier
             .fillMaxWidth()
@@ -141,8 +142,18 @@ private fun FreeTrainingCard(store: GymStore, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f)
                 )
+                // Vorschau: was letztes Mal dran war
+                lastSession?.exercises?.distinct()?.takeIf { it.isNotEmpty() }?.let { ex ->
+                    Text(
+                        tr("Zuletzt: ", "Last: ") + ex.take(4).joinToString(", ") { exName(it) } + if (ex.size > 4) " …" else "",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
+                        maxLines = 2
+                    )
+                }
             }
-            AppIcon(Ico.CHEVRON, tint = MaterialTheme.colorScheme.onSecondaryContainer)
+            // ▶ startet das freie Training (leer, Übungen kommen im Training dazu)
+            FilledIconButton(onClick = onStart, modifier = Modifier.size(52.dp)) { AppIcon(Ico.PLAY) }
         }
     }
 }

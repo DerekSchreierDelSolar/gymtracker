@@ -12,10 +12,16 @@ import { botScreen } from './bot.js';
 import { settingsScreen } from './screens/settings.js';
 import { trainingScreen, summaryScreen, trainingBar, restWatch, keepScreenOn, unlockAudio } from './screens/training.js';
 import { isDeload, deloadTarget } from './cycle.js';
+import { FREE_WORKOUT_ID, freeWorkout, addFree, resetFreePage } from './free.js';
 
 const root = document.getElementById('app');
 
 // ---------- Aktionen, die mehrere Bildschirme betreffen ----------
+
+/** Workout des laufenden Trainings; freies Training (free.js) nur im Speicher */
+const trainingWorkout = () => nav.trainingWorkoutId === FREE_WORKOUT_ID
+  ? freeWorkout(Array.isArray(nav.freeExercises) ? nav.freeExercises : [])
+  : store.workout(nav.trainingWorkoutId);
 
 function startTraining(workoutId) {
   unlockAudio(); // im Tipp-Ereignis: erlaubt später den Pausen-Ton
@@ -23,25 +29,28 @@ function startTraining(workoutId) {
     // Dasselbe Workout läuft schon (minimiert) → fortsetzen; ein anderes → erst beenden
     if (nav.trainingWorkoutId === workoutId) go({ trainingOpen: true });
     else openDialog(() => dialog(tr('Training läuft bereits', 'Workout in progress'),
-      h('p', null, tr(`„${store.workout(nav.trainingWorkoutId)?.name ?? ''}“ läuft noch. Beende es, bevor du ein neues Training startest.`,
-        `“${store.workout(nav.trainingWorkoutId)?.name ?? ''}” is still running. Finish it before starting a new workout.`)),
+      h('p', null, tr(`„${trainingWorkout()?.name ?? ''}“ läuft noch. Beende es, bevor du ein neues Training startest.`,
+        `“${trainingWorkout()?.name ?? ''}” is still running. Finish it before starting a new workout.`)),
       [
         { label: tr('Abbrechen', 'Cancel'), onClick: closeDialog },
         { label: tr('Zum Training', 'Go to workout'), onClick: () => { closeDialog(); go({ trainingOpen: true }); } },
       ], closeDialog));
     return;
   }
-  go({ trainingWorkoutId: workoutId, trainingOpen: true, trainingStart: Date.now(), trainingIndex: 0, restEnd: null, swaps: {} });
+  resetFreePage();
+  go({ trainingWorkoutId: workoutId, trainingOpen: true, trainingStart: Date.now(), trainingIndex: 0, restEnd: null, swaps: {}, freeExercises: [] });
 }
 
 function finishTraining(endAt = null) {
-  const w = store.workout(nav.trainingWorkoutId);
+  const w = trainingWorkout();
   // Getauschte Übungen speichern; Originale, die vor dem Tausch schon Sätze hatten, gehören trotzdem dazu
   const s = w ? sessionWorkout(w, nav.swaps) : null;
   if (s) s.exercises.push(...Object.keys(nav.swaps ?? {}).filter(o => !s.exercises.includes(o) && store.setsBetween(o, nav.trainingStart, Infinity).length));
+  // freies Training: nur Übungen, die wirklich trainiert wurden
+  if (s && w.id === FREE_WORKOUT_ID) s.exercises = s.exercises.filter(e => store.setsBetween(e, nav.trainingStart, Infinity).length);
   const t = s ? store.finishTraining(s, nav.trainingStart, endAt) : null;
   keepScreenOn(false);
-  update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, trainingIndex: 0, restEnd: null, swaps: {}, summaryId: t?.id ?? null, celebrateId: t?.id ?? null });
+  update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, trainingIndex: 0, restEnd: null, swaps: {}, freeExercises: [], summaryId: t?.id ?? null, celebrateId: t?.id ?? null });
 }
 
 // ---------- Welcher Bildschirm? ----------
@@ -53,11 +62,11 @@ function currentScreen() {
     : nav.summaryId < 0 ? store.freeSession(-nav.summaryId) : store.session(nav.summaryId);
 
   // Laufendes Training: eigenes Workout (trainingWorkoutId), unabhängig vom angezeigten – kann minimiert sein
-  const tw = nav.trainingWorkoutId != null ? store.workout(nav.trainingWorkoutId) : null;
+  const tw = nav.trainingWorkoutId != null ? trainingWorkout() : null;
   if (nav.trainingStart != null && !tw) update({ trainingStart: null, trainingWorkoutId: null, trainingOpen: true, restEnd: null }); // Workout wurde gelöscht
   const trainingVisible = nav.trainingStart != null && tw && nav.trainingOpen;
 
-  if (summary) return summaryScreen(summary, goBack);
+  if (summary) return summaryScreen(summary, goBack, id => update({ summaryId: null, celebrateId: null, free: false, workoutId: id }));
   // Während des Trainings das Workout bearbeiten (wie editInTraining in GymApp): Training läuft weiter
   if (trainingVisible && nav.editInTraining != null) {
     return nav.pickDetail != null ? workoutExercisePage(tw, nav.pickDetail) : workoutPickerScreen(tw);
@@ -71,7 +80,9 @@ function currentScreen() {
   if (nav.settings) return settingsScreen();
   if (nav.bot) return botScreen(store);
   if (nav.wiki) return wikiScreen();
-  if (nav.free) return freeTrainingScreen();
+  if (nav.free) return freeTrainingScreen(() => startTraining(FREE_WORKOUT_ID),
+    // läuft ein freies Training: Kachel = Übung ins Training + dorthin
+    nav.trainingStart != null && nav.trainingWorkoutId === FREE_WORKOUT_ID ? n => addFree([n], { trainingOpen: true }) : null);
   return homeScreen(startTraining);
 }
 
@@ -207,7 +218,7 @@ function sessionWorkout(w, swaps = {}, deload = isDeload()) {
 /** Leiste „Training läuft“ bei minimiertem Training: Startseite über der Navigation, sonst ganz unten */
 function addTrainingBar(view) {
   if (nav.trainingStart == null || nav.trainingOpen) return;
-  const tw = store.workout(nav.trainingWorkoutId);
+  const tw = trainingWorkout();
   if (!tw || !view.classList?.contains('screen')) return;
   const bar = trainingBar(tw);
   const bottomNav = view.querySelector(':scope > .bottom-nav');
@@ -217,7 +228,7 @@ function addTrainingBar(view) {
 
 /** Bearbeiten beenden: wieder ins Training, auf die vorher angezeigte Übung (Index kann sich verschoben haben) */
 function backToTraining() {
-  const w = store.workout(nav.trainingWorkoutId);
+  const w = trainingWorkout();
   const i = w ? sessionWorkout(w, nav.swaps).exercises.indexOf(nav.editInTraining) : -1;
   update({ editInTraining: null, pickGroup: null, pickDetail: null, ...(i >= 0 ? { trainingIndex: i } : {}) });
 }

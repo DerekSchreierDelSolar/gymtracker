@@ -165,6 +165,12 @@ fun exName(name: String): String =
     else CATALOG.firstOrNull { it.name.equals(name, ignoreCase = true) }?.let { tr(it.name, it.en) } ?: name
 
 /** Ein Workout ist eine benannte, geordnete Liste von Übungsnamen. */
+/**
+ * Kennung des gestarteten freien Trainings (FreeTraining.kt): kein gespeichertes Workout, Übungen kommen erst im Training dazu.
+ * Gespeicherte Trainings davon haben workoutId = -1 – wie die automatisch gebildeten freien Tage (GymStore.freeSession).
+ */
+const val FREE_WORKOUT_ID = -1L
+
 data class Workout(
     val id: Long,
     val name: String,

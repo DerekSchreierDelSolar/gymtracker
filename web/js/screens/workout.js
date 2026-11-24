@@ -1,6 +1,7 @@
 // Workouts, Übungsauswahl, Katalog – entspricht WorkoutScreens.kt und CatalogScreen.kt.
 
 import { wikiButton, wikiFor, wikiContent } from '../wiki.js';
+import { FREE_WORKOUT_ID, lastFreeSession } from '../free.js';
 import { musclePicker, musclesOf, muscleSideCard, levelsOf, heatCard, workoutRegionScore } from '../bodymap.js';
 import { store, TEMPLATES } from '../store.js';
 import { CATALOG } from '../data.js';
@@ -23,29 +24,35 @@ const sortedGroups = names => [...new Set(names.map(n => store.groupOf(n)))].sor
 // ---------- Tab „Workouts“ ----------
 
 /** Fester Eintrag „Freies Training“ oben in der Workout-Liste (wie FreeTrainingCard in WorkoutScreens.kt). */
-function freeTrainingCard() {
-  const byDay = store.freeSetsByDay();
-  const lastDay = byDay.size ? Math.max(...byDay.keys()) : null;
-  const last = lastDay != null ? Math.max(...byDay.get(lastDay).map(s => s.time)) : null;
+function freeTrainingCard(onStartWorkout) {
+  const lastSession = lastFreeSession();
+  const last = lastSession?.start;
+  const lastNames = lastSession ? [...new Set(lastSession.exercises)] : [];
   return h('div', { class: 'card workout-card free-card', role: 'button', tabindex: 0, onclick: () => go({ free: true }) },
     h('span', { class: 'free-icon' }, icon('dumbbell', 26)),
     h('div', { class: 'grow' },
       h('h2', null, tr('Freies Training', 'Free workout')),
       h('small', null, tr('Einzelne Übungen ohne festen Plan', 'Single exercises without a fixed plan')),
       h('small', { class: 'free-meta' }, plural(store.exercises.length, tr('Übung', 'exercise'), tr('Übungen', 'exercises')) +
-        (last ? tr(' · zuletzt ', ' · last ') + fmtDate(last) : ''))),
-    icon('chevron'));
+        (last ? tr(' · zuletzt ', ' · last ') + fmtDate(last) : '')),
+      // Vorschau: was letztes Mal dran war
+      lastNames.length ? h('small', { class: 'free-meta' }, tr('Zuletzt: ', 'Last: ') + lastNames.slice(0, 4).map(exName).join(', ') + (lastNames.length > 4 ? ' …' : '')) : null),
+    // ▶ startet das freie Training (leer, Übungen kommen im Training dazu)
+    onStartWorkout ? h('button', {
+      class: 'play-btn', 'aria-label': tr('Training starten', 'Start workout'),
+      onclick: e => { e.stopPropagation(); onStartWorkout(FREE_WORKOUT_ID); },
+    }, icon('play', 24)) : icon('chevron'));
 }
 
 export function workoutList(onStartWorkout) {
   if (!store.workouts.length) {
     return h('div', { class: 'pad stack' },
-      freeTrainingCard(),
+      freeTrainingCard(onStartWorkout),
       h('p', null, tr('Noch keine Workouts. Ein Workout fasst mehrere Übungen zusammen, z. B. „Push-Tag“ oder „Beine“.',
         'No workouts yet. A workout groups several exercises, e.g. "Push day" or "Legs".')),
       h('div', null, h('button', { class: 'btn', onclick: newWorkoutDialog }, tr('Workout anlegen', 'Create workout'))));
   }
-  return h('div', { class: 'stack pad list-bottom' }, freeTrainingCard(), store.workouts.map(w => {
+  return h('div', { class: 'stack pad list-bottom' }, freeTrainingCard(onStartWorkout), store.workouts.map(w => {
     const last = store.sessionsFor(w.id)[0];
     // div statt button, weil ▶ darin ein eigener Knopf ist (Knöpfe dürfen nicht verschachtelt sein)
     return h('div', { class: 'card workout-card', role: 'button', tabindex: 0, onclick: () => go({ workoutId: w.id }) },

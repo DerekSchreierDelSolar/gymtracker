@@ -15,7 +15,9 @@ data class TrainingState(
     val open: Boolean = true,
     val swaps: Map<String, String> = emptyMap(),
     val restEnd: Long? = null,
-    val restTotal: Long = 0L
+    val restTotal: Long = 0L,
+    /** Freies Training (workoutId = FREE_WORKOUT_ID): bisher hinzugefügte Übungen */
+    val free: List<String> = emptyList()
 )
 
 object TrainingPrefs {
@@ -33,7 +35,8 @@ object TrainingPrefs {
             swaps = sw?.keys()?.asSequence()?.associateWith { sw.getString(it) }.orEmpty(),
             // Abgelaufene Pause nicht wiederbeleben
             restEnd = o.optLong("restEnd", 0L).takeIf { it > System.currentTimeMillis() },
-            restTotal = o.optLong("restTotal", 0L)
+            restTotal = o.optLong("restTotal", 0L),
+            free = o.optJSONArray("free")?.let { a -> (0 until a.length()).map { a.getString(it) } }.orEmpty()
         )
     }.getOrNull()
 
@@ -48,6 +51,7 @@ object TrainingPrefs {
             put("swaps", JSONObject(s.swaps))
             s.restEnd?.let { put("restEnd", it) }
             put("restTotal", s.restTotal)
+            if (s.free.isNotEmpty()) put("free", org.json.JSONArray(s.free))
         }.toString())
         prefs.apply()
     }

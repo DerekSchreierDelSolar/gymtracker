@@ -14,6 +14,7 @@ import {
   h, chip, dialog, statBox, chartCard, horizontalBars, historyBars, lineChart, percentRing, onTick, muted, icon, iconBtn, showHint, hintUsed,
 } from '../ui.js';
 import { nav, update, go, openDialog, closeDialog, onSwipe, rerender } from '../nav.js';
+import { FREE_WORKOUT_ID, freeAddPage, saveAsWorkoutButton } from '../free.js';
 import { screen } from '../layout.js';
 import { setInput, setRows, historyDayCard, recordLine, noteButton } from './exercise.js';
 import { achievements } from '../achievements.js';
@@ -200,8 +201,11 @@ export function trainingScreen(w, onFinish) {
   keepScreenOn(true);
   const start = nav.trainingStart;
   const n = w.exercises.length;
-  const index = Math.min(Math.max(0, nav.trainingIndex), Math.max(0, n - 1));
-  const setIndex = i => { if (i >= 0 && i < n) update({ trainingIndex: i }); };
+  // Freies Training (free.js): eine Seite mehr am Ende („＋ Übung“, Index n)
+  const free = w.id === FREE_WORKOUT_ID;
+  const pages = free ? n + 1 : n;
+  const index = Math.min(Math.max(0, nav.trainingIndex), Math.max(0, pages - 1));
+  const setIndex = i => { if (i >= 0 && i < pages) update({ trainingIndex: i }); };
   const countOf = e => store.setsBetween(e, start, Infinity).filter(isWork).length; // ohne Aufwärmsätze
   const endDialog = () => confirmEndTraining(w, onFinish);
 
@@ -210,16 +214,18 @@ export function trainingScreen(w, onFinish) {
   const updateClock = () => { clock.textContent = '⏱ ' + fmtDuration(Date.now() - start); };
   updateClock();
   onTick(updateClock);
-  const page = h('div', { class: 'stack pad training-page' }, exercisePage(w, start, name));
+  const page = h('div', { class: 'stack pad training-page' }, index >= n ? freeAddPage(w, start) : exercisePage(w, start, name));
   onSwipe(page, () => setIndex(index + 1), () => setIndex(index - 1));
 
   return screen({
-    title: `${index + 1}/${n} · ${w.name}`, subtitle: clock, key: 'training-' + index,
+    title: index >= n ? w.name : `${index + 1}/${n} · ${w.name}`, subtitle: clock, key: 'training-' + index,
     // Pfeil = Training minimieren (läuft weiter) – wie die Zurück-Geste
     back: true,
     actions: [
       // Workout während des Trainings anpassen – Training läuft weiter
-      iconBtn('edit', () => go({ editInTraining: name ?? '', pickGroup: null, pickDetail: null }), { label: tr('Workout bearbeiten', 'Edit workout') }),
+      // freies Training: ＋ springt zur Seite „Übung hinzufügen“
+      free ? iconBtn('add', () => setIndex(n), { label: tr('Übung hinzufügen', 'Add exercise') })
+        : iconBtn('edit', () => go({ editInTraining: name ?? '', pickGroup: null, pickDetail: null }), { label: tr('Workout bearbeiten', 'Edit workout') }),
       h('button', { class: 'btn text', onclick: endDialog }, tr('Beenden', 'Finish')),
     ],
     top: h('div', { class: 'training-head' },
@@ -230,13 +236,13 @@ export function trainingScreen(w, onFinish) {
         const el = chip(chipLabel(exName(e), count, goal, done), i === index, () => setIndex(i));
         if (i === index) el.dataset.autoscroll = '1';
         return el;
-      }))),
+      }), free ? (el => { if (index >= n) el.dataset.autoscroll = '1'; return el; })(chip(tr('＋ Übung', '＋ Exercise'), index >= n, () => setIndex(n))) : null)),
     content: page,
     bottom: h('div', { class: 'bottom-area' },
       h('div', { class: 'bottom-buttons' },
         h('button', { class: 'btn outline', disabled: index === 0, onclick: () => setIndex(index - 1) }, tr('‹ Vorherige', '‹ Previous')),
-        index < n - 1
-          ? h('button', { class: 'btn', onclick: () => setIndex(index + 1) }, tr('Nächste ›', 'Next ›'))
+        index < pages - 1
+          ? h('button', { class: 'btn', onclick: () => setIndex(index + 1) }, free && index === n - 1 ? tr('＋ Übung', '＋ Exercise') : tr('Nächste ›', 'Next ›'))
           : h('button', { class: 'btn', onclick: endDialog }, tr('Training beenden', 'Finish workout')))),
   });
 }
@@ -351,7 +357,7 @@ function heartRateCard(t, kcalFromHr) {
       'Tip: with sex and birth year in your profile (settings) the app calculates calories from heart rate.'), 'small') : null);
 }
 
-export function summaryScreen(t, onDone) {
+export function summaryScreen(t, onDone, onOpenWorkout = () => {}) {
   const stats = sessionStats(store, t);
   // Erfolge (achievements.js); direkt nach dem Training feiern: Konfetti bei großen Erfolgen + Ziele (wie SummaryScreen.kt)
   const celebrate = nav.celebrateId === t.id;
@@ -381,9 +387,11 @@ export function summaryScreen(t, onDone) {
         h('h2', { class: 'headline' }, t.workoutName),
         muted(fmtDateTime(t.start)),
         h('div', { class: 'row-center' }, percentRing(stats.completion, 44),
-          h('b', null, t.id < 0 ? tr('Freies Training – zählt als 100 %', 'Free workout – counts as 100 %')
+          h('b', null, t.id < 0 || t.workoutId === FREE_WORKOUT_ID ? tr('Freies Training – zählt als 100 %', 'Free workout – counts as 100 %')
             : stats.total === 0 ? tr('Ohne Ziel-Sätze – zählt als 100 %', 'No target sets – counts as 100 %')
               : tr(`${stats.done} von ${stats.total} Ziel-Sätzen erledigt`, `${stats.done} of ${stats.total} target sets done`)))),
+      // freies Training → als Workout speichern (free.js)
+      t.workoutId === FREE_WORKOUT_ID ? saveAsWorkoutButton(t, onOpenWorkout) : null,
       h('div', { class: 'stat-grid' }, tiles.map(([l, v]) => statBox(l, v))),
       stats.kcal == null ? muted(tr('Tipp: Trag unter „Körper“ dein Gewicht ein, dann schätzt die App den Kalorienverbrauch.',
         'Tip: enter your weight under "Body" and the app will estimate calories burned.'), 'small') : null,

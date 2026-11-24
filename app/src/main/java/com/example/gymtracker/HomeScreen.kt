@@ -291,7 +291,10 @@ fun FreeTrainingScreen(
     onFilter: (ExerciseFilter) -> Unit,
     onOpen: (String) -> Unit,
     onCatalog: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    /** läuft gerade ein freies Training? (dann „Fortsetzen“, Kachel = ins Training) */
+    running: Boolean = false,
+    onStart: () -> Unit = {}
 ) {
     val ui = rememberFilterUi(filter)
     Scaffold(
@@ -299,16 +302,21 @@ fun FreeTrainingScreen(
             TopAppBar(
                 title = { Text(tr("Freies Training", "Free workout")) },
                 navigationIcon = { IconAction(Ico.BACK, onClick = onBack) },
-                actions = { if (store.exercises.isNotEmpty()) FilterActions(ui, filter, onFilter) }
+                actions = {
+                    // ＋ = Übungskatalog (eigene Liste erweitern)
+                    IconAction(Ico.ADD, onClick = onCatalog)
+                    if (store.exercises.isNotEmpty()) FilterActions(ui, filter, onFilter)
+                }
             )
         },
+        // ▶ startet das freie Training (Dauer, Pausen-Timer, Übersicht) – Sätze ohne Start gehen weiterhin
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                onClick = onCatalog,
-                icon = { AppIcon(Ico.ADD) },
-                text = { Text(tr("Übung", "Exercise")) }
+                onClick = onStart,
+                icon = { AppIcon(Ico.PLAY) },
+                text = { Text(if (running) tr("Fortsetzen", "Resume") else tr("Training starten", "Start workout")) }
             )
         }
     ) { padding -> ExerciseGrid(store, Modifier.padding(padding).fillMaxSize(), filter, onFilter, ui, onOpen, onCatalog) }

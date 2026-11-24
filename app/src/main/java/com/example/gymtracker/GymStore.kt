@@ -679,6 +679,20 @@ class GymStore(context: Context) {
         return w
     }
 
+    /**
+     * Workout aus einem Training anlegen („Als Workout speichern“ nach einem freien Training, SummaryScreen):
+     * Übungen in der Reihenfolge des Trainings, Ziel-Sätze = dort gemachte Arbeitssätze.
+     */
+    fun addWorkoutFrom(name: String, exercises: List<String>, targets: Map<String, Int>): Workout? {
+        val n = name.trim()
+        if (n.isEmpty() || exercises.isEmpty()) return null
+        exercises.forEach { addExercise(it) }
+        val w = Workout(System.currentTimeMillis(), n, exercises, targets.mapValues { it.value.coerceIn(0, 20) })
+        workouts.add(w)
+        save()
+        return w
+    }
+
     fun deleteWorkout(id: Long) {
         workouts.removeAll { it.id == id }
         save()

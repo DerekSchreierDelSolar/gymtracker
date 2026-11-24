@@ -68,13 +68,18 @@ export function homeScreen(onStartWorkout) {
  * „Freies Training“: fest oben in der Workout-Liste, nicht löschbar (kein echtes Workout); zeigt „Meine Übungen“ als Kacheln
  * (früher Tab „Übungen“). Sätze ohne Workout zählen als freies Training des Tages. Wie FreeTrainingScreen in HomeScreen.kt.
  */
-export function freeTrainingScreen() {
+export function freeTrainingScreen(onStart, addToTraining) {
   return screen({
     title: tr('Freies Training', 'Free workout'), back: true, key: 'free',
-    actions: [store.exercises.length ? filterActions('list') : null],
+    actions: [
+      // ＋ = Übungskatalog (eigene Liste erweitern)
+      iconBtn('add', () => go({ catalog: true }), { label: tr('Übungskatalog', 'Exercise catalog') }),
+      store.exercises.length ? filterActions('list') : null,
+    ],
     top: store.exercises.length ? filterBar('list', exerciseGroups(), exerciseEquipment()) : null,
-    content: exerciseGrid(),
-    fab: fab(tr('Übung', 'Exercise'), 'add', () => go({ catalog: true })),
+    content: exerciseGrid(addToTraining),
+    // ▶ startet das freie Training (Dauer, Pausen-Timer, Übersicht) – Sätze ohne Start gehen weiterhin
+    fab: fab(addToTraining ? tr('Fortsetzen', 'Resume') : tr('Training starten', 'Start workout'), 'play', onStart),
   });
 }
 
@@ -308,7 +313,7 @@ function exerciseEquipment() {
   return order.filter(e => store.exercises.some(n => equipmentOf(n) === e));
 }
 
-function exerciseGrid() {
+function exerciseGrid(onTile = null) {
   if (!store.exercises.length) {
     return h('div', { class: 'pad stack' },
       h('p', null, tr('Noch keine Übungen. Wähle welche aus dem Katalog aus.', 'No exercises yet. Pick some from the catalog.')),
@@ -323,7 +328,7 @@ function exerciseGrid() {
     const names = sortByName(visible.filter(n => store.groupOf(n) === g), exName); // alphabetisch
     if (!names.length) return null;
     return [groupHeader(g), h('div', { class: 'tile-grid' },
-      names.map(n => exerciseTile(n, g, () => go({ exercise: n }), { favorite: isFav(n), onLongPress: () => { hintUsed('list'); exerciseMenu(n); } })))];
+      names.map(n => exerciseTile(n, g, () => (onTile ? onTile(n) : go({ exercise: n })), { favorite: isFav(n), onLongPress: () => { hintUsed('list'); exerciseMenu(n); } })))];
   }));
 }
 

@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 /** Übersicht nach dem Training (auch später aus „Letzte Trainings“ aufrufbar). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = false, onDone: () -> Unit) {
+fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = false, onDone: () -> Unit, onOpenWorkout: (Long) -> Unit = {}) {
     val stats = sessionStats(store, t)
     val wins = remember(t.id, stats.sets) { achievements(store, t, stats) }
     // Konfetti + Vibration nur einmal direkt nach dem Training und nur bei großen Erfolgen (Rekord, Ziel, Wochenziel, Meilenstein)
@@ -54,7 +54,7 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
                     Spacer(Modifier.width(10.dp))
                     Text(
                         when {
-                            t.id < 0 -> tr("Freies Training – zählt als 100 %", "Free workout – counts as 100 %")
+                            t.id < 0 || t.workoutId == FREE_WORKOUT_ID -> tr("Freies Training – zählt als 100 %", "Free workout – counts as 100 %")
                             stats.total == 0 -> tr("Ohne Ziel-Sätze – zählt als 100 %", "No target sets – counts as 100 %")
                             else -> tr(
                                 "${stats.done} von ${stats.total} Ziel-Sätzen erledigt",
@@ -65,6 +65,9 @@ fun SummaryScreen(store: GymStore, t: TrainingSession, celebrate: Boolean = fals
                     )
                 }
             }
+
+            // Freies Training → als Workout speichern (FreeTraining.kt)
+            if (t.workoutId == FREE_WORKOUT_ID) item { SaveAsWorkoutButton(store, t, onOpenWorkout) }
 
             // Kennzahlen: max. 3 pro Zeile
             item {

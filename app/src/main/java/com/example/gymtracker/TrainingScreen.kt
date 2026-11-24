@@ -77,7 +77,11 @@ fun TrainingScreen(
     restTotal: Long = 0L,
     onRest: (end: Long?, total: Long) -> Unit = { _, _ -> },
     /** Training beenden; Ende = Zeitpunkt (letzter Satz) oder null = jetzt */
-    onFinish: (Long?) -> Unit
+    onFinish: (Long?) -> Unit,
+    /** Freies Training (FreeTraining.kt): letzte Seite = „＋ Übung“, Übungen kommen im Training dazu */
+    free: Boolean = false,
+    onAddExercises: (List<String>) -> Unit = {},
+    onRemoveExercise: (String) -> Unit = {}
 ) {
     var confirmEnd by remember { mutableStateOf(false) }
     // Zurück-Taste beendet das Training nicht, sondern minimiert es (Beenden nur über „Beenden“)
@@ -159,7 +163,9 @@ fun TrainingScreen(
     // werden in beide Richtungen abgeglichen:
     //  - Buttons/Chips ändern `index` → Pager scrollt animiert dorthin
     //  - Wischen → sobald die Seite eingerastet ist („settled“), wird `index` aktualisiert
-    val pagerState = rememberPagerState(initialPage = index) { n }
+    // Freies Training: eine Seite mehr am Ende („＋ Übung“, Index n)
+    val pages = if (free) n + 1 else n
+    val pagerState = rememberPagerState(initialPage = index) { pages }
     val currentOnIndex by rememberUpdatedState(onIndex)
     LaunchedEffect(index) {
         if (pagerState.currentPage != index) pagerState.animateScrollToPage(index)
@@ -175,13 +181,14 @@ fun TrainingScreen(
                 navigationIcon = { IconAction(Ico.BACK, onClick = onMinimize) },
                 title = {
                     Column {
-                        Text("${index + 1}/$n · ${workout.name}")
+                        Text(if (index >= n) workout.name else "${index + 1}/$n · ${workout.name}")
                         ElapsedText(start, now)
                     }
                 },
                 actions = {
                     // Workout während des Trainings anpassen (Übungen hinzufügen/entfernen, Ziel-Sätze) – Training läuft weiter
-                    IconAction(Ico.EDIT, onClick = onEdit)
+                    // Freies Training: ＋ springt zur Seite „Übung hinzufügen“
+                    if (free) IconAction(Ico.ADD, onClick = { onIndex(n) }) else IconAction(Ico.EDIT, onClick = onEdit)
                     TextButton(onClick = { confirmEnd = true }) { Text(tr("Beenden", "Finish")) }
                 }
             )
@@ -200,9 +207,9 @@ fun TrainingScreen(
                             enabled = index > 0,
                             modifier = Modifier.weight(1f)
                         ) { Text(tr("‹ Vorherige", "‹ Previous")) }
-                        if (index < n - 1) {
+                        if (index < pages - 1) {
                             Button(onClick = { onIndex(index + 1) }, modifier = Modifier.weight(1f)) {
-                                Text(tr("Nächste ›", "Next ›"))
+                                Text(if (index == n - 1 && free) tr("＋ Übung", "＋ Exercise") else tr("Nächste ›", "Next ›"))
                             }
                         } else {
                             Button(onClick = { confirmEnd = true }, modifier = Modifier.weight(1f)) {
@@ -245,17 +252,31 @@ fun TrainingScreen(
                             label = { Text(trainingChipLabel(exName(e), count, goal, done)) }
                         )
                     }
+                    if (free) item(key = "add") {
+                        FilterChip(selected = index >= n, onClick = { onIndex(n) }, label = { Text(tr("＋ Übung", "＋ Exercise")) })
+                    }
                 }
             }
 
             // Wischbarer Bereich: eine Seite pro Übung
             HorizontalPager(
                 state = pagerState,
-                key = { workout.exercises[it] },
+                // Schlüssel der „＋ Übung“-Seite hängt an der Anzahl: kommt eine Übung dazu, bleibt der Pager an der Stelle
+                // stehen (= neue Übung) statt der Seite ans Ende zu folgen
+                key = { workout.exercises.getOrElse(it) { "＋add_$n" } },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
             ) { page ->
+                if (page >= n) {
+                    FreeAddPage(
+                        store, start, workout.exercises,
+                        onAdd = onAddExercises,
+                        onOpen = { e -> workout.exercises.indexOf(e).takeIf { it >= 0 }?.let(onIndex) },
+                        onRemove = onRemoveExercise
+                    )
+                    return@HorizontalPager
+                }
                 TrainingExercisePage(
                     store, workout, start,
                     name = workout.exercises[page],

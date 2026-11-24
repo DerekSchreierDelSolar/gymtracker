@@ -138,6 +138,9 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
 .free-card { background: var(--primary-container); color: var(--on-primary-container); gap: 14px; }
 .free-card .grow { display: flex; flex-direction: column; gap: 2px; }
 .free-card .free-meta { opacity: .75; }
+.free-chip { display: inline-flex; align-items: center; gap: 2px; padding-right: 4px; }
+.free-chip-name, .free-chip-x { color: inherit; display: flex; align-items: center; }
+.free-chip-x { padding: 2px; border-radius: 50%; }
 .free-icon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--primary); color: var(--on-primary); }
 
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
