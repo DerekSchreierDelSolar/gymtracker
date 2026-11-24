@@ -22,8 +22,8 @@ android {
         applicationId = "com.example.gymtracker"
         minSdk = 24
         targetSdk = 37
-        versionCode = 25
-        versionName = "1.24"
+        versionCode = 26
+        versionName = "1.25"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
