@@ -730,7 +730,7 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
     val group = filter.groups.singleOrNull()
     val overview = !filter.isActive
     val inCategory = fromCategory && filter.groups.isNotEmpty()
-    val closeCategory = { fromCategory = false; filter = filter.copy(groups = emptySet()) }
+    val closeCategory = { fromCategory = false; filter = ExerciseFilter() } // zurück zur Übersicht: auch Gerät/Suche leeren
     val visible = all.filter { filter.matches(it, store.groupOf(it)) }
     val listState = rememberLazyListState() // außerhalb des if → Scroll-Position bleibt beim Zurückkehren erhalten
 

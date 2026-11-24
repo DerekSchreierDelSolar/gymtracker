@@ -87,14 +87,15 @@ function currentScreen() {
 }
 
 /**
- * Über eine Kategorie geöffnete Liste schließen: deren Filter-Chip wieder abwählen (wie closeCategory in CatalogScreen.kt).
+ * Über eine Kategorie geöffnete Liste schließen: zurück zur Kategorie-Übersicht, also alle Filter leeren – auch
+ * danach gewähltes Gerät und Suche (wie closeCategory in CatalogScreen.kt).
  * true = war offen (Zurück erledigt); wurde der Chip schon von Hand abgewählt, geht Zurück direkt weiter.
  */
 function closeCategory(key) {
-  const marker = key + 'Group', groups = nav[key + 'Filter'].groups;
+  const marker = key + 'Group', f = nav[key + 'Filter'];
   if (nav[marker] == null) return false;
-  const open = groups.size > 0;
-  groups.clear();
+  const open = f.groups.size > 0;
+  if (open) { f.groups.clear(); f.equipment.clear(); f.query = ''; }
   update({ [marker]: null });
   return open;
 }

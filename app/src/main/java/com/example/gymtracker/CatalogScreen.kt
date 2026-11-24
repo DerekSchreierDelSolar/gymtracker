@@ -117,7 +117,7 @@ fun CatalogScreen(
     val group = filter.groups.singleOrNull()
     val overview = !filter.isActive
     val inCategory = fromCategory && filter.groups.isNotEmpty()
-    val closeCategory = { fromCategory = false; onFilter(filter.copy(groups = emptySet())) }
+    val closeCategory = { fromCategory = false; onFilter(ExerciseFilter()) } // zurück zur Übersicht: auch Gerät/Suche leeren
     if (inCategory) BackHandler { closeCategory() }
     val visible = CATALOG.filter { filter.matches(it.name, it.group) }.sortedByName { exName(it.name) }.favoritesFirst(store) { it.name } // alphabetisch, Favoriten zuerst
     // Eigene Übungen = gespeicherte Übungen, die nicht im Katalog stehen (auch aus der Liste entfernte → wieder hinzufügbar)
