@@ -16,8 +16,11 @@ export function favoriteBtn(name) {
   }, icon(fav ? 'starFilled' : 'star'));
 }
 
-/** Überschrift des Favoriten-Abschnitts (wie groupHeader). */
-export const favoritesHeader = () => h('div', { class: 'group-header' }, h('span', { class: 'fav-mark' }, icon('starFilled', 16)), tr('Favoriten', 'Favorites'));
+/** Überschrift des Favoriten-Abschnitts (wie groupHeader); mit onToggle aufklappbar (Anzahl + Pfeil, wie FavoritesHeader). */
+export const favoritesHeader = ({ count = 0, expanded = true, onToggle = null } = {}) => h(onToggle ? 'button' : 'div',
+  { class: 'group-header' + (onToggle ? ' fav-toggle' : ''), ...(onToggle ? { onclick: onToggle, 'aria-expanded': String(expanded) } : {}) },
+  h('span', { class: 'fav-mark' }, icon('starFilled', 16)), tr('Favoriten', 'Favorites'),
+  onToggle ? [h('span', { class: 'muted' }, ` (${count})`), h('span', { class: 'fav-chevron muted' + (expanded ? ' open' : '') }, icon('chevron', 20))] : null);
 
 /** Übungsname, bei Favoriten mit Stern dahinter. */
 export const nameWithStar = (name, label = exName(name)) =>

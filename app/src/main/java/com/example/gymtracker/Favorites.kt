@@ -1,7 +1,9 @@
 package com.example.gymtracker
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -12,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
@@ -50,13 +53,25 @@ fun FavoriteButton(store: GymStore, name: String) {
     }
 }
 
-/** Überschrift des Favoriten-Abschnitts (passt zu GroupHeader). */
+/**
+ * Überschrift des Favoriten-Abschnitts (passt zu GroupHeader).
+ * Mit `onToggle` aufklappbar: Anzahl + Pfeil, ganze Zeile antippbar.
+ */
 @Composable
-fun FavoritesHeader() {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp)) {
+fun FavoritesHeader(count: Int = 0, expanded: Boolean = true, onToggle: (() -> Unit)? = null) {
+    val base = Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 4.dp)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = if (onToggle != null) Modifier.clickable(onClick = onToggle).then(base) else base
+    ) {
         AppIcon(Ico.STAR_FILLED, Modifier.size(16.dp), tint = FAVORITE_COLOR)
         Spacer(Modifier.width(8.dp))
         Text(tr("Favoriten", "Favorites"), style = MaterialTheme.typography.titleMedium)
+        if (onToggle != null) {
+            Text(" ($count)", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.weight(1f))
+            AppIcon(Ico.CHEVRON, Modifier.size(20.dp).rotate(if (expanded) 270f else 90f), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 

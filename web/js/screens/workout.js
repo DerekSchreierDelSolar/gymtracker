@@ -17,6 +17,8 @@ import { screen, fab } from '../layout.js';
 import { supersetHead, supersetGroups, groupedWorkout, keepLinks } from '../supersets.js';
 import { favoriteBtn, favoritesHeader, nameWithStar, isFav } from '../favorites.js';
 
+let pickFavsOpen = false; // Favoriten-Abschnitt beim Workout-Bearbeiten aufgeklappt
+
 import { filterActions, filterBar, matches, noFilterResults, filterActive } from '../filter.js';
 
 const sortedGroups = names => [...new Set(names.map(n => store.groupOf(n)))].sort((a, b) => GROUP_KEYS.indexOf(a) - GROUP_KEYS.indexOf(b));
@@ -369,10 +371,12 @@ export function workoutPickerScreen(w) {
       w.exercises.length ? [h('h2', { class: 'section' }, tr('In diesem Workout', 'In this workout') + ` (${w.exercises.length})`), w.exercises.map(row)] : null,
       h('h2', { class: 'section' }, tr('Übung hinzufügen', 'Add exercise')),
       muted(tr('Wähle eine Kategorie – oder suche oben direkt nach einer Übung.', 'Pick a category – or search for an exercise at the top.'), 'small'),
-      // Favoriten (★) direkt zum Antippen, vor den Kategorien (wie WorkoutPickerScreen)
+      // Favoriten (★) vor den Kategorien – aufklappbar, standardmäßig zu (wie WorkoutPickerScreen)
       (() => {
         const favs = sortByName(visible.filter(isFav), exName);
-        return favs.length ? [favoritesHeader(), favs.map(row), h('h2', { class: 'section' }, tr('Kategorien', 'Categories'))] : null;
+        const toggle = () => { pickFavsOpen = !pickFavsOpen; rerender(); };
+        return favs.length ? [favoritesHeader({ count: favs.length, expanded: pickFavsOpen, onToggle: toggle }),
+          pickFavsOpen ? favs.map(row) : null, h('h2', { class: 'section' }, tr('Kategorien', 'Categories'))] : null;
       })(),
       h('div', { class: 'category-list' }, GROUP_KEYS.map(g => {
         const names = visible.filter(n => store.groupOf(n) === g);

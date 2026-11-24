@@ -809,3 +809,8 @@ button.card:active, .card[onclick]:active { filter: brightness(.97); }
   background-position: right 14px center, right 9px center; background-size: 5px 5px; background-repeat: no-repeat; }
 /* „Fragen“: Navigationsleiste ausblenden, solange getippt wird (Tastatur offen) */
 .screen:has(#bot-input:focus) > :is(.bottom-nav, .training-bar) { display: none; }
+/* Aufklappbarer Favoriten-Abschnitt (Workout bearbeiten) */
+.fav-toggle { width: 100%; background: none; border: 0; color: inherit; font: inherit; font-size: 18px; font-weight: 600; text-align: left; cursor: pointer; }
+.fav-toggle .muted { font-weight: 400; }
+.fav-chevron { margin-left: auto; display: inline-flex; transform: rotate(90deg); transition: transform .15s; }
+.fav-chevron.open { transform: rotate(270deg); }

@@ -727,6 +727,7 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
     // Kategorie antippen = Filter-Chip dieser Kategorie setzen (sichtbar, abwählbar); Zurück wählt ihn wieder ab.
     // Ohne Suche/Filter: Übersicht, sonst direkt alle Treffer.
     var fromCategory by rememberSaveable { mutableStateOf(false) }
+    var favsOpen by rememberSaveable { mutableStateOf(false) } // Favoriten-Abschnitt in der Übersicht aufgeklappt
     val group = filter.groups.singleOrNull()
     val overview = !filter.isActive
     val inCategory = fromCategory && filter.groups.isNotEmpty()
@@ -789,11 +790,11 @@ fun WorkoutPickerScreen(store: GymStore, workout: Workout, onBack: () -> Unit) {
                             )
                         }
                     }
-                    // Favoriten (★) direkt zum Antippen, vor den Kategorien
+                    // Favoriten (★) vor den Kategorien – aufklappbar, standardmäßig zu (sonst schieben sie die Kategorien weg)
                     val favs = visible.filter { store.isFavorite(it) }.sortedByName { exName(it) }
                     if (favs.isNotEmpty()) {
-                        item(key = "h_fav") { FavoritesHeader() }
-                        items(favs, key = { "fav_$it" }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
+                        item(key = "h_fav") { FavoritesHeader(count = favs.size, expanded = favsOpen, onToggle = { favsOpen = !favsOpen }) }
+                        if (favsOpen) items(favs, key = { "fav_$it" }) { name -> PickerRow(store, workout, name, onClick = { detail = name }) }
                         item(key = "h_groups") {
                             Text(tr("Kategorien", "Categories"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
                         }
